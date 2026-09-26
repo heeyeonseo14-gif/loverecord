@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4eff8">
+<title>YANYAN × YAN HUAN</title>
+<style>
+:root{
+  --bg:#f4eff8; --paper:rgba(255,255,255,.72); --ink:#29232e;
+  --muted:#8b7f91; --line:rgba(64,45,72,.12); --accent:#9274a7;
+  --accent2:#c9b6d7; --shadow:0 18px 50px rgba(64,45,72,.08);
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 20% 0%,#fff 0,#f6f1f9 38%,#eee6f3 100%);
+font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink)}
+button,input,textarea{font:inherit}
+button{border:0;background:none;color:inherit;cursor:pointer}
+.app{min-height:100vh;display:flex;justify-content:center}
+.phone{width:min(100%,430px);min-height:100vh;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(244,239,248,.8));position:relative;padding-bottom:88px}
+.top{padding:22px 24px 8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.16em;color:var(--muted)}
+.brand{font-size:11px;letter-spacing:.22em}
+.page{display:none;padding:12px 22px 26px;animation:fade .35s ease}.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.eyebrow{text-transform:uppercase;font-size:10px;letter-spacing:.22em;color:var(--muted);margin:14px 0 10px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.02;font-weight:400;margin:0 0 18px;letter-spacing:-.04em}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:26px;font-weight:400;margin:0}
+p{line-height:1.7}.hero{padding:18px 2px 20px}.names{font-size:14px;letter-spacing:.18em;margin-bottom:20px}
+.days{font-family:Georgia,serif;font-size:76px;line-height:.95;letter-spacing:-.05em}
+.days-label{font-size:10px;letter-spacing:.25em;color:var(--muted);margin:8px 0 28px}
+.quote{font-family:Georgia,serif;font-size:18px;line-height:1.5;max-width:300px}
+.rule{height:1px;background:var(--line);margin:26px 0}
+.card{background:var(--paper);border:1px solid rgba(255,255,255,.75);box-shadow:var(--shadow);border-radius:22px;padding:20px;margin:12px 0;backdrop-filter:blur(14px)}
+.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.small{font-size:11px;color:var(--muted);letter-spacing:.08em}
+.photo{width:100%;aspect-ratio:1/1.12;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#d9c8e3,#f7f3f9);display:flex;align-items:center;justify-content:center;color:#8c7996;font-size:11px;letter-spacing:.12em}
+.photo img{width:100%;height:100%;object-fit:cover}
+.btn{padding:11px 15px;border:1px solid var(--line);border-radius:999px;font-size:11px;letter-spacing:.08em;background:rgba(255,255,255,.35)}
+.btn.primary{background:#342c39;color:#fff;border-color:#342c39}
+.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,430px);padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(246,241,249,.84);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
+.nav button{font-size:9px;letter-spacing:.1em;color:var(--muted);padding:7px 0}.nav button.active{color:var(--ink)}
+.nav button span{display:block;font-size:16px;margin-bottom:4px;font-family:Georgia,serif}
+.chat{display:flex;flex-direction:column;gap:14px}.msg{max-width:78%;font-size:13px;line-height:1.6}.msg.me{align-self:flex-end;text-align:right}.msg .bubble{display:inline-block;padding:11px 14px;border-radius:16px;background:#fff;border:1px solid var(--line)}.msg.me .bubble{background:#ded0e8}.time{font-size:9px;color:var(--muted);margin-top:4px}
+.input{display:flex;gap:8px;margin-top:16px}.input textarea{flex:1;resize:none;border:1px solid var(--line);background:rgba(255,255,255,.6);border-radius:16px;padding:12px;outline:none;min-height:44px}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.tile{aspect-ratio:1;overflow:hidden;background:#ded3e6}.tile img{width:100%;height:100%;object-fit:cover}
+.list{display:flex;flex-direction:column}.item{padding:17px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item .date{font-size:10px;color:var(--muted);letter-spacing:.12em;margin-bottom:7px}
+.rooms{display:grid;grid-template-columns:1fr 1fr;gap:10px}.room{min-height:150px;border-radius:20px;padding:18px;background:linear-gradient(145deg,rgba(255,255,255,.8),rgba(220,207,229,.65));display:flex;align-items:flex-end}.room strong{font-family:Georgia,serif;font-size:22px;font-weight:400}
+input[type=file]{display:none}.upload{display:inline-block}
+.modal{position:fixed;inset:0;background:rgba(37,29,42,.25);backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center;z-index:20}.modal.show{display:flex}.sheet{width:min(100%,430px);background:#f8f4fa;border-radius:26px 26px 0 0;padding:22px 22px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(40,30,45,.18)}
+.setting{display:flex;justify-content:space-between;align-items:center;padding:17px 0;border-bottom:1px solid var(--line)}.setting:last-child{border-bottom:0}
+.mini-input{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 10px;width:155px;text-align:right;outline:none}
+@media(min-width:700px){body{padding:22px 0}.phone{min-height:calc(100vh - 44px);border-radius:32px;overflow:hidden;box-shadow:0 30px 90px rgba(50,35,60,.14)}.nav{bottom:22px;border-radius:0 0 32px 32px}}
+</style>
+</head>
+<body>
+<div class="app"><main class="phone">
+  <div class="top"><span class="brand">PRIVATE SPACE</span><span id="clock"></span></div>
+
+  <section id="home" class="page active">
+    <div class="hero">
+      <div class="eyebrow">our little universe</div>
+      <div class="names">YANYAN × YAN HUAN</div>
+      <div class="days" id="days">0</div><div class="days-label">DAYS TOGETHER</div>
+      <div class="quote" id="quote">somewhere between you and me, there is a little world.</div>
+    </div>
+    <div class="rule"></div>
+    <div class="card">
+      <div class="card-title"><span class="small">TODAY</span><button class="btn" onclick="newQuote()">another line</button></div>
+      <p id="todayText">Today is another ordinary day worth keeping.</p>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="small">A MOMENT</span><span class="small" id="momentDate"></span></div>
+      <div class="photo" id="homePhoto">YOUR PHOTO</div>
+      <div class="row between" style="margin-top:12px"><span class="small">a memory from us</span><label class="btn upload">ADD PHOTO<input id="homeUpload" type="file" accept="image/*"></label></div>
+    </div>
+  </section>
+
+  <section id="chat" class="page">
+    <div class="eyebrow">conversation</div><h1>Us.</h1>
+    <div class="chat" id="chatList">
+      <div class="msg"><div class="bubble">你今天开心吗？</div><div class="time">22:41</div></div>
+      <div class="msg me"><div class="bubble">因为你在，所以还不错。</div><div class="time">22:42</div></div>
+      <div class="msg"><div class="bubble">那就过来一点。</div><div class="time">22:43</div></div>
+    </div>
+    <div class="input"><textarea id="msgInput" placeholder="write something..."></textarea><button class="btn primary" onclick="sendMsg()">SEND</button></div>
+  </section>
+
+  <section id="memories" class="page">
+    <div class="eyebrow">our archive</div><h1>Memories.</h1>
+    <div class="card"><div class="card-title"><span class="small">PHOTO JOURNAL</span><label class="btn upload">ADD<input id="galleryUpload" type="file" accept="image/*" multiple></label></div><div class="gallery" id="gallery"></div></div>
+    <div class="card"><div class="card-title"><span class="small">NOTES</span><button class="btn" onclick="addNote()">NEW NOTE</button></div><div class="list" id="notes"></div></div>
+  </section>
+
+  <section id="space" class="page">
+    <div class="eyebrow">a place for two</div><h1>Our Space.</h1>
+    <div class="rooms">
+      <button class="room" onclick="room('Living room')"><strong>Living room</strong></button>
+      <button class="room" onclick="room('Bedroom')"><strong>Bedroom</strong></button>
+      <button class="room" onclick="room('Kitchen')"><strong>Kitchen</strong></button>
+      <button class="room" onclick="room('Balcony')"><strong>Balcony</strong></button>
+    </div>
+    <div class="card"><div class="small">CURRENT ROOM</div><h2 id="roomTitle" style="margin-top:8px">Living room</h2><p id="roomText">A quiet place for slow evenings, music, and conversations that don't need an ending.</p></div>
+  </section>
+
+  <section id="settings" class="page">
+    <div class="eyebrow">personalize</div><h1>Settings.</h1>
+    <div class="card">
+      <div class="setting"><span>Nickname</span><input class="mini-input" id="nickname" value="YANYAN"></div>
+      <div class="setting"><span>Partner</span><input class="mini-input" id="partner" value="YAN HUAN"></div>
+      <div class="setting"><span>Start date</span><input class="mini-input" id="startDate" type="date"></div>
+      <div class="setting"><span>Save changes</span><button class="btn primary" onclick="saveSettings()">SAVE</button></div>
+    </div>
+    <div class="card"><div class="small">ABOUT</div><p style="margin-bottom:0">A private little universe made for two. Everything stays in this browser.</p></div>
+  </section>
+
+  <nav class="nav">
+    <button class="active" data-page="home"><span>⌂</span>HOME</button>
+    <button data-page="chat"><span>—</span>CHAT</button>
+    <button data-page="memories"><span>○</span>MEMORIES</button>
+    <button data-page="space"><span>□</span>SPACE</button>
+    <button data-page="settings"><span>·</span>SETTINGS</button>
+  </nav>
+</main></div>
+
+<div class="modal" id="modal" onclick="this.classList.remove('show')"><div class="sheet" onclick="event.stopPropagation()"><div class="card-title"><h2 id="modalTitle">Room</h2><button class="btn" onclick="document.getElementById('modal').classList.remove('show')">CLOSE</button></div><p id="modalBody"></p></div></div>
+
+<script>
+const quotes=[
+"somewhere between you and me, there is a little world.",
+"ordinary days become memories when they are ours.",
+"stay a little longer.",
+"nothing loud. just us.",
+"you are one of my favorite places."
+];
+const roomTexts={
+"Living room":"A quiet place for slow evenings, music, and conversations that don't need an ending.",
+"Bedroom":"Soft lights, late-night thoughts, and the last conversation before sleep.",
+"Kitchen":"Two cups, something warm, and a little domestic happiness.",
+"Balcony":"A small view of the night. Stay here until the city gets quiet."
+};
+function $(id){return document.getElementById(id)}
+function today(){return new Date().toLocaleDateString('en-CA')}
+function init(){
+ let saved=JSON.parse(localStorage.getItem('loveApp')||'{}');
+ if(saved.startDate) $('startDate').value=saved.startDate; else $('startDate').value='2026-01-01';
+ if(saved.nickname) $('nickname').value=saved.nickname;
+ if(saved.partner) $('partner').value=saved.partner;
+ renderDays(); renderNotes(); renderGallery(); updateNames(); $('momentDate').textContent=today();
+ $('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+ setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});renderDays()},60000);
+}
+function renderDays(){let d=new Date($('startDate').value||'2026-01-01'), now=new Date();let n=Math.max(0,Math.floor((new Date(now.toDateString())-new Date(d.toDateString()))/86400000));$('days').textContent=n}
+function updateNames(){let s=JSON.parse(localStorage.getItem('loveApp')||'{}');document.querySelector('.names').textContent=(s.nickname||'YANYAN')+' × '+(s.partner||'YAN HUAN')}
+function newQuote(){ $('quote').textContent=quotes[Math.floor(Math.random()*quotes.length)] }
+function sendMsg(){let v=$('msgInput').value.trim();if(!v)return;let el=document.createElement('div');el.className='msg me';el.innerHTML='<div class="bubble"></div><div class="time">'+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})+'</div>';el.querySelector('.bubble').textContent=v;$('chatList').appendChild(el);$('msgInput').value='';localStorage.setItem('chatLast',v)}
+function saveSettings(){localStorage.setItem('loveApp',JSON.stringify({nickname:$('nickname').value||'YANYAN',partner:$('partner').value||'YAN HUAN',startDate:$('startDate').value}));updateNames();renderDays();alert('Saved')}
+function room(name){$('roomTitle').textContent=name;$('roomText').textContent=roomTexts[name]||''}
+function addNote(){let text=prompt('Write a little memory');if(!text)return;let arr=JSON.parse(localStorage.getItem('notes')||'[]');arr.unshift({date:today(),text});localStorage.setItem('notes',JSON.stringify(arr));renderNotes()}
+function renderNotes(){let arr=JSON.parse(localStorage.getItem('notes')||'[]');$('notes').innerHTML=arr.length?arr.map(x=>'<div class="item"><div class="date">'+x.date+'</div><div>'+escapeHtml(x.text)+'</div></div>').join(''):'<div class="small">No notes yet.</div>'}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function renderGallery(){let arr=JSON.parse(localStorage.getItem('gallery')||'[]');$('gallery').innerHTML=arr.map(src=>'<div class="tile"><img src="'+src+'"></div>').join('')}
+$('galleryUpload').addEventListener('change',e=>{let files=[...e.target.files];let arr=JSON.parse(localStorage.getItem('gallery')||'[]');let left=files.length;files.forEach(f=>{let r=new FileReader();r.onload=()=>{arr.unshift(r.result);left--;if(left===0){localStorage.setItem('gallery',JSON.stringify(arr));renderGallery()}};r.readAsDataURL(f)})})
+$('homeUpload').addEventListener('change',e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{$('homePhoto').innerHTML='<img src="'+r.result+'">';localStorage.setItem('homePhoto',r.result)};r.readAsDataURL(f)})
+function loadHomePhoto(){let x=localStorage.getItem('homePhoto');if(x)$('homePhoto').innerHTML='<img src="'+x+'">'}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(b.dataset.page).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo(0,0)}));
+init();loadHomePhoto();
+</script>
+</body>
+</html>
