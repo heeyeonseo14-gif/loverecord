@@ -1,171 +1,255 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f4eff8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="YANYAN × YAN HUAN">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png">
 <title>YANYAN × YAN HUAN</title>
 <style>
-:root{--bg:#f4eff8;--paper:rgba(255,255,255,.76);--ink:#29232e;--muted:#8b7f91;--line:rgba(64,45,72,.12);--accent:#9274a7;--shadow:0 18px 50px rgba(64,45,72,.08)}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 20% 0%,#fff 0,#f6f1f9 38%,#eee6f3 100%);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,textarea{font:inherit}button{border:0;background:none;color:inherit;cursor:pointer}
-.app{min-height:100vh;display:flex;justify-content:center}.phone{width:min(100%,430px);min-height:100vh;padding-bottom:88px;background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(244,239,248,.8));position:relative}
-.top{padding:22px 24px 8px;display:flex;justify-content:space-between;font-size:12px;letter-spacing:.16em;color:var(--muted)}.brand{font-size:11px;letter-spacing:.22em}
-.page{display:none;padding:12px 22px 26px;animation:fade .3s ease}.page.active{display:block}@keyframes fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-.eyebrow{text-transform:uppercase;font-size:10px;letter-spacing:.22em;color:var(--muted);margin:14px 0 10px}h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;line-height:1.02;font-weight:400;margin:0 0 18px;letter-spacing:-.04em}h2{font-family:Georgia,"Times New Roman",serif;font-size:26px;font-weight:400;margin:0}p{line-height:1.7}
-.hero{padding:18px 2px 20px}.names{font-size:14px;letter-spacing:.18em;margin-bottom:20px}.days{font-family:Georgia,serif;font-size:76px;line-height:.95;letter-spacing:-.05em}.days-label{font-size:10px;letter-spacing:.25em;color:var(--muted);margin:8px 0 28px}.quote{font-family:Georgia,serif;font-size:18px;line-height:1.5;max-width:320px}
-.rule{height:1px;background:var(--line);margin:26px 0}.card{background:var(--paper);border:1px solid rgba(255,255,255,.75);box-shadow:var(--shadow);border-radius:22px;padding:20px;margin:12px 0;backdrop-filter:blur(14px)}.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.small{font-size:11px;color:var(--muted);letter-spacing:.08em}
-.photo{width:100%;aspect-ratio:1/1.12;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#d9c8e3,#f7f3f9);display:flex;align-items:center;justify-content:center;color:#8c7996;font-size:11px;letter-spacing:.12em}.photo img{width:100%;height:100%;object-fit:cover;display:block}.photo{position:relative}.photo img{position:absolute;inset:0}
-.btn{padding:11px 15px;border:1px solid var(--line);border-radius:999px;font-size:11px;letter-spacing:.08em;background:rgba(255,255,255,.4)}.btn.primary{background:#342c39;color:#fff;border-color:#342c39}.row{display:flex;gap:10px;align-items:center}.between{justify-content:space-between}
-.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,430px);padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(246,241,249,.86);backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:10}.nav button{font-size:9px;letter-spacing:.1em;color:var(--muted);padding:7px 0}.nav button.active{color:var(--ink)}.nav button span{display:block;font-size:16px;margin-bottom:4px;font-family:Georgia,serif}
-.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.tile{aspect-ratio:1;overflow:hidden;background:#ded3e6;position:relative}.tile img{width:100%;height:100%;object-fit:cover}.tile button{position:absolute;right:5px;top:5px;width:26px;height:26px;border-radius:50%;background:rgba(35,28,40,.65);color:#fff;font-size:12px}
-.list{display:flex;flex-direction:column}.item{padding:17px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item .date{font-size:10px;color:var(--muted);letter-spacing:.12em;margin-bottom:7px}
-.rooms{display:grid;grid-template-columns:1fr 1fr;gap:10px}.room{min-height:150px;border-radius:20px;padding:18px;background:linear-gradient(145deg,rgba(255,255,255,.8),rgba(220,207,229,.65));display:flex;align-items:flex-end;text-align:left}.room strong{font-family:Georgia,serif;font-size:22px;font-weight:400}
-input[type=file]{display:none}.upload{display:inline-block}.setting{padding:15px 0;border-bottom:1px solid var(--line)}.setting:last-child{border-bottom:0}.setting label{display:block;font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:7px}.field,.setting textarea{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.65);border-radius:12px;padding:11px 12px;outline:none;color:var(--ink)}.setting textarea{resize:vertical;min-height:76px;line-height:1.5}
-.modal{position:fixed;inset:0;background:rgba(37,29,42,.25);backdrop-filter:blur(5px);display:none;align-items:flex-end;justify-content:center;z-index:20}.modal.show{display:flex}.sheet{width:min(100%,430px);background:#f8f4fa;border-radius:26px 26px 0 0;padding:22px 22px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -20px 60px rgba(40,30,45,.18)}
-
-.space-house{position:relative;border:1px solid rgba(255,255,255,.9);border-radius:26px;padding:18px;background:linear-gradient(145deg,rgba(255,255,255,.86),rgba(226,214,234,.68));box-shadow:0 20px 55px rgba(64,45,72,.08);overflow:hidden}
-.house-sky{height:90px;border-radius:18px;background:linear-gradient(180deg,#b8b0c9,#e9dce9);position:relative;overflow:hidden;margin-bottom:12px}
-.house-sky:before{content:"";position:absolute;width:78px;height:78px;border-radius:50%;right:25px;top:-28px;background:rgba(255,255,255,.72);box-shadow:0 0 35px rgba(255,255,255,.55)}
-.house-lights{position:absolute;left:18px;bottom:14px;display:flex;gap:7px}.house-lights i{display:block;width:9px;height:9px;border-radius:50%;background:#f5dfb6;box-shadow:0 0 12px rgba(245,223,182,.8)}
-.house-label{font-size:10px;letter-spacing:.2em;color:var(--muted)}
-.activity{margin-top:14px;padding:17px;border-radius:19px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9)}
-.activity-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.activity-tag{font-size:9px;letter-spacing:.16em;color:var(--muted)}.activity-title{font:400 22px Georgia,serif;margin:7px 0 8px}.activity-text{font-size:13px;line-height:1.65;margin:0}.activity-action{width:100%;margin-top:13px}
-.scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.scene-room{min-height:115px;border:1px solid rgba(255,255,255,.8);border-radius:18px;padding:15px;background:rgba(255,255,255,.38);text-align:left;position:relative;overflow:hidden}.scene-room:after{content:"";position:absolute;width:55px;height:55px;border-radius:50%;right:-15px;top:-18px;background:rgba(255,255,255,.28)}.scene-room.active{background:rgba(221,207,231,.78);border-color:#c9b6d7}.scene-room strong{display:block;font:400 19px Georgia,serif;margin-top:25px}.scene-room span{display:block;font-size:9px;letter-spacing:.1em;color:var(--muted);margin-top:5px}.activity-history{margin-top:14px}.history-item{padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}.history-item:last-child{border-bottom:0}.history-time{font-size:9px;color:var(--muted);letter-spacing:.12em;margin-bottom:4px}
-@media(min-width:700px){body{padding:22px 0}.phone{min-height:calc(100vh - 44px);border-radius:32px;overflow:hidden;box-shadow:0 30px 90px rgba(50,35,60,.14)}.nav{bottom:22px;border-radius:0 0 32px 32px}}
+:root{--bg:#f7f3f9;--card:rgba(255,255,255,.88);--ink:#302b33;--muted:#8b8390;--line:#ddd6e2;--purple:#bba5ca;--purple2:#e5d8eb;--shadow:0 18px 45px rgba(90,70,105,.09)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+body{padding-bottom:92px}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:0 20px}
+.page{display:none;padding:38px 0 30px;min-height:calc(100vh - 92px)}
+.page.active{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:.35;transform:translateY(5px)}to{opacity:1;transform:none}}
+.eyebrow{font-size:12px;letter-spacing:4px;color:var(--muted);text-transform:uppercase}
+h1{font-size:26px;letter-spacing:3px;font-weight:400;margin:28px 0 0}
+h2{font-size:22px;font-weight:400;letter-spacing:1px;margin:12px 0}
+h3{font-size:15px;font-weight:500;letter-spacing:1px;margin:0 0 8px}
+.sub{color:var(--muted);font-size:13px;line-height:1.7}
+.hero{padding:20px 4px 36px}
+.days{font-family:Georgia,serif;font-size:106px;line-height:.9;margin-top:44px;letter-spacing:-4px}
+.days-label{font-size:12px;letter-spacing:4px;color:var(--muted);margin-top:22px}
+.line{height:1px;background:var(--line);margin:48px 0}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.8);border-radius:30px;box-shadow:var(--shadow);padding:26px;margin:18px 0}
+.today{font-size:18px;line-height:1.8;min-height:92px}
+.photo{width:100%;aspect-ratio:4/5;border-radius:25px;background:linear-gradient(135deg,#e9def0,#d9c8e3);display:flex;align-items:center;justify-content:center;overflow:hidden;color:#87778e;letter-spacing:2px}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo-actions{display:flex;gap:10px;margin-top:12px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:12px 17px;color:var(--ink);font-size:13px}
+.btn.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.btn:active{transform:scale(.98)}
+input,textarea{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.8);border-radius:15px;padding:13px 14px;color:var(--ink);outline:none}
+textarea{min-height:90px;resize:vertical}
+label{display:block;font-size:12px;letter-spacing:1px;color:var(--muted);margin:17px 0 7px}
+.memory-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.memory{background:#fff;border-radius:22px;overflow:hidden;border:1px solid #eee8f0}
+.memory .photo{border-radius:0;aspect-ratio:1/1}
+.memory-body{padding:13px}.memory-date{font-size:11px;color:var(--muted);letter-spacing:1px}.memory-note{font-size:13px;line-height:1.6;margin-top:5px}
+.room-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:22px}
+.room{min-height:170px;border-radius:27px;padding:20px;background:linear-gradient(145deg,#fff,#eee6f2);border:1px solid #eee8f0;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between}
+.room small{color:var(--muted);line-height:1.6}
+.activity{padding:20px;border-radius:25px;background:#fff;border:1px solid #eee8f0;margin-top:14px}
+.activity-top{display:flex;justify-content:space-between;gap:12px}.tag{font-size:10px;letter-spacing:2px;color:var(--muted);white-space:nowrap}
+.install{display:none;background:#eee4f3;border-radius:18px;padding:14px 16px;margin:18px 0;justify-content:space-between;align-items:center;gap:10px}
+.install.show{display:flex}.install b{font-size:13px;font-weight:500}.install span{font-size:11px;color:var(--muted)}
+.nav{position:fixed;z-index:50;left:0;right:0;bottom:0;padding:10px max(14px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom));background:rgba(249,246,251,.94);backdrop-filter:blur(18px);border-top:1px solid rgba(210,202,216,.7)}
+.nav-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.nav-btn{appearance:none;border:0;background:transparent;color:#958c99;padding:9px 4px 7px;border-radius:14px;min-height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.nav-btn .dot{width:5px;height:5px;border-radius:50%;background:transparent}.nav-btn span{font-size:10px;letter-spacing:2px}
+.nav-btn.active{color:#3c3540;background:rgba(255,255,255,.72)}.nav-btn.active .dot{background:var(--purple)}
+.settings-section{margin-top:25px}.savebar{position:sticky;bottom:95px;display:flex;justify-content:flex-end;pointer-events:none}.savebar .btn{pointer-events:auto;box-shadow:var(--shadow)}
+.empty{padding:35px 10px;text-align:center;color:var(--muted);font-size:13px}
+.toast{position:fixed;z-index:100;left:50%;bottom:105px;transform:translate(-50%,15px);background:#332d36;color:#fff;border-radius:999px;padding:11px 17px;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:420px){.app{padding:0 16px}.days{font-size:92px}.room{min-height:150px}.card{padding:22px}}
 </style>
 </head>
 <body>
-<div class="app"><main class="phone">
-<div class="top"><span class="brand">PRIVATE SPACE</span><span id="clock"></span></div>
+<div class="app">
+  <main id="home" class="page active">
+    <div class="hero">
+      <div class="eyebrow">PRIVATE SPACE</div>
+      <h1>OUR LITTLE UNIVERSE</h1>
+      <div id="names" class="sub" style="font-size:17px;letter-spacing:3px;margin-top:14px;color:var(--ink)">YANYAN × YAN HUAN</div>
+      <div id="days" class="days">0</div>
+      <div class="days-label">DAYS TOGETHER</div>
+    </div>
+    <div class="line"></div>
+    <div class="card today"><div class="eyebrow">TODAY</div><div id="todayText" style="margin-top:16px">把今天也留在这里。</div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><span class="eyebrow">A MOMENT</span><span class="tag">PRIVATE</span></div>
+      <div id="homePhoto" class="photo">YOUR PHOTO</div>
+      <div class="photo-actions"><button class="btn primary" id="homeUpload">ADD PHOTO</button><button class="btn" id="homeClear">CLEAR</button></div>
+      <input id="homeFile" type="file" accept="image/*" hidden>
+    </div>
+  </main>
 
-<section id="home" class="page active">
-<div class="hero"><div class="eyebrow">our little universe</div><div class="names" id="names">YANYAN × YAN HUAN</div><div class="days" id="days">0</div><div class="days-label">DAYS TOGETHER</div><div class="quote" id="quote"></div></div>
-<div class="rule"></div>
-<div class="card"><div class="card-title"><span class="small">TODAY</span><span class="small" id="todayDate"></span></div><p id="todayText"></p></div>
-<div class="card"><div class="card-title"><span class="small">A MOMENT</span><span class="small">PRIVATE</span></div><div class="photo" id="homePhoto">YOUR PHOTO</div><div class="row between" style="margin-top:12px"><span class="small">a memory from us</span><label class="btn upload">ADD PHOTO<input id="homeUpload" type="file" accept="image/*"></label></div></div>
-</section>
+  <main id="memories" class="page">
+    <div class="eyebrow">MEMORIES</div><h1>OUR LITTLE ARCHIVE</h1>
+    <div class="card">
+      <h3>Add a memory</h3>
+      <label>PHOTO</label><input id="memoryFile" type="file" accept="image/*">
+      <label>NOTE</label><textarea id="memoryNote" placeholder="写一点关于这一刻的话……"></textarea>
+      <button class="btn primary" id="addMemory" style="margin-top:14px">SAVE MEMORY</button>
+    </div>
+    <div id="memoryGrid" class="memory-grid"></div>
+  </main>
 
-<section id="memories" class="page">
-<div class="eyebrow">our archive</div><h1>Memories.</h1>
-<div class="card"><div class="card-title"><span class="small">PHOTO JOURNAL</span><label class="btn upload">ADD PHOTOS<input id="galleryUpload" type="file" accept="image/*" multiple></label></div><div class="gallery" id="gallery"></div><div class="small" id="galleryEmpty" style="padding:18px 0">No photos yet. Add the first one.</div></div>
-<div class="card"><div class="card-title"><span class="small">NOTES</span><button class="btn" onclick="addNote()">NEW NOTE</button></div><div class="list" id="notes"></div></div>
-</section>
+  <main id="space" class="page">
+    <div class="eyebrow">OUR HOME</div><h1>LIVE A LITTLE</h1>
+    <div class="card">
+      <div class="sub">现在的家 · <span id="currentRoom">Living Room</span></div>
+      <h2 id="spaceGreeting">今晚一起待在家里。</h2>
+      <div class="sub" id="spaceTime"></div>
+    </div>
+    <div class="room-grid" id="roomGrid"></div>
+    <div class="line" style="margin:38px 0 25px"></div>
+    <div class="eyebrow">TODAY AT HOME</div>
+    <div id="activities"></div>
+  </main>
 
-<section id="space" class="page">
-<div class="eyebrow">a place for two</div><h1>Our Space.</h1>
-<div class="space-house">
-  <div class="house-sky"><div class="house-lights"><i></i><i></i><i></i><i></i></div></div>
-  <div class="house-label" id="spaceClockLine">TONIGHT AT HOME</div>
-  <div class="activity" id="activityCard">
-    <div class="activity-top"><span class="activity-tag" id="activityTag">NOW</span><span class="small" id="activityRoom"></span></div>
-    <div class="activity-title" id="activityTitle"></div>
-    <p class="activity-text" id="activityText"></p>
-    <button class="btn primary activity-action" id="activityJoin" type="button">JOIN</button>
-  </div>
-  <div class="scene-grid" id="sceneGrid"></div>
+  <main id="settings" class="page">
+    <div class="eyebrow">SETTINGS</div><h1>OUR SPACE</h1>
+    <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span>像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn">ADD</button></div>
+    <div class="card">
+      <label>YOUR NAME</label><input id="setName">
+      <label>PARTNER NAME</label><input id="setPartner">
+      <label>START DATE</label><input id="setDate" type="date">
+      <label>HOME QUOTE</label><input id="setQuote">
+      <label>TODAY TEXT</label><textarea id="setToday"></textarea>
+      <button class="btn primary" id="saveSettings" style="margin-top:18px">SAVE CHANGES</button>
+    </div>
+    <div class="card">
+      <h3>ROOMS</h3>
+      <div id="roomSettings"></div>
+      <button class="btn" id="saveRooms" style="margin-top:18px">SAVE ROOMS</button>
+    </div>
+    <div class="card">
+      <h3>HOME SCREEN</h3>
+      <div class="sub" style="margin:10px 0 14px">如果浏览器没有出现安装按钮，也可以用浏览器菜单里的“添加到主屏幕 / 安装应用”。</div>
+      <button class="btn" id="showInstallHelp">HOW TO ADD</button>
+    </div>
+  </main>
 </div>
-<div class="card activity-history"><div class="cardhead"><span class="small">TODAY AT HOME</span><span class="small" id="activityCount"></span></div><div id="activityHistory"></div></div>
-</section>
-
-<section id="settings" class="page">
-<div class="eyebrow">personalize everything</div><h1>Settings.</h1>
-<div class="card">
-<div class="setting"><label>YOUR NAME</label><input class="field" id="nickname"></div>
-<div class="setting"><label>PARTNER NAME</label><input class="field" id="partner"></div>
-<div class="setting"><label>START DATE</label><input class="field" id="startDate" type="date"></div>
-<div class="setting"><label>HOME QUOTE</label><textarea id="quoteInput"></textarea></div>
-<div class="setting"><label>TODAY TEXT</label><textarea id="todayInput"></textarea></div>
-</div>
-<div class="card"><div class="card-title"><span class="small">OUR ROOMS</span><span class="small">EDITABLE</span></div><div id="roomSettings"></div></div>
-<button class="btn primary" style="width:100%;margin-top:4px" onclick="saveSettings()">SAVE ALL CHANGES</button>
-<div class="card"><div class="small">STORAGE</div><p style="margin-bottom:0">Photos and your edits are saved in this browser on this device. They stay here after you close the page.</p></div>
-</section>
 
 <nav class="nav">
-<button class="active" data-page="home"><span>⌂</span>HOME</button>
-<button data-page="memories"><span>○</span>MEMORIES</button>
-<button data-page="space"><span>□</span>SPACE</button>
-<button data-page="settings"><span>·</span>SETTINGS</button>
+  <div class="nav-inner">
+    <button class="nav-btn active" data-page="home"><i class="dot"></i><span>HOME</span></button>
+    <button class="nav-btn" data-page="memories"><i class="dot"></i><span>MEMORIES</span></button>
+    <button class="nav-btn" data-page="space"><i class="dot"></i><span>SPACE</span></button>
+    <button class="nav-btn" data-page="settings"><i class="dot"></i><span>SETTINGS</span></button>
+  </div>
 </nav>
-</main></div>
-
-<div class="modal" id="modal" onclick="this.classList.remove('show')"><div class="sheet" onclick="event.stopPropagation()"><div class="card-title"><h2 id="modalTitle"></h2><button class="btn" onclick="closeModal()">CLOSE</button></div><p id="modalBody"></p></div></div>
+<div id="toast" class="toast"></div>
 
 <script>
-const defaults={nickname:"YANYAN",partner:"YAN HUAN",startDate:"2026-01-01",quote:"somewhere between you and me, there is a little world.",todayText:"Today is another ordinary day worth keeping.",rooms:[
-{name:"Living room",text:"A quiet place for slow evenings, music, and conversations that don't need an ending."},
-{name:"Bedroom",text:"Soft lights, late-night thoughts, and the last conversation before sleep."},
-{name:"Kitchen",text:"Two cups, something warm, and a little domestic happiness."},
-{name:"Balcony",text:"A small view of the night. Stay here until the city gets quiet."}
-]};
-let state={...defaults};
+const KEY='yanhuan-love-v3';
+const defaultState={
+ name:'YANYAN',partner:'YAN HUAN',startDate:'',quote:'Our little universe.',today:'把今天也留在这里。',
+ rooms:[
+  {name:'Living Room',desc:'慢慢聊天，什么都不用赶。'},
+  {name:'Bedroom',desc:'关掉灯，留一点安静。'},
+  {name:'Kitchen',desc:'一起做点好吃的。'},
+  {name:'Balcony',desc:'吹风，看今晚的天空。'}
+ ],memories:[],homePhoto:null,activities:[]
+};
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(defaultState);
+let deferredPrompt=null;
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function $(id){return document.getElementById(id)}
-function loadState(){try{const s=JSON.parse(localStorage.getItem("loveApp")||"null");if(s)state={...defaults,...s,rooms:s.rooms||defaults.rooms}}catch(e){}}
-function persist(){localStorage.setItem("loveApp",JSON.stringify(state))}
-function today(){return new Date().toLocaleDateString("en-CA")}
-function renderAll(){
-$("names").textContent=state.nickname+" × "+state.partner;$("quote").textContent=state.quote;$("todayText").textContent=state.todayText;$("todayDate").textContent=today();$("nickname").value=state.nickname;$("partner").value=state.partner;$("startDate").value=state.startDate;$("quoteInput").value=state.quote;$("todayInput").value=state.todayText;renderDays();renderRooms();renderRoomSettings();renderNotes()
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function daysTogether(){
+ if(!state.startDate)return 0;
+ const s=new Date(state.startDate+'T00:00:00'), n=new Date(); s.setHours(0,0,0,0);n.setHours(0,0,0,0);
+ return Math.max(0,Math.floor((n-s)/86400000));
 }
-function renderDays(){const d=new Date(state.startDate||defaults.startDate),n=new Date();const days=Math.max(0,Math.floor((new Date(n.toDateString())-new Date(d.toDateString()))/86400000));$("days").textContent=days}
-const activityTemplates={
-"Living room":[
- {title:"Movie night",text:"The lights are low. Someone has already picked a movie and left a spot beside them on the sofa."},
- {title:"Slow evening",text:"Music is playing quietly. No plans, no rush — just staying in the same room for a while."},
- {title:"Snack break",text:"A little something to eat has appeared on the coffee table. It was definitely meant for two."}
-],
-"Bedroom":[
- {title:"Late-night talk",text:"The room is quiet and the lights are soft. There is still one more thing neither of you has said tonight."},
- {title:"Sleepy together",text:"Someone is already under the blanket. The only reasonable plan is to stay here a little longer."},
- {title:"Pillow attack",text:"A completely unnecessary pillow fight has somehow become tonight's main event."}
-],
-"Kitchen":[
- {title:"Midnight snack",text:"The kitchen light is on. Something warm is cooking, and there are already two plates on the counter."},
- {title:"Cook together",text:"One person cooks, the other tastes. Somehow the tasting takes much longer than necessary."},
- {title:"Two cups",text:"Two drinks are being made. One of them is yours, even though nobody asked what you wanted."}
-],
-"Balcony":[
- {title:"Look at the sky",text:"The city is quieter from here. Bring a drink and stay until the breeze feels just right."},
- {title:"Night breeze",text:"The balcony door is open. Someone is waiting outside, watching the lights below."},
- {title:"Quiet together",text:"No conversation is required tonight. Just sit close and listen to the city."}
-]};
-let currentRoom=0,currentActivity=null;
-function seedForDay(){const d=new Date();return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()}
-function pickActivity(roomIndex){const r=state.rooms[roomIndex]||state.rooms[0];const list=activityTemplates[r.name]||activityTemplates["Living room"];const hour=new Date().getHours();const idx=(seedForDay()+roomIndex*7+Math.floor(hour/3))%list.length;return list[idx]}
+function renderHome(){
+ $('names').textContent=`${state.name} × ${state.partner}`;
+ $('days').textContent=daysTogether();
+ $('todayText').textContent=state.today||'把今天也留在这里。';
+ $('homePhoto').innerHTML=state.homePhoto?`<img src="${state.homePhoto}" alt="our moment">`:'YOUR PHOTO';
+}
+function renderMemories(){
+ const g=$('memoryGrid');
+ if(!state.memories.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">还没有回忆。<br>从一张照片开始吧。</div>';return}
+ g.innerHTML=state.memories.slice().reverse().map((m,i)=>`<article class="memory"><div class="photo"><img src="${m.src}" alt=""></div><div class="memory-body"><div class="memory-date">${m.date}</div><div class="memory-note">${escapeHtml(m.note||'A little moment.')}</div><button class="btn" style="margin-top:10px;padding:8px 12px" data-del-memory="${state.memories.length-1-i}">DELETE</button></div></article>`).join('');
+}
 function renderRooms(){
- const grid=$("sceneGrid");grid.innerHTML="";
- state.rooms.forEach((r,i)=>{const b=document.createElement("button");b.type="button";b.className="scene-room"+(i===currentRoom?" active":"");const strong=document.createElement("strong");strong.textContent=r.name;const span=document.createElement("span");span.textContent=i===currentRoom?"YOU ARE HERE":"GO HERE";b.append(strong,span);b.onclick=()=>selectRoom(i);grid.appendChild(b)});
- renderActivity();
+ $('roomGrid').innerHTML=state.rooms.map((r,i)=>`<div class="room"><div><div class="tag">ROOM 0${i+1}</div><h3 style="margin-top:12px">${escapeHtml(r.name)}</h3><small>${escapeHtml(r.desc)}</small></div><button class="btn" style="align-self:flex-start;margin-top:12px" data-room="${i}">ENTER</button></div>`).join('');
+ $('roomSettings').innerHTML=state.rooms.map((r,i)=>`<label>ROOM 0${i+1}</label><input data-room-name="${i}" value="${escapeAttr(r.name)}"><label>DESCRIPTION</label><input data-room-desc="${i}" value="${escapeAttr(r.desc)}">`).join('');
 }
-function selectRoom(i){currentRoom=i;renderRooms()}
-function renderActivity(){
- const r=state.rooms[currentRoom]||state.rooms[0];currentActivity=pickActivity(currentRoom);$("activityRoom").textContent=r.name.toUpperCase();$("activityTitle").textContent=currentActivity.title;$("activityText").textContent=currentActivity.text;$("activityTag").textContent=new Date().getHours()<6?"LATE NIGHT":"NOW";$("spaceClockLine").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})+" · AT HOME";
- $("activityJoin").textContent="JOIN · "+r.name.toUpperCase();
- renderHistory();
+function makeActivities(){
+ const h=new Date().getHours();
+ const pool=h<11?[
+  ['SLOW MORNING','Kitchen','一起弄点早餐，慢慢开始今天。'],
+  ['STAY IN BED','Bedroom','再赖床十分钟，谁都不许催。']
+ ]:h<17?[
+  ['AFTERNOON BREAK','Living Room','各自做一点事，偶尔抬头看看对方。'],
+  ['COFFEE TIME','Kitchen','一起喝杯东西，偷懒一下。']
+ ]:h<22?[
+  ['MOVIE NIGHT','Living Room','挑一部电影，今晚就窝在一起。'],
+  ['BALCONY TIME','Balcony','去阳台吹吹风，聊今天发生的小事。'],
+  ['LATE DINNER','Kitchen','一起做点夜宵。']
+ ]:[
+  ['MIDNIGHT TALK','Bedroom','关掉手机，留一点只属于我们的时间。'],
+  ['QUIET NIGHT','Balcony','看看夜景，然后一起回房间。']
+ ];
+ const date=new Date().toLocaleDateString('en-CA');
+ if(!state.activities.length||state.activities[0]?.date!==date){
+   state.activities=pool.map((x,i)=>({id:Date.now()+i,date,title:x[0],room:x[1],desc:x[2],joined:false}));
+   save();
+ }
 }
-function renderHistory(){const a=JSON.parse(localStorage.getItem("activityHistory")||"[]");const today=today();const list=a.filter(x=>x.date===today).slice(0,5);$("activityCount").textContent=list.length?list.length+" MOMENTS":"";$("activityHistory").innerHTML=list.length?list.map(x=>'<div class="history-item"><div class="history-time">'+x.time+' · '+escapeHtml(x.room)+'</div><div>'+escapeHtml(x.title)+'</div></div>').join(""): '<div class="small">No moments yet. Join today's first activity.</div>'}
-function joinActivity(){if(!currentActivity)return;const a=JSON.parse(localStorage.getItem("activityHistory")||"[]");const now=new Date();a.unshift({date:today(),time:now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}),room:(state.rooms[currentRoom]||state.rooms[0]).name,title:currentActivity.title});localStorage.setItem("activityHistory",JSON.stringify(a.slice(0,30)));renderHistory();$("activityJoin").textContent="JOINED · LET'S STAY HERE"}
-function renderRoomSettings(){const wrap=$("roomSettings");wrap.innerHTML="";state.rooms.forEach((r,i)=>{const d=document.createElement("div");d.className="setting";d.innerHTML='<label>ROOM '+(i+1)+'</label><input class="field room-name" data-i="'+i+'" value=""><textarea class="room-text" data-i="'+i+'" style="margin-top:8px;min-height:60px"></textarea>';d.querySelector(".room-name").value=r.name;d.querySelector(".room-text").value=r.text;wrap.appendChild(d)})}
-function saveSettings(){
-state.nickname=$("nickname").value.trim()||defaults.nickname;state.partner=$("partner").value.trim()||defaults.partner;state.startDate=$("startDate").value||defaults.startDate;state.quote=$("quoteInput").value.trim()||defaults.quote;state.todayText=$("todayInput").value.trim()||defaults.todayText;
-document.querySelectorAll(".room-name").forEach(x=>{state.rooms[+x.dataset.i].name=x.value.trim()||defaults.rooms[+x.dataset.i].name});document.querySelectorAll(".room-text").forEach(x=>{state.rooms[+x.dataset.i].text=x.value.trim()||defaults.rooms[+x.dataset.i].text});
-persist();renderAll();alert("Saved")
+function renderSpace(){
+ makeActivities();
+ const h=new Date().getHours();
+ const idx=h<11?1:h<17?0:h<22?0:1;
+ $('currentRoom').textContent=state.rooms[idx]?.name||'Home';
+ $('spaceGreeting').textContent=h<11?'Good morning, stay a little longer.':h<18?'A quiet afternoon at home.':h<23?'今晚一起待在家里。':'夜深了，回家吧。';
+ $('spaceTime').textContent=new Date().toLocaleString('zh-CN',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'});
+ $('activities').innerHTML=state.activities.map(a=>`<div class="activity"><div class="activity-top"><div><div class="tag">${a.title}</div><h3 style="margin-top:9px">${escapeHtml(a.room)}</h3></div><button class="btn ${a.joined?'primary':''}" data-join="${a.id}">${a.joined?'JOINED':'JOIN'}</button></div><div class="sub" style="margin-top:10px">${escapeHtml(a.desc)}</div></div>`).join('');
 }
-function addNote(){const text=prompt("Write a little memory");if(!text)return;let arr=JSON.parse(localStorage.getItem("notes")||"[]");arr.unshift({date:today(),text});localStorage.setItem("notes",JSON.stringify(arr));renderNotes()}
-function renderNotes(){let arr=JSON.parse(localStorage.getItem("notes")||"[]");$("notes").innerHTML=arr.length?arr.map((x,i)=>'<div class="item"><div class="date">'+x.date+'</div><div>'+escapeHtml(x.text)+'</div></div>').join(""):'<div class="small">No notes yet.</div>'}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function renderSettings(){
+ $('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;
+ $('setQuote').value=state.quote;$('setToday').value=state.today;renderRooms();
+}
+function renderAll(){renderHome();renderMemories();renderSpace();renderSettings()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function escapeAttr(s){return escapeHtml(s)}
 
-const DB="YanyanLoveDB",STORE="photos";
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"id",autoIncrement:true})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-async function addPhoto(file,kind="gallery"){const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).add({kind,blob:file,date:Date.now()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close();await renderPhotos()}
-async function getPhotos(){const db=await openDB();const arr=await new Promise((res,rej)=>{const tx=db.transaction(STORE,"readonly");const q=tx.objectStore(STORE).getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});db.close();return arr}
-async function deletePhoto(id){const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(STORE,"readwrite");tx.objectStore(STORE).delete(id);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)});db.close();renderPhotos()}
-async function renderPhotos(){const arr=await getPhotos();const gallery=arr.filter(x=>x.kind==="gallery").sort((a,b)=>b.date-a.date);$("gallery").innerHTML="";$("galleryEmpty").style.display=gallery.length?"none":"block";gallery.forEach(x=>{const d=document.createElement("div");d.className="tile";const img=document.createElement("img");img.src=URL.createObjectURL(x.blob);const b=document.createElement("button");b.textContent="×";b.onclick=()=>deletePhoto(x.id);d.append(img,b);$("gallery").appendChild(d)});const home=arr.filter(x=>x.kind==="home").sort((a,b)=>b.date-a.date)[0];$("homePhoto").innerHTML="YOUR PHOTO";if(home){const img=document.createElement("img");img.src=URL.createObjectURL(home.blob);$("homePhoto").appendChild(img)}}
-$("galleryUpload").addEventListener("change",async e=>{for(const f of [...e.target.files]){if(f.type.startsWith("image/"))await addPhoto(f,"gallery")}e.target.value=""})
-$("homeUpload").addEventListener("change",async e=>{const f=e.target.files[0];if(f&&f.type.startsWith("image/")){const arr=await getPhotos();for(const x of arr.filter(x=>x.kind==="home"))await deletePhoto(x.id);await addPhoto(f,"home")}e.target.value=""})
-
-document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$(b.dataset.page).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");window.scrollTo(0,0)}));
-function showRoomModal(i){const r=state.rooms[i];$("modalTitle").textContent=r.name;$("modalBody").textContent=r.text;$("modal").classList.add("show")}function closeModal(){$("modal").classList.remove("show")}
-loadState();renderAll();renderPhotos();$("activityJoin").addEventListener("click",joinActivity);$("clock").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});setInterval(()=>{$("clock").textContent=new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});renderDays()},60000);
+document.addEventListener('click',e=>{
+ const nav=e.target.closest('.nav-btn');
+ if(nav){
+   e.preventDefault();const page=nav.dataset.page;
+   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+   $(page).classList.add('active');
+   document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x===nav));
+   if(page==='space')renderSpace();
+   window.scrollTo({top:0,behavior:'smooth'});return;
+ }
+ const room=e.target.closest('[data-room]');
+ if(room){toast('已进入 '+state.rooms[+room.dataset.room].name);return}
+ const join=e.target.closest('[data-join]');
+ if(join){const a=state.activities.find(x=>String(x.id)===join.dataset.join);if(a){a.joined=!a.joined;save();renderSpace();toast(a.joined?'Added to today':'Removed');}return}
+ const del=e.target.closest('[data-del-memory]');
+ if(del){state.memories.splice(+del.dataset.delMemory,1);save();renderMemories();toast('Memory deleted');return}
+});
+$('homeUpload').onclick=()=>$('homeFile').click();
+$('homeFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{state.homePhoto=r.result;save();renderHome();toast('Photo added')};r.readAsDataURL(f)};
+$('homeClear').onclick=()=>{state.homePhoto=null;save();renderHome();toast('Photo cleared')};
+$('addMemory').onclick=()=>{
+ const f=$('memoryFile').files[0],note=$('memoryNote').value.trim();if(!f){toast('先选一张照片');return}
+ const r=new FileReader();r.onload=()=>{state.memories.push({src:r.result,note,date:new Date().toLocaleDateString('en-CA')});save();$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};r.readAsDataURL(f);
+};
+$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.quote=$('setQuote').value.trim()||'Our little universe.';state.today=$('setToday').value.trim()||'把今天也留在这里。';save();renderAll();toast('Saved')};
+$('saveRooms').onclick=()=>{document.querySelectorAll('[data-room-name]').forEach(x=>state.rooms[+x.dataset.roomName].name=x.value.trim()||state.rooms[+x.dataset.roomName].name);document.querySelectorAll('[data-room-desc]').forEach(x=>state.rooms[+x.dataset.roomDesc].desc=x.value.trim()||state.rooms[+x.dataset.roomDesc].desc);save();renderRooms();toast('Rooms saved')};
+$('showInstallHelp').onclick=()=>toast('Chrome 菜单 ⋮ → 添加到主屏幕 / 安装应用');
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBox').classList.add('show')});
+$('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
+window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
+if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+renderAll();
 </script>
 </body>
 </html>
