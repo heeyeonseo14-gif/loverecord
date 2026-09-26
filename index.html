@@ -131,7 +131,34 @@ return[
 ['LOOK AT THE SKY','Balcony','去阳台看看夜景，然后一起回房间。','BALCONY']]}
 function addEvent(text){state.events=(state.events||[]).slice(-11);state.events.push({text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});saveState()}
 function generateLocalActivities(){const pool=buildPool();const seed=new Date().getHours()*7+new Date().getDate();return [pool[seed%pool.length],pool[(seed+1)%pool.length]]}
-async function aiActivities(){if(!state.apiBase||!state.apiKey||!state.apiModel)return null;try{const base=state.apiBase.replace(/\/+$/,'');const res=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是一个温柔、自然、不油腻的情侣生活助理。给两个人设计2个可以立刻在家完成的小互动。不要色情，不要危险，不要过度肉麻。返回严格JSON数组，每项包含 title, room, desc, mood。只返回JSON。'},{role:'user',content:`现在是${new Date().toLocaleString('zh-CN')}。两个人是${state.name}和${state.partner}。请生成今天此刻适合的2个互动。` }],temperature:.9})})});if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json();let txt=j.choices?.[0]?.message?.content||'';txt=txt.replace(/```json|```/g,'').trim();const a=JSON.parse(txt);return Array.isArray(a)?a.slice(0,2):null}catch(e){console.log(e);return null}}
+async function aiActivities(){
+ if(!state.apiBase||!state.apiKey||!state.apiModel)return null;
+ try{
+  const base=state.apiBase.replace(/\/+$/,'');
+  const payload={
+   model:state.apiModel,
+   messages:[
+    {role:'system',content:'你是一个温柔、自然、不油腻的情侣生活助理。给两个人设计2个可以立刻在家完成的小互动。不要色情，不要危险，不要过度肉麻。返回严格JSON数组，每项包含 title, room, desc, mood。只返回JSON。'},
+    {role:'user',content:`现在是${new Date().toLocaleString('zh-CN')}。两个人是${state.name}和${state.partner}。请生成今天此刻适合的2个互动。`}
+   ],
+   temperature:.9
+  };
+  const res=await fetch(base+'/chat/completions',{
+   method:'POST',
+   headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},
+   body:JSON.stringify(payload)
+  });
+  if(!res.ok)throw new Error('HTTP '+res.status);
+  const j=await res.json();
+  let txt=j.choices?.[0]?.message?.content||'';
+  txt=txt.replace(/```json|```/g,'').trim();
+  const a=JSON.parse(txt);
+  return Array.isArray(a)?a.slice(0,2):null;
+ }catch(e){
+  console.log(e);
+  return null;
+ }
+}
 async function renderSpace(force=false){$('spaceTime').textContent=new Date().toLocaleString('zh-CN',{month:'long',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});const h=nowHour();$('spaceGreeting').textContent=h<11?'早安，今天也慢慢来。':h<18?'下午好，偷一点时间给彼此。':h<23?'今晚回家，我们一起待着。':'夜深了，回家吧。';$('spaceMood').textContent=state.apiBase&&state.apiKey&&state.apiModel?'AI HOME IS ON':'HOME IS ALIVE';let acts=null;if(force&&state.apiBase&&state.apiKey&&state.apiModel)acts=await aiActivities();if(!acts)acts=generateLocalActivities();$('activities').innerHTML=acts.map((a,i)=>`<div class="activity"><div class="activity-top"><div><div class="activity-meta">${esc(a.mood||'A LITTLE MOMENT')}</div><div class="activity-title">${esc(a.title)}</div></div><button class="btn primary" data-join="${i}">JOIN</button></div><div class="activity-desc">${esc(a.desc)}</div><div class="choice"><button class="btn" data-choice="yes" data-title="${esc(a.title)}">DO IT</button><button class="btn" data-choice="later" data-title="${esc(a.title)}">LATER</button></div></div>`).join('');renderFeed()}
 function renderFeed(){const f=$('feed'),ev=state.events||[];f.innerHTML=ev.length?ev.slice().reverse().map(x=>`<div class="feed-item"><div class="avatar">♡</div><div class="feed-copy">${esc(x.text)}<div class="time">${x.time}</div></div></div>`).join(''):'<div class="empty">今天还没有发生什么。<br>那就从现在开始。</div>'}
 function renderSettings(){$('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;$('apiModel').value=state.apiModel;updateApiStatus()}
