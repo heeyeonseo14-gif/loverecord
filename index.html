@@ -3,148 +3,140 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f0f7">
+<meta name="theme-color" content="#f7f3f9">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Our Space">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <title>YANYAN × YAN HUAN</title>
 <style>
-:root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8d8491;--line:#ded7e2;--purple:#b9a0c9;--soft:#eee5f2;--dark:#302c32;--shadow:0 18px 45px rgba(77,58,88,.08)}
+:root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
 body{padding-bottom:92px}.app{max-width:760px;margin:auto;padding:0 20px}
-.page{display:none;min-height:calc(100vh - 92px);padding:34px 0 40px}.page.active{display:block;animation:fade .2s ease}
-@keyframes fade{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:none}}
-.eyebrow{font-size:11px;letter-spacing:4px;color:var(--muted);text-transform:uppercase}h1{font-size:26px;font-weight:400;letter-spacing:3px;margin:24px 0 0}h2{font-size:22px;font-weight:400;margin:10px 0}h3{font-size:15px;font-weight:500;margin:0 0 8px}.sub{font-size:13px;line-height:1.7;color:var(--muted)}
-.hero{padding:18px 4px 28px}.names{font-size:17px;letter-spacing:3px;margin-top:15px}.days{font:105px/0.9 Georgia,serif;letter-spacing:-5px;margin-top:42px}.days-label{font-size:11px;letter-spacing:4px;color:var(--muted);margin-top:20px}.line{height:1px;background:var(--line);margin:40px 0}
-.card{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.9);border-radius:30px;box-shadow:var(--shadow);padding:25px;margin:17px 0}
-.photo{width:100%;aspect-ratio:4/5;border-radius:24px;background:linear-gradient(135deg,#e8dcef,#d8c5e2);display:flex;align-items:center;justify-content:center;color:#8b7a91;letter-spacing:2px;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:12px 17px;font-size:13px}.btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.btn:active{transform:scale(.98)}
-input,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:16px;padding:13px 14px;color:var(--ink);font-size:15px;outline:none}textarea{min-height:88px;resize:vertical}label{display:block;font-size:11px;letter-spacing:2px;color:var(--muted);margin:16px 0 7px}
-.memory-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.memory{background:#fff;border-radius:23px;overflow:hidden;border:1px solid #eee8f0}.memory .photo{border-radius:0;aspect-ratio:1}.memory-body{padding:13px}.memory-date{font-size:10px;color:var(--muted);letter-spacing:1px}.memory-note{font-size:13px;line-height:1.65;margin-top:5px}
-.live{font-size:11px;letter-spacing:2px;color:var(--muted)}.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 5px var(--soft);margin-right:8px}
-.activity{background:#fff;border:1px solid #eee8f0;border-radius:27px;padding:20px;margin:13px 0;box-shadow:0 10px 30px rgba(70,50,80,.045);cursor:pointer}.activity:active{transform:scale(.995)}.activity-top{display:flex;justify-content:space-between;gap:12px}.activity-title{font-size:18px;letter-spacing:.3px}.activity-meta{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:8px}.activity-desc{font-size:14px;line-height:1.75;color:#655c68;margin-top:9px}.choice{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-.feed-item{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #e6dfe8}.avatar{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center}.feed-copy{font-size:13px;line-height:1.65;flex:1}.time{font-size:10px;color:var(--muted)}
-.nav{position:fixed;z-index:60;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(249,246,251,.95);backdrop-filter:blur(18px);border-top:1px solid rgba(210,202,216,.7)}.nav-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.nav-btn{border:0;background:transparent;color:#958c99;padding:9px 4px 7px;border-radius:16px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}.nav-btn .dot{width:5px;height:5px;border-radius:50%;background:transparent}.nav-btn span{font-size:10px;letter-spacing:2px}.nav-btn.active{color:#3c3540;background:rgba(255,255,255,.8)}.nav-btn.active .dot{background:var(--purple)}
-.modal{position:fixed;z-index:80;inset:0;background:rgba(45,39,48,.28);display:none;align-items:flex-end;padding:0}.modal.show{display:flex}.sheet{width:100%;max-width:760px;margin:auto;background:#fff;border-radius:30px 30px 0 0;padding:27px 24px calc(28px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto;animation:up .22s ease}.sheet-handle{width:42px;height:4px;border-radius:4px;background:#ddd5e0;margin:0 auto 22px}.scene{background:linear-gradient(145deg,#f3eaf5,#ebe0ef);border-radius:25px;padding:22px;margin:18px 0}.scene-line{font-size:15px;line-height:1.9}.reaction{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}@keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
-.install{display:none;background:#eee4f3;border-radius:20px;padding:15px 16px;justify-content:space-between;align-items:center;gap:10px;margin:18px 0}.install.show{display:flex}.api-status{padding:12px 14px;border-radius:16px;background:#f1eaf4;color:#716678;font-size:12px;line-height:1.6}.api-status.on{background:#e8f0e9;color:#536557}.hint{font-size:11px;color:var(--muted);line-height:1.7;margin-top:8px}.empty{text-align:center;padding:35px 10px;color:var(--muted);font-size:13px}.toast{position:fixed;z-index:100;left:50%;bottom:108px;transform:translate(-50%,16px);background:#332e35;color:#fff;border-radius:999px;padding:11px 17px;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:420px){.app{padding:0 16px}.days{font-size:92px}.card{padding:22px}}
+.page{display:none;min-height:calc(100vh - 92px);padding:32px 0 45px}.page.active{display:block}
+.eyebrow{font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase}
+h1{font-size:25px;font-weight:400;letter-spacing:3px;margin:20px 0 0}h2{font-size:21px;font-weight:400;margin:9px 0}h3{font-size:15px;font-weight:500;margin:0 0 9px}
+.sub{font-size:13px;line-height:1.75;color:var(--muted)}
+.card{background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.95);border-radius:29px;padding:24px;margin:16px 0;box-shadow:0 18px 45px rgba(77,58,88,.07)}
+.hero{padding:18px 4px 26px}.names{font-size:17px;letter-spacing:3px;margin-top:15px}.days{font:96px/1 Georgia,serif;margin-top:42px}.days-label{font-size:10px;letter-spacing:4px;color:var(--muted);margin-top:16px}.line{height:1px;background:var(--line);margin:36px 0}
+.photo{width:100%;aspect-ratio:4/5;border-radius:23px;background:linear-gradient(135deg,#e8dcef,#d8c5e2);display:flex;align-items:center;justify-content:center;color:#89788f;letter-spacing:2px;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:12px 17px;font-size:13px}.btn.primary{background:var(--dark);color:#fff;border-color:var(--dark)}.btn:disabled{opacity:.45}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+input,textarea,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:16px;padding:13px 14px;color:var(--ink);font-size:15px;outline:none}textarea{min-height:90px;resize:vertical}label{display:block;font-size:10px;letter-spacing:2px;color:var(--muted);margin:16px 0 7px}
+.memory-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.memory{background:#fff;border-radius:22px;overflow:hidden;border:1px solid #eee8f0}.memory .photo{border-radius:0;aspect-ratio:1}.memory-body{padding:12px}.memory-date{font-size:10px;color:var(--muted)}.memory-note{font-size:13px;line-height:1.6;margin-top:4px}
+.home-status{display:flex;justify-content:space-between;align-items:center;gap:12px}.status-dot{width:7px;height:7px;border-radius:50%;background:var(--purple);display:inline-block;box-shadow:0 0 0 5px var(--soft);margin-right:8px}.status{font-size:10px;letter-spacing:2px;color:var(--muted)}
+.scene{background:linear-gradient(145deg,#f2e8f5,#e9dfee);border-radius:26px;padding:22px;margin-top:18px}.scene-place{font-size:10px;letter-spacing:3px;color:var(--muted)}.scene-text{font-size:16px;line-height:1.9;margin-top:11px}.scene-quote{font-size:18px;line-height:1.7;margin-top:13px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:16px}.choice{width:100%;text-align:left;min-height:50px}.choice.free{grid-column:1/-1}
+.chatbox{margin-top:17px;border-top:1px solid var(--line);padding-top:16px}.chatrow{display:flex;gap:8px}.chatrow input{flex:1}.thinking{font-size:12px;color:var(--muted);padding:9px 0}
+.timeline{margin-top:4px}.event{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.event-dot{width:34px;height:34px;border-radius:50%;background:var(--soft);display:grid;place-items:center;flex:none}.event-text{font-size:13px;line-height:1.65}.event-time{font-size:10px;color:var(--muted);margin-top:2px}
+.nav{position:fixed;z-index:50;left:0;right:0;bottom:0;background:rgba(249,246,251,.95);backdrop-filter:blur(18px);border-top:1px solid #ded7e1;padding:9px 14px calc(9px + env(safe-area-inset-bottom))}.nav-inner{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.nav-btn{border:0;background:transparent;color:#978e9b;border-radius:17px;min-height:55px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}.nav-btn.active{background:#fff;color:#3a343c}.nav-dot{width:5px;height:5px;border-radius:50%;background:transparent}.nav-btn.active .nav-dot{background:var(--purple)}.nav-btn span{font-size:10px;letter-spacing:2px}
+.modal{position:fixed;z-index:80;inset:0;background:rgba(45,39,48,.3);display:none;align-items:flex-end}.modal.show{display:flex}.sheet{width:100%;max-width:760px;margin:auto;background:#fff;border-radius:30px 30px 0 0;padding:25px 23px calc(25px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}.handle{width:42px;height:4px;background:#ddd5e0;border-radius:4px;margin:0 auto 21px}.toast{position:fixed;z-index:100;left:50%;bottom:110px;transform:translate(-50%,15px);background:#332e35;color:#fff;border-radius:999px;padding:10px 16px;font-size:12px;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.api-status{padding:12px 14px;border-radius:16px;background:#f0e9f3;color:#716678;font-size:12px;line-height:1.6}.api-status.on{background:#e7efe9;color:#526255}.install{display:none;justify-content:space-between;align-items:center;gap:12px;background:#eee5f2;padding:15px;border-radius:19px;margin:16px 0}.install.show{display:flex}
+@media(max-width:420px){.app{padding:0 16px}.choices{grid-template-columns:1fr}.choice.free{grid-column:auto}}
 </style>
 </head>
 <body>
 <div class="app">
 <main id="home" class="page active">
- <div class="hero"><div class="eyebrow">PRIVATE SPACE</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
- <div class="line"></div>
- <div class="card"><div class="eyebrow">TODAY</div><div id="todayText" style="font-size:18px;line-height:1.8;margin-top:15px">把今天也留在这里。</div></div>
- <div class="card"><div style="display:flex;justify-content:space-between;margin-bottom:15px"><span class="eyebrow">A MOMENT</span><span class="live">PRIVATE</span></div><div id="homePhoto" class="photo">YOUR PHOTO</div><div class="actions"><button class="btn primary" id="homeUpload" type="button">ADD PHOTO</button><button class="btn" id="homeClear" type="button">CLEAR</button></div><input id="homeFile" type="file" accept="image/*" hidden></div>
+  <div class="hero"><div class="eyebrow">PRIVATE SPACE</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
+  <div class="line"></div>
+  <div class="card"><div class="eyebrow">TODAY</div><div id="todayText" style="font-size:18px;line-height:1.8;margin-top:14px">把今天也留在这里。</div></div>
+  <div class="card"><div class="home-status"><span class="eyebrow">A MOMENT</span><span class="status">PRIVATE</span></div><div id="homePhoto" class="photo" style="margin-top:15px">YOUR PHOTO</div><div class="actions"><button class="btn primary" id="homeUpload" type="button">ADD PHOTO</button><button class="btn" id="homeClear" type="button">CLEAR</button></div><input id="homeFile" type="file" accept="image/*" hidden></div>
 </main>
 
 <main id="memories" class="page">
- <div class="eyebrow">MEMORIES</div><h1>OUR LITTLE ARCHIVE</h1>
- <div class="card"><h3>Add a memory</h3><label>PHOTO</label><input id="memoryFile" type="file" accept="image/*"><label>NOTE</label><textarea id="memoryNote" placeholder="写一点关于这一刻的话……"></textarea><button class="btn primary" id="addMemory" type="button" style="margin-top:14px">SAVE MEMORY</button></div>
- <div id="memoryGrid" class="memory-grid"></div>
+  <div class="eyebrow">MEMORIES</div><h1>OUR LITTLE ARCHIVE</h1>
+  <div class="card"><h3>Add a memory</h3><label>PHOTO</label><input id="memoryFile" type="file" accept="image/*"><label>NOTE</label><textarea id="memoryNote" placeholder="写一点关于这一刻的话……"></textarea><button class="btn primary" id="addMemory" type="button" style="margin-top:15px">SAVE MEMORY</button></div>
+  <div id="memoryGrid" class="memory-grid"></div>
 </main>
 
 <main id="space" class="page">
- <div class="eyebrow">OUR HOME</div><h1>WHAT SHOULD WE DO?</h1>
- <div class="card"><div class="live"><span class="pulse"></span><span id="spaceMood">HOME IS ALIVE</span></div><h2 id="spaceGreeting">今晚一起待在家里。</h2><div class="sub" id="spaceTime"></div><div class="sub" style="margin-top:8px">点开一张活动卡，看看这一刻会发生什么。</div></div>
- <div class="eyebrow">RIGHT NOW</div><div id="activities"></div>
- <div class="line" style="margin:35px 0 24px"></div>
- <div class="eyebrow">OUR LITTLE DAY</div>
- <div class="card"><div id="feed"></div><button class="btn" id="newActivity" type="button" style="margin-top:12px">GIVE US ANOTHER THING TO DO</button></div>
+  <div class="eyebrow">OUR HOME</div><h1>RIGHT NOW</h1>
+  <div class="card">
+    <div class="home-status"><span class="status"><span class="status-dot"></span><span id="aiState">HOME IS ALIVE</span></span><span class="status" id="clock"></span></div>
+    <div class="scene">
+      <div class="scene-place" id="place">BEDROOM</div>
+      <div class="scene-text" id="sceneText">夜深了。房间里很安静。</div>
+      <div class="scene-quote" id="sceneQuote">“怎么还没睡？”</div>
+    </div>
+    <div class="eyebrow" style="margin-top:24px">WHAT WILL YOU DO?</div>
+    <div id="choices" class="choices"></div>
+    <div class="chatbox">
+      <div class="chatrow"><input id="freeInput" placeholder="自己说点什么……"><button class="btn primary" id="sendFree" type="button">SEND</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="eyebrow">OUR LITTLE DAY</div><div id="timeline" class="timeline"></div></div>
+  <div class="card"><div class="eyebrow">A NEW MOMENT</div><div class="sub" style="margin-top:10px">想让今天发生一点意外？</div><button class="btn" id="surprise" type="button" style="margin-top:14px">SURPRISE US</button></div>
 </main>
 
 <main id="settings" class="page">
- <div class="eyebrow">SETTINGS</div><h1>OUR SPACE</h1>
- <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
- <div class="card"><h3>US</h3><label>YOUR NAME</label><input id="setName"><label>PARTNER NAME</label><input id="setPartner"><label>START DATE</label><input id="setDate" type="date"><label>TODAY TEXT</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:18px">SAVE CHANGES</button></div>
- <div class="card"><h3>AI / API</h3><div id="apiStatus" class="api-status">未连接 API。Space 会使用内置互动。</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1"><label>API KEY</label><input id="apiKey" type="password" placeholder="sk-..."><label>MODEL</label><select id="apiModel"><option value="">连接后自动读取模型</option></select><button class="btn primary" id="connectApi" type="button" style="margin-top:18px">CONNECT API</button><button class="btn" id="refreshModels" type="button" style="margin-top:10px">REFRESH MODELS</button><div class="hint">连接时会尝试读取 /models。若中转站不提供模型列表，也可以手动输入模型名作为备用。</div><input id="manualModel" placeholder="如果中转站不支持 /models，可在这里填模型名" style="margin-top:12px"></div>
- <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="showInstallHelp" type="button" style="margin-top:14px">HOW TO ADD</button></div>
+  <div class="eyebrow">SETTINGS</div><h1>OUR SPACE</h1>
+  <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
+  <div class="card"><h3>US</h3><label>YOUR NAME</label><input id="setName"><label>PARTNER NAME</label><input id="setPartner"><label>START DATE</label><input id="setDate" type="date"><label>TODAY TEXT</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">SAVE CHANGES</button></div>
+  <div class="card"><h3>AI / API</h3><div id="apiStatus" class="api-status">未连接 API。Space 会使用内置角色互动。</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1"><label>API KEY</label><input id="apiKey" type="password" placeholder="sk-..."><label>MODEL</label><select id="apiModel"><option value="">连接后自动读取</option></select><button class="btn primary" id="connectApi" type="button" style="margin-top:17px">CONNECT API</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">REFRESH MODELS</button><div class="sub" style="margin-top:10px">优先读取中转站的 /models；如果不支持，可以使用备用模型输入。</div><input id="manualModel" placeholder="备用：模型名" style="margin-top:10px"></div>
+  <div class="card"><h3>AI MEMORY</h3><div class="sub">AI 可以读取你在这个 App 里留下的近期互动记录。你可以随时关闭。</div><div class="actions"><button class="btn" id="memoryToggle" type="button">MEMORY ON</button></div></div>
+  <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
 </main>
 </div>
 
 <nav class="nav"><div class="nav-inner">
-<button class="nav-btn active" data-page="home" type="button"><i class="dot"></i><span>HOME</span></button>
-<button class="nav-btn" data-page="memories" type="button"><i class="dot"></i><span>MEMORIES</span></button>
-<button class="nav-btn" data-page="space" type="button"><i class="dot"></i><span>SPACE</span></button>
-<button class="nav-btn" data-page="settings" type="button"><i class="dot"></i><span>SETTINGS</span></button>
+<button class="nav-btn active" type="button" data-page="home"><i class="nav-dot"></i><span>HOME</span></button>
+<button class="nav-btn" type="button" data-page="memories"><i class="nav-dot"></i><span>MEMORIES</span></button>
+<button class="nav-btn" type="button" data-page="space"><i class="nav-dot"></i><span>SPACE</span></button>
+<button class="nav-btn" type="button" data-page="settings"><i class="nav-dot"></i><span>SETTINGS</span></button>
 </div></nav>
 
-<div id="modal" class="modal" aria-hidden="true">
- <div class="sheet">
-  <div class="sheet-handle"></div>
-  <div class="eyebrow" id="modalMeta">A LITTLE MOMENT</div>
-  <h2 id="modalTitle">A moment for us</h2>
-  <div class="scene"><div class="scene-line" id="modalScene"></div></div>
-  <div class="sub" id="modalPrompt"></div>
-  <div class="reaction" id="modalChoices"></div>
-  <button class="btn" id="closeModal" type="button" style="margin-top:12px;width:100%">CLOSE</button>
- </div>
-</div>
 <div id="toast" class="toast"></div>
-
 <script>
-const DB_NAME='yanyan-love-v5',STORE='images';
-const KEY='yanyan-love-settings-v5';
-const defaults={name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',events:[]};
-let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));
-let db=null,deferredPrompt=null,currentActivities=[];
-
-function $(id){return document.getElementById(id)}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
-function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>$('toast').classList.remove('show'),1800)}
+const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
+const defaults={name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',memoryOn:true,events:[]};
+let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
+let db=null, deferredPrompt=null, aiBusy=false;
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});s.createIndex('type','type')}};r.onsuccess=e=>{db=e.target.result;res()};r.onerror=()=>rej(r.error)})}
-function putImage(type,blob,note){return new Promise((res,rej)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add({type,blob,note,date:new Date().toLocaleDateString('en-CA')});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function getImages(type){return new Promise((res,rej)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('type').getAll(type);r.onsuccess=()=>res(r.result.reverse());r.onerror=()=>rej(r.error)})}
-function delImage(id){return new Promise((res,rej)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=res;r.onerror=()=>rej(r.error)})}
-function days(){if(!state.startDate)return 0;const s=new Date(state.startDate+'T00:00:00'),n=new Date();s.setHours(0,0,0,0);n.setHours(0,0,0,0);return Math.max(0,Math.floor((n-s)/86400000))}
-async function renderHome(){$('names').textContent=state.name+' × '+state.partner;$('days').textContent=days();$('todayText').textContent=state.today||defaults.today;const a=await getImages('home');$('homePhoto').innerHTML=a[0]?'<img src="'+URL.createObjectURL(a[0].blob)+'" alt="">':'YOUR PHOTO'}
-async function renderMemories(){const a=await getImages('memory');$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+x.date+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete-memory="'+x.id+'" style="margin-top:10px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div class="empty" style="grid-column:1/-1">还没有回忆。<br>从一张照片开始吧。</div>'}
-function activityPool(){const h=new Date().getHours();let p;if(h<7)p=[['MIDNIGHT TALK','BEDROOM','这么晚还没睡？先把手机放下，我们躺一会儿。'],['LOOK AT THE SKY','BALCONY','去阳台看一分钟夜景，再一起回来。'],['LATE NIGHT SNACK','KITCHEN','偷偷弄一点夜宵，今晚破例一次。']];else if(h<11)p=[['SLOW MORNING','KITCHEN','一起弄点早餐，今天不用急。'],['STAY IN BED','BEDROOM','再赖床十分钟，谁都不许催。'],['GOOD MORNING KISS','LIVING ROOM','今天的第一件事：抱一下。']];else if(h<17)p=[['COFFEE BREAK','KITCHEN','暂停一下，去弄杯喜欢的饮料。'],['PICK A SONG','LIVING ROOM','各自选一首歌，然后交换。'],['TELL ME SOMETHING','LIVING ROOM','说一件今天还没告诉对方的小事。']];else if(h<22)p=[['MOVIE NIGHT','LIVING ROOM','选一部电影，今晚就窝在一起。'],['COOK TOGETHER','KITCHEN','一起做点夜宵，谁负责洗碗？'],['BALCONY DATE','BALCONY','去吹吹风，聊今天发生的小事。']];else p=[['MIDNIGHT TALK','BEDROOM','关掉手机，留一点只属于我们的时间。'],['LATE NIGHT SNACK','KITCHEN','偷偷做点夜宵，今晚破例一次。'],['QUIET BALCONY','BALCONY','去阳台看看夜景，然后一起回房间。']];return p.map((x,i)=>({id:Date.now()+i,title:x[0],room:x[1],desc:x[2],mood:'A LITTLE MOMENT'}))}
-function addEvent(text){state.events=(state.events||[]).slice(-15);state.events.push({text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});save()}
-function renderFeed(){$('feed').innerHTML=(state.events||[]).length?state.events.slice().reverse().map(x=>'<div class="feed-item"><div class="avatar">♡</div><div class="feed-copy">'+esc(x.text)+'<div class="time">'+x.time+'</div></div></div>').join(''):'<div class="empty">今天还没有发生什么。<br>那就从现在开始。</div>'}
-function renderActivities(){currentActivities=activityPool();$('activities').innerHTML=currentActivities.map((a,i)=>'<article class="activity" data-open="'+i+'"><div class="activity-top"><div><div class="activity-meta">'+esc(a.mood)+'</div><div class="activity-title">'+esc(a.title)+'</div></div><button class="btn primary" type="button" data-join="'+i+'">JOIN</button></div><div class="activity-desc">'+esc(a.desc)+'</div><div class="choice"><button class="btn" type="button" data-open="'+i+'">OPEN</button><button class="btn" type="button" data-later="'+i+'">LATER</button></div></article>').join('')}
-function renderSpace(){const h=new Date().getHours();$('spaceMood').textContent=state.apiBase&&state.apiKey&&state.apiModel?'AI HOME IS ON':'HOME IS ALIVE';$('spaceGreeting').textContent=h<11?'早安，今天也慢慢来。':h<18?'下午好，偷一点时间给彼此。':h<23?'今晚回家，我们一起待着。':'夜深了，回家吧。';$('spaceTime').textContent=new Date().toLocaleString('zh-CN',{month:'long',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'});renderActivities();renderFeed()}
-function showActivity(a){$('modalMeta').textContent=a.mood+' · '+a.room;$('modalTitle').textContent=a.title;$('modalScene').textContent=a.desc;$('modalPrompt').textContent='这一刻可以怎么继续？选择一个就好。';$('modalChoices').innerHTML=['DO IT','JUST TALK','CUDDLE','LATER'].map(x=>'<button class="btn '+(x==='DO IT'?'primary':'')+'" type="button" data-react="'+x+'">'+x+'</button>').join('');$('modal').classList.add('show');$('modal').setAttribute('aria-hidden','false');$('modal').dataset.activityId=a.id}
-function closeModal(){$('modal').classList.remove('show');$('modal').setAttribute('aria-hidden','true')}
-function nav(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));window.scrollTo({top:0,behavior:'smooth'});if(page==='home')renderHome();if(page==='memories')renderMemories();if(page==='space')renderSpace();if(page==='settings')renderSettings()}
-async function fetchWithTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}) )}finally{clearTimeout(t)}}
-async function getModels(){const base=$('apiBase').value.trim().replace(/\/+$/,'');const key=$('apiKey').value.trim();if(!base||!key){toast('先填写 API 地址和 Key');return false}toast('正在读取模型…');try{const r=await fetchWithTimeout(base+'/models',{headers:{Authorization:'Bearer '+key}},8000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();const models=Array.isArray(j.data)?j.data.map(x=>x.id).filter(Boolean):[];if(!models.length)throw new Error('没有模型列表');const s=$('apiModel');s.innerHTML=models.map(m=>'<option value="'+esc(m)+'">'+esc(m)+'</option>').join('');state.apiBase=base;state.apiKey=key;state.apiModel=models[0];save();updateApiStatus();toast('找到 '+models.length+' 个模型');return true}catch(e){$('manualModel').focus();toast('读不到模型列表，请用下面的备用模型名');return false}}
-function updateApiStatus(){const on=state.apiBase&&state.apiKey&&state.apiModel;$('apiStatus').textContent=on?'API 已配置 · '+state.apiModel:'未连接 API。Space 会使用内置互动。';$('apiStatus').classList.toggle('on',!!on)}
-function renderSettings(){$('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;$('manualModel').value='';const s=$('apiModel');s.innerHTML='<option value="">'+(state.apiModel?esc(state.apiModel):'连接后自动读取模型')+'</option>';if(state.apiModel)s.value=state.apiModel;updateApiStatus()}
-async function aiActivities(){if(!state.apiBase||!state.apiKey||!state.apiModel)return null;try{const r=await fetchWithTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是情侣生活助理。生成2个安全、自然、可以马上在家完成的小互动。只返回JSON数组，每项有title,room,desc,mood。不要markdown。'},{role:'user',content:'现在时间是 '+new Date().toLocaleString('zh-CN')+'。两个人是 '+state.name+' 和 '+state.partner+'。'}],temperature:.9})},8000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();let t=j.choices?.[0]?.message?.content||'';t=t.replace(/```json|```/g,'').trim();const a=JSON.parse(t);return Array.isArray(a)?a.slice(0,3).map((x,i)=>({id:Date.now()+i,title:x.title||'A LITTLE MOMENT',room:x.room||'HOME',desc:x.desc||'一起做一点小事。',mood:x.mood||'AI MOMENT'})):null}catch(e){return null}}
-async function refreshActivities(){const b=$('newActivity');b.disabled=true;b.textContent='THINKING…';let a=null;if(state.apiBase&&state.apiKey&&state.apiModel)a=await aiActivities();if(a){currentActivities=a;renderActivityArray(a);toast('AI 想好了 ♡')}else{renderActivities();toast('给你换了一组活动 ♡')}b.disabled=false;b.textContent='GIVE US ANOTHER THING TO DO'}
-function renderActivityArray(a){currentActivities=a;$('activities').innerHTML=a.map((x,i)=>'<article class="activity" data-open="'+i+'"><div class="activity-top"><div><div class="activity-meta">'+esc(x.mood)+'</div><div class="activity-title">'+esc(x.title)+'</div></div><button class="btn primary" type="button" data-join="'+i+'">JOIN</button></div><div class="activity-desc">'+esc(x.desc)+'</div><div class="choice"><button class="btn" type="button" data-open="'+i+'">OPEN</button><button class="btn" type="button" data-later="'+i+'">LATER</button></div></article>').join('')}
-document.addEventListener('click',async e=>{
- const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}
- const op=e.target.closest('[data-open]');if(op&&!e.target.closest('[data-join]')&&!e.target.closest('[data-later]')){const a=currentActivities[+op.dataset.open];if(a)showActivity(a);return}
- const join=e.target.closest('[data-join]');if(join){const a=currentActivities[+join.dataset.join];if(a){addEvent(state.name+' 和 '+state.partner+' 决定一起做「'+a.title+'」');showActivity(a)}return}
- const later=e.target.closest('[data-later]');if(later){const a=currentActivities[+later.dataset.later];if(a){addEvent('把「'+a.title+'」留到晚一点');toast('好，晚一点再做');renderFeed()}return}
- const react=e.target.closest('[data-react]');if(react){const id=+$('modal').dataset.activityId,a=currentActivities.find(x=>x.id===id);if(a){addEvent(a.title+' · '+react.dataset.react);toast(react.dataset.react==='DO IT'?'那就开始吧 ♡':'记下来了 ♡');renderFeed()}closeModal();return}
- const del=e.target.closest('[data-delete-memory]');if(del){await delImage(+del.dataset.deleteMemory);renderMemories();toast('Memory deleted');return}
-});
-$('closeModal').onclick=closeModal;$('modal').addEventListener('click',e=>{if(e.target===$('modal'))closeModal()});
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove('show'),1800)}
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});s.createIndex('type','type')}};r.onsuccess=e=>{db=e.target.result;resolve()};r.onerror=()=>reject(r.error)})}
+function getImages(type){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('type').getAll(type);r.onsuccess=()=>resolve(r.result.reverse());r.onerror=()=>reject(r.error)})}
+function addImage(type,blob,note){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add({type,blob,note,date:new Date().toLocaleDateString('en-CA')});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
+function deleteImage(id){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
+function daysTogether(){if(!state.startDate)return 0;const s=new Date(state.startDate+'T00:00:00');const n=new Date();s.setHours(0,0,0,0);n.setHours(0,0,0,0);return Math.max(0,Math.floor((n-s)/86400000))}
+function renderHome(){ $('names').textContent=state.name+' × '+state.partner; $('days').textContent=daysTogether(); $('todayText').textContent=state.today||defaults.today; getImages('home').then(a=>{$('homePhoto').innerHTML=a[0]?'<img src="'+URL.createObjectURL(a[0].blob)+'" alt="">':'YOUR PHOTO'})}
+function renderMemories(){getImages('memory').then(a=>{$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+esc(x.date)+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete="'+x.id+'" style="margin-top:9px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">还没有回忆。<br>从一张照片开始吧。</div>'})}
+function hourScene(){const h=new Date().getHours();if(h<7)return{place:'BEDROOM',text:'房间里很安静，只有手机屏幕还亮着。',quote:'“这么晚还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在看什么','逗他说“你管我”']};if(h<11)return{place:'KITCHEN',text:'厨房里有一点早餐的香味。',quote:'“醒啦？过来吃一点。”',choices:['坐下来吃早餐','从背后抱住他','偷吃一口','问他今天想去哪']};if(h<18)return{place:'LIVING ROOM',text:'下午的光落在沙发上，他正在挑歌。',quote:'“来，帮我选一首。”',choices:['坐过去一起听','抢走他的手机','问他为什么选这首','靠着他休息']};if(h<23)return{place:'LIVING ROOM',text:'晚上回到家，客厅只留着一盏灯。',quote:'“今天辛苦了。”',choices:['抱他一下','问他今晚想做什么','一起看电影','什么也不说，陪着他']};return{place:'BEDROOM',text:'夜深了。房间里很安静，他还没有睡。',quote:'“怎么还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在想什么','说“我就是想找你”']}}
+function renderScene(){const s=hourScene();$('place').textContent=s.place;$('sceneText').textContent=s.text;$('sceneQuote').textContent=s.quote;$('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});$('choices').innerHTML='';s.choices.forEach((x,i)=>{const b=document.createElement('button');b.className='btn choice';b.type='button';b.dataset.choice=String(i);b.textContent=x;$('choices').appendChild(b)});const f=document.createElement('button');f.className='btn choice free';f.type='button';f.dataset.focus='free';f.textContent='自己说点什么……';$('choices').appendChild(f);updateAIState()}
+function updateAIState(){$('aiState').textContent=state.apiBase&&state.apiKey&&state.apiModel?'AI HOME IS ON':'HOME IS ALIVE'}
+function renderTimeline(){const e=state.events||[];$('timeline').innerHTML=e.length?e.slice(-12).reverse().map(x=>'<div class="event"><div class="event-dot">♡</div><div><div class="event-text">'+esc(x.text)+'</div><div class="event-time">'+esc(x.time)+'</div></div></div>').join(''):'<div class="sub" style="padding:18px 0">今天还没有留下什么。那就从现在开始。</div>'}
+function addEvent(text){state.events=(state.events||[]).slice(-30);state.events.push({text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});save();renderTimeline()}
+function nav(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===page));window.scrollTo(0,0);if(page==='home')renderHome();if(page==='memories')renderMemories();if(page==='space'){renderScene();renderTimeline()}if(page==='settings')renderSettings()}
+function renderSettings(){$('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;const s=$('apiModel');s.innerHTML='';const o=document.createElement('option');o.value=state.apiModel;o.textContent=state.apiModel||'连接后自动读取';s.appendChild(o);$('manualModel').value='';$('memoryToggle').textContent=state.memoryOn?'MEMORY ON':'MEMORY OFF';updateAIState();const on=!!(state.apiBase&&state.apiKey&&state.apiModel);$('apiStatus').textContent=on?'API 已连接 · '+state.apiModel:'未连接 API。Space 会使用内置角色互动。';$('apiStatus').classList.toggle('on',on)}
+async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}finally{clearTimeout(t)}}
+async function loadModels(){const base=$('apiBase').value.trim().replace(/\/+$/,'');const key=$('apiKey').value.trim();if(!base||!key){toast('先填写 API 地址和 Key');return false}toast('正在读取模型…');try{const r=await fetchTimeout(base+'/models',{headers:{Authorization:'Bearer '+key}},8000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();const ids=Array.isArray(j.data)?j.data.map(x=>x.id).filter(Boolean):[];if(!ids.length)throw new Error('NO_MODELS');const sel=$('apiModel');sel.innerHTML='';ids.forEach(id=>{const o=document.createElement('option');o.value=id;o.textContent=id;sel.appendChild(o)});state.apiBase=base;state.apiKey=key;state.apiModel=ids.includes(state.apiModel)?state.apiModel:ids[0];sel.value=state.apiModel;save();renderSettings();toast('找到 '+ids.length+' 个模型');return true}catch(e){toast('中转站没有返回模型列表');return false}}
+async function askAI(userText,mode){if(!state.apiBase||!state.apiKey||!state.apiModel)return null;if(aiBusy)return null;aiBusy=true;try{const recent=state.memoryOn?(state.events||[]).slice(-8).map(x=>x.text).join('；'):'无';const s=hourScene();const system='你是颜焕，用户是你的恋人YANYAN。你不是任务系统，也不要把互动写成游戏菜单。请像真实恋人一样自然回应。保持温柔、清冷、自然，不要油腻，不要每句话都反问。当前场景：'+s.place+'；时间：'+new Date().toLocaleString('zh-CN')+'。近期共同记忆：'+recent+'。只返回一段适合直接显示给用户的中文角色回应，不要JSON，不要解释AI。';const user='YANYAN刚刚说/做了：'+userText+'。请继续这一刻。';const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:.85})},10000);if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();return j.choices?.[0]?.message?.content?.trim()||null}catch(e){return null}finally{aiBusy=false}}
+function setSceneResponse(text){$('sceneText').textContent='这一刻，他看着你。';$('sceneQuote').textContent='“'+text.replace(/^["“]|["”]$/g,'')+'”'}
+async function handleChoice(text){addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent='他停了一下，看向你。';$('sceneQuote').textContent='正在想怎么回应……';const r=await askAI(text,'choice');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，先陪你把这一刻留着');renderScene()}}else{const replies=['他轻轻笑了一下，没有催你。','他往旁边挪了挪，给你留了位置。','他看了你一会儿，然后把手伸过来。','“好，那我们就这样待一会儿。”'];setSceneResponse(replies[Math.floor(Math.random()*replies.length)]);toast('这一刻留下来了 ♡')}}
+async function handleFree(){const input=$('freeInput');const text=input.value.trim();if(!text)return;input.value='';addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneQuote').textContent='正在回应……';const r=await askAI(text,'free');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，检查 API 连接后再试')}}else{setSceneResponse('嗯，我听着。你慢慢说。');toast('内置模式也可以继续聊天 ♡')}}
+async function surprise(){const pool=['厨房里突然想吃一点甜的。','阳台的风刚刚好，适合一起待五分钟。','他突然想听你最近最喜欢的一首歌。','今天晚上留十分钟，不看手机，只陪对方。','他刚刚想起一件小事，准备告诉你。'];const text=pool[Math.floor(Math.random()*pool.length)];addEvent('A LITTLE SURPRISE：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent=text;$('sceneQuote').textContent='AI 正在把这一刻接下去……';const r=await askAI(text,'surprise');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else toast('AI 没回应，但惊喜已经留下 ♡')}else{$('sceneText').textContent=text;$('sceneQuote').textContent='“过来。”';toast('给你一个小惊喜 ♡')}}
+document.addEventListener('click',e=>{const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(hourScene().choices[+c.dataset.choice]);return}if(e.target.closest('[data-focus="free"]')){$('freeInput').focus();return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
 $('homeUpload').onclick=()=>$('homeFile').click();
-$('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await delImage(x.id);await putImage('home',f,'');e.target.value='';await renderHome();toast('Photo added')};
-$('homeClear').onclick=async()=>{for(const x of await getImages('home'))await delImage(x.id);renderHome();toast('Photo cleared')};
-$('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await putImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';await renderMemories();toast('Memory saved')};
-$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();toast('Saved')};
-$('connectApi').onclick=async()=>{const ok=await getModels();if(!ok&&$('manualModel').value.trim()){state.apiBase=$('apiBase').value.trim();state.apiKey=$('apiKey').value.trim();state.apiModel=$('manualModel').value.trim();save();updateApiStatus();toast('已保存备用模型')}}
-$('refreshModels').onclick=getModels;
-$('apiModel').onchange=()=>{if($('apiModel').value){state.apiModel=$('apiModel').value;save();updateApiStatus()}}
-$('manualModel').onchange=()=>{if($('manualModel').value.trim()){state.apiModel=$('manualModel').value.trim();save();updateApiStatus()}}
-$('newActivity').onclick=refreshActivities;
-$('showInstallHelp').onclick=()=>toast('Chrome ⋮ → 添加到主屏幕 / 安装应用');
+$('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
+$('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
+$('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await addImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};
+$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderScene();toast('Saved')};
+$('connectApi').onclick=async()=>{const ok=await loadModels();if(!ok&&$('manualModel').value.trim()){state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();state.apiModel=$('manualModel').value.trim();save();renderSettings();toast('已保存备用模型')}}
+$('refreshModels').onclick=loadModels;
+$('manualModel').onchange=()=>{const m=$('manualModel').value.trim();if(m){state.apiModel=m;save();renderSettings();toast('模型已保存')}};
+$('memoryToggle').onclick=()=>{state.memoryOn=!state.memoryOn;save();renderSettings();toast(state.memoryOn?'AI Memory ON':'AI Memory OFF')};
+$('sendFree').onclick=handleFree;
+$('freeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleFree()}});
+$('surprise').onclick=surprise;
+$('installHelp').onclick=()=>toast('Chrome ⋮ → 添加到主屏幕 / 安装应用');
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBox').classList.add('show')});
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-(async()=>{try{await openDB()}catch(e){}await renderHome();await renderMemories();renderSettings();renderSpace()})();
+(async()=>{await openDB();renderHome();renderMemories();renderSettings();renderScene();renderTimeline()})();
 </script>
 </body>
 </html>
