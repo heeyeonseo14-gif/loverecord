@@ -60,6 +60,12 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .eyebrow,.days-label{font-size:calc(10px * var(--ui-scale,1))}
 @media(max-width:420px){.appearance-grid{grid-template-columns:1fr}}
 
+/* OFFLINE THEATER */
+.theater-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.theater-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:rgba(255,255,255,.7);border-radius:999px;padding:7px 11px;font-size:11px;color:var(--muted)}
+.scene-list{display:grid;gap:10px}.scene-item{border:1px solid var(--line);border-radius:20px;padding:15px;background:rgba(255,255,255,.75);cursor:pointer}.scene-item.active{border-color:var(--accent,#b79bc7);box-shadow:0 0 0 2px var(--soft,#eee5f2)}.scene-item-title{font-size:15px}.scene-item-meta{font-size:10px;color:var(--muted);margin-top:6px}.scene-item-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.theater-stage{border-radius:28px;padding:22px;background:var(--offline-a,#f2e8f5);min-height:180px;position:relative;overflow:hidden}.theater-stage::before{content:"";position:absolute;inset:0;background:var(--offline-bg-image,none) center/cover no-repeat;opacity:.18;pointer-events:none}.theater-stage>*{position:relative}.stage-title{font-size:21px;letter-spacing:1px}.stage-premise{font-size:14px;line-height:1.9;color:var(--muted);margin-top:10px}.script-log{display:grid;gap:12px;margin-top:14px}.script-msg{padding:14px 15px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.72)}.script-msg.user{margin-left:12px}.script-msg.ai{margin-right:12px}.script-name{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:5px}.script-text{font-size:14px;line-height:1.85;white-space:pre-wrap}.scene-controls{display:grid;gap:10px;margin-top:15px}.scene-control-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.scene-control-row .btn{flex:0 0 auto}.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.style-option{border:1px solid var(--line);background:#fff;border-radius:16px;padding:11px 8px;font-size:11px}.style-option.active{background:var(--accent,#b79bc7);color:#fff;border-color:var(--accent,#b79bc7)}.participant-list,.worldbook-list{display:grid;gap:8px}.select-row{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:16px;padding:11px;background:rgba(255,255,255,.7)}.select-row input{width:18px;margin:2px 0 0;flex:none}.select-row-main{flex:1}.select-row-title{font-size:13px}.select-row-sub{font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px}.empty-note{padding:14px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);font-size:12px;line-height:1.6}.manage-grid{display:grid;gap:10px}.manage-item{border:1px solid var(--line);border-radius:18px;padding:14px;background:rgba(255,255,255,.7)}.manage-item-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.manage-item-title{font-size:14px}.manage-item-sub{font-size:11px;color:var(--muted);line-height:1.6;margin-top:4px}.tiny-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.modal .sheet.narrow{max-height:92vh}.dark-mode .scene-item,.dark-mode .select-row,.dark-mode .manage-item,.dark-mode .script-msg,.dark-mode .style-option,.dark-mode .chip{background:#211c24;color:#f4eef6;border-color:#3a323e}.dark-mode .theater-stage{background:#2a2030}
+@media(max-width:420px){.style-grid{grid-template-columns:1fr}.theater-toolbar .btn{width:100%}}
+
 </style>
 </head>
 <body>
@@ -78,22 +84,27 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 </main>
 
 <main id="space" class="page">
-  <div class="eyebrow">OUR HOME</div><h1>RIGHT NOW</h1>
+  <div class="eyebrow">OFFLINE STUDIO</div><h1>OUR LITTLE THEATER</h1>
   <div class="card">
-    <div class="home-status"><span class="status"><span class="status-dot"></span><span id="aiState">HOME IS ALIVE</span></span><span class="status" id="clock"></span></div>
-    <div class="scene">
-      <div class="scene-place" id="place">BEDROOM</div>
-      <div class="scene-text" id="sceneText">夜深了。房间里很安静。</div>
-      <div class="scene-quote" id="sceneQuote">“怎么还没睡？”</div>
-    </div>
-    <div class="eyebrow" style="margin-top:24px">WHAT WILL YOU DO?</div>
-    <div id="choices" class="choices"></div>
-    <div class="chatbox">
-      <div class="chatrow"><input id="freeInput" placeholder="自己说点什么……"><button class="btn primary" id="sendFree" type="button">SEND</button></div>
-    </div>
+    <div class="home-status"><span class="status"><span class="status-dot"></span><span id="offlineState">OFFLINE MODE</span></span><span class="status" id="offlineCount">0 SCENES</span></div>
+    <div class="theater-toolbar"><button class="btn primary" id="newSceneBtn" type="button">＋ NEW THEATER</button><button class="btn" id="saveSceneBtn" type="button">SAVE CURRENT</button></div>
   </div>
-  <div class="card"><div class="eyebrow">OUR LITTLE DAY</div><div id="timeline" class="timeline"></div></div>
-  <div class="card"><div class="eyebrow">A NEW MOMENT</div><div class="sub" style="margin-top:10px">想让今天发生一点意外？</div><button class="btn" id="surprise" type="button" style="margin-top:14px">SURPRISE US</button></div>
+  <div id="offlineEmpty" class="card" style="display:none"><div class="eyebrow">A NEW STAGE</div><div class="sub" style="margin-top:10px">创建一个小剧场。旧剧本会保留下来，下次可以继续。</div><button class="btn primary" id="emptyNewScene" type="button" style="margin-top:14px">CREATE FIRST THEATER</button></div>
+  <div id="activeSceneCard" class="card">
+    <div class="theater-stage" id="theaterStage">
+      <div class="eyebrow">CURRENT THEATER</div><div class="stage-title" id="activeSceneTitle">还没有小剧场</div><div class="stage-premise" id="activeScenePremise">创建一个新的小剧场开始吧。</div>
+      <div class="theater-meta" id="activeSceneMeta"></div>
+    </div>
+    <div class="scene-controls">
+      <div class="eyebrow">PARTICIPANTS</div><div id="activeParticipants" class="theater-meta"></div>
+      <div class="eyebrow" style="margin-top:7px">WORLD BOOK</div><div id="activeWorldBooks" class="theater-meta"></div>
+      <div class="eyebrow" style="margin-top:7px">AI PRESET</div><div id="activePreset" class="sub" style="margin-top:6px">未选择</div>
+    </div>
+    <div id="scriptLog" class="script-log"></div>
+    <div class="chatbox"><div class="chatrow"><input id="offlineInput" placeholder="进入小剧场……"><button class="btn primary" id="offlineSend" type="button">SEND</button></div></div>
+  </div>
+  <div class="card"><div class="eyebrow">THEATER LIBRARY</div><div class="sub" style="margin-top:8px">每一个小剧场都会保存在这里。换一个也不会把旧的删掉。</div><div id="sceneLibrary" class="scene-list" style="margin-top:13px"></div></div>
+  <div class="card"><div class="eyebrow">STAGE LOOK</div><div class="sub" style="margin-top:8px">每个小剧场可以有自己的外观。你可以使用固定风格，也可以写自己的 CSS。</div><div class="style-grid" id="stageStyleGrid" style="margin-top:12px"></div><label>CUSTOM CSS</label><textarea id="sceneCustomCSS" placeholder="/* 只填写 CSS，不需要 <style> 标签 */"></textarea><div class="actions"><button class="btn" id="applySceneCSS" type="button">APPLY CSS</button><button class="btn" id="clearSceneCSS" type="button">CLEAR CSS</button></div></div>
 </main>
 
 <main id="settings" class="page">
@@ -101,6 +112,9 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
   <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
   <div class="card"><h3>US</h3><label>YOUR NAME</label><input id="setName"><label>PARTNER NAME</label><input id="setPartner"><label>START DATE</label><input id="setDate" type="date"><label>TODAY TEXT</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">SAVE CHANGES</button></div>
   <div class="card"><h3>✦ APPEARANCE</h3><div class="sub">字体、字号、主题色、卡片圆角、毛玻璃和背景，都可以在这里实时调整。</div><button class="btn primary" id="openAppearance" type="button" style="margin-top:15px">CUSTOMIZE LOOK</button></div>
+  <div class="card"><h3>✦ PERSONA</h3><div class="sub">保存角色人设。Space 可以一次选择不限人数的参与人物。</div><div id="personaList" class="manage-grid" style="margin-top:13px"></div><button class="btn primary" id="addPersonaBtn" type="button" style="margin-top:12px">＋ ADD CHARACTER</button></div>
+  <div class="card"><h3>📖 WORLD BOOK</h3><div class="sub">保存世界观、地点、关系和 Lore。进入小剧场时可以自由调用。</div><div id="worldBookList" class="manage-grid" style="margin-top:13px"></div><button class="btn primary" id="addWorldBookBtn" type="button" style="margin-top:12px">＋ ADD WORLD ENTRY</button></div>
+  <div class="card"><h3>✦ AI PRESETS</h3><div class="sub">预设会作为指令加入 AI，让每个小剧场可以采用不同文风。</div><div id="presetManageList" class="manage-grid" style="margin-top:13px"></div><button class="btn primary" id="addPresetBtn" type="button" style="margin-top:12px">＋ ADD PRESET</button></div>
   <div class="card"><h3>AI / API</h3><div id="apiStatus" class="api-status">未连接 API。Space 会使用内置角色互动。</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1"><label>API KEY</label><input id="apiKey" type="password" placeholder="sk-..."><label>MODEL</label>
 <div id="modelPicker" class="model-picker" aria-label="Available models"></div>
 <div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
@@ -135,6 +149,27 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
   </section>
 </div>
 
+
+<div id="sceneEditorModal" class="modal"><section class="sheet narrow"><div class="handle"></div><div class="appearance-top"><div><div class="eyebrow">NEW / EDIT THEATER</div><h2 style="margin-top:6px">BUILD A LITTLE SCENE</h2></div><button class="appearance-close" id="closeSceneEditor" type="button">×</button></div>
+<label>TITLE</label><input id="sceneTitleInput" placeholder="例如：雨夜回家 / 机场重逢 / 颜林别墅的周末">
+<label>PREMISE</label><textarea id="scenePremiseInput" placeholder="这个小剧场发生在哪里？现在是什么情况？"></textarea>
+<label>PARTICIPANTS · UNLIMITED</label><div id="sceneParticipantPicker" class="participant-list"></div>
+<label>WORLD BOOK</label><div id="sceneWorldBookPicker" class="worldbook-list"></div>
+<label>AI PRESET</label><div id="scenePresetPicker" class="appearance-grid"></div>
+<label>STAGE STYLE</label><div id="sceneEditorStyleGrid" class="style-grid"></div>
+<label>CUSTOM CSS</label><textarea id="sceneEditorCSS" placeholder="/* 只填写 CSS */"></textarea>
+<div class="actions"><button class="btn" id="cancelSceneEditor" type="button">CANCEL</button><button class="btn primary" id="createSceneConfirm" type="button">SAVE THEATER</button></div>
+</section></div>
+
+<div id="personaModal" class="modal"><section class="sheet narrow"><div class="handle"></div><div class="appearance-top"><div><div class="eyebrow">PERSONA</div><h2 id="personaModalTitle" style="margin-top:6px">ADD CHARACTER</h2></div><button class="appearance-close" id="closePersonaModal" type="button">×</button></div>
+<label>NAME</label><input id="personaName"><label>AGE / IDENTITY</label><input id="personaAgeIdentity"><label>PERSONALITY</label><textarea id="personaPersonality"></textarea><label>APPEARANCE</label><textarea id="personaAppearance"></textarea><label>LIKES</label><textarea id="personaLikes"></textarea><label>DISLIKES</label><textarea id="personaDislikes"></textarea><label>SPEAKING STYLE</label><textarea id="personaSpeech"></textarea><label>RELATIONSHIP / NOTES</label><textarea id="personaNotes"></textarea><div class="actions"><button class="btn" id="cancelPersona" type="button">CANCEL</button><button class="btn primary" id="savePersona" type="button">SAVE CHARACTER</button></div></section></div>
+
+<div id="worldBookModal" class="modal"><section class="sheet narrow"><div class="handle"></div><div class="appearance-top"><div><div class="eyebrow">WORLD BOOK</div><h2 id="worldBookModalTitle" style="margin-top:6px">ADD ENTRY</h2></div><button class="appearance-close" id="closeWorldBookModal" type="button">×</button></div>
+<label>TITLE</label><input id="worldTitle"><label>KEYWORDS</label><input id="worldKeywords" placeholder="用逗号分隔，例如：别墅,家,客厅"><label>CONTENT</label><textarea id="worldContent" style="min-height:180px"></textarea><div class="actions"><button class="btn" id="cancelWorldBook" type="button">CANCEL</button><button class="btn primary" id="saveWorldBook" type="button">SAVE ENTRY</button></div></section></div>
+
+<div id="presetModal" class="modal"><section class="sheet narrow"><div class="handle"></div><div class="appearance-top"><div><div class="eyebrow">AI PRESET</div><h2 id="presetModalTitle" style="margin-top:6px">ADD PRESET</h2></div><button class="appearance-close" id="closePresetModal" type="button">×</button></div>
+<label>NAME</label><input id="presetName"><label>INSTRUCTION / STYLE</label><textarea id="presetInstruction" style="min-height:180px" placeholder="例如：采用细腻小说文风，动作、神态、环境描写自然；不要代替用户做决定。"></textarea><div class="actions"><button class="btn" id="cancelPreset" type="button">CANCEL</button><button class="btn primary" id="savePreset" type="button">SAVE PRESET</button></div></section></div>
+
 <div id="toast" class="toast"></div>
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
@@ -152,39 +187,136 @@ function deleteImage(id){return new Promise((resolve,reject)=>{const r=db.transa
 function daysTogether(){if(!state.startDate)return 0;const s=new Date(state.startDate+'T00:00:00');const n=new Date();s.setHours(0,0,0,0);n.setHours(0,0,0,0);return Math.max(0,Math.floor((n-s)/86400000))}
 function renderHome(){ $('names').textContent=state.name+' × '+state.partner; $('days').textContent=daysTogether(); $('todayText').textContent=state.today||defaults.today; getImages('home').then(a=>{$('homePhoto').innerHTML=a[0]?'<img src="'+URL.createObjectURL(a[0].blob)+'" alt="">':'YOUR PHOTO'})}
 function renderMemories(){getImages('memory').then(a=>{$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+esc(x.date)+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete="'+x.id+'" style="margin-top:9px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">还没有回忆。<br>从一张照片开始吧。</div>'})}
-function hourScene(){const h=new Date().getHours();if(h<7)return{place:'BEDROOM',text:'房间里很安静，只有手机屏幕还亮着。',quote:'“这么晚还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在看什么','逗他说“你管我”']};if(h<11)return{place:'KITCHEN',text:'厨房里有一点早餐的香味。',quote:'“醒啦？过来吃一点。”',choices:['坐下来吃早餐','从背后抱住他','偷吃一口','问他今天想去哪']};if(h<18)return{place:'LIVING ROOM',text:'下午的光落在沙发上，他正在挑歌。',quote:'“来，帮我选一首。”',choices:['坐过去一起听','抢走他的手机','问他为什么选这首','靠着他休息']};if(h<23)return{place:'LIVING ROOM',text:'晚上回到家，客厅只留着一盏灯。',quote:'“今天辛苦了。”',choices:['抱他一下','问他今晚想做什么','一起看电影','什么也不说，陪着他']};return{place:'BEDROOM',text:'夜深了。房间里很安静，他还没有睡。',quote:'“怎么还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在想什么','说“我就是想找你”']}}
-function renderScene(){const s=hourScene();$('place').textContent=s.place;$('sceneText').textContent=s.text;$('sceneQuote').textContent=s.quote;$('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});$('choices').innerHTML='';s.choices.forEach((x,i)=>{const b=document.createElement('button');b.className='btn choice';b.type='button';b.dataset.choice=String(i);b.textContent=x;$('choices').appendChild(b)});const f=document.createElement('button');f.className='btn choice free';f.type='button';f.dataset.focus='free';f.textContent='自己说点什么……';$('choices').appendChild(f);updateAIState()}
-function updateAIState(){$('aiState').textContent=state.apiBase&&state.apiKey&&state.apiModel?'AI HOME IS ON':'HOME IS ALIVE'}
-function renderTimeline(){const e=state.events||[];$('timeline').innerHTML=e.length?e.slice(-12).reverse().map(x=>'<div class="event"><div class="event-dot">♡</div><div><div class="event-text">'+esc(x.text)+'</div><div class="event-time">'+esc(x.time)+'</div></div></div>').join(''):'<div class="sub" style="padding:18px 0">今天还没有留下什么。那就从现在开始。</div>'}
-function addEvent(text){state.events=(state.events||[]).slice(-30);state.events.push({text,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})});save();renderTimeline()}
-function nav(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===page));window.scrollTo(0,0);if(page==='home')renderHome();if(page==='memories')renderMemories();if(page==='space'){renderScene();renderTimeline()}if(page==='settings')renderSettings()}
-function renderSettings(){
-$('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
-renderModelPicker();
-$('manualModel').value='';$('memoryToggle').textContent=state.memoryOn?'MEMORY ON':'MEMORY OFF';updateAIState();
-const on=!!(state.apiBase&&state.apiKey&&state.apiModel);$('apiStatus').textContent=on?'API 已连接 · '+state.apiModel:'未连接 API。Space 会使用内置角色互动.';$('apiStatus').classList.toggle('on',on)
-}
-function renderModelPicker(){
- const box=$('modelPicker'); if(!box)return;
- const models=Array.isArray(state.modelList)?state.modelList.filter(Boolean):[];
- box.innerHTML='';
- if(!models.length){box.innerHTML='<div class="model-empty">连接后会在这里显示中转站返回的全部模型。</div>'; $('selectedModelLabel').textContent=state.apiModel?'当前模型：'+state.apiModel:'当前模型：未选择'; return;}
- models.forEach(id=>{const b=document.createElement('button');b.type='button';b.className='model-option'+(id===state.apiModel?' active':'');b.dataset.model=id;b.innerHTML=esc(id)+(id===state.apiModel?'<span class="model-mark">✓ 已选择</span>':'');box.appendChild(b)});
- $('selectedModelLabel').textContent='当前模型：'+(state.apiModel||models[0]);
-}
-
-async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}finally{clearTimeout(t)}}
-function apiErrorText(e){if(e&&e.name==='AbortError')return'请求超时：15 秒内没有收到回复。';if(e&&e.message==='Failed to fetch')return'浏览器无法连接 API：常见原因是 CORS、网络拦截或中转站暂时不可用。';return e?.message||String(e)||'未知错误'}
-function setApiDebug(text,on=false){const el=$('apiDebug');if(!el)return;el.textContent=text;el.style.color=on?'#526255':'';}
-async function loadModels(){const base=$('apiBase').value.trim().replace(/\/+$/,'');const key=$('apiKey').value.trim();if(!base||!key){toast('先填写 API 地址和 Key');setApiDebug('请先填写 API 地址和 API Key。');return false}toast('正在读取模型…');try{const r=await fetchTimeout(base+'/models',{headers:{Authorization:'Bearer '+key}},8000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,180):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('模型列表不是有效 JSON')}const ids=Array.isArray(j.data)?j.data.map(x=>x.id).filter(Boolean):[];if(!ids.length)throw new Error('NO_MODELS · /models 没有返回可用模型');state.apiBase=base;state.apiKey=key;state.modelList=ids;state.apiModel=ids.includes(state.apiModel)?state.apiModel:ids[0];save();renderSettings();setApiDebug('模型读取成功：'+ids.length+' 个。当前：'+state.apiModel,true);toast('找到 '+ids.length+' 个模型');return true}catch(e){const msg=apiErrorText(e);setApiDebug('读取 /models 失败：'+msg);toast('模型读取失败，已显示具体原因');return false}}
-
 function extractAIText(j){const c=j?.choices?.[0]?.message?.content;if(typeof c==='string')return c.trim();if(Array.isArray(c))return c.map(x=>typeof x==='string'?x:(x?.text||'')).join('').trim();if(typeof j?.choices?.[0]?.text==='string')return j.choices[0].text.trim();return''}
-async function askAI(userText,mode){const selectedModel=(state.apiModel||'').trim();const base=(state.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,'');const key=(state.apiKey||$('apiKey')?.value||'').trim();const model=(selectedModel||state.apiModel||'').trim();if(!base||!key||!model)return null;if(aiBusy)return null;aiBusy=true;try{const recent=state.memoryOn?(state.events||[]).slice(-8).map(x=>x.text).join('；'):'无';const s=hourScene();const system='你是颜焕，用户是你的恋人YANYAN。你不是任务系统，也不要把互动写成游戏菜单。请像真实恋人一样自然回应。保持温柔、清冷、自然，不要油腻，不要每句话都反问。当前场景：'+s.place+'；时间：'+new Date().toLocaleString('zh-CN')+'。近期共同记忆：'+recent+'。只返回一段适合直接显示给用户的中文角色回应，不要JSON，不要解释AI。';const user='YANYAN刚刚说/做了：'+userText+'。请继续这一刻。';setApiDebug('正在请求模型：'+model+' …');const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:system},{role:'user',content:user}],stream:false})},15000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,220):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('返回内容不是有效 JSON：'+raw.slice(0,160))}const answer=extractAIText(j);if(!answer)throw new Error('API 返回成功，但没有找到 choices[0].message.content');setApiDebug('AI 测试/调用成功。返回正常。',true);return answer}catch(e){setApiDebug('AI 请求失败：'+apiErrorText(e));return null}finally{aiBusy=false}}
+async function askAI(userText,mode){const base=(state.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,'');const key=(state.apiKey||$('apiKey')?.value||'').trim();const model=(state.apiModel||'').trim();if(!base||!key||!model)return null;if(aiBusy)return null;aiBusy=true;try{const system='你是一个 API 连接测试助手。只按照用户要求返回简短中文，不要解释系统。';setApiDebug('正在请求模型：'+model+' …');const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:userText}],stream:false})},15000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,220):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('返回内容不是有效 JSON：'+raw.slice(0,160))}const answer=extractAIText(j);if(!answer)throw new Error('API 返回成功，但没有找到 choices[0].message.content');setApiDebug('AI 测试成功。模型：'+model,true);return answer}catch(e){setApiDebug('AI 请求失败：'+apiErrorText(e));return null}finally{aiBusy=false}}
 async function testAI(){if(!state.apiBase||!state.apiKey||!state.apiModel){toast('先 CONNECT API 或填写备用模型');setApiDebug('当前没有完整的 API Base URL / Key / Model。');return}setApiDebug('正在测试 /chat/completions …\n实际请求模型：'+state.apiModel);toast('正在测试 AI…');const r=await askAI('请只回复：连接成功。','test');if(r){setApiDebug('AI 连接成功：'+r.slice(0,180),true);toast('AI 连接成功 ♡')}else{toast('AI 测试失败，看 API / API 下面的错误')}}
-function setSceneResponse(text){$('sceneText').textContent='这一刻，他看着你。';$('sceneQuote').textContent='“'+text.replace(/^["“]|["”]$/g,'')+'”'}
-async function handleChoice(text){addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent='他停了一下，看向你。';$('sceneQuote').textContent='正在想怎么回应……';const r=await askAI(text,'choice');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，先陪你把这一刻留着');renderScene()}}else{const replies=['他轻轻笑了一下，没有催你。','他往旁边挪了挪，给你留了位置。','他看了你一会儿，然后把手伸过来。','“好，那我们就这样待一会儿。”'];setSceneResponse(replies[Math.floor(Math.random()*replies.length)]);toast('这一刻留下来了 ♡')}}
-async function handleFree(){const input=$('freeInput');const text=input.value.trim();if(!text)return;input.value='';addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneQuote').textContent='正在回应……';const r=await askAI(text,'free');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，检查 API 连接后再试')}}else{setSceneResponse('嗯，我听着。你慢慢说。');toast('内置模式也可以继续聊天 ♡')}}
-async function surprise(){const pool=['厨房里突然想吃一点甜的。','阳台的风刚刚好，适合一起待五分钟。','他突然想听你最近最喜欢的一首歌。','今天晚上留十分钟，不看手机，只陪对方。','他刚刚想起一件小事，准备告诉你。'];const text=pool[Math.floor(Math.random()*pool.length)];addEvent('A LITTLE SURPRISE：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent=text;$('sceneQuote').textContent='AI 正在把这一刻接下去……';const r=await askAI(text,'surprise');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else toast('AI 没回应，但惊喜已经留下 ♡')}else{$('sceneText').textContent=text;$('sceneQuote').textContent='“过来。”';toast('给你一个小惊喜 ♡')}}
+/* OFFLINE THEATER DATA */
+const theaterStyles={
+  soft:{name:'SOFT PURPLE',a:'#f2e8f5',b:'#e9dfee',ink:'#302b33',accent:'#b79bc7'},
+  noir:{name:'MIDNIGHT NOIR',a:'#28212d',b:'#17131a',ink:'#f5eef7',accent:'#9f83bd'},
+  paper:{name:'PAPER DIARY',a:'#f6f0e5',b:'#ece2d2',ink:'#40382f',accent:'#b18a5a'}
+};
+const defaultCharacters=[
+ {id:'char-yanyan',name:'YANYAN',ageIdentity:'24 / 主角',personality:'安静、敏感、细腻，有自己的想法。',appearance:'',likes:'',dislikes:'',speech:'自然、像真实聊天，不刻意夸张。',notes:'用户角色。AI 不替 YANYAN 做决定。'},
+ {id:'char-yanhuan',name:'颜焕',ageIdentity:'24 / 恋人',personality:'清冷、温柔、克制，熟悉后会自然地亲近。',appearance:'',likes:'',dislikes:'',speech:'简洁自然，温柔但不油腻。',notes:'YANYAN 的恋人。'}
+];
+const defaultWorldBooks=[
+ {id:'world-relationship',title:'我们的关系',keywords:'YANYAN,颜焕,恋人,我们',content:'YANYAN 与颜焕是亲密的恋人。互动应该保持连续性和熟悉感。'},
+ {id:'world-home',title:'共同空间',keywords:'家,房间,客厅,卧室',content:'这是一个属于两人的私人空间。场景可以随着小剧场自由变化，不必局限于现实时间。'}
+];
+const defaultPresets=[
+ {id:'preset-natural',name:'自然对话',instruction:'采用自然、生活化的中文对话。像真实的人在交流，不要有明显 AI 腔，不要过度抒情，不要每句都反问。'},
+ {id:'preset-novel',name:'沉浸小说',instruction:'采用细腻的沉浸式小说文风。适度描写动作、神态、环境和停顿，让场景有画面感，但不要替用户角色决定行动或台词。'},
+ {id:'preset-minimal',name:'克制短句',instruction:'语言克制、简洁、留白多。动作描写少而准确，避免大段解释，保持角色之间自然的情绪张力。'}
+];
+function uid(prefix){return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
+function ensureWorldData(){
+ if(!Array.isArray(state.characters)||!state.characters.length)state.characters=defaultCharacters.map(x=>({...x}));
+ if(!Array.isArray(state.worldBooks))state.worldBooks=defaultWorldBooks.map(x=>({...x}));
+ if(!Array.isArray(state.aiPresets))state.aiPresets=defaultPresets.map(x=>({...x}));
+ if(!Array.isArray(state.scenes))state.scenes=[];
+ if(typeof state.activeSceneId!=='string')state.activeSceneId='';
+ save();
+}
+ensureWorldData();
+let editingPersonaId='',editingWorldId='',editingPresetId='',editingSceneId='';
+function currentScene(){return state.scenes.find(x=>x.id===state.activeSceneId)||null}
+function saveScene(scene){scene.updatedAt=new Date().toISOString();save()}
+function styleButtonsHTML(selected){return Object.entries(theaterStyles).map(([k,v])=>'<button class="style-option '+(selected===k?'active':'')+'" type="button" data-stage-style="'+k+'">'+esc(v.name)+'</button>').join('')}
+function renderSceneStyleButtons(){const a=$('stageStyleGrid');if(a)a.innerHTML=styleButtonsHTML(currentScene()?.style||'soft');const b=$('sceneEditorStyleGrid');if(b)b.innerHTML=styleButtonsHTML($('sceneEditorStyleGrid').dataset.selected||'soft')}
+function applySceneAppearance(scene){const stage=$('theaterStage');if(!stage)return;const st=theaterStyles[scene?.style||'soft']||theaterStyles.soft;stage.style.setProperty('--offline-a',st.a);stage.style.setProperty('--offline-b',st.b);stage.style.color=st.ink;stage.style.setProperty('--offline-bg-image',scene?.bgData?'url('+scene.bgData+')':'none');stage.style.setProperty('--offline-accent',st.accent);$('sceneCustomCSS').value=scene?.customCSS||'';let tag=document.getElementById('sceneCustomStyle');if(!tag){tag=document.createElement('style');tag.id='sceneCustomStyle';document.head.appendChild(tag)}tag.textContent=scene?.customCSS||''}
+function renderOfflineSpace(){
+ ensureWorldData();
+ const scenes=state.scenes||[]; $('offlineCount').textContent=scenes.length+' SCENES';
+ const active=currentScene();
+ $('offlineEmpty').style.display=active?'none':'block'; $('activeSceneCard').style.display=active?'block':'none';
+ if(!active){$('sceneLibrary').innerHTML=scenes.length?renderSceneLibraryHTML(scenes):'<div class="empty-note">还没有保存的小剧场。创建第一个吧。</div>';return;}
+ $('activeSceneTitle').textContent=active.title||'Untitled Theater'; $('activeScenePremise').textContent=active.premise||'没有设定前提。';
+ $('activeSceneMeta').innerHTML='<span class="chip">'+esc(active.updatedAt?new Date(active.updatedAt).toLocaleString('zh-CN'):'刚刚')+'</span><span class="chip">'+(active.messages||[]).length+' LINES</span>';
+ const chars=(active.participants||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean);$('activeParticipants').innerHTML=chars.length?chars.map(c=>'<span class="chip">'+esc(c.name)+'</span>').join(''):'<span class="chip">未选择人物</span>';
+ const worlds=(active.worldBooks||[]).map(id=>state.worldBooks.find(w=>w.id===id)).filter(Boolean);$('activeWorldBooks').innerHTML=worlds.length?worlds.map(w=>'<span class="chip">'+esc(w.title)+'</span>').join(''):'<span class="chip">未调用世界书</span>';
+ const preset=state.aiPresets.find(x=>x.id===active.presetId);$('activePreset').textContent=preset?preset.name:'未选择';
+ $('scriptLog').innerHTML=(active.messages||[]).length?(active.messages||[]).map(m=>'<div class="script-msg '+(m.role==='user'?'user':'ai')+'"><div class="script-name">'+esc(m.name|| (m.role==='user'?state.name:'AI'))+'</div><div class="script-text">'+esc(m.text)+'</div></div>').join(''):'<div class="empty-note">这个舞台还没有开始。你可以直接在下面说第一句。</div>';
+ applySceneAppearance(active); renderSceneStyleButtons();
+ $('sceneLibrary').innerHTML=renderSceneLibraryHTML(scenes);
+}
+function renderSceneLibraryHTML(scenes){return scenes.slice().sort((a,b)=>new Date(b.updatedAt||0)-new Date(a.updatedAt||0)).map(s=>'<div class="scene-item '+(s.id===state.activeSceneId?'active':'')+'" data-open-scene="'+s.id+'"><div class="scene-item-title">'+esc(s.title||'Untitled Theater')+'</div><div class="scene-item-meta">'+esc((s.participants||[]).map(id=>(state.characters.find(c=>c.id===id)||{}).name).filter(Boolean).join(' · ')||'No participants')+' · '+(s.messages||[]).length+' lines</div><div class="scene-item-actions"><button class="btn" type="button" data-continue-scene="'+s.id+'">OPEN</button><button class="btn" type="button" data-edit-scene="'+s.id+'">EDIT</button><button class="btn" type="button" data-delete-scene="'+s.id+'">DELETE</button></div></div>').join('')}
+function openSceneEditor(id=''){
+ editingSceneId=id;const s=id?state.scenes.find(x=>x.id===id):null;
+ $('sceneTitleInput').value=s?.title||'';$('scenePremiseInput').value=s?.premise||'';$('sceneEditorCSS').value=s?.customCSS||'';
+ const defaultParticipantIds=s?((s.participants||[])):state.characters.slice(0,2).map(c=>c.id);$('sceneParticipantPicker').innerHTML=state.characters.length?state.characters.map(c=>'<label class="select-row"><input type="checkbox" data-scene-char="'+c.id+'" '+(defaultParticipantIds.includes(c.id)?'checked':'')+'><span class="select-row-main"><span class="select-row-title">'+esc(c.name)+'</span><span class="select-row-sub">'+esc(c.ageIdentity||c.personality||'')+'</span></span></label>').join(''):'<div class="empty-note">先去 Settings 添加角色。</div>';
+ $('sceneWorldBookPicker').innerHTML=state.worldBooks.length?state.worldBooks.map(w=>'<label class="select-row"><input type="checkbox" data-scene-world="'+w.id+'" '+((s?.worldBooks||[]).includes(w.id)?'checked':'')+'><span class="select-row-main"><span class="select-row-title">'+esc(w.title)+'</span><span class="select-row-sub">'+esc(w.keywords||'')+'</span></span></label>').join(''):'<div class="empty-note">还没有世界书条目。</div>';
+ $('scenePresetPicker').innerHTML=state.aiPresets.map(x=>'<button class="appearance-option '+((s?.presetId||state.aiPresets[0]?.id)===x.id?'active':'')+'" type="button" data-scene-preset="'+x.id+'">'+esc(x.name)+'</button>').join('');
+ $('scenePresetPicker').dataset.selected=s?.presetId||state.aiPresets[0]?.id||'';
+ $('sceneEditorStyleGrid').dataset.selected=s?.style||'soft';$('sceneEditorStyleGrid').innerHTML=styleButtonsHTML(s?.style||'soft');
+ $('createSceneConfirm').textContent=s?'SAVE THEATER':'CREATE THEATER';$('sceneEditorModal').classList.add('show');document.body.style.overflow='hidden';
+}
+function closeSceneEditor(){$('sceneEditorModal').classList.remove('show');document.body.style.overflow='';editingSceneId=''}
+function saveSceneFromEditor(){
+ const wasEditing=!!editingSceneId;const title=$('sceneTitleInput').value.trim()||'Untitled Theater';const premise=$('scenePremiseInput').value.trim();const participants=[...document.querySelectorAll('[data-scene-char]:checked')].map(x=>x.dataset.sceneChar);const worldBooks=[...document.querySelectorAll('[data-scene-world]:checked')].map(x=>x.dataset.sceneWorld);const presetId=$('scenePresetPicker').dataset.selected||state.aiPresets[0]?.id||'';const style=$('sceneEditorStyleGrid').dataset.selected||'soft';const customCSS=$('sceneEditorCSS').value||'';
+ let scene=editingSceneId?state.scenes.find(x=>x.id===editingSceneId):null;
+ if(!scene){scene={id:uid('scene'),title,premise,participants,worldBooks,presetId,style,customCSS,messages:[],createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),personaSnapshots:[],worldBookSnapshots:[],presetSnapshot:null};state.scenes.unshift(scene);state.activeSceneId=scene.id}
+ scene.personaSnapshots=participants.map(id=>{const c=state.characters.find(x=>x.id===id);return c?JSON.parse(JSON.stringify(c)):null}).filter(Boolean);scene.worldBookSnapshots=worldBooks.map(id=>{const w=state.worldBooks.find(x=>x.id===id);return w?JSON.parse(JSON.stringify(w)):null}).filter(Boolean);scene.presetSnapshot=state.aiPresets.find(x=>x.id===presetId)?JSON.parse(JSON.stringify(state.aiPresets.find(x=>x.id===presetId))):null;Object.assign(scene,{title,premise,participants,worldBooks,presetId,style,customCSS});saveScene(scene)
+ save();closeSceneEditor();renderOfflineSpace();toast(wasEditing?'Theater saved':'New theater created');
+}
+function selectScene(id){if(!state.scenes.some(x=>x.id===id))return;state.activeSceneId=id;save();renderOfflineSpace();window.scrollTo(0,0)}
+function deleteScene(id){const s=state.scenes.find(x=>x.id===id);if(!s)return;if(!confirm('删除这个小剧场？它的记录也会一起删除。'))return;state.scenes=state.scenes.filter(x=>x.id!==id);if(state.activeSceneId===id)state.activeSceneId=state.scenes[0]?.id||'';save();renderOfflineSpace();toast('Theater deleted')}
+function buildOfflineContext(scene){
+ const chars=(scene.personaSnapshots&&scene.personaSnapshots.length?scene.personaSnapshots:(scene.participants||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean));
+ const worlds=(scene.worldBookSnapshots&&scene.worldBookSnapshots.length?scene.worldBookSnapshots:(scene.worldBooks||[]).map(id=>state.worldBooks.find(w=>w.id===id)).filter(Boolean));
+ const preset=scene.presetSnapshot||state.aiPresets.find(x=>x.id===scene.presetId);
+ return {chars,worlds,preset};
+}
+async function sendOfflineLine(){
+ const scene=currentScene();const input=$('offlineInput');const text=input.value.trim();if(!scene||!text)return;input.value='';scene.messages=scene.messages||[];scene.messages.push({role:'user',name:state.name,text,time:new Date().toISOString()});saveScene(scene);renderOfflineSpace();
+ if(!state.apiBase||!state.apiKey||!state.apiModel){toast('已保存这句。连接 AI 后可以继续回应。');return}
+ $('offlineInput').disabled=true;$('offlineSend').disabled=true;
+ const reply=await askOfflineAI(scene,text);
+ $('offlineInput').disabled=false;$('offlineSend').disabled=false;
+ if(reply){scene.messages.push({role:'ai',name:'AI',text:reply,time:new Date().toISOString()});saveScene(scene);renderOfflineSpace();}
+ else toast('AI 暂时没有回应，但这一句已经保存到小剧场。');
+}
+async function askOfflineAI(scene,userText){
+ const ctx=buildOfflineContext(scene);const recent=(scene.messages||[]).slice(-16).map(m=>(m.name||m.role)+'：'+m.text).join('\n');
+ const persona=ctx.chars.map(c=>'【'+c.name+'】\n身份/年龄：'+(c.ageIdentity||'')+'\n性格：'+(c.personality||'')+'\n外貌：'+(c.appearance||'')+'\n喜欢：'+(c.likes||'')+'\n不喜欢：'+(c.dislikes||'')+'\n说话方式：'+(c.speech||'')+'\n关系/备注：'+(c.notes||'')).join('\n\n');
+ const lore=ctx.worlds.map(w=>'【'+w.title+'】关键词：'+(w.keywords||'')+'\n'+w.content).join('\n\n');
+ const preset=ctx.preset?.instruction||'保持自然、连贯的角色扮演。';
+ const system='你正在参与一个私人线下小剧场。请严格遵守以下设定。\n\n【小剧场】\n标题：'+scene.title+'\n前提：'+scene.premise+'\n\n【参与人物】\n'+(persona||'未提供人物设定')+'\n\n【世界书】\n'+(lore||'未调用世界书')+'\n\n【AI预设】\n'+preset+'\n\n【写作规则】\n1. 只让参与人物行动、说话或描写，不替用户角色决定行动、想法或台词。\n2. 如果有多个参与人物，可以分别以“角色名：”开头。\n3. 保持人物设定和世界书一致，不擅自新增与设定冲突的背景。\n4. 不要解释自己是AI，不要输出JSON，不要给用户菜单。\n5. 除非预设要求，否则控制篇幅，让场景自然推进。\n\n【最近剧情】\n'+recent;
+ return await askAIWithSystem(userText,system,scene);
+}
+async function askAIWithSystem(userText,system,scene){
+ const base=(state.apiBase||'').trim().replace(/\/+$/,'');const key=(state.apiKey||'').trim();const model=(state.apiModel||'').trim();if(!base||!key||!model)return null;if(aiBusy)return null;aiBusy=true;try{setApiDebug('正在请求模型：'+model+' · OFFLINE THEATER');const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:userText}],stream:false})},15000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,220):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('返回内容不是有效 JSON：'+raw.slice(0,160))}const answer=extractAIText(j);if(!answer)throw new Error('API 返回成功，但没有找到 choices[0].message.content');setApiDebug('AI 小剧场回应成功。模型：'+model,true);return answer}catch(e){setApiDebug('AI 请求失败：'+apiErrorText(e));return null}finally{aiBusy=false}}
+function renderPersonaList(){const box=$('personaList');if(!box)return;box.innerHTML=state.characters.map(c=>'<div class="manage-item"><div class="manage-item-head"><div><div class="manage-item-title">'+esc(c.name)+'</div><div class="manage-item-sub">'+esc(c.ageIdentity||'')+'</div></div></div><div class="manage-item-sub">'+esc(c.personality||'暂无性格描述')+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-persona="'+c.id+'">EDIT</button><button class="btn" type="button" data-delete-persona="'+c.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有角色。</div>'}
+function renderWorldBookList(){const box=$('worldBookList');if(!box)return;box.innerHTML=state.worldBooks.map(w=>'<div class="manage-item"><div class="manage-item-head"><div><div class="manage-item-title">'+esc(w.title)+'</div><div class="manage-item-sub">'+esc(w.keywords||'')+'</div></div></div><div class="manage-item-sub">'+esc((w.content||'').slice(0,180))+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-world="'+w.id+'">EDIT</button><button class="btn" type="button" data-delete-world="'+w.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有世界书。</div>'}
+function renderPresetManageList(){const box=$('presetManageList');if(!box)return;box.innerHTML=state.aiPresets.map(x=>'<div class="manage-item"><div class="manage-item-title">'+esc(x.name)+'</div><div class="manage-item-sub">'+esc((x.instruction||'').slice(0,180))+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-preset="'+x.id+'">EDIT</button><button class="btn" type="button" data-delete-preset="'+x.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有 AI 预设。</div>'}
+function openPersonaEditor(id=''){editingPersonaId=id;const c=id?state.characters.find(x=>x.id===id):null;$('personaModalTitle').textContent=c?'EDIT CHARACTER':'ADD CHARACTER';$('personaName').value=c?.name||'';$('personaAgeIdentity').value=c?.ageIdentity||'';$('personaPersonality').value=c?.personality||'';$('personaAppearance').value=c?.appearance||'';$('personaLikes').value=c?.likes||'';$('personaDislikes').value=c?.dislikes||'';$('personaSpeech').value=c?.speech||'';$('personaNotes').value=c?.notes||'';$('personaModal').classList.add('show');document.body.style.overflow='hidden'}
+function savePersonaEditor(){const name=$('personaName').value.trim();if(!name){toast('角色需要一个名字');return}const obj={id:editingPersonaId||uid('char'),name,ageIdentity:$('personaAgeIdentity').value.trim(),personality:$('personaPersonality').value.trim(),appearance:$('personaAppearance').value.trim(),likes:$('personaLikes').value.trim(),dislikes:$('personaDislikes').value.trim(),speech:$('personaSpeech').value.trim(),notes:$('personaNotes').value.trim()};if(editingPersonaId){const i=state.characters.findIndex(x=>x.id===editingPersonaId);if(i>=0)state.characters[i]=obj}else state.characters.push(obj);save();closePersonaEditor();renderPersonaList();renderOfflineSpace();toast('Character saved')}
+function closePersonaEditor(){$('personaModal').classList.remove('show');document.body.style.overflow='';editingPersonaId=''}
+function openWorldEditor(id=''){editingWorldId=id;const w=id?state.worldBooks.find(x=>x.id===id):null;$('worldBookModalTitle').textContent=w?'EDIT ENTRY':'ADD ENTRY';$('worldTitle').value=w?.title||'';$('worldKeywords').value=w?.keywords||'';$('worldContent').value=w?.content||'';$('worldBookModal').classList.add('show');document.body.style.overflow='hidden'}
+function saveWorldEditor(){const title=$('worldTitle').value.trim();if(!title){toast('世界书需要一个标题');return}const obj={id:editingWorldId||uid('world'),title,keywords:$('worldKeywords').value.trim(),content:$('worldContent').value.trim()};if(editingWorldId){const i=state.worldBooks.findIndex(x=>x.id===editingWorldId);if(i>=0)state.worldBooks[i]=obj}else state.worldBooks.push(obj);save();closeWorldEditor();renderWorldBookList();renderOfflineSpace();toast('World entry saved')}
+function closeWorldEditor(){$('worldBookModal').classList.remove('show');document.body.style.overflow='';editingWorldId=''}
+function openPresetEditor(id=''){editingPresetId=id;const x=id?state.aiPresets.find(p=>p.id===id):null;$('presetModalTitle').textContent=x?'EDIT PRESET':'ADD PRESET';$('presetName').value=x?.name||'';$('presetInstruction').value=x?.instruction||'';$('presetModal').classList.add('show');document.body.style.overflow='hidden'}
+function savePresetEditor(){const name=$('presetName').value.trim();const instruction=$('presetInstruction').value.trim();if(!name||!instruction){toast('预设需要名称和指令');return}const obj={id:editingPresetId||uid('preset'),name,instruction};if(editingPresetId){const i=state.aiPresets.findIndex(x=>x.id===editingPresetId);if(i>=0)state.aiPresets[i]=obj}else state.aiPresets.push(obj);save();closePresetEditor();renderPresetManageList();renderOfflineSpace();toast('Preset saved')}
+function closePresetEditor(){$('presetModal').classList.remove('show');document.body.style.overflow='';editingPresetId=''}
+
+
+/* THEATER / PERSONA / WORLD BOOK EVENTS */
+$('newSceneBtn').onclick=()=>openSceneEditor();$('emptyNewScene').onclick=()=>openSceneEditor();$('saveSceneBtn').onclick=()=>{const s=currentScene();if(!s){toast('还没有当前小剧场');return}saveScene(s);toast('当前小剧场已保存')};
+$('closeSceneEditor').onclick=closeSceneEditor;$('cancelSceneEditor').onclick=closeSceneEditor;$('createSceneConfirm').onclick=saveSceneFromEditor;
+$('sceneEditorModal').addEventListener('click',e=>{if(e.target.id==='sceneEditorModal')closeSceneEditor()});
+$('scenePresetPicker').addEventListener('click',e=>{const b=e.target.closest('[data-scene-preset]');if(!b)return;$('scenePresetPicker').dataset.selected=b.dataset.scenePreset;document.querySelectorAll('#scenePresetPicker [data-scene-preset]').forEach(x=>x.classList.toggle('active',x===b))});
+$('sceneEditorStyleGrid').addEventListener('click',e=>{const b=e.target.closest('[data-stage-style]');if(!b)return;$('sceneEditorStyleGrid').dataset.selected=b.dataset.stageStyle;document.querySelectorAll('#sceneEditorStyleGrid [data-stage-style]').forEach(x=>x.classList.toggle('active',x===b))});
+$('stageStyleGrid').addEventListener('click',e=>{const b=e.target.closest('[data-stage-style]');const s=currentScene();if(!b||!s)return;s.style=b.dataset.stageStyle;saveScene(s);renderOfflineSpace();toast('Stage style changed')});
+$('applySceneCSS').onclick=()=>{const s=currentScene();if(!s)return;s.customCSS=$('sceneCustomCSS').value;saveScene(s);applySceneAppearance(s);toast('Custom CSS applied')};
+$('clearSceneCSS').onclick=()=>{const s=currentScene();if(!s)return;s.customCSS='';saveScene(s);applySceneAppearance(s);toast('Custom CSS cleared')};
+$('offlineSend').onclick=sendOfflineLine;$('offlineInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();sendOfflineLine()}});
+$('sceneLibrary').addEventListener('click',e=>{const open=e.target.closest('[data-open-scene], [data-continue-scene]');if(open){selectScene(open.dataset.openScene||open.dataset.continueScene);return}const edit=e.target.closest('[data-edit-scene]');if(edit){openSceneEditor(edit.dataset.editScene);return}const del=e.target.closest('[data-delete-scene]');if(del){deleteScene(del.dataset.deleteScene)}});
+$('addPersonaBtn').onclick=()=>openPersonaEditor();$('closePersonaModal').onclick=closePersonaEditor;$('cancelPersona').onclick=closePersonaEditor;$('savePersona').onclick=savePersonaEditor;$('personaModal').addEventListener('click',e=>{if(e.target.id==='personaModal')closePersonaEditor()});
+$('personaList').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-persona]');if(edit){openPersonaEditor(edit.dataset.editPersona);return}const del=e.target.closest('[data-delete-persona]');if(del){const id=del.dataset.deletePersona;if(!confirm('删除这个角色？已有小剧场的旧文本不会被删除；删除后可继续保留当前剧本。'))return;state.characters=state.characters.filter(x=>x.id!==id);state.scenes.forEach(s=>{s.participants=(s.participants||[]).filter(x=>x!==id)});save();renderPersonaList();renderOfflineSpace();toast('Character deleted')}});
+$('addWorldBookBtn').onclick=()=>openWorldEditor();$('closeWorldBookModal').onclick=closeWorldEditor;$('cancelWorldBook').onclick=closeWorldEditor;$('saveWorldBook').onclick=saveWorldEditor;$('worldBookModal').addEventListener('click',e=>{if(e.target.id==='worldBookModal')closeWorldEditor()});
+$('worldBookList').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-world]');if(edit){openWorldEditor(edit.dataset.editWorld);return}const del=e.target.closest('[data-delete-world]');if(del){const id=del.dataset.deleteWorld;if(!confirm('删除这个世界书条目？已有小剧场的文本会保留；该条设定会从以后重新生成的内容中移除。'))return;state.worldBooks=state.worldBooks.filter(x=>x.id!==id);state.scenes.forEach(s=>{s.worldBooks=(s.worldBooks||[]).filter(x=>x!==id)});save();renderWorldBookList();renderOfflineSpace();toast('World entry deleted')}});
+$('addPresetBtn').onclick=()=>openPresetEditor();$('closePresetModal').onclick=closePresetEditor;$('cancelPreset').onclick=closePresetEditor;$('savePreset').onclick=savePresetEditor;$('presetModal').addEventListener('click',e=>{if(e.target.id==='presetModal')closePresetEditor()});
+$('presetManageList').addEventListener('click',e=>{const edit=e.target.closest('[data-edit-preset]');if(edit){openPresetEditor(edit.dataset.editPreset);return}const del=e.target.closest('[data-delete-preset]');if(del){const id=del.dataset.deletePreset;if(!confirm('删除这个 AI 预设？已有小剧场仍会保留原来的指令副本。'))return;state.aiPresets=state.aiPresets.filter(x=>x.id!==id);save();renderPresetManageList();renderOfflineSpace();toast('Preset deleted')}});
 
 const APPEARANCE_KEY='yanyan-love-appearance-v1';
 const appearanceDefaults={preset:'purple',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:0,opacity:.94,dark:false,motion:true};
@@ -218,27 +350,24 @@ $('motionToggle').onclick=()=>{appearance.motion=!appearance.motion;appearance.p
 $('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults);applyAppearance();renderAppearanceControls();toast('已经恢复默认外观')};
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
-document.addEventListener('click',e=>{const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(hourScene().choices[+c.dataset.choice]);return}if(e.target.closest('[data-focus="free"]')){$('freeInput').focus();return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
+document.addEventListener('click',e=>{const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
 $('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await addImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};
-$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderScene();toast('Saved')};
+$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderOfflineSpace();toast('Saved')};
 $('connectApi').onclick=async()=>{const ok=await loadModels();if(!ok&&$('manualModel').value.trim()){state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();state.apiModel=$('manualModel').value.trim();save();renderSettings();toast('已保存备用模型')}}
 $('refreshModels').onclick=loadModels;
 $('testApi').onclick=testAI;
 $('modelPicker').addEventListener('click',e=>{const b=e.target.closest('[data-model]');if(!b)return;const m=b.dataset.model;if(!m)return;state.apiModel=m;save();renderModelPicker();updateAIState();$('apiStatus').textContent='API 已连接 · '+state.apiModel;$('apiStatus').classList.add('on');setApiDebug('已切换模型：'+m+'。TEST AI 将使用这个模型。',true);toast('已切换到 '+m)});
 $('manualModel').onchange=()=>{const m=$('manualModel').value.trim();if(m){state.apiModel=m;save();renderSettings();toast('模型已保存')}};
 $('memoryToggle').onclick=()=>{state.memoryOn=!state.memoryOn;save();renderSettings();toast(state.memoryOn?'AI Memory ON':'AI Memory OFF')};
-$('sendFree').onclick=handleFree;
-$('freeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleFree()}});
-$('surprise').onclick=surprise;
 $('installHelp').onclick=()=>toast('Chrome ⋮ → 添加到主屏幕 / 安装应用');
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBox').classList.add('show')});
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-(async()=>{await openDB();renderHome();renderMemories();renderSettings();renderScene();renderTimeline()})();
+(async()=>{await openDB();ensureWorldData();renderHome();renderMemories();renderSettings();renderOfflineSpace()})();
 </script>
 </body>
 </html>
