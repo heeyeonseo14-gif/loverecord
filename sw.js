@@ -1,4 +1,4 @@
-const CACHE='love-record-v24-home1';
+const CACHE='love-record-v24-home2';
 const ASSETS=['./','./index.html','./home-layout-v24.js','./manifest.json','./icon-192.png','./icon-512.png'];
 
 function injectPatch(text){
@@ -13,9 +13,7 @@ async function cachePatchedIndex(cache){
     await cache.put('./index.html',new Response(injectPatch(t),{
       headers:{'Content-Type':'text/html; charset=utf-8'}
     }));
-  }catch(e){
-    // Keep going; the normal cache entries are still useful offline.
-  }
+  }catch(e){}
 }
 
 self.addEventListener('install',e=>{
@@ -43,7 +41,6 @@ self.addEventListener('fetch',e=>{
     e.respondWith(
       fetch(e.request,{cache:'no-store'})
         .then(async r=>{
-          const copy=r.clone();
           const t=await r.text();
           const patched=new Response(injectPatch(t),{
             status:r.status,
