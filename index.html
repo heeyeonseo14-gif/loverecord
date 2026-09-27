@@ -87,6 +87,85 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 @media(prefers-reduced-motion:reduce){.love-intro{animation:introOut .35s ease 1.1s forwards}.love-intro-inner{animation:introIn .35s ease .05s forwards}.love-intro-line{animation:introLine .25s ease .25s forwards}.love-intro-mark,.love-intro::before,.love-intro::after{animation:none}}
 
 </style>
+<style>
+/* V24 HOME — requested layout */
+#home .hero{
+  position:relative;
+  min-height:345px;
+  padding:18px 4px 30px;
+}
+#home .home-moment-mini{
+  position:absolute;
+  top:72px;
+  right:0;
+  width:31%;
+  max-width:142px;
+  padding:9px;
+  margin:0;
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(255,255,255,.98);
+  border-radius:23px;
+  box-shadow:0 18px 45px rgba(77,58,88,.07);
+  z-index:2;
+}
+#home .home-moment-mini .photo{
+  width:100%;
+  aspect-ratio:3/4;
+  border-radius:16px;
+  margin:0;
+}
+#home .home-moment-mini .actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  margin-top:8px;
+}
+#home .home-moment-mini .btn{
+  min-width:0;
+  padding:8px 4px;
+  font-size:9px;
+  letter-spacing:.3px;
+  white-space:nowrap;
+}
+#home .v24-today-line{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin:0 4px 20px;
+  padding:0 0 11px;
+  border-bottom:1px solid var(--line);
+}
+#home .v24-today-label{
+  flex:none;
+  font-size:10px;
+  letter-spacing:4px;
+  color:var(--muted);
+}
+#home .v24-today-text{
+  min-width:0;
+  font-size:18px;
+  line-height:1.6;
+  color:var(--ink);
+}
+@media(max-width:420px){
+  #home .hero{min-height:330px}
+  #home .home-moment-mini{
+    top:70px;
+    width:33%;
+    max-width:130px;
+  }
+  #home .home-moment-mini .btn{
+    padding:7px 2px;
+    font-size:8px;
+  }
+  #home .v24-today-line{
+    gap:10px;
+  }
+  #home .v24-today-text{
+    font-size:17px;
+  }
+}
+</style>
 </head>
 <body>
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -99,16 +178,39 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 </div>
 <div class="app">
 <main id="home" class="page active">
-  <div class="hero"><div class="eyebrow">LOVE RECORD</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
-  <div class="line"></div>
-  <div class="card"><div class="eyebrow">TODAY</div><div id="todayText" style="font-size:18px;line-height:1.8;margin-top:14px">把今天也留在这里。</div></div>
-  <div class="card"><div class="home-status"><span class="eyebrow">A MOMENT</span><span class="status">PRIVATE</span></div><div id="homePhoto" class="photo" style="margin-top:15px">YOUR PHOTO</div><div class="actions"><button class="btn primary" id="homeUpload" type="button">ADD PHOTO</button><button class="btn" id="homeClear" type="button">CLEAR</button></div><input id="homeFile" type="file" accept="image/*" hidden></div>
-  <div class="card"><div class="eyebrow">YOUR WORLD</div><h2>LOVE RECORD</h2><div class="sub">人物、论坛、世界和日记，都留在这里。</div><div class="world-grid">
-    <button class="world-tile" type="button" data-open-module="people"><b>PEOPLE</b><span>AI 人物</span></button>
-    <button class="world-tile" type="button" data-open-module="forum"><b>FORUM</b><span>AI 社区</span></button>
-    <button class="world-tile" type="button" data-open-module="world"><b>WORLD</b><span>世界观</span></button>
-    <button class="world-tile" type="button" data-open-module="journal"><b>JOURNAL</b><span>日记</span></button>
-  </div></div>
+  <div class="hero">
+    <div class="eyebrow">LOVE RECORD</div>
+    <h1>OUR LITTLE UNIVERSE</h1>
+    <div id="names" class="names">YANYAN × YAN HUAN</div>
+    <div id="days" class="days">0</div>
+    <div class="days-label">DAYS TOGETHER</div>
+
+    <div class="home-moment-mini">
+      <div id="homePhoto" class="photo">YOUR PHOTO</div>
+      <div class="actions">
+        <button class="btn primary" id="homeUpload" type="button">ADD PHOTO</button>
+        <button class="btn" id="homeClear" type="button">CLEAR</button>
+      </div>
+      <input id="homeFile" type="file" accept="image/*" hidden>
+    </div>
+  </div>
+
+  <div class="v24-today-line">
+    <span class="v24-today-label">TODAY</span>
+    <span id="todayText" class="v24-today-text">把今天也留在这里。</span>
+  </div>
+
+  <div class="card">
+    <div class="eyebrow">YOUR WORLD</div>
+    <h2>LOVE RECORD</h2>
+    <div class="sub">人物、论坛、世界和日记，都留在这里。</div>
+    <div class="world-grid">
+      <button class="world-tile" type="button" data-open-module="people"><b>PEOPLE</b><span>AI 人物</span></button>
+      <button class="world-tile" type="button" data-open-module="forum"><b>FORUM</b><span>AI 社区</span></button>
+      <button class="world-tile" type="button" data-open-module="world"><b>WORLD</b><span>世界观</span></button>
+      <button class="world-tile" type="button" data-open-module="journal"><b>JOURNAL</b><span>日记</span></button>
+    </div>
+  </div>
 </main>
 
 <main id="memories" class="page">
