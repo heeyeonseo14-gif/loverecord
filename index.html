@@ -67,9 +67,36 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .forum-open:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:10px}.forum-stats{font-size:11px;color:var(--muted);margin-top:11px}.comment-item{border-top:1px solid var(--line);padding:13px 0 0;margin-top:13px}.comment-author{font-size:11px;letter-spacing:1px;color:var(--muted)}.comment-body{font-size:13px;line-height:1.75;margin-top:6px;white-space:pre-wrap}.comment-empty{padding:18px 0;text-align:center;color:var(--muted);font-size:13px}.dark-mode .world-tile,.dark-mode .module-item,.dark-mode .mini-btn,.dark-mode .check-pill,.dark-mode .forum-post,.dark-mode .module-close{background:#211c24;color:#f4eef6;border-color:#3a323e}
 .history-item{border:1px solid var(--line);border-radius:20px;padding:15px;background:#fff}.history-item+.history-item{margin-top:10px}.history-meta{font-size:11px;color:var(--muted);line-height:1.6}.history-title{font-size:15px;margin-top:5px}.history-preview{font-size:12px;line-height:1.7;margin-top:7px;color:var(--muted);white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.history-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}.dark-mode .history-item{background:#211c24;color:#f4eef6;border-color:#3a323e}.choice[disabled]{opacity:.55;pointer-events:none}
 .our-history{margin-top:14px}.our-history-item{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;margin-top:9px}.our-history-item summary{list-style:none;cursor:pointer;padding:14px 15px;font-size:13px;line-height:1.55}.our-history-item summary::-webkit-details-marker{display:none}.our-history-item summary:after{content:'＋';float:right;color:var(--muted);font-size:15px}.our-history-item[open] summary:after{content:'−'}.our-history-content{border-top:1px solid var(--line);padding:14px 15px}.history-bubble{font-size:13px;line-height:1.75;margin-top:9px;white-space:pre-wrap}.history-label{font-size:10px;letter-spacing:2px;color:var(--muted)}.history-rollback{margin-top:12px}.dark-mode .our-history-item{background:#211c24;color:#f4eef6;border-color:#3a323e}.dark-mode .our-history-item summary{color:#f4eef6}
+
+/* LOVE RECORD — entrance animation */
+.love-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,#efe2f5 0%,#dfc9e9 38%,#b99acb 100%);color:#3d2d43;animation:introOut .7s cubic-bezier(.4,0,.2,1) 2.1s forwards;pointer-events:auto}
+.love-intro::before,.love-intro::after{content:"";position:absolute;border-radius:50%;filter:blur(3px);opacity:.34;pointer-events:none}
+.love-intro::before{width:48vw;height:48vw;max-width:340px;max-height:340px;background:#fff;top:-12vw;right:-9vw;animation:introOrbA 3.2s ease-in-out infinite}
+.love-intro::after{width:58vw;height:58vw;max-width:400px;max-height:400px;background:#8e68a1;bottom:-20vw;left:-16vw;animation:introOrbB 3.8s ease-in-out infinite}
+.love-intro-inner{position:relative;z-index:1;text-align:center;padding:28px;transform:translateY(8px);opacity:0;animation:introIn 1.05s cubic-bezier(.2,.8,.2,1) .18s forwards}
+.love-intro-mark{width:7px;height:7px;border-radius:50%;margin:0 auto 23px;background:#fff;box-shadow:0 0 0 8px rgba(255,255,255,.2);animation:introPulse 1.8s ease-in-out .55s infinite}
+.love-intro-title{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(31px,9vw,52px);font-weight:400;letter-spacing:7px;color:#33283a}
+.love-intro-line{width:0;height:1px;margin:20px auto 15px;background:rgba(51,40,58,.55);animation:introLine .8s ease-out .85s forwards}
+.love-intro-author{font-size:10px;letter-spacing:3px;color:rgba(51,40,58,.68);text-transform:none}
+@keyframes introIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes introLine{from{width:0;opacity:0}to{width:58px;opacity:1}}
+@keyframes introPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 8px rgba(255,255,255,.2)}50%{transform:scale(1.18);box-shadow:0 0 0 11px rgba(255,255,255,.13)}}
+@keyframes introOrbA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-12px,16px) scale(1.08)}}
+@keyframes introOrbB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-12px) scale(1.06)}}
+@keyframes introOut{to{opacity:0;visibility:hidden;pointer-events:none}}
+@media(prefers-reduced-motion:reduce){.love-intro{animation:introOut .35s ease 1.1s forwards}.love-intro-inner{animation:introIn .35s ease .05s forwards}.love-intro-line{animation:introLine .25s ease .25s forwards}.love-intro-mark,.love-intro::before,.love-intro::after{animation:none}}
+
 </style>
 </head>
 <body>
+<div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
+  <div class="love-intro-inner">
+    <div class="love-intro-mark"></div>
+    <h1 class="love-intro-title">LOVE RECORD</h1>
+    <div class="love-intro-line"></div>
+    <div class="love-intro-author">Author by Lxing.</div>
+  </div>
+</div>
 <div class="app">
 <main id="home" class="page active">
   <div class="hero"><div class="eyebrow">LOVE RECORD</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
@@ -491,6 +518,11 @@ $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器�
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
+
+const loveIntro=document.getElementById('loveIntro');
+if(loveIntro){
+  window.setTimeout(()=>{loveIntro.setAttribute('aria-hidden','true')},2900);
+}
 </script>
 </body>
 </html>
