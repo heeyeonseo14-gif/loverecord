@@ -171,7 +171,7 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 <label>NAME</label><input id="presetName"><label>INSTRUCTION / STYLE</label><textarea id="presetInstruction" style="min-height:180px" placeholder="例如：采用细腻小说文风，动作、神态、环境描写自然；不要代替用户做决定。"></textarea><div class="actions"><button class="btn" id="cancelPreset" type="button">CANCEL</button><button class="btn primary" id="savePreset" type="button">SAVE PRESET</button></div></section></div>
 
 <div id="toast" class="toast"></div>
-<script>
+<script>window.addEventListener("error",e=>{window.__lastAppError=e.message||String(e.error||e)});
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
 const defaults={name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[]};
 let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
@@ -286,6 +286,31 @@ async function askOfflineAI(scene,userText){
 }
 async function askAIWithSystem(userText,system,scene){
  const base=(state.apiBase||'').trim().replace(/\/+$/,'');const key=(state.apiKey||'').trim();const model=(state.apiModel||'').trim();if(!base||!key||!model)return null;if(aiBusy)return null;aiBusy=true;try{setApiDebug('正在请求模型：'+model+' · OFFLINE THEATER');const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:userText}],stream:false})},15000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,220):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('返回内容不是有效 JSON：'+raw.slice(0,160))}const answer=extractAIText(j);if(!answer)throw new Error('API 返回成功，但没有找到 choices[0].message.content');setApiDebug('AI 小剧场回应成功。模型：'+model,true);return answer}catch(e){setApiDebug('AI 请求失败：'+apiErrorText(e));return null}finally{aiBusy=false}}
+function renderModelPicker(){
+ const box=$('modelPicker');
+ if(!box)return;
+ const models=Array.isArray(state.modelList)?state.modelList.filter(Boolean):[];
+ box.innerHTML=models.length?models.map(id=>'<button class="model-option '+(state.apiModel===id?'active':'')+'" type="button" data-model="'+esc(id)+'">'+esc(id)+'</button>').join(''):'<div class="empty-note">还没有读取模型。先 CONNECT API / REFRESH MODELS。</div>';
+ $('selectedModelLabel').textContent='当前模型：'+(state.apiModel||'未选择');
+}
+function renderSettings(){
+ $('setName').value=state.name||defaults.name;
+ $('setPartner').value=state.partner||defaults.partner;
+ $('setDate').value=state.startDate||'';
+ $('setToday').value=state.today||defaults.today;
+ $('apiBase').value=state.apiBase||'';
+ $('apiKey').value=state.apiKey||'';
+ $('manualModel').value='';
+ renderModelPicker();
+ renderPersonaList();
+ renderWorldBookList();
+ renderPresetManageList();
+ $('memoryToggle').textContent=state.memoryOn?'MEMORY ON':'MEMORY OFF';
+ const connected=!!(state.apiBase&&state.apiKey&&state.apiModel);
+ $('apiStatus').textContent=connected?'API 已连接 · '+state.apiModel:'未连接 API。Space 会使用内置角色互动。';
+ $('apiStatus').classList.toggle('on',connected);
+ updateAIState();
+}
 function renderPersonaList(){const box=$('personaList');if(!box)return;box.innerHTML=state.characters.map(c=>'<div class="manage-item"><div class="manage-item-head"><div><div class="manage-item-title">'+esc(c.name)+'</div><div class="manage-item-sub">'+esc(c.ageIdentity||'')+'</div></div></div><div class="manage-item-sub">'+esc(c.personality||'暂无性格描述')+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-persona="'+c.id+'">EDIT</button><button class="btn" type="button" data-delete-persona="'+c.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有角色。</div>'}
 function renderWorldBookList(){const box=$('worldBookList');if(!box)return;box.innerHTML=state.worldBooks.map(w=>'<div class="manage-item"><div class="manage-item-head"><div><div class="manage-item-title">'+esc(w.title)+'</div><div class="manage-item-sub">'+esc(w.keywords||'')+'</div></div></div><div class="manage-item-sub">'+esc((w.content||'').slice(0,180))+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-world="'+w.id+'">EDIT</button><button class="btn" type="button" data-delete-world="'+w.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有世界书。</div>'}
 function renderPresetManageList(){const box=$('presetManageList');if(!box)return;box.innerHTML=state.aiPresets.map(x=>'<div class="manage-item"><div class="manage-item-title">'+esc(x.name)+'</div><div class="manage-item-sub">'+esc((x.instruction||'').slice(0,180))+'</div><div class="tiny-actions"><button class="btn" type="button" data-edit-preset="'+x.id+'">EDIT</button><button class="btn" type="button" data-delete-preset="'+x.id+'">DELETE</button></div></div>').join('')||'<div class="empty-note">还没有 AI 预设。</div>'}
