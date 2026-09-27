@@ -1,4 +1,4 @@
-/* LOVE RECORD V24 — Home layout refinement */
+/* LOVE RECORD V24 — Home layout refinement v2 */
 (function(){
   'use strict';
   const STYLE_ID='v24-home-layout-style';
@@ -10,9 +10,7 @@
       #home.v24-refined-home .hero{position:relative;padding:18px 4px 30px;min-height:300px}
       #home.v24-refined-home .days{margin-top:42px}
       #home.v24-refined-home .home-moment-mini{position:absolute;right:0;top:76px;width:31%;max-width:150px;margin:0!important;padding:10px;background:rgba(255,255,255,.94);border-radius:24px;box-shadow:0 18px 45px rgba(77,58,88,.07);border:1px solid rgba(255,255,255,.95);z-index:2}
-      #home.v24-refined-home .home-moment-mini .home-status{margin:0 2px 9px}
-      #home.v24-refined-home .home-moment-mini .eyebrow{font-size:8px;letter-spacing:2.2px;white-space:nowrap}
-      #home.v24-refined-home .home-moment-mini .status{font-size:7px;letter-spacing:1px}
+      #home.v24-refined-home .home-moment-mini .home-status{display:none!important}
       #home.v24-refined-home .home-moment-mini .photo{aspect-ratio:3/4;width:100%;height:auto;border-radius:16px;margin-top:0!important}
       #home.v24-refined-home .home-moment-mini .actions{display:none}
       #home.v24-refined-home .home-moment-mini #homeFile{display:none}
