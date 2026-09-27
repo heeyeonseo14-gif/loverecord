@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Our Space">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
-<title>YANYAN × YAN HUAN</title>
+<title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -61,14 +61,23 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 @media(max-width:420px){.appearance-grid{grid-template-columns:1fr}}
 
 </style>
+<style>
+.world-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.world-tile{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(246,239,249,.85));border-radius:21px;padding:17px;text-align:left;color:var(--ink);min-height:82px}.world-tile b{display:block;font-size:12px;letter-spacing:2px;font-weight:500}.world-tile span{display:block;font-size:12px;color:var(--muted);margin-top:7px}.module-modal{align-items:flex-end}.module-sheet{max-height:91vh}.module-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.module-close{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px}.module-list{display:grid;gap:10px;margin-top:15px}.module-item{border:1px solid var(--line);border-radius:20px;padding:15px;background:rgba(255,255,255,.75)}.module-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.module-item h3{margin:0}.module-meta{font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px}.mini-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.mini-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;color:var(--ink)}.mini-btn.danger{color:#9a6575}.module-empty{padding:28px 8px;text-align:center;color:var(--muted);font-size:13px}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.check-pill{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;font-size:12px}.check-pill input{width:auto;margin-right:7px}.forum-post{border:1px solid var(--line);border-radius:20px;padding:15px;background:#fff}.forum-post+.forum-post{margin-top:10px}.forum-author{font-size:11px;letter-spacing:1px;color:var(--muted)}.forum-title{font-size:15px;margin-top:7px;line-height:1.55}.forum-body{font-size:13px;line-height:1.75;margin-top:7px;white-space:pre-wrap}.forum-reply{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;line-height:1.7}.dark-mode .world-tile,.dark-mode .module-item,.dark-mode .mini-btn,.dark-mode .check-pill,.dark-mode .forum-post,.dark-mode .module-close{background:#211c24;color:#f4eef6;border-color:#3a323e}
+</style>
 </head>
 <body>
 <div class="app">
 <main id="home" class="page active">
-  <div class="hero"><div class="eyebrow">PRIVATE SPACE</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
+  <div class="hero"><div class="eyebrow">LOVE RECORD</div><h1>OUR LITTLE UNIVERSE</h1><div id="names" class="names">YANYAN × YAN HUAN</div><div id="days" class="days">0</div><div class="days-label">DAYS TOGETHER</div></div>
   <div class="line"></div>
   <div class="card"><div class="eyebrow">TODAY</div><div id="todayText" style="font-size:18px;line-height:1.8;margin-top:14px">把今天也留在这里。</div></div>
   <div class="card"><div class="home-status"><span class="eyebrow">A MOMENT</span><span class="status">PRIVATE</span></div><div id="homePhoto" class="photo" style="margin-top:15px">YOUR PHOTO</div><div class="actions"><button class="btn primary" id="homeUpload" type="button">ADD PHOTO</button><button class="btn" id="homeClear" type="button">CLEAR</button></div><input id="homeFile" type="file" accept="image/*" hidden></div>
+  <div class="card"><div class="eyebrow">YOUR WORLD</div><h2>LOVE RECORD</h2><div class="sub">人物、论坛、世界和日记，都留在这里。</div><div class="world-grid">
+    <button class="world-tile" type="button" data-open-module="people"><b>PEOPLE</b><span>AI 人物</span></button>
+    <button class="world-tile" type="button" data-open-module="forum"><b>FORUM</b><span>AI 社区</span></button>
+    <button class="world-tile" type="button" data-open-module="world"><b>WORLD</b><span>世界观</span></button>
+    <button class="world-tile" type="button" data-open-module="journal"><b>JOURNAL</b><span>日记</span></button>
+  </div></div>
 </main>
 
 <main id="memories" class="page">
@@ -118,10 +127,18 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 </div></nav>
 
 
+<div id="moduleModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow" id="moduleEyebrow">PEOPLE</div><h2 id="moduleTitle">AI PEOPLE</h2></div><button class="module-close" id="moduleClose" type="button">×</button></div><div id="moduleBody"></div></section></div>
+
+<div id="personEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">PEOPLE</div><h2 id="personEditTitle">NEW PERSON</h2></div><button class="module-close" id="personEditClose" type="button">×</button></div><label>NAME</label><input id="personName" placeholder="例如：颜焕"><label>ROLE / IDENTITY</label><input id="personRole" placeholder="例如：创业公司老板"><label>PERSONALITY</label><textarea id="personPersonality" placeholder="性格、习惯、情绪表达……"></textarea><label>APPEARANCE</label><textarea id="personAppearance" placeholder="外貌、穿着、气质……"></textarea><label>SPEAKING STYLE</label><textarea id="personSpeech" placeholder="说话方式、口头禅、语气……"></textarea><label>BACKGROUND</label><textarea id="personBackground" placeholder="人物背景故事……"></textarea><label>AI INSTRUCTIONS</label><textarea id="personInstructions" placeholder="AI 扮演这个人物时必须遵守的规则……"></textarea><div class="actions"><button class="btn primary" id="savePerson" type="button">SAVE PERSON</button><button class="btn" id="cancelPerson" type="button">CANCEL</button></div></section></div>
+
+<div id="worldEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">WORLD</div><h2 id="worldEditTitle">NEW WORLD</h2></div><button class="module-close" id="worldEditClose" type="button">×</button></div><label>NAME</label><input id="worldName" placeholder="例如：颜林别墅"><label>DESCRIPTION</label><textarea id="worldDescription" placeholder="这个世界是什么样的？"></textarea><label>LOCATIONS</label><textarea id="worldLocations" placeholder="地点、房间、城市……"></textarea><label>RULES</label><textarea id="worldRules" placeholder="这个世界需要遵守的规则……"></textarea><div class="actions"><button class="btn primary" id="saveWorld" type="button">SAVE WORLD</button><button class="btn" id="cancelWorld" type="button">CANCEL</button></div></section></div>
+
+<div id="journalEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">JOURNAL</div><h2>NEW ENTRY</h2></div><button class="module-close" id="journalEditClose" type="button">×</button></div><label>TITLE</label><input id="journalTitle" placeholder="今天想记住什么？"><label>MOOD</label><input id="journalMood" placeholder="quiet / happy / tired"><label>NOTE</label><textarea id="journalNote" placeholder="写下来……"></textarea><div class="actions"><button class="btn primary" id="saveJournal" type="button">SAVE ENTRY</button><button class="btn" id="cancelJournal" type="button">CANCEL</button></div></section></div>
+
 <div id="appearanceModal" class="modal appearance-modal">
   <section class="sheet appearance-sheet">
     <div class="appearance-top"><div><div class="eyebrow">APPEARANCE</div><h2 style="margin-top:6px">MAKE IT YOURS</h2></div><button class="appearance-close" id="closeAppearance" type="button">×</button></div>
-    <div class="appearance-preview" id="appearancePreview"><div class="eyebrow">LIVE PREVIEW</div><div style="font-size:22px;margin-top:8px;letter-spacing:2px">YANYAN × YAN HUAN</div><div class="preview-card"><div class="eyebrow">A LITTLE MOMENT</div><div id="previewBody" style="font-size:16px;line-height:1.8;margin-top:8px">今天也想和你待在一起。</div><button class="btn primary" type="button" style="margin-top:13px">A SOFT BUTTON</button></div></div>
+    <div class="appearance-preview" id="appearancePreview"><div class="eyebrow">LIVE PREVIEW</div><div style="font-size:22px;margin-top:8px;letter-spacing:2px">LOVE RECORD</div><div class="preview-card"><div class="eyebrow">A LITTLE MOMENT</div><div id="previewBody" style="font-size:16px;line-height:1.8;margin-top:8px">今天也想和你待在一起。</div><button class="btn primary" type="button" style="margin-top:13px">A SOFT BUTTON</button></div></div>
     <div class="appearance-section"><h3>PRESETS</h3><div class="sub">一键换整套气质。</div><div class="appearance-grid" id="presetGrid" style="margin-top:12px"></div></div>
     <div class="appearance-section"><h3>FONT</h3><div class="sub">选择整个 App 的字体。</div><div class="appearance-grid" id="fontGrid" style="margin-top:12px"></div></div>
     <div class="appearance-section"><h3>FONT SIZE</h3><div class="sub">调整正文大小。</div><div class="range-row" style="margin-top:12px"><input id="fontSizeRange" type="range" min="13" max="19" step="1"><div class="range-value" id="fontSizeValue"></div></div></div>
@@ -138,7 +155,7 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 <div id="toast" class="toast"></div>
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
-const defaults={name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[]};
+const defaults={name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],people:[{id:'p-yanyan',name:'YANYAN',role:'你自己',personality:'真实的你。',appearance:'',speech:'',background:'',instructions:'不要替 YANYAN 决定行动或想法。'},{id:'p-yanhuan',name:'YAN HUAN',role:'恋人',personality:'温柔、清冷、自然。',appearance:'',speech:'',background:'',instructions:'保持角色一致，不要自称 AI。'}],worlds:[],forumPosts:[],journal:[]};
 let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
@@ -185,6 +202,49 @@ function setSceneResponse(text){$('sceneText').textContent='这一刻，他看�
 async function handleChoice(text){addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent='他停了一下，看向你。';$('sceneQuote').textContent='正在想怎么回应……';const r=await askAI(text,'choice');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，先陪你把这一刻留着');renderScene()}}else{const replies=['他轻轻笑了一下，没有催你。','他往旁边挪了挪，给你留了位置。','他看了你一会儿，然后把手伸过来。','“好，那我们就这样待一会儿。”'];setSceneResponse(replies[Math.floor(Math.random()*replies.length)]);toast('这一刻留下来了 ♡')}}
 async function handleFree(){const input=$('freeInput');const text=input.value.trim();if(!text)return;input.value='';addEvent(state.name+'：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneQuote').textContent='正在回应……';const r=await askAI(text,'free');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else{toast('AI 暂时没回应，检查 API 连接后再试')}}else{setSceneResponse('嗯，我听着。你慢慢说。');toast('内置模式也可以继续聊天 ♡')}}
 async function surprise(){const pool=['厨房里突然想吃一点甜的。','阳台的风刚刚好，适合一起待五分钟。','他突然想听你最近最喜欢的一首歌。','今天晚上留十分钟，不看手机，只陪对方。','他刚刚想起一件小事，准备告诉你。'];const text=pool[Math.floor(Math.random()*pool.length)];addEvent('A LITTLE SURPRISE：'+text);if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent=text;$('sceneQuote').textContent='AI 正在把这一刻接下去……';const r=await askAI(text,'surprise');if(r){setSceneResponse(r);addEvent(state.partner+'：'+r)}else toast('AI 没回应，但惊喜已经留下 ♡')}else{$('sceneText').textContent=text;$('sceneQuote').textContent='“过来。”';toast('给你一个小惊喜 ♡')}}
+
+
+function ensureWorldData(){
+  if(!Array.isArray(state.people))state.people=defaults.people.map(x=>({...x}));
+  if(!Array.isArray(state.worlds))state.worlds=[];
+  if(!Array.isArray(state.forumPosts))state.forumPosts=[];
+  if(!Array.isArray(state.journal))state.journal=[];
+  let changed=false;
+  if(!state.people.some(x=>x.id==='p-yanyan')){state.people.unshift({...defaults.people[0]});changed=true}
+  if(!state.people.some(x=>x.id==='p-yanhuan')){state.people.push({...defaults.people[1]});changed=true}
+  if(changed)save();
+}
+let editingPersonId='',editingWorldId='';
+function openModule(name){$('moduleModal').classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
+function closeModule(){ $('moduleModal').classList.remove('show');document.body.style.overflow=''}
+function renderModule(name){
+ const titles={people:['PEOPLE','AI PEOPLE'],forum:['FORUM','AI COMMUNITY'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
+ $('moduleEyebrow').textContent=titles[name][0];$('moduleTitle').textContent=titles[name][1];
+ const b=$('moduleBody');
+ if(name==='people'){
+   b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-person">+ NEW PERSON</button></div><div class="module-list">'+(state.people.length?state.people.map(p=>`<div class="module-item"><div class="module-item-head"><div><h3>${esc(p.name)}</h3><div class="module-meta">${esc(p.role||'AI character')}<br>${esc(p.personality||'')}</div></div></div><div class="mini-actions"><button class="mini-btn" data-action="edit-person" data-id="${esc(p.id)}">EDIT</button><button class="mini-btn danger" data-action="delete-person" data-id="${esc(p.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">还没有人物。先建立一个吧。</div>')+'</div>';
+ }else if(name==='world'){
+   b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-world">+ NEW WORLD</button></div><div class="module-list">'+(state.worlds.length?state.worlds.map(w=>`<div class="module-item"><h3>${esc(w.name)}</h3><div class="module-meta">${esc(w.description||'')}</div><div class="mini-actions"><button class="mini-btn" data-action="edit-world" data-id="${esc(w.id)}">EDIT</button><button class="mini-btn danger" data-action="delete-world" data-id="${esc(w.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">还没有世界观。</div>')+'</div>';
+ }else if(name==='journal'){
+   b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-journal">+ NEW ENTRY</button></div><div class="module-list">'+(state.journal.length?state.journal.slice().reverse().map(j=>`<div class="module-item"><div class="module-meta">${esc(j.date)} · ${esc(j.mood||'')}</div><h3 style="margin-top:5px">${esc(j.title||'Untitled')}</h3><div class="module-meta">${esc(j.note||'')}</div><div class="mini-actions"><button class="mini-btn danger" data-action="delete-journal" data-id="${esc(j.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">把今天留下一点点。</div>')+'</div>';
+ }else if(name==='forum'){
+   const people=state.people;
+   b.innerHTML=`<div class="card" style="margin-top:15px;padding:17px"><h3>AI GENERATOR</h3><div class="sub">让你建立的人物通过 API 自己发帖、讨论和回复。</div><label>TOPIC</label><input id="forumTopic" placeholder="例如：今天最想做的事情"><label>AI PARTICIPANTS</label><div class="check-grid">${people.map(p=>`<label class="check-pill"><input type="checkbox" data-forum-person value="${esc(p.id)}" ${p.id==='p-yanhuan'?'checked':''}>${esc(p.name)}</label>`).join('')}</div><label>HOW MANY POSTS</label><input id="forumCount" type="number" min="1" max="6" value="3"><div class="actions"><button class="btn primary" data-action="generate-forum">✦ GENERATE WITH API</button><button class="btn" data-action="manual-forum">+ MANUAL POST</button></div><div id="forumStatus" class="sub" style="margin-top:10px"></div></div><div class="module-list">${renderForumPosts()}</div>`;
+ }
+}
+function renderForumPosts(){if(!state.forumPosts.length)return '<div class="module-empty">论坛还很安静。让 AI 先聊起来吧。</div>';return state.forumPosts.slice().reverse().map(p=>`<article class="forum-post"><div class="forum-author">${esc(p.author)} · ${esc(p.date||'')}</div><div class="forum-title">${esc(p.title||'')}</div><div class="forum-body">${esc(p.body||'')}</div>${p.reply?`<div class="forum-reply"><b>${esc(p.reply.author||'')}</b>：${esc(p.reply.body||'')}</div>`:''}<div class="mini-actions"><button class="mini-btn danger" data-action="delete-post" data-id="${esc(p.id)}">DELETE</button></div></article>`).join('')}
+function openPersonEditor(id=''){editingPersonId=id;const p=state.people.find(x=>x.id===id)||{};$('personEditTitle').textContent=id?'EDIT PERSON':'NEW PERSON';$('personName').value=p.name||'';$('personRole').value=p.role||'';$('personPersonality').value=p.personality||'';$('personAppearance').value=p.appearance||'';$('personSpeech').value=p.speech||'';$('personBackground').value=p.background||'';$('personInstructions').value=p.instructions||'';$('personEditModal').classList.add('show');document.body.style.overflow='hidden'}
+function closePersonEditor(){ $('personEditModal').classList.remove('show');document.body.style.overflow=''}
+function savePerson(){const name=$('personName').value.trim();if(!name){toast('请先填写人物名字');return}const obj={id:editingPersonId||'p-'+Date.now(),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj}else state.people.push(obj);save();closePersonEditor();renderModule('people');toast('人物已保存')}
+function openWorldEditor(id=''){editingWorldId=id;const w=state.worlds.find(x=>x.id===id)||{};$('worldEditTitle').textContent=id?'EDIT WORLD':'NEW WORLD';$('worldName').value=w.name||'';$('worldDescription').value=w.description||'';$('worldLocations').value=w.locations||'';$('worldRules').value=w.rules||'';$('worldEditModal').classList.add('show');document.body.style.overflow='hidden'}
+function closeWorldEditor(){$('worldEditModal').classList.remove('show');document.body.style.overflow=''}
+function saveWorld(){const name=$('worldName').value.trim();if(!name){toast('请先填写世界名称');return}const obj={id:editingWorldId||'w-'+Date.now(),name,description:$('worldDescription').value.trim(),locations:$('worldLocations').value.trim(),rules:$('worldRules').value.trim()};if(editingWorldId){const i=state.worlds.findIndex(x=>x.id===editingWorldId);if(i>=0)state.worlds[i]=obj}else state.worlds.push(obj);save();closeWorldEditor();renderModule('world');toast('世界已保存')}
+function openJournalEditor(){$('journalTitle').value='';$('journalMood').value='';$('journalNote').value='';$('journalEditModal').classList.add('show');document.body.style.overflow='hidden'}
+function closeJournalEditor(){$('journalEditModal').classList.remove('show');document.body.style.overflow=''}
+function saveJournal(){const note=$('journalNote').value.trim();if(!note){toast('写一点内容再保存吧');return}state.journal.push({id:'j-'+Date.now(),date:new Date().toLocaleDateString('zh-CN'),title:$('journalTitle').value.trim()||'Untitled',mood:$('journalMood').value.trim(),note});save();closeJournalEditor();renderModule('journal');toast('日记已保存')}
+function extractJSONArray(text){let t=String(text||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();const a=t.indexOf('['),z=t.lastIndexOf(']');if(a>=0&&z>a)t=t.slice(a,z+1);try{const j=JSON.parse(t);return Array.isArray(j)?j:null}catch{return null}}
+async function generateForum(){const topic=$('forumTopic')?.value.trim()||'今天大家都在做什么';const ids=[...document.querySelectorAll('[data-forum-person]:checked')].map(x=>x.value);const participants=state.people.filter(p=>ids.includes(p.id));const count=Math.min(6,Math.max(1,parseInt($('forumCount')?.value||'3',10)||3));if(!participants.length){toast('至少选择一个 AI 人物');return}if(!state.apiBase||!state.apiKey||!state.apiModel){toast('请先在 Settings 连接 API');$('forumStatus').textContent='还没有 API：去 Settings → AI / API 连接后再回来。';return}const prompt=`你正在为一个私人 AI 论坛生成真实自然的社区内容。论坛主题：${topic}。参与人物：${participants.map(p=>`名字=${p.name};身份=${p.role};性格=${p.personality};说话方式=${p.speech};背景=${p.background};AI规则=${p.instructions}`).join('\n')}。请生成 ${count} 条彼此有一点互动的帖子。每条包含 author、title、body；其中可以有少量 reply，reply 需要包含 author、body。不要替 YANYAN 决定行动。只返回合法 JSON 数组，不要 Markdown，不要解释。`;const old=aiBusy; if(old){toast('AI 正在处理另一条请求');return}$('forumStatus').textContent='AI 正在生成论坛内容……';aiBusy=true;try{const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是一个论坛内容生成器。输出必须是合法 JSON 数组。'},{role:'user',content:prompt}],stream:false})},20000);const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,220));const j=JSON.parse(raw);const txt=extractAIText(j);const arr=extractJSONArray(txt);if(!arr)throw new Error('AI 返回的不是可解析的 JSON 数组');arr.slice(0,count).forEach(x=>state.forumPosts.push({id:'post-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),author:x.author||participants[0].name,title:x.title||topic,body:x.body||'',reply:x.reply||null,date:new Date().toLocaleDateString('zh-CN')}));save();renderModule('forum');toast('论坛更新啦 ♡')}catch(e){$('forumStatus').textContent='生成失败：'+apiErrorText(e);toast('论坛生成失败，看一下提示')}finally{aiBusy=false}}
+function addManualForum(){const author=prompt('谁来发帖？\n可填写 YANYAN 或人物名字。',state.name)||state.name;const title=prompt('帖子标题？','今天的小记录')||'今天的小记录';const body=prompt('帖子内容？','')||'';if(!body)return;state.forumPosts.push({id:'post-'+Date.now(),author,title,body,reply:null,date:new Date().toLocaleDateString('zh-CN')});save();renderModule('forum');toast('帖子已发布')}
 
 const APPEARANCE_KEY='yanyan-love-appearance-v1';
 const appearanceDefaults={preset:'purple',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:0,opacity:.94,dark:false,motion:true};
@@ -234,11 +294,29 @@ $('sendFree').onclick=handleFree;
 $('freeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleFree()}});
 $('surprise').onclick=surprise;
 $('installHelp').onclick=()=>toast('Chrome ⋮ → 添加到主屏幕 / 安装应用');
+
+$('moduleClose').onclick=closeModule;$('moduleModal').addEventListener('click',e=>{if(e.target.id==='moduleModal')closeModule()});
+$('personEditClose').onclick=closePersonEditor;$('cancelPerson').onclick=closePersonEditor;$('savePerson').onclick=savePerson;
+$('worldEditClose').onclick=closeWorldEditor;$('cancelWorld').onclick=closeWorldEditor;$('saveWorld').onclick=saveWorld;
+$('journalEditClose').onclick=closeJournalEditor;$('cancelJournal').onclick=closeJournalEditor;$('saveJournal').onclick=saveJournal;
+document.addEventListener('click',e=>{
+ const open=e.target.closest('[data-open-module]');if(open){openModule(open.dataset.openModule);return}
+ const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;
+ if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return}
+ if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();renderModule('people');toast('人物已删除')}return}
+ if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
+ if(a==='delete-world'){if(confirm('删除这个世界？')){state.worlds=state.worlds.filter(x=>x.id!==id);save();renderModule('world');toast('世界已删除')}return}
+ if(a==='new-journal'){openJournalEditor();return}
+ if(a==='delete-journal'){if(confirm('删除这篇日记？')){state.journal=state.journal.filter(x=>x.id!==id);save();renderModule('journal');toast('日记已删除')}return}
+ if(a==='generate-forum'){generateForum();return} if(a==='manual-forum'){addManualForum();return}
+ if(a==='delete-post'){if(confirm('删除这条帖子？')){state.forumPosts=state.forumPosts.filter(x=>x.id!==id);save();renderModule('forum');toast('帖子已删除')}return}
+});
+
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBox').classList.add('show')});
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-(async()=>{await openDB();renderHome();renderMemories();renderSettings();renderScene();renderTimeline()})();
+(async()=>{ensureWorldData();await openDB();renderHome();renderMemories();renderSettings();renderScene();renderTimeline()})();
 </script>
 </body>
 </html>
