@@ -60,6 +60,11 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .eyebrow,.days-label{font-size:calc(10px * var(--ui-scale,1))}
 @media(max-width:420px){.appearance-grid{grid-template-columns:1fr}}
 
+
+/* CONTACT-BASED CHAT + SEPARATE WEIBO */
+.chat-page{padding-bottom:130px}.chat-page-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.chat-page-heading h1{margin-top:12px}.chat-add-top{width:43px;height:43px;border:1px solid var(--line);border-radius:50%;background:#fff;color:#9275a2;font-size:29px;line-height:1}
+.chat-contact-list{display:grid;gap:9px;margin-top:24px}.chat-contact-card{display:flex;align-items:center;gap:13px;width:100%;border:1px solid var(--line);background:rgba(255,255,255,.9);border-radius:20px;padding:13px;text-align:left;color:var(--ink)}.chat-contact-avatar,.chat-person-avatar{width:48px;height:48px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#eee4f3,#d9c6e2);color:#806b8b;font-size:20px}.chat-contact-info{min-width:0;flex:1}.chat-contact-info strong,.chat-contact-info span{display:block}.chat-contact-info span{font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat-contact-arrow{color:var(--muted);font-size:22px}.chat-empty{padding:55px 18px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:24px;margin-top:24px;line-height:1.9}.chat-empty button{margin-top:14px}.chat-conversation{margin-top:15px}.chat-person-head{display:flex;align-items:center;gap:10px;padding:10px 0 15px;border-bottom:1px solid var(--line)}.chat-back{width:34px;height:34px;border:0;border-radius:50%;background:#fff;color:var(--muted);font-size:25px}.chat-person-meta{display:grid;gap:4px}.chat-person-meta span{font-size:11px;color:var(--muted)}.chat-messages{display:flex;flex-direction:column;gap:11px;margin:18px 0;min-height:30vh;max-height:48vh;overflow:auto}.chat-bubble{max-width:84%;padding:12px 15px;border-radius:19px;line-height:1.65;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}.chat-bubble.user{align-self:flex-end;background:#b89bc5;color:#fff;border-bottom-right-radius:6px}.chat-bubble.ai{align-self:flex-start;background:#fff;border:1px solid #eee7f0;color:#403847;border-bottom-left-radius:6px}.chat-compose{display:flex;align-items:flex-end;gap:8px;padding:10px;background:rgba(248,245,250,.96);border:1px solid #e8e0eb;border-radius:20px;backdrop-filter:blur(14px)}.chat-compose textarea{flex:1;min-height:45px;max-height:110px;resize:vertical;border-radius:14px;background:#fff}.chat-compose .btn{white-space:nowrap}.chat-hint{font-size:11px;color:#9b91a0;margin-top:10px;text-align:center}.chat-picker-item{display:flex;align-items:center;gap:10px;padding:11px;border:1px solid var(--line);border-radius:16px;background:#fff}.chat-picker-item input{width:18px;height:18px;flex:none}.weibo-composer{background:#fff;border:1px solid var(--line);border-radius:22px;padding:15px;margin:16px 0}.weibo-composer textarea{min-height:85px}.weibo-post{background:#fff;border:1px solid var(--line);border-radius:21px;padding:16px;margin:11px 0}.weibo-post-head{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px}.weibo-post-body{white-space:pre-wrap;line-height:1.8;margin:12px 0;font-size:14px}.weibo-post-actions{display:flex;gap:9px;align-items:center;border-top:1px solid var(--line);padding-top:11px}.weibo-post-actions button{border:0;background:transparent;color:#897994;font-size:12px;padding:5px 8px}.weibo-comment{display:flex;gap:7px;margin-top:10px}.weibo-comment input{flex:1;min-width:0;padding:9px 11px;font-size:12px}.weibo-comment button{border:1px solid var(--line);background:#fff;border-radius:13px;padding:0 12px;font-size:12px}.weibo-comments{font-size:12px;color:var(--muted);line-height:1.7;margin-top:9px}
+
 </style>
 <style>
 .world-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.world-tile{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(246,239,249,.85));border-radius:21px;padding:17px;text-align:left;color:var(--ink);min-height:82px}.world-tile b{display:block;font-size:12px;letter-spacing:2px;font-weight:500}.world-tile span{display:block;font-size:12px;color:var(--muted);margin-top:7px}.module-modal{align-items:flex-end}.space-person-modal{align-items:stretch}.space-person-modal .module-sheet{height:100%;max-height:none;border-radius:0;margin:0;max-width:none;padding-top:20px}.module-sheet{max-height:91vh}.module-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.module-close{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px}.module-list{display:grid;gap:10px;margin-top:15px}.module-item{border:1px solid var(--line);border-radius:20px;padding:15px;background:rgba(255,255,255,.75)}.module-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.module-item h3{margin:0}.module-meta{font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px}.mini-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.mini-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;color:var(--ink)}.mini-btn.danger{color:#9a6575}.module-empty{padding:28px 8px;text-align:center;color:var(--muted);font-size:13px}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.check-pill{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;font-size:12px}.check-pill input{width:auto;margin-right:7px}.forum-post{border:1px solid var(--line);border-radius:20px;padding:15px;background:#fff}.forum-post+.forum-post{margin-top:10px}.forum-author{font-size:11px;letter-spacing:1px;color:var(--muted)}.forum-title{font-size:15px;margin-top:7px;line-height:1.55}.forum-body{font-size:13px;line-height:1.75;margin-top:7px;white-space:pre-wrap}.forum-reply{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;line-height:1.7}.forum-open{width:100%;text-align:left;border:0;background:transparent;padding:0;color:inherit;cursor:pointer}
@@ -314,7 +319,7 @@ body{padding-top:34px;padding-bottom:calc(104px + env(safe-area-inset-bottom));}
 .system-appbar{position:fixed;z-index:85;top:34px;left:0;right:0;height:43px;padding:0 18px;display:none;align-items:center;gap:13px;background:rgba(247,244,249,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(150,138,160,.12);font-size:11px;letter-spacing:2px;color:#766b7d}
 .system-appbar.show{display:flex}
 .system-back{width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.8);color:#7d6b8b;font-size:27px;line-height:20px;padding:0}
-.system-appbar-mark{margin-left:auto;color:#ad96be}
+.system-appbar-mark{margin-left:auto;color:#ad96be;border:0;background:transparent;font-size:23px;line-height:1;padding:3px 7px}
 body:not(.launcher-open) .app{padding-top:43px}
 body:not(.launcher-open) .page{padding-top:19px}
 body.launcher-open .system-appbar{display:none}
@@ -431,28 +436,28 @@ body.launcher-open .page{padding-bottom:25px}
     <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
     <button class="launcher-app" data-launch-page="space" data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>我们的空间</span></button>
     <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
-    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-weibo"><span class="app-icon icon-weibo">◉</span><span>微博</span></button>
+    <button class="launcher-app" data-launch-module="weibo" type="button" data-drag-id="app-weibo"><span class="app-icon icon-weibo">◉</span><span>微博</span></button>
+    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
   </section>
 </main>
 
 
 <main id="chat" class="page chat-page">
-  <div class="eyebrow">PRIVATE CHAT</div>
-  <h1>和颜焕聊天</h1>
-  <div class="sub">把想说的话留在这里。</div>
-  <div id="chatMessages" class="chat-messages"></div>
-  <div class="chat-compose">
-    <textarea id="chatInput" rows="2" placeholder="想和他说些什么？"></textarea>
-    <button class="btn primary" id="chatSend" type="button">发送</button>
-  </div>
-  <div class="chat-hint" id="chatHint">聊天记录保存在这台设备。请先在设置中连接 API。</div>
+  <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div></div>
+  <section id="chatContacts" class="chat-contact-list"></section>
+  <section id="chatConversation" class="chat-conversation" hidden>
+    <div class="chat-person-head"><button id="chatBackToContacts" class="chat-back" type="button">‹</button><div class="chat-person-avatar" id="chatPersonAvatar">♡</div><div class="chat-person-meta"><strong id="chatPersonName"></strong><span id="chatPersonRole"></span></div></div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-compose"><textarea id="chatInput" rows="2" placeholder="发送一条消息……"></textarea><button class="btn primary" id="chatSend" type="button">发送</button></div>
+    <div class="chat-hint" id="chatHint">对话记录仅保存在本设备。</div>
+  </section>
 </main>
 
 <div class="system-appbar" id="systemAppbar">
   <button class="system-back" type="button" data-launch-home aria-label="返回桌面">‹</button>
   <span id="systemAppTitle">LOVE RECORD</span>
-  <span class="system-appbar-mark">✦</span>
+  <button class="system-appbar-mark" id="systemAppbarAction" type="button" aria-label="添加联系人">✦</button>
 </div>
 
 
@@ -517,6 +522,7 @@ body.launcher-open .page{padding-bottom:25px}
 <div id="worldEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">WORLD</div><h2 id="worldEditTitle">NEW WORLD</h2></div><button class="module-close" id="worldEditClose" type="button">×</button></div><label>NAME</label><input id="worldName" placeholder="例如：颜林别墅"><label>DESCRIPTION</label><textarea id="worldDescription" placeholder="这个世界是什么样的？"></textarea><label>LOCATIONS</label><textarea id="worldLocations" placeholder="地点、房间、城市……"></textarea><label>RULES</label><textarea id="worldRules" placeholder="这个世界需要遵守的规则……"></textarea><div class="actions"><button class="btn primary" id="saveWorld" type="button">SAVE WORLD</button><button class="btn" id="cancelWorld" type="button">CANCEL</button></div></section></div>
 
 <div id="journalEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">JOURNAL</div><h2>NEW ENTRY</h2></div><button class="module-close" id="journalEditClose" type="button">×</button></div><label>TITLE</label><input id="journalTitle" placeholder="今天想记住什么？"><label>MOOD</label><input id="journalMood" placeholder="quiet / happy / tired"><label>NOTE</label><textarea id="journalNote" placeholder="写下来……"></textarea><div class="actions"><button class="btn primary" id="saveJournal" type="button">SAVE ENTRY</button><button class="btn" id="cancelJournal" type="button">CANCEL</button></div></section></div>
+<div id="chatAddModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">NEW CHAT</div><h2>添加联系人</h2></div><button class="module-close" id="chatAddClose" type="button">×</button></div><div class="sub" style="margin:4px 0 14px">可以从你创建的人物中添加，也可以让 API 随机生成一位 NPC。</div><button class="btn primary" id="chatAddFromPeople" type="button" style="width:100%">从我的联系人添加</button><div id="chatPeoplePicker" class="module-list" hidden></div><div class="divider" style="height:1px;background:var(--line);margin:18px 0"></div><button class="btn" id="chatRandomNpc" type="button" style="width:100%">✦ 随机添加 NPC</button><div id="chatNpcStatus" class="sub" style="margin-top:10px"></div></section></div>
 <div id="forumDetailModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">FORUM</div><h2>DISCUSSION</h2></div><button class="module-close" id="forumDetailClose" type="button">×</button></div><div id="forumDetailBody"></div></section></div>
 
 <div id="spacePersonModal" class="modal module-modal space-person-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow" id="spacePersonEyebrow">SPACE</div><h2 id="spacePersonTitle">PERSON</h2></div><button class="module-close" id="spacePersonClose" type="button">×</button></div><div id="spacePersonBody"></div></section></div>
@@ -561,28 +567,71 @@ function renderHome(){
   });
 }
 
-const CHAT_STORE_KEY='love-record-private-chat-v1';
-function readChat(){try{return JSON.parse(localStorage.getItem(CHAT_STORE_KEY)||'[]')}catch{return []}}
-function writeChat(items){localStorage.setItem(CHAT_STORE_KEY,JSON.stringify(items))}
+const CHAT_CONTACTS_KEY='love-record-chat-contacts-v2';
+const CHAT_THREADS_KEY='love-record-chat-threads-v2';
+let activeChatContactId='';
+function readChatContacts(){try{return JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]')}catch{return []}}
+function writeChatContacts(a){localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(a))}
+function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
+function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a))}
+function contactById(id){return (state.people||[]).find(p=>p.id===id)}
 function renderChat(){
-  const box=$('chatMessages');if(!box)return;
-  const items=readChat();
-  box.innerHTML=items.length?items.map(m=>'<div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div>').join(''):'<div class="sub" style="text-align:center;padding:34px 12px">这里还没有消息。<br>发出第一句话吧 ♡</div>';
-  box.scrollTop=box.scrollHeight;
-  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，才能获得 AI 回复。';
+ const ids=readChatContacts().filter((id,i,a)=>a.indexOf(id)===i&&contactById(id));
+ const list=$('chatContacts'),conversation=$('chatConversation');
+ if(!activeChatContactId||!ids.includes(activeChatContactId)){
+  activeChatContactId='';conversation.hidden=true;list.hidden=false;
+  list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id);return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${esc((p.name||'♡').slice(0,1))}</span><span class="chat-contact-info"><strong>${esc(p.name)}</strong><span>${esc(p.role||p.personality||'AI 联系人')}</span></span><span class="chat-contact-arrow">›</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
+  return;
+ }
+ list.hidden=true;conversation.hidden=false;
+ const p=contactById(activeChatContactId);$('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
+ const threads=readChatThreads(),items=threads[activeChatContactId]||[];
+ $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div>').join(''):'<div class="sub" style="text-align:center;padding:34px 12px">你和 '+esc(p.name)+' 的对话从这里开始 ♡</div>';
+ $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
+ $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
+}
+function openChatContact(id){if(!readChatContacts().includes(id))return;activeChatContactId=id;renderChat()}
+function openChatAdd(){ $('chatAddModal').classList.add('show');document.body.style.overflow='hidden';$('chatPeoplePicker').hidden=true;$('chatNpcStatus').textContent='';}
+function closeChatAdd(){$('chatAddModal').classList.remove('show');document.body.style.overflow=''}
+function renderChatPeoplePicker(){
+ const box=$('chatPeoplePicker'),contacts=readChatContacts();
+ const candidates=(state.people||[]).filter(p=>p.id!=='p-yanyan'&&!contacts.includes(p.id));
+ box.hidden=false;
+ box.innerHTML=candidates.length?candidates.map(p=>`<label class="chat-picker-item"><input type="checkbox" value="${esc(p.id)}"><span><b>${esc(p.name)}</b><br><span class="sub">${esc(p.role||p.personality||'AI 人物')}</span></span></label>`).join('')+'<button class="btn primary" id="chatConfirmPeople" type="button" style="width:100%;margin-top:12px">添加选中的联系人</button>':'<div class="module-empty">没有可添加的人物。你可以先去「联系人」创建人物，或随机生成 NPC。</div>';
+}
+function confirmChatPeople(){const box=$('chatPeoplePicker');const selected=[...box.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value);if(!selected.length){toast('先选择至少一位联系人');return}const ids=readChatContacts();selected.forEach(id=>{if(contactById(id)&&!ids.includes(id))ids.push(id)});writeChatContacts(ids);closeChatAdd();activeChatContactId='';renderChat();toast('联系人已添加 ♡')}
+async function createRandomNpc(){
+ if(!state.apiBase||!state.apiKey||!state.apiModel){$('chatNpcStatus').textContent='请先到设置 → AI / API 连接 API，才能随机生成 NPC。';return}
+ if(aiBusy){toast('AI 正在处理另一条请求');return}
+ const btn=$('chatRandomNpc');btn.disabled=true;btn.textContent='正在生成……';$('chatNpcStatus').textContent='正在为你创造一位新朋友……';aiBusy=true;
+ const prompt='请创造一个原创、适合长期聊天的虚构 AI NPC 联系人。不要使用颜焕、YANYAN 或现有预设人物。请输出单个 JSON 对象，字段：name（中文姓名）, role（身份）, personality（性格）, appearance（外貌）, speech（说话风格）, background（背景）, instructions（角色扮演规则）。人物要具体、有辨识度、自然可信，避免极端设定。只输出 JSON。';
+ try{
+  const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是原创虚构人物设计器，只输出一个合法 JSON 对象。'},{role:'user',content:prompt}],stream:false})},25000);
+  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw),txt=extractAIText(data);let npc;try{npc=JSON.parse(txt.replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'').trim())}catch{const m=txt.match(/\{[\s\S]*\}/);if(m)npc=JSON.parse(m[0])}if(!npc||!npc.name)throw new Error('AI 返回的人物资料无法读取');
+  const person={id:'npc-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:String(npc.name).slice(0,30),role:String(npc.role||'原创 NPC'),personality:String(npc.personality||''),appearance:String(npc.appearance||''),speech:String(npc.speech||''),background:String(npc.background||''),instructions:String(npc.instructions||'')};state.people.push(person);save();const ids=readChatContacts();ids.push(person.id);writeChatContacts(ids);closeChatAdd();activeChatContactId=person.id;renderChat();toast(person.name+' 已加入联系人 ♡');
+ }catch(e){$('chatNpcStatus').textContent='生成失败：'+apiErrorText(e);toast('NPC 生成失败，请检查 API 设置')}finally{aiBusy=false;btn.disabled=false;btn.textContent='✦ 随机添加 NPC'}
 }
 async function sendChatMessage(){
-  const input=$('chatInput'),textValue=input.value.trim();if(!textValue)return;
-  const items=readChat();items.push({role:'user',text:textValue,at:Date.now()});writeChat(items);input.value='';renderChat();
-  if(!state.apiBase||!state.apiKey||!state.apiModel){toast('请先在设置中连接 API');return}
-  const send=$('chatSend');send.disabled=true;send.textContent='…';
-  try{
-    const reply=await askAI(textValue,'chat');
-    if(reply){const next=readChat();next.push({role:'assistant',text:reply,at:Date.now()});writeChat(next)}
-    else toast('暂时没有收到回复，请检查 API 设置');
-  }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
-  finally{send.disabled=false;send.textContent='发送';renderChat()}
+ const input=$('chatInput'),textValue=input.value.trim();if(!textValue||!activeChatContactId)return;
+ const p=contactById(activeChatContactId);if(!p)return;
+ const threads=readChatThreads(),items=threads[activeChatContactId]||[];items.push({role:'user',text:textValue,at:Date.now()});threads[activeChatContactId]=items;writeChatThreads(threads);input.value='';renderChat();
+ if(!state.apiBase||!state.apiKey||!state.apiModel){toast('请先在设置中连接 API');return}
+ const send=$('chatSend');send.disabled=true;send.textContent='…';aiBusy=true;
+ try{
+  const recent=items.slice(-16).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.text}));
+  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。';
+  const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},20000);
+  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw),reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');const latest=readChatThreads(),thread=latest[activeChatContactId]||[];thread.push({role:'assistant',text:reply,at:Date.now()});latest[activeChatContactId]=thread;writeChatThreads(latest);
+ }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
+ finally{aiBusy=false;send.disabled=false;send.textContent='发送';renderChat()}
 }
+
+const WEIBO_KEY='love-record-weibo-posts-v1';
+function readWeibo(){try{return JSON.parse(localStorage.getItem(WEIBO_KEY)||'[]')}catch{return []}}
+function writeWeibo(a){localStorage.setItem(WEIBO_KEY,JSON.stringify(a))}
+function renderWeibo(){const posts=readWeibo();const box=$('moduleBody');box.innerHTML=`<div class="weibo-composer"><div class="eyebrow">SHARE A MOMENT</div><textarea id="weiboDraft" placeholder="今天想分享些什么？"></textarea><div class="actions"><button class="btn primary" type="button" data-action="weibo-publish">发布动态</button></div></div><div class="eyebrow" style="margin:20px 2px 10px">FOLLOWING</div>${posts.length?posts.slice().reverse().map(p=>`<article class="weibo-post"><div class="weibo-post-head"><b>${esc(p.author||'我')}</b><span>${esc(p.date||'')}</span></div><div class="weibo-post-body">${esc(p.body||'')}</div><div class="weibo-post-actions"><button type="button" data-action="weibo-like" data-id="${esc(p.id)}">${p.liked?'♥':'♡'} ${Number(p.likes)||0}</button><button type="button" data-action="weibo-comment" data-id="${esc(p.id)}">评论 ${Array.isArray(p.comments)?p.comments.length:0}</button><button type="button" data-action="weibo-delete" data-id="${esc(p.id)}">删除</button></div>${(p.comments||[]).map(c=>`<div class="weibo-comments"><b>${esc(c.author||'我')}：</b>${esc(c.body)}</div>`).join('')}</article>`).join(''):'<div class="module-empty">这里还没有动态。发布第一条微博吧 ♡</div>'}`}
+function publishWeibo(){const input=$('weiboDraft'),body=input?.value.trim();if(!body){toast('先写一点内容吧');return}const posts=readWeibo();posts.push({id:'wb-'+Date.now(),author:state.name||'我',body,date:new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),likes:0,liked:false,comments:[]});writeWeibo(posts);renderWeibo();toast('发布成功 ♡')}
+function handleWeiboAction(action,id){const posts=readWeibo(),p=posts.find(x=>x.id===id);if(action==='weibo-publish'){publishWeibo();return}if(!p)return;if(action==='weibo-like'){p.liked=!p.liked;p.likes=Math.max(0,(Number(p.likes)||0)+(p.liked?1:-1))}if(action==='weibo-comment'){const body=prompt('写一条评论');if(!body||!body.trim())return;p.comments=p.comments||[];p.comments.push({author:state.name||'我',body:body.trim()})}if(action==='weibo-delete'){if(!confirm('删除这条动态？'))return;writeWeibo(posts.filter(x=>x.id!==id));renderWeibo();return}writeWeibo(posts);renderWeibo()}
 
 function renderMemories(){getImages('memory').then(a=>{$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+esc(x.date)+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete="'+x.id+'" style="margin-top:9px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">还没有回忆。<br>从一张照片开始吧。</div>'})}
 function hourScene(){const h=new Date().getHours();if(h<7)return{place:'BEDROOM',text:'房间里很安静，只有手机屏幕还亮着。',quote:'“这么晚还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在看什么','逗他说“你管我”']};if(h<11)return{place:'KITCHEN',text:'厨房里有一点早餐的香味。',quote:'“醒啦？过来吃一点。”',choices:['坐下来吃早餐','从背后抱住他','偷吃一口','问他今天想去哪']};if(h<18)return{place:'LIVING ROOM',text:'下午的光落在沙发上，他正在挑歌。',quote:'“来，帮我选一首。”',choices:['坐过去一起听','抢走他的手机','问他为什么选这首','靠着他休息']};if(h<23)return{place:'LIVING ROOM',text:'晚上回到家，客厅只留着一盏灯。',quote:'“今天辛苦了。”',choices:['抱他一下','问他今晚想做什么','一起看电影','什么也不说，陪着他']};return{place:'BEDROOM',text:'夜深了。房间里很安静，他还没有睡。',quote:'“怎么还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在想什么','说“我就是想找你”']}}
@@ -683,7 +732,7 @@ function nav(page){
   document.body.classList.toggle('launcher-open',page==='launcher');
   const bar=$('systemAppbar');if(bar)bar.classList.toggle('show',page!=='launcher');
   const titles={launcher:'LOVE RECORD',home:'HOME',memories:'MEMORIES',space:'OUR SPACE',settings:'SETTINGS',chat:'CHAT'};
-  const title=$('systemAppTitle');if(title)title.textContent=titles[page]||'LOVE RECORD';
+  const title=$('systemAppTitle');if(title)title.textContent=titles[page]||'LOVE RECORD';const appAction=$('systemAppbarAction');if(appAction){if(page==='chat'){appAction.innerHTML='＋';appAction.setAttribute('role','button');appAction.setAttribute('aria-label','添加联系人');appAction.style.cursor='pointer'}else{appAction.textContent='✦';appAction.removeAttribute('role');appAction.removeAttribute('aria-label');appAction.style.cursor='default'}}
   window.scrollTo(0,0);
   if(page==='home')renderHome();
   if(page==='memories')renderMemories();
@@ -753,9 +802,10 @@ let editingPersonId='',editingWorldId='',editingForumPostId='';
 function openModule(name){$('moduleModal').classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
 function closeModule(){ $('moduleModal').classList.remove('show');document.body.style.overflow=''}
 function renderModule(name){
- const titles={people:['PEOPLE','AI PEOPLE'],forum:['FORUM','AI COMMUNITY'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
+ const titles={people:['CONTACTS','MY CONTACTS'],forum:['COMMUNITY','AI COMMUNITY'],weibo:['WEIBO','微博'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
  $('moduleEyebrow').textContent=titles[name][0];$('moduleTitle').textContent=titles[name][1];
  const b=$('moduleBody');
+ if(name==='weibo'){renderWeibo();return}
  if(name==='people'){
    b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-person">+ NEW PERSON</button></div><div class="module-list">'+(state.people.length?state.people.map(p=>`<div class="module-item"><div class="module-item-head"><div><h3>${esc(p.name)}</h3><div class="module-meta">${esc(p.role||'AI character')}<br>${esc(p.personality||'')}</div></div></div><div class="mini-actions"><button class="mini-btn" data-action="edit-person" data-id="${esc(p.id)}">EDIT</button><button class="mini-btn danger" data-action="delete-person" data-id="${esc(p.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">还没有人物。先建立一个吧。</div>')+'</div>';
  }else if(name==='world'){
@@ -934,6 +984,7 @@ const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.
 
 $('chatSend').onclick=sendChatMessage;
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
+$('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd()});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatRandomNpc').onclick=createRandomNpc;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if($('chat').classList.contains('active'))openChatAdd()});
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
@@ -958,7 +1009,7 @@ $('journalEditClose').onclick=closeJournalEditor;$('cancelJournal').onclick=clos
 if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound=true;document.addEventListener('click',e=>{
  const open=e.target.closest('[data-open-module]');if(open){openModule(open.dataset.openModule);return}
  const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
- const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;
+ const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;if(a.startsWith('weibo-')){handleWeiboAction(a,id);return}
  if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return}
  if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();renderModule('people');toast('人物已删除')}return}
  if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
