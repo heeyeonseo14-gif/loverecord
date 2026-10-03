@@ -1709,7 +1709,7 @@ $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
 $('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await addImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};
-$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderScene();toast('Saved')};
+$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderScene();if(typeof window.refreshLoveRecordListeningRoom==='function')window.refreshLoveRecordListeningRoom();toast('Saved')};
 $('languageSelect').onchange=()=>{state.language=$('languageSelect').value==='zh'?'zh':'en';save();applyLanguage();toast(t('languageSaved'))};
 $('connectApi').onclick=async()=>{const ok=await loadModels();if(!ok&&$('manualModel').value.trim()){state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();state.apiModel=$('manualModel').value.trim();save();renderSettings();toast('已保存备用模型')}}
 $('refreshModels').onclick=loadModels;

@@ -168,6 +168,11 @@ function renderTogetherPicker(){
  });
 }
 
+function getMusicUserName(){
+ try{if(typeof state!=='undefined'&&state.name)return String(state.name).trim()||'我'}catch{}
+ try{const saved=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');if(saved.name)return String(saved.name).trim()||'我'}catch{}
+ return '我';
+}
 function renderTogetherActive(){
  const box=$('musicTogetherActive'),buttonText=$('musicTogetherButtonText');
  if(!box)return;box.innerHTML='';
@@ -176,8 +181,9 @@ function renderTogetherActive(){
  box.hidden=false;if(buttonText)buttonText.textContent='更换一起听的对象';
  const pair=document.createElement('div');pair.className='listening-pair';
  const you=document.createElement('div');you.className='listening-person';
- const youAvatar=document.createElement('span');youAvatar.className='listening-avatar listening-you';youAvatar.textContent='妍';
- const youName=document.createElement('strong');youName.textContent='妍妍';
+ const myName=getMusicUserName();
+ const youAvatar=document.createElement('span');youAvatar.className='listening-avatar listening-you';youAvatar.textContent=(myName||'我').slice(0,1);
+ const youName=document.createElement('strong');youName.textContent=myName;
  you.append(youAvatar,youName);
  const center=document.createElement('div');center.className='listening-heart-center';center.innerHTML='<span>♡</span><i></i>';
  const them=document.createElement('div');them.className='listening-person';
@@ -212,22 +218,21 @@ function closeTogetherModal(){
  document.body.classList.remove('music-listening-modal-open');
 }
 function openTogetherModal(){
- const modal=$('musicTogetherModal');if(!modal)return;
+ const modal=$('musicTogetherModal');if(!modal||!modal.hidden)return;
  const song=$('musicTogetherCurrentSong');
  if(song&&current){
   const strong=song.querySelector('strong');if(strong)strong.textContent=current.title||'正在播放';
   const small=song.querySelector('small');if(small)small.textContent=current.artist||'NOW PLAYING';
  }
- // Show the sheet immediately; build the contact list on the next frame so
- // a slow storage read cannot make the tap appear to freeze the whole page.
+ // Render the picker in the same interaction so the user never has to
+ // leave and re-enter Music to make the contact list appear.
  modal.hidden=false;document.body.classList.add('music-listening-modal-open');
- requestAnimationFrame(()=>{
-  try{renderTogetherPicker()}
-  catch(err){console.error('Listening room contact render failed:',err);toast('联系人列表暂时无法读取，请稍后再试')}
- });
+ try{renderTogetherPicker()}
+ catch(err){console.error('Listening room contact render failed:',err);toast('联系人列表暂时无法读取，请稍后再试')}
 }
 function init(){
  audio=$('lrGlobalAudio');if(!audio)return;
+ window.refreshLoveRecordListeningRoom=renderTogetherActive;
  audio.addEventListener('play',()=>{setButtons();renderLocal()});
  audio.addEventListener('pause',()=>{setButtons();renderLocal()});
  audio.addEventListener('timeupdate',()=>{const p=audio.duration?audio.currentTime/audio.duration*100:0;$('musicProgress').value=p;$('musicCurrentTime').textContent=fmt(audio.currentTime);$('musicDuration').textContent=fmt(audio.duration);updateLyrics()});
@@ -247,6 +252,9 @@ function init(){
  $('musicBackToLibrary').onclick=showLibraryView;
  
  
+ // Keep the dialog at document level: the music page has its own scrolling
+ // and stacking contexts, which can otherwise trap a fixed-position sheet.
+ const togetherModal=$('musicTogetherModal');if(togetherModal&&togetherModal.parentElement!==document.body)document.body.appendChild(togetherModal);
  const togetherOpen=$('musicTogetherOpen');if(togetherOpen)togetherOpen.onclick=e=>{e.preventDefault();openTogetherModal()};
  document.querySelectorAll('[data-music-together-close]').forEach(el=>el.addEventListener('click',closeTogetherModal));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('musicTogetherModal')?.hidden)closeTogetherModal()});
@@ -261,14 +269,5 @@ function init(){
  }).catch(()=>toast('音乐库初始化失败'));
 }
 
-// Delegated fallback keeps the invite button active even if another music control fails to initialize.
- document.addEventListener('click',e=>{
-  const trigger=e.target&&e.target.closest?e.target.closest('#musicTogetherOpen'):null;
-  if(!trigger)return;
-  e.preventDefault();e.stopPropagation();openTogetherModal();
- },true);
- document.addEventListener('click',e=>{
-  if(e.target&&e.target.closest&&e.target.closest('[data-music-together-close]'))closeTogetherModal();
- },true);
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
