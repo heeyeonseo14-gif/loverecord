@@ -227,7 +227,7 @@
             if (writing.style) extra += '\n\n【当前空间文风预设】\n' + writing.style + '\n请自然遵循，不要在回复中提及这条指令。';
             if (+writing.limit > 0) extra += `\n\n【回复长度】本次回复尽量控制在约 ${writing.limit} 个汉字/字符附近，完整自然地结束，不要为了凑字数重复内容。`;
             if (extra) messages[systemIndex].content += extra;
-            if (+writing.limit > 0) body.max_tokens = Math.min(32000, Math.max(512, Math.ceil(+writing.limit * 2.2)));
+            // Do not translate a character target into max_tokens: token limits can cut a sentence mid-response.
             nextInit = {...init, body: JSON.stringify(body)};
           }
         }
