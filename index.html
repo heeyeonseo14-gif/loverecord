@@ -462,6 +462,30 @@ body.launcher-open .page{padding-bottom:25px}
 .chat-page.is-conversation .chat-page-heading{display:none}
 #systemAppbar:has(+ #chat.is-conversation){background:rgba(247,244,249,.97)}
 
+/* CHAT FULLSCREEN MODE: hide the dock and pin composer to the bottom */
+body.chat-conversation-open{padding-bottom:0!important;overflow:hidden}
+body.chat-conversation-open .nav{display:none!important}
+.chat-page.is-conversation{top:77px!important;bottom:0!important;height:auto!important;min-height:0!important;padding-bottom:0!important}
+.chat-page.is-conversation .chat-conversation{height:100%;min-height:0!important}
+.chat-page.is-conversation .chat-messages{padding-bottom:18px!important}
+.chat-page.is-conversation .chat-compose{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;flex:none;margin:0 0 calc(12px + env(safe-area-inset-bottom))!important}
+.chat-page.is-conversation .chat-hint{display:none!important}
+.chat-settings-screen{position:fixed;z-index:100;inset:77px 0 0;background:var(--bg);display:none;overflow:auto;padding:22px 20px calc(28px + env(safe-area-inset-bottom));}
+.chat-settings-screen.show{display:block}
+.chat-settings-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.chat-settings-back{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--line);font-size:24px;color:#887695}
+.chat-settings-avatar{width:88px;height:88px;border-radius:26px;display:grid;place-items:center;margin:8px auto 12px;background:linear-gradient(145deg,#eee4f3,#d9c6e2);color:#806b8b;font-size:28px;overflow:hidden}
+.chat-settings-avatar img,.chat-message-avatar img,.chat-contact-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.chat-settings-screen .card{margin:14px 0}
+.chat-settings-screen label{margin-top:14px}
+.chat-bg-options{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}
+.chat-bg-option{height:54px;border-radius:15px;border:2px solid transparent}
+.chat-bg-option.active{border-color:#9a7eaa;box-shadow:0 0 0 2px #fff inset}
+.chat-contact-avatar{overflow:hidden}
+.chat-message-avatar{overflow:hidden}
+#chatMessages{transition:background .2s}
+@media(max-width:420px){.chat-settings-screen{padding-left:16px;padding-right:16px}}
+
 </style>
 
 </head>
@@ -593,6 +617,27 @@ body.launcher-open .page{padding-bottom:25px}
 
 <div id="journalEditModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">JOURNAL</div><h2>NEW ENTRY</h2></div><button class="module-close" id="journalEditClose" type="button">×</button></div><label>TITLE</label><input id="journalTitle" placeholder="今天想记住什么？"><label>MOOD</label><input id="journalMood" placeholder="quiet / happy / tired"><label>NOTE</label><textarea id="journalNote" placeholder="写下来……"></textarea><div class="actions"><button class="btn primary" id="saveJournal" type="button">SAVE ENTRY</button><button class="btn" id="cancelJournal" type="button">CANCEL</button></div></section></div>
 <div id="chatAddModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">NEW CHAT</div><h2>添加联系人</h2></div><button class="module-close" id="chatAddClose" type="button">×</button></div><div class="sub" style="margin:4px 0 14px">可以从你创建的人物中添加，也可以让 API 随机生成一位 NPC。</div><button class="btn primary" id="chatAddFromPeople" type="button" style="width:100%">从我的联系人添加</button><div id="chatPeoplePicker" class="module-list" hidden></div><div class="divider" style="height:1px;background:var(--line);margin:18px 0"></div><button class="btn" id="chatRandomNpc" type="button" style="width:100%">✦ 随机添加 NPC</button><div id="chatNpcStatus" class="sub" style="margin-top:10px"></div></section></div>
+<div id="chatSettingsScreen" class="chat-settings-screen" aria-hidden="true">
+  <div class="chat-settings-top"><button id="chatSettingsBack" class="chat-settings-back" type="button" aria-label="返回聊天">‹</button><div class="eyebrow">CHAT SETTINGS</div><span style="width:38px"></span></div>
+  <h2 style="text-align:center;margin:0">聊天设置</h2>
+  <div class="chat-settings-avatar" id="chatSettingsAvatarPreview">♡</div>
+  <div style="text-align:center"><button class="btn" id="chatChooseAvatar" type="button">更换头像</button><input id="chatAvatarFile" type="file" accept="image/*" hidden></div>
+  <div class="card">
+    <label for="chatRemarkInput">备注名称</label><input id="chatRemarkInput" maxlength="40" placeholder="给这位联系人设置备注">
+    <div class="sub" style="margin-top:8px">只会更改 Love Record 聊天列表中的显示名称，不会修改人物资料。</div>
+  </div>
+  <div class="card">
+    <h3>聊天背景</h3><div class="sub">选择一款背景，或上传自己的照片。</div>
+    <div class="chat-bg-options">
+      <button class="chat-bg-option active" type="button" data-chat-bg="#f7f3f9" style="background:#f7f3f9" aria-label="雾白"></button>
+      <button class="chat-bg-option" type="button" data-chat-bg="#f0e9f4" style="background:#f0e9f4" aria-label="浅薰衣草"></button>
+      <button class="chat-bg-option" type="button" data-chat-bg="#f4eee8" style="background:#f4eee8" aria-label="奶油米白"></button>
+      <button class="chat-bg-option" type="button" data-chat-bg="#e9e3ed" style="background:#e9e3ed" aria-label="灰紫"></button>
+    </div>
+    <div class="actions"><button class="btn" id="chatChooseBackground" type="button">上传背景照片</button><button class="btn" id="chatClearBackground" type="button">恢复默认</button><input id="chatBackgroundFile" type="file" accept="image/*" hidden></div>
+  </div>
+  <button class="btn primary" id="chatSaveSettings" type="button" style="width:100%;margin-top:8px">保存设置</button>
+</div>
 <div id="forumDetailModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow">FORUM</div><h2>DISCUSSION</h2></div><button class="module-close" id="forumDetailClose" type="button">×</button></div><div id="forumDetailBody"></div></section></div>
 
 <div id="spacePersonModal" class="modal module-modal space-person-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow" id="spacePersonEyebrow">SPACE</div><h2 id="spacePersonTitle">PERSON</h2></div><button class="module-close" id="spacePersonClose" type="button">×</button></div><div id="spacePersonBody"></div></section></div>
@@ -639,7 +684,14 @@ function renderHome(){
 
 const CHAT_CONTACTS_KEY='love-record-chat-contacts-v2';
 const CHAT_THREADS_KEY='love-record-chat-threads-v2';
+const CHAT_META_KEY='love-record-chat-meta-v1';
 let activeChatContactId='';
+let editingChatMeta={remark:'',avatar:'',background:'#f7f3f9',backgroundImage:''};
+function readChatMeta(){try{return JSON.parse(localStorage.getItem(CHAT_META_KEY)||'{}')}catch{return {}}}
+function chatMeta(id){const all=readChatMeta();return {...(all[id]||{})}}
+function writeChatMeta(id,data){const all=readChatMeta();all[id]={...(all[id]||{}),...data};localStorage.setItem(CHAT_META_KEY,JSON.stringify(all))}
+function chatShownName(p){return chatMeta(p.id).remark||p.name||'未命名联系人'}
+function chatAvatarMarkup(p,small=false){const meta=chatMeta(p.id),name=chatShownName(p);return meta.avatar?`<img src="${esc(meta.avatar)}" alt="${esc(name)}">`:esc((name||'♡').slice(0,1))}
 function readChatContacts(){try{return JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]')}catch{return []}}
 function writeChatContacts(a){localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(a))}
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
@@ -650,27 +702,48 @@ function renderChat(){
  const list=$('chatContacts'),conversation=$('chatConversation');
  const detail=!!activeChatContactId&&ids.includes(activeChatContactId);
  $('chat').classList.toggle('is-conversation',detail);
- $('systemAppbarAction').hidden=detail;
+ document.body.classList.toggle('chat-conversation-open',detail);
+ $('systemAppbarAction').hidden=false;
  if(!detail){
   activeChatContactId='';conversation.hidden=true;list.hidden=false;
   $('systemAppTitle').textContent='CHAT';
+  $('systemAppbarAction').innerHTML='＋';$('systemAppbarAction').setAttribute('aria-label','添加联系人');
   const topBack=document.querySelector('#systemAppbar .system-back');
   if(topBack){topBack.setAttribute('data-launch-home','');topBack.onclick=null;}
-  list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id),thread=readChatThreads()[id]||[],last=thread[thread.length-1];return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${esc((p.name||'♡').slice(0,1))}</span><span class="chat-contact-info"><strong>${esc(p.name||'未命名联系人')}</strong><span>${esc(last?last.text:(p.role||p.personality||'开始聊天'))}</span></span><span class="chat-contact-time">${last?'最近':' '}</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
+  list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id),thread=readChatThreads()[id]||[],last=thread[thread.length-1];return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${chatAvatarMarkup(p)}</span><span class="chat-contact-info"><strong>${esc(chatShownName(p))}</strong><span>${esc(last?last.text:(p.role||p.personality||'开始聊天'))}</span></span><span class="chat-contact-time">${last?'最近':' '}</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
   return;
  }
  list.hidden=true;conversation.hidden=false;
- const p=contactById(activeChatContactId);
+ const p=contactById(activeChatContactId),meta=chatMeta(activeChatContactId);
  const topBack=document.querySelector('#systemAppbar .system-back');
- $('systemAppTitle').textContent=p.name||'聊天';
+ $('systemAppTitle').textContent=chatShownName(p);
+ $('systemAppbarAction').innerHTML='⚙';$('systemAppbarAction').setAttribute('aria-label','聊天设置');
+ $('chatMessages').style.backgroundColor=meta.background||'#f7f3f9';
+ $('chatMessages').style.backgroundImage=meta.backgroundImage?'linear-gradient(rgba(247,243,249,.35),rgba(247,243,249,.35)),url("'+meta.backgroundImage+'")':'none';
+ $('chatMessages').style.backgroundSize='cover';$('chatMessages').style.backgroundPosition='center';
  if(topBack){topBack.removeAttribute('data-launch-home');topBack.onclick=()=>{activeChatContactId='';renderChat()};}
  $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];
- $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':esc((p.name||'♡').slice(0,1)))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div></div>').join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
+ $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':chatAvatarMarkup(p,true))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div></div>').join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
 function openChatContact(id){if(!readChatContacts().includes(id))return;activeChatContactId=id;renderChat()}
+function openChatSettings(){
+ if(!activeChatContactId)return;
+ const p=contactById(activeChatContactId);if(!p)return;
+ editingChatMeta={remark:chatMeta(activeChatContactId).remark||'',avatar:chatMeta(activeChatContactId).avatar||'',background:chatMeta(activeChatContactId).background||'#f7f3f9',backgroundImage:chatMeta(activeChatContactId).backgroundImage||''};
+ $('chatRemarkInput').value=editingChatMeta.remark;
+ $('chatSettingsAvatarPreview').innerHTML=editingChatMeta.avatar?'<img src="'+editingChatMeta.avatar+'" alt="">':esc((chatShownName(p)||'♡').slice(0,1));
+ document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.toggle('active',b.dataset.chatBg===editingChatMeta.background&&!editingChatMeta.backgroundImage));
+ $('chatSettingsScreen').classList.add('show');$('chatSettingsScreen').setAttribute('aria-hidden','false');$('systemAppbar').classList.remove('show');
+}
+function closeChatSettings(){ $('chatSettingsScreen').classList.remove('show');$('chatSettingsScreen').setAttribute('aria-hidden','true');$('systemAppbar').classList.add('show');renderChat(); }
+function imageToChatData(file,max=900){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',.78))};img.onerror=reject;img.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
+function saveChatSettings(){
+ editingChatMeta.remark=$('chatRemarkInput').value.trim();
+ writeChatMeta(activeChatContactId,editingChatMeta);closeChatSettings();toast('聊天设置已保存 ♡');
+}
 function openChatAdd(){ $('chatAddModal').classList.add('show');document.body.style.overflow='hidden';$('chatPeoplePicker').hidden=true;$('chatNpcStatus').textContent='';}
 function closeChatAdd(){$('chatAddModal').classList.remove('show');document.body.style.overflow=''}
 function renderChatPeoplePicker(){
@@ -1064,7 +1137,8 @@ const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.
 
 $('chatSend').onclick=sendChatMessage;
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
-$('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd()});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatRandomNpc').onclick=createRandomNpc;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if($('chat').classList.contains('active'))openChatAdd()});
+$('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd()});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatRandomNpc').onclick=createRandomNpc;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if(!$('chat').classList.contains('active'))return;if($('chat').classList.contains('is-conversation'))openChatSettings();else openChatAdd()});
+$('chatSettingsBack').onclick=closeChatSettings;$('chatSaveSettings').onclick=saveChatSettings;$('chatChooseAvatar').onclick=()=>$('chatAvatarFile').click();$('chatChooseBackground').onclick=()=>$('chatBackgroundFile').click();$('chatClearBackground').onclick=()=>{editingChatMeta.background='#f7f3f9';editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.toggle('active',b.dataset.chatBg==='#f7f3f9'))};$('chatAvatarFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.avatar=await imageToChatData(f,512);$('chatSettingsAvatarPreview').innerHTML='<img src=+editingChatMeta.avatar+ alt=>'}catch{toast('头像读取失败')}e.target.value=''};$('chatBackgroundFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.backgroundImage=await imageToChatData(f,1400);document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.remove('active'))}catch{toast('背景读取失败')}e.target.value=''};document.querySelectorAll('.chat-bg-option').forEach(b=>b.onclick=()=>{editingChatMeta.background=b.dataset.chatBg;editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(x=>x.classList.toggle('active',x===b))});
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
