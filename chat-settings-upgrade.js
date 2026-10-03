@@ -183,7 +183,7 @@
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
       const personaText = persona ? `用户当前人设：${persona.name || ''}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。请尊重该人设，但不要替用户决定行动、台词或情绪。` : '用户以本人身份参与聊天，不要替用户决定行动、台词或情绪。';
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}请像真实聊天对象一样自然回复，不要输出 JSON。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}请像真实聊天对象一样自然回复，不要输出 JSON。请将回复组织成 2–5 条自然、简短的连续聊天消息；每条消息之间用一个空行分隔（两个换行符），不要把多个段落挤进一个长气泡。如果内容很短，只发一条，不要为了凑数而拆句。`;
       const response = await fetchTimeout(state.apiBase.replace(/\/+$/,'') + '/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
         body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
