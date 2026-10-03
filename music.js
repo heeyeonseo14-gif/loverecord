@@ -203,7 +203,7 @@ function closeTogetherModal(){
 }
 function openTogetherModal(){
  renderTogetherPicker();
- const modal=$('musicTogetherModal');if(!modal)return;
+ const modal=$('musicTogetherModal');if(!modal){toast('听歌房间暂时无法打开，请刷新页面重试');return}
  const song=$('musicTogetherCurrentSong');
  if(song&&current){
   const strong=song.querySelector('strong');if(strong)strong.textContent=current.title||'正在播放';
@@ -232,7 +232,7 @@ function init(){
  $('musicBackToLibrary').onclick=showLibraryView;
  
  
- $('musicTogetherOpen').addEventListener('click',openTogetherModal);
+ const togetherOpen=$('musicTogetherOpen');if(togetherOpen)togetherOpen.onclick=e=>{e.preventDefault();openTogetherModal()};
  document.querySelectorAll('[data-music-together-close]').forEach(el=>el.addEventListener('click',closeTogetherModal));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('musicTogetherModal')?.hidden)closeTogetherModal()});
  $('musicTogetherStart').onclick=async()=>{
@@ -246,5 +246,14 @@ function init(){
  }).catch(()=>toast('音乐库初始化失败'));
 }
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+// Delegated fallback keeps the invite button active even if another music control fails to initialize.
+ document.addEventListener('click',e=>{
+  const trigger=e.target&&e.target.closest?e.target.closest('#musicTogetherOpen'):null;
+  if(!trigger)return;
+  e.preventDefault();e.stopPropagation();openTogetherModal();
+ },true);
+ document.addEventListener('click',e=>{
+  if(e.target&&e.target.closest&&e.target.closest('[data-music-together-close]'))closeTogetherModal();
+ },true);
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
