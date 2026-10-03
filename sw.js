@@ -1,4 +1,4 @@
-const CACHE = 'love-record-space-fixes-v2';
+const CACHE = 'love-record-space-fixes-v3';
 const ASSETS = [
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
   './chat-storage-v6.js?v=18','./chat-settings-upgrade.js?v=18','./chat-save-fix.js?v=18',
@@ -8,7 +8,7 @@ const ASSETS = [
 function injectScript(html, file) {
   const safeFile = file.replace(/\./g, "\\.");
   const tag = new RegExp("<script\\b[^>]*src=['\"]\\./" + safeFile + "(?:\\?[^'\"]*)?['\"][^>]*>\\s*<\\/script>", "i");
-  const replacement = '<script src="./' + file + '?v=1"></script>';
+  const replacement = '<script src="./' + file + '?v=3"></script>'; 
   if (tag.test(html)) return html.replace(tag, replacement);
   return html.replace('</body>', replacement + '</body>');
 }
