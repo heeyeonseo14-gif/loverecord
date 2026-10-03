@@ -1,14 +1,14 @@
-const CACHE = 'love-record-v24-chat-v15-direct';
+const CACHE = 'love-record-v24-chat-v17-glass-presets';
 const ASSETS = [
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
-  './chat-storage-v6.js?v=15','./chat-settings-upgrade.js?v=15','./chat-save-fix.js?v=15',
-  './chat-bubble-split.js?v=15','./chat-interaction-v9.js?v=15','./chat-interaction-v11.js?v=15',
-  './chat-css-unify.js?v=15'
+  './chat-storage-v6.js?v=17','./chat-settings-upgrade.js?v=17','./chat-save-fix.js?v=17',
+  './chat-bubble-split.js?v=17','./chat-interaction-v9.js?v=17','./chat-interaction-v11.js?v=17',
+  './chat-css-unify.js?v=17'
 ];
 function injectScript(html, file) {
   const safeFile = file.replace(/\./g, "\\.");
   const tag = new RegExp("<script\\b[^>]*src=[\'\"]\\./" + safeFile + "(?:\\?[^\'\"]*)?[\'\"][^>]*>\\s*<\\/script>", "i");
-  const replacement = '<script src="./' + file + '?v=15"></script>';
+  const replacement = '<script src="./' + file + '?v=17"></script>';
   if (tag.test(html)) return html.replace(tag, replacement);
   return html.replace('</body>', replacement + '</body>');
 }
