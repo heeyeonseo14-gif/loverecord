@@ -390,8 +390,26 @@
       const fix = document.createElement('style');
       fix.id = 'lr-transfer-single-card-fix';
       fix.textContent = `
-        #chatMessages .chat-bubble.lr-transfer-bubble{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important;max-width:min(78%,430px)!important}
-        #chatMessages .lr-transfer-bubble .lr-transfer-card{box-sizing:border-box;display:block;min-width:220px;max-width:min(260px,68vw);padding:20px}
+        #chatMessages .chat-message-row .chat-bubble.lr-transfer-bubble,
+        .chat-message-row .chat-bubble.lr-transfer-bubble,
+        #chatMessages .lr-transfer-bubble{
+          background:transparent!important;
+          background-color:transparent!important;
+          border:0!important;
+          box-shadow:none!important;
+          padding:0!important;
+          overflow:visible!important;
+          max-width:min(78%,430px)!important;
+        }
+        #chatMessages .lr-transfer-bubble .lr-transfer-card,
+        .chat-message-row .lr-transfer-bubble .lr-transfer-card{
+          box-sizing:border-box!important;
+          display:block!important;
+          min-width:220px!important;
+          max-width:min(260px,68vw)!important;
+          padding:20px!important;
+          margin:0!important;
+        }
       `;
       document.head.appendChild(fix);
     }
