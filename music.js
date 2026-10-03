@@ -19,8 +19,44 @@ async function saveVinylCover(data){try{await req(db.transaction(META,'readwrite
 async function loadVinylCover(){try{const x=await req(db.transaction(META).objectStore(META).get('vinylCover'));if(x?.data)applyVinylCover(x.data)}catch{}}
 function applyVinylCover(data){
  const img=$('musicVinylCover'),main=$('musicMainCover'),widget=$('musicMini'),art=$('musicMainArt');
- if(img){if(data)img.src=data;else img.removeAttribute('src')}
- if(main){if(data)main.src=data;else main.removeAttribute('src')}
+ const label=widget?.querySelector('.music-vinyl-label');
+ if(img){
+   if(data){
+     img.src=data;
+     img.style.setProperty('display','block','important');
+     img.style.setProperty('visibility','visible','important');
+     img.style.setProperty('opacity','1','important');
+   }else{
+     img.removeAttribute('src');
+     img.style.removeProperty('display');
+     img.style.removeProperty('visibility');
+     img.style.removeProperty('opacity');
+   }
+ }
+ if(label){
+   if(data){
+     label.style.setProperty('background-image',`url("${data}")`,'important');
+     label.style.setProperty('background-size','cover','important');
+     label.style.setProperty('background-position','center','important');
+   }else{
+     label.style.removeProperty('background-image');
+     label.style.removeProperty('background-size');
+     label.style.removeProperty('background-position');
+   }
+ }
+ if(main){
+   if(data){
+     main.src=data;
+     main.style.setProperty('display','block','important');
+     main.style.setProperty('visibility','visible','important');
+     main.style.setProperty('opacity','1','important');
+   }else{
+     main.removeAttribute('src');
+     main.style.removeProperty('display');
+     main.style.removeProperty('visibility');
+     main.style.removeProperty('opacity');
+   }
+ }
  if(widget)widget.classList.toggle('has-cover',!!data);
  if(art)art.classList.toggle('has-cover',!!data);
 }
