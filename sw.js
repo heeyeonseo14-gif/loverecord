@@ -1,14 +1,14 @@
-const CACHE = 'love-record-v24-chat-v18-transfer-yuan';
+const CACHE = 'love-record-space-reading-v1';
 const ASSETS = [
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
   './chat-storage-v6.js?v=18','./chat-settings-upgrade.js?v=18','./chat-save-fix.js?v=18',
   './chat-bubble-split.js?v=18','./chat-interaction-v9.js?v=18','./chat-interaction-v11.js?v=18',
-  './chat-css-unify.js?v=18'
+  './chat-css-unify.js?v=18','./space-reading-v1.js'
 ];
 function injectScript(html, file) {
   const safeFile = file.replace(/\./g, "\\.");
-  const tag = new RegExp("<script\\b[^>]*src=[\'\"]\\./" + safeFile + "(?:\\?[^\'\"]*)?[\'\"][^>]*>\\s*<\\/script>", "i");
-  const replacement = '<script src="./' + file + '?v=18"></script>';
+  const tag = new RegExp("<script\\b[^>]*src=['\"]\\./" + safeFile + "(?:\\?[^'\"]*)?['\"][^>]*>\\s*<\\/script>", "i");
+  const replacement = '<script src="./' + file + '?v=1"></script>';
   if (tag.test(html)) return html.replace(tag, replacement);
   return html.replace('</body>', replacement + '</body>');
 }
@@ -22,6 +22,7 @@ function patchHtml(html) {
   html = injectScript(html, 'chat-interaction-v9.js');
   html = injectScript(html, 'chat-interaction-v11.js');
   html = injectScript(html, 'chat-css-unify.js');
+  html = injectScript(html, 'space-reading-v1.js');
   return html;
 }
 function htmlResponse(html, source) {
