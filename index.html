@@ -726,6 +726,68 @@ body.chat-conversation-open .nav{display:none!important}
 #musicMini .music-vinyl:after{pointer-events:none!important}
 
 </style>
+
+<style id="love-record-music-upgrade">
+#musicMini{display:none!important}
+.music-page.is-player-view> :not(.music-playback-view){display:none!important}
+.music-playback-view{padding:8px 0 34px;max-width:620px;margin:0 auto}
+.music-playback-top{display:flex;align-items:center;gap:14px;margin:0 0 22px}
+.music-playback-top>div{display:flex;flex:1;flex-direction:column;gap:3px}
+.music-playback-top>div strong{font-family:Georgia,serif;font-size:17px;font-weight:500;letter-spacing:.08em}
+.music-back-btn,.music-more-btn{width:43px;height:43px;border:1px solid rgba(255,255,255,.85);border-radius:50%;background:rgba(255,255,255,.7);color:#806b8b;font-size:27px;display:grid;place-items:center}
+.music-more-btn{font-size:22px;letter-spacing:2px}
+.music-playback-cover-wrap{display:flex;justify-content:center;padding:8px 0 24px}
+.music-playback-cover{position:relative;width:min(72vw,330px);aspect-ratio:1;border-radius:30px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(145deg,#eee5f2,#c7acd1);box-shadow:0 18px 45px rgba(112,83,128,.18);color:white;font-size:90px}
+.music-playback-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.music-playback-cover.has-cover img{display:block}
+.music-playback-cover.has-cover .music-player-art-placeholder{display:none}
+.music-playback-track{text-align:center;margin:0 auto 24px}
+.music-playback-track h2{font-family:Georgia,serif;font-weight:500;font-size:clamp(25px,7vw,34px);margin:10px 0 7px;overflow-wrap:anywhere}
+.music-playback-track p{margin:0;color:#9b8ba0;font-size:15px}
+.music-playback-view .music-progress-row{display:flex;align-items:center;gap:10px;margin:20px 4px;color:#9b8ba0;font-size:12px}
+.music-playback-view .music-progress-row input,.music-playback-view .music-volume input{min-width:0;flex:1;accent-color:#ad8cba}
+.music-playback-view .music-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:22px 8px 28px}
+.music-playback-view .music-controls button{border:0;background:transparent;color:#94799f;font-size:23px;min-width:35px;min-height:44px}
+.music-playback-view .music-controls .music-main-play{width:76px;height:76px;border-radius:50%;background:linear-gradient(145deg,#c6a5d0,#a77bb8);color:white;font-size:28px;box-shadow:0 10px 24px #b99bc755}
+.music-playback-view .music-volume{display:flex;align-items:center;gap:14px;margin:0 6px 28px;color:#9a8b9e;font-size:11px;letter-spacing:.16em}
+.music-lyrics-card,.music-together-card{margin-top:18px;padding:22px 20px;border:1px solid rgba(255,255,255,.9);border-radius:25px;background:rgba(255,255,255,.58);box-shadow:0 12px 34px rgba(120,94,133,.07);backdrop-filter:blur(18px)}
+.music-feature-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.music-feature-heading h3{font-family:Georgia,serif;font-weight:500;font-size:23px;margin:5px 0 0;color:#514454}
+.music-feature-heading>button{border:1px solid #d9c5df;border-radius:18px;background:rgba(255,255,255,.65);padding:9px 14px;color:#9275a2;font-size:12px}
+.music-lyrics{min-height:180px;max-height:310px;overflow:auto;text-align:center;padding:22px 4px 8px;scroll-behavior:smooth}
+.music-lyrics-line{padding:9px 4px;color:#a99baa;font-family:Georgia,serif;font-size:17px;line-height:1.5;transition:.2s}
+.music-lyrics-line.active{color:#765783;font-size:21px;font-weight:600;transform:scale(1.02)}
+.music-lyrics-empty{padding:42px 8px;color:#a99baa;line-height:2}
+.music-lyrics-empty small{font-size:12px}
+.music-together-desc{font-size:13px;line-height:1.7;color:#998a9e;margin:12px 0 16px}
+.music-together-mark{font-size:28px;color:#b99bc7}
+.music-together-button{width:100%;border:1px solid #d9c5df;border-radius:18px;padding:13px 16px;background:linear-gradient(135deg,#f8f1fa,#eee3f3);color:#80658d;font-size:14px}
+.music-together-active{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px;border-radius:17px;background:rgba(239,229,244,.65);color:#80658d;font-size:13px}
+.music-together-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#e6d8eb;display:grid;place-items:center;color:#886c95;overflow:hidden}
+.music-together-avatar img{width:100%;height:100%;object-fit:cover}
+.music-together-modal[hidden],.music-playback-view[hidden]{display:none!important}
+.music-together-modal{position:fixed;inset:0;z-index:10050;display:flex;align-items:flex-end;justify-content:center}
+.music-together-backdrop{position:absolute;inset:0;background:rgba(45,35,51,.35);backdrop-filter:blur(5px)}
+.music-together-sheet{position:relative;width:min(100%,620px);max-height:82dvh;overflow:auto;padding:25px 22px calc(24px + env(safe-area-inset-bottom));border-radius:28px 28px 0 0;background:#f8f4fa;box-shadow:0 -14px 45px rgba(56,39,65,.15)}
+.music-together-sheet header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.music-together-sheet header h3{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:5px 0}
+.music-together-sheet header button{border:0;background:transparent;font-size:29px;color:#8f7c96}
+.music-together-contacts{display:grid;gap:8px;margin-bottom:18px}
+.music-together-contact{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid rgba(205,187,214,.6);border-radius:17px;background:rgba(255,255,255,.72)}
+.music-together-contact input{width:18px;height:18px;accent-color:#a77bb8;margin-left:auto}
+.music-together-contact .music-together-avatar{width:43px;height:43px;flex:none}
+.music-together-contact strong{font-size:14px;color:#5b4c60}
+.music-together-contact small{display:block;color:#a192a6;margin-top:3px}
+.music-together-note{font-size:11px;line-height:1.6;color:#a294a7;margin:12px 2px 0}
+@media(min-width:700px){.music-playback-view{padding-top:16px}.music-playback-cover{width:300px}}
+</style>
+
+
+<style id="love-record-music-cover-tool">
+#music .music-cover-tools{text-align:center;margin:-8px 0 20px}
+#music .music-cover-tools button{border:1px solid #d9c5df;border-radius:20px;padding:9px 18px;background:rgba(255,255,255,.62);color:#9275a2;font-size:12px}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -791,11 +853,74 @@ body.chat-conversation-open .nav{display:none!important}
   <div class="music-result-actions"><label><input type="checkbox" id="musicSelectAll"> 全选</label><button id="musicAddSelected" type="button">添加到我的歌单</button></div>
 </section>
   <section class="music-library"><div class="music-section-head"><div><div class="eyebrow">YOUR COLLECTION</div><h2>My Library</h2></div><span id="musicLibraryCount">0 TRACKS</span></div><button class="music-upload" id="musicUpload" type="button"><b>＋</b><span><strong>添加音乐</strong><small>支持单首或批量上传音频</small></span></button><input id="musicFiles" type="file" accept="audio/*" multiple hidden><div id="musicTrackList" class="music-track-list"><div class="music-empty">正在打开音乐库……</div></div></section>
-  <section class="music-player-card"><div class="music-player-art" id="musicMainArt"><span class="music-player-art-placeholder">♫</span><img id="musicMainCover" alt="唱片封面"></div><div class="music-cover-tools"><button id="musicCoverChoose" type="button">更换唱片封面</button><input id="musicCoverFile" type="file" accept="image/*" hidden></div><div class="eyebrow">NOW PLAYING</div><h2 id="musicNowTitle">还没有播放歌曲</h2><p id="musicNowArtist">从你的音乐库选择一首歌</p><div class="music-progress-row"><span id="musicCurrentTime">0:00</span><input id="musicProgress" type="range" min="0" max="100" value="0"><span id="musicDuration">0:00</span></div><div class="music-controls"><button id="musicShuffle" type="button" aria-label="随机播放">⤨</button><button id="musicPrev" type="button" aria-label="上一首">|◀</button><button id="musicPlay" class="music-main-play" type="button" aria-label="播放">▶</button><button id="musicNext" type="button" aria-label="下一首">▶|</button><button id="musicRepeat" type="button" aria-label="循环播放">↻</button></div><div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div></section>
+
+  <section class="music-playback-view" id="musicPlaybackView" hidden>
+    <header class="music-playback-top">
+      <button id="musicBackToLibrary" class="music-back-btn" type="button" aria-label="返回音乐库">‹</button>
+      <div><span class="eyebrow">LOVE RECORD · NOW PLAYING</span><strong>正在播放</strong></div>
+      <span class="music-more-spacer" aria-hidden="true"></span>
+    </header>
+    <div class="music-playback-cover-wrap">
+      <div class="music-playback-cover" id="musicMainArt">
+        <span class="music-player-art-placeholder">♫</span>
+        <img id="musicMainCover" alt="歌曲封面">
+      </div>
+    </div>
+    <div class="music-cover-tools"><button id="musicCoverChoose" type="button">更换歌曲封面</button><input id="musicCoverFile" type="file" accept="image/*" hidden></div>
+    <div class="music-playback-track">
+      <div class="eyebrow">A LITTLE MOMENT FOR US</div>
+      <h2 id="musicNowTitle">还没有播放歌曲</h2>
+      <p id="musicNowArtist">从你的音乐库选择一首歌</p>
+    </div>
+    <div class="music-progress-row">
+      <span id="musicCurrentTime">0:00</span>
+      <input id="musicProgress" type="range" min="0" max="100" value="0">
+      <span id="musicDuration">0:00</span>
+    </div>
+    <div class="music-controls">
+      <button id="musicShuffle" type="button" aria-label="随机播放">⤨</button>
+      <button id="musicPrev" type="button" aria-label="上一首">|◀</button>
+      <button id="musicPlay" class="music-main-play" type="button" aria-label="播放">▶</button>
+      <button id="musicNext" type="button" aria-label="下一首">▶|</button>
+      <button id="musicRepeat" type="button" aria-label="循环播放">↻</button>
+    </div>
+    <div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div>
+
+    <section class="music-lyrics-card">
+      <div class="music-feature-heading">
+        <div><span class="eyebrow">SING WITH THE MUSIC</span><h3>歌词</h3></div>
+        <button id="musicLyricsImport" type="button">导入歌词</button>
+        <input id="musicLyricsFile" type="file" accept=".lrc,.txt,text/plain" hidden>
+      </div>
+      <div class="music-lyrics" id="musicLyrics">
+        <div class="music-lyrics-empty">还没有歌词<br><small>可以导入这首歌的 .LRC 歌词文件</small></div>
+      </div>
+    </section>
+
+    <section class="music-together-card">
+      <div class="music-feature-heading">
+        <div><span class="eyebrow">A SONG FOR TWO</span><h3>一起听</h3></div>
+        <span class="music-together-mark">♡</span>
+      </div>
+      <p class="music-together-desc">邀请 LOVE RECORD 联系人，留下这段共同听歌的时光。</p>
+      <div id="musicTogetherActive" class="music-together-active" hidden></div>
+      <button id="musicTogetherOpen" class="music-together-button" type="button">＋ 选择联系人一起听</button>
+    </section>
+  </section>
+
+  <div class="music-together-modal" id="musicTogetherModal" hidden>
+    <div class="music-together-backdrop" data-music-together-close></div>
+    <section class="music-together-sheet" role="dialog" aria-modal="true" aria-labelledby="musicTogetherTitle">
+      <header><div><span class="eyebrow">LISTEN TOGETHER</span><h3 id="musicTogetherTitle">想和谁一起听？</h3></div><button type="button" data-music-together-close aria-label="关闭">×</button></header>
+      <div id="musicTogetherContacts" class="music-together-contacts"></div>
+      <button id="musicTogetherStart" class="music-together-button" type="button">开始一起听 ♡</button>
+      <p class="music-together-note">一起听状态保存在这台设备上；目前不会向其他设备实时同步音频。</p>
+    </section>
+  </div>
+
   <div class="music-toast" id="musicToast" role="status"></div>
 </main>
 <audio id="lrGlobalAudio" preload="metadata"></audio>
-<button class="music-mini" id="musicMini" type="button" hidden aria-label="黑胶唱片播放器：点击播放或暂停，长按移动"><span class="music-vinyl" aria-hidden="true"><span class="music-vinyl-label"><img class="music-vinyl-cover" id="musicVinylCover" alt=""><i></i></span></span></button>
 <main id="chat" class="page chat-page">
   <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div></div>
   <section id="chatContacts" class="chat-contact-list"></section>
@@ -1611,7 +1736,7 @@ if(loveIntro){
   <script src="./chat-interaction-v9.js?v=15"></script>
   <script src="./chat-interaction-v11.js?v=15"></script>
   <script src="./chat-css-unify.js?v=15"></script>
-  <script src="./music.js?v=8"></script>
+  <script src="./music.js?v=9"></script>
 
 <script>
 (()=>{
