@@ -788,6 +788,44 @@ body.chat-conversation-open .nav{display:none!important}
 #music .music-cover-tools button{border:1px solid #d9c5df;border-radius:20px;padding:9px 18px;background:rgba(255,255,255,.62);color:#9275a2;font-size:12px}
 </style>
 
+
+<style id="love-record-music-compact-romantic-v2">
+/* Compact LOVE RECORD playback layout */
+.music-playback-view{max-width:520px!important;padding:5px 0 26px!important}
+.music-playback-top{margin:0 0 12px!important}
+.music-playback-cover-wrap{padding:2px 0 10px!important}
+.music-playback-cover{width: min(42vw, 164px)!important;min-width:132px!important;border-radius:23px!important;font-size:54px!important;box-shadow:0 12px 28px rgba(112,83,128,.14)!important}
+.music-cover-tools{margin:0 0 12px!important}
+.music-cover-tools button{padding:7px 14px!important;font-size:11px!important}
+.music-playback-track{margin:0 auto 12px!important}
+.music-playback-track h2{font-size:clamp(22px,6vw,28px)!important;margin:6px 0 4px!important}
+.music-playback-track p{font-size:13px!important}
+.music-playback-view .music-progress-row{margin:13px 4px 8px!important}
+.music-playback-view .music-controls{margin:10px 8px 14px!important}
+.music-playback-view .music-controls .music-main-play{width:60px!important;height:60px!important}
+.music-playback-view .music-volume{margin:0 6px 17px!important}
+.music-together-card{margin-top:15px!important;padding:17px 17px 16px!important;border-radius:22px!important;background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(248,239,250,.58))!important;border:1px solid rgba(255,255,255,.92)!important;box-shadow:0 10px 28px rgba(120,94,133,.065)!important}
+.music-together-kicker{font:10px Georgia,serif;letter-spacing:.25em;color:#a18ca8;margin-bottom:6px}
+.music-together-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.music-together-title-row h3{font:500 23px Georgia,serif;color:#514454;margin:0}
+.music-together-title-row p{font-size:12px;color:#a092a5;margin:5px 0 0}
+.music-together-heart{font:34px Georgia,serif;color:#b99bc7;padding:0 5px}
+.music-together-button{display:flex!important;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;padding:11px 14px!important;border-radius:16px!important;background:linear-gradient(110deg,#f8f0fa,#eee2f2)!important;border:1px solid rgba(199,171,210,.65)!important;color:#80658d!important;font-size:13px!important}
+.music-together-button>span:first-child{font-size:17px}
+.music-together-arrow{font-size:21px;margin-left:auto;line-height:12px}
+.music-together-active{display:flex!important;align-items:center;justify-content:center;gap:0!important;flex-wrap:wrap;margin:13px 0 0!important;padding:13px 8px!important;border-radius:17px!important;background:rgba(245,237,248,.75)!important;color:#80658d!important}
+.music-together-active .music-together-couple{display:flex;align-items:center;justify-content:center;gap:0;width:100%;margin-bottom:8px}
+.music-together-active .music-together-avatar{width:49px!important;height:49px!important;border:3px solid #fff;box-shadow:0 3px 10px rgba(125,94,139,.12)}
+.music-together-active .music-together-avatar+.music-together-avatar{margin-left:-9px}
+.music-together-active .music-together-between{font-size:17px;color:#b28fbd;margin:0 10px}
+.music-together-active .music-together-caption{width:100%;text-align:center;font:12px Georgia,serif;letter-spacing:.08em;color:#8f7898}
+.music-together-active .music-together-song{width:100%;text-align:center;font-size:11px;color:#a092a5;margin-top:4px}
+.music-together-active .music-together-stop{margin-top:8px;border:0;background:transparent;color:#aa91b2;font-size:11px;text-decoration:underline}
+.music-together-contacts{gap:7px!important}
+.music-together-contact{padding:10px 12px!important;border-radius:15px!important}
+@media(min-width:700px){.music-playback-cover{width:164px!important}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -886,25 +924,19 @@ body.chat-conversation-open .nav{display:none!important}
     </div>
     <div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div>
 
-    <section class="music-lyrics-card">
-      <div class="music-feature-heading">
-        <div><span class="eyebrow">SING WITH THE MUSIC</span><h3>歌词</h3></div>
-        <button id="musicLyricsImport" type="button">导入歌词</button>
-        <input id="musicLyricsFile" type="file" accept=".lrc,.txt,text/plain" hidden>
-      </div>
-      <div class="music-lyrics" id="musicLyrics">
-        <div class="music-lyrics-empty">还没有歌词<br><small>可以导入这首歌的 .LRC 歌词文件</small></div>
-      </div>
-    </section>
-
     <section class="music-together-card">
-      <div class="music-feature-heading">
-        <div><span class="eyebrow">A SONG FOR TWO</span><h3>一起听</h3></div>
-        <span class="music-together-mark">♡</span>
+      <div class="music-together-kicker">A SONG FOR TWO</div>
+      <div class="music-together-title-row">
+        <div>
+          <h3>和你一起听</h3>
+          <p>把此刻的旋律，分享给喜欢的人。</p>
+        </div>
+        <span class="music-together-heart">♡</span>
       </div>
-      <p class="music-together-desc">邀请 LOVE RECORD 联系人，留下这段共同听歌的时光。</p>
       <div id="musicTogetherActive" class="music-together-active" hidden></div>
-      <button id="musicTogetherOpen" class="music-together-button" type="button">＋ 选择联系人一起听</button>
+      <button id="musicTogetherOpen" class="music-together-button" type="button">
+        <span>♡</span><span>邀请 TA 一起听</span><span class="music-together-arrow">›</span>
+      </button>
     </section>
   </section>
 

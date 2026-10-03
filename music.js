@@ -144,9 +144,24 @@ function renderTogetherActive(){
  const people=readPeopleForMusic().filter(p=>togetherIds.includes(p.id));
  if(!people.length){box.hidden=true;return}
  box.hidden=false;
- const text=document.createElement('span');text.textContent='正在一起听：';box.append(text);
- people.forEach(p=>{const avatar=document.createElement('span');avatar.className='music-together-avatar';if(p.avatar){const img=document.createElement('img');img.src=p.avatar;img.alt='';avatar.append(img)}else avatar.textContent=(p.name||'♡').slice(0,1);box.append(avatar);const name=document.createElement('span');name.textContent=p.name;box.append(name)});
- const stop=document.createElement('button');stop.type='button';stop.textContent='结束';stop.className='music-more-btn';stop.onclick=()=>{togetherIds=[];saveTogether();renderTogetherActive();toast('已结束一起听')};box.append(stop);
+ const couple=document.createElement('div');couple.className='music-together-couple';
+ people.slice(0,2).forEach((p,i)=>{
+  const avatar=document.createElement('span');avatar.className='music-together-avatar';
+  if(p.avatar){const img=document.createElement('img');img.src=p.avatar;img.alt='';avatar.append(img)}
+  else avatar.textContent=(p.name||'♡').slice(0,1);
+  couple.append(avatar);
+  if(i===0&&people.length>1){const heart=document.createElement('span');heart.className='music-together-between';heart.textContent='♡';couple.append(heart)}
+ });
+ box.append(couple);
+ const caption=document.createElement('div');caption.className='music-together-caption';
+ caption.textContent=people.length===1?`正在和 ${people[0].name} 一起听`:`你和 ${people[0].name} 的专属听歌时间`;
+ box.append(caption);
+ const song=document.createElement('div');song.className='music-together-song';
+ song.textContent=current?`${current.title||'正在播放'} · A SONG FOR TWO`:'等一首歌，等一个你';
+ box.append(song);
+ const stop=document.createElement('button');stop.type='button';stop.className='music-together-stop';stop.textContent='结束一起听';
+ stop.onclick=()=>{togetherIds=[];saveTogether();renderTogetherActive();toast('已结束一起听')};
+ box.append(stop);
 }
 async function saveTogether(){try{await req(db.transaction(META,'readwrite').objectStore(META).put({key:'togetherListen',ids:togetherIds}))}catch{}}
 async function loadTogether(){try{const x=await req(db.transaction(META).objectStore(META).get('togetherListen'));togetherIds=Array.isArray(x?.ids)?x.ids:[]}catch{}renderTogetherActive()}
