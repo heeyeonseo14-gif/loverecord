@@ -1,8 +1,8 @@
-const CACHE = 'love-record-v24-chat-v11';
+const CACHE = 'love-record-v24-chat-v12';
 const ASSETS = [
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
-  './chat-storage-v6.js?v=11','./chat-settings-upgrade.js?v=11','./chat-save-fix.js?v=11',
-  './chat-bubble-split.js?v=11','./chat-interaction-v9.js?v=11','./chat-interaction-v11.js?v=11'
+  './chat-storage-v6.js?v=12','./chat-settings-upgrade.js?v=12','./chat-save-fix.js?v=12',
+  './chat-bubble-split.js?v=12','./chat-interaction-v9.js?v=12','./chat-interaction-v11.js?v=12'
 ];
 function injectScript(html, file) {
   const safeFile = file.replace(/\./g, "\\.");
