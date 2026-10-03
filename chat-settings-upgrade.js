@@ -59,14 +59,6 @@
         <div class="sub" style="margin-top:7px">每次请求会带上最近指定条数的聊天消息。</div>
       </section>
       <section class="lr-setting-card">
-        <h3>自定义聊天 CSS</h3>
-        <div class="sub">可以自定义消息气泡、文字颜色、圆角和边框。修改后点击页面底部「保存设置」生效；仅影响当前联系人。</div>
-        <label for="lrCustomChatCss">CSS 代码</label>
-        <textarea id="lrCustomChatCss" class="lr-custom-css" spellcheck="false" placeholder="#chatConversation .chat-bubble.user { background: #d9b8ef; color: #fff; }"></textarea>
-        <div class="sub" style="margin-top:8px">提示：请使用 #chatConversation 开头的选择器。暂不支持 @import、外部 URL 或脚本。</div>
-        <div class="lr-action-row"><button class="btn" id="lrCssExample" type="button">填入示例 CSS</button><button class="btn" id="lrCssClear" type="button">清空自定义样式</button></div>
-      </section>
-      <section class="lr-setting-card">
         <h3>聊天记录</h3>
         <label for="lrSearchKeyword">查找聊天记录</label><input id="lrSearchKeyword" type="search" placeholder="输入关键词搜索这段聊天">
         <div class="lr-action-row"><button class="btn" id="lrSearchButton" type="button">搜索记录</button></div>
@@ -90,8 +82,6 @@
       } catch (_) { toast('我的头像读取失败'); }
       event.target.value = '';
     };
-    document.getElementById('lrCssExample').onclick = () => { document.getElementById('lrCustomChatCss').value = '#chatConversation .chat-bubble.user {\n  background: #d9b8ef;\n  color: #493451;\n  border-radius: 22px 22px 5px 22px;\n}\n\n#chatConversation .chat-bubble.ai {\n  background: #fff1f7;\n  color: #55404d;\n  border-radius: 22px 22px 22px 5px;\n  border: 1px solid #f0dce8;\n}'; };
-    document.getElementById('lrCssClear').onclick = () => { document.getElementById('lrCustomChatCss').value = ''; };
     document.getElementById('lrSearchButton').onclick = searchCurrentThread;
     document.getElementById('lrSearchKeyword').addEventListener('keydown', e => { if (e.key === 'Enter') searchCurrentThread(); });
     document.getElementById('lrDeleteHistory').onclick = deleteCurrentThread;
@@ -125,8 +115,6 @@
     const count = document.getElementById('lrMemoryCount'); if (count) count.value = clampMemory(meta.memoryCount || 16);
     const blocked = document.getElementById('lrToggleBlock'); if (blocked) { blocked.textContent = meta.blocked ? '取消拉黑' : '拉黑联系人'; blocked.classList.toggle('lr-danger', !meta.blocked); }
     const results = document.getElementById('lrSearchResults'); if (results) results.innerHTML = '';
-    const cssBox = document.getElementById('lrCustomChatCss'); if (cssBox) cssBox.value = meta.customChatCss || '';
-    applyCustomChatCss(meta.customChatCss || '');
   }
 
   function applyMessageAvatars() {
@@ -141,14 +129,6 @@
       const p = contactById(activeChatContactId), src = meta.avatar;
       headAvatar.innerHTML = src ? '<img src="' + src + '" alt="' + esc(p?.name || '联系人') + '">' : esc((p?.name || '♡').slice(0,1));
     }
-  }
-
-  function applyCustomChatCss(css) {
-    const id = 'lr-user-chat-custom-css'; let style = document.getElementById(id);
-    if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
-    const value = String(css || '');
-    if (/@import|url\s*\(|expression\s*\(|javascript:|<\/style/i.test(value)) { style.textContent = ''; return false; }
-    style.textContent = value; return true;
   }
 
   function searchCurrentThread() {
@@ -204,7 +184,7 @@
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
       const personaText = persona ? `用户当前人设：${persona.name || ''}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。请尊重该人设，但不要替用户决定行动、台词或情绪。` : '用户以本人身份参与聊天，不要替用户决定行动、台词或情绪。';
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}请像真实聊天对象一样自然回复，不要输出 JSON。请将回复组织成 2–5 条自然、简短的连续聊天消息；每条消息之间用一个空行分隔（两个换行符），不要把多个段落挤进一个长气泡。如果内容很短，只发一条，不要为了凑数而拆句。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}请像真实聊天对象一样自然回复，不要输出 JSON。请根据当前内容、情绪和对话节奏，自然决定连续发送几条聊天消息：普通回复通常 2–4 条，内容较丰富或情绪推进较多时可以 5–7 条，极短回应可以只有 1 条；不要为了凑数而拆句。每条消息之间必须空一行（两个换行符），让 LOVE RECORD 将它们显示成独立气泡。若剧情中角色明确给用户转账、汇款或打钱，请把转账动作单独写成一条消息，并使用明确标记，例如「【向你转账 RM 520.00】」或「【向你转账 ¥52000.00】」；不要把普通提及金额、报价或讨论钱款写成转账标记。`;
       const response = await fetchTimeout(state.apiBase.replace(/\/+$/,'') + '/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
         body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
@@ -214,7 +194,30 @@
       const data = JSON.parse(raw), reply = extractAIText(data);
       if (!reply) throw new Error('没有收到有效回复');
       const latest = readChatThreads(), thread = latest[id] || [];
-      thread.push({role:'assistant',text:reply,at:Date.now()}); latest[id] = thread; writeChatThreads(latest);
+      const receivedAt = Date.now();
+      const paragraphs = String(reply).replace(/\r\n?/g, '\n').trim().split(/\n\s*\n+/).map(part => part.trim()).filter(Boolean);
+      const replyParts = paragraphs.length > 1 ? paragraphs : String(reply).replace(/\r\n?/g, '\n').split('\n').map(part => part.trim()).filter(Boolean);
+      const transferPattern = /(?:【\s*)?(?:向你转账|给你转账|转账给你|给你转了|转给你)\s*(RM|MYR|RMB|CNY|人民币|¥|￥)?\s*([\d,]+(?:\.\d{1,2})?)\s*(RM|MYR|RMB|CNY|人民币|元|¥|￥)?\s*(?:】)?/i;
+      replyParts.forEach(part => {
+        const match = part.match(transferPattern);
+        if (!match) {
+          thread.push({role:'assistant',text:part,at:receivedAt});
+          return;
+        }
+        const before = part.slice(0, match.index).trim();
+        const after = part.slice(match.index + match[0].length).trim();
+        const currencyRaw = (match[1] || match[3] || 'RM').toUpperCase();
+        const currency = /^(RMB|CNY|人民币|元|¥|￥)$/.test(currencyRaw) ? '¥' : 'RM';
+        const amount = Number(match[2].replace(/,/g, ''));
+        if (before) thread.push({role:'assistant',text:before,at:receivedAt});
+        if (Number.isFinite(amount) && amount > 0) {
+          thread.push({role:'assistant',kind:'transfer',amount:amount.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}),currency,note:'给你的小心意',text:'转账 '+currency+' '+amount.toFixed(2),at:receivedAt});
+        } else {
+          thread.push({role:'assistant',text:part,at:receivedAt});
+        }
+        if (after) thread.push({role:'assistant',text:after,at:receivedAt});
+      });
+      latest[id] = thread; writeChatThreads(latest);
     } catch (error) { toast('发送失败：' + (error.message || 'API 错误')); }
     finally { aiBusy = false; send.disabled = false; send.textContent = '发送'; renderChat(); }
   }
@@ -224,8 +227,6 @@
     editingChatMeta.personaId = $('lrPersonaSelect').value;
     editingChatMeta.worldId = $('lrWorldSelect').value;
     editingChatMeta.memoryCount = clampMemory($('lrMemoryCount').value);
-    editingChatMeta.customChatCss = $('lrCustomChatCss')?.value || '';
-    if (!applyCustomChatCss(editingChatMeta.customChatCss)) { toast('CSS 包含不支持的外部引用或危险语法，请检查后再保存'); return; }
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(activeChatContactId, editingChatMeta);
     closeChatSettings(); toast('聊天设置已保存 ♡');
