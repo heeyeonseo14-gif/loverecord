@@ -268,9 +268,70 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
     height:20px;
   }
 }
+
+/* LOVE RECORD — smartphone launcher redesign */
+:root{
+  --bg:#f1eef5;--card:#fff;--ink:#302b35;--muted:#89818f;
+  --line:rgba(154,143,166,.22);--soft:#e9e2ef;--purple:#a88fbd;
+  --dock-bg:rgba(255,255,255,.70);
+}
+html,body{min-height:100%;background:var(--bg)}
+body{padding-top:34px;padding-bottom:calc(104px + env(safe-area-inset-bottom));}
+.system-statusbar{
+  position:fixed;z-index:120;top:0;left:0;right:0;height:34px;
+  padding:0 22px;display:flex;align-items:center;justify-content:space-between;
+  color:#3d3942;background:rgba(247,244,249,.82);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  font-size:12px;font-weight:600;letter-spacing:.2px;
+}
+.system-status-right{display:flex;align-items:center;gap:7px;font-size:10px;color:#514b56}
+.system-status-network{font-size:8px;letter-spacing:1px}
+.system-battery{width:22px;height:11px;border:1.4px solid currentColor;border-radius:3px;display:inline-flex;align-items:center;padding:1px;position:relative}
+.system-battery:after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:currentColor;border-radius:0 2px 2px 0}
+.system-battery i{display:block;width:76%;height:100%;background:currentColor;border-radius:1px}
+.app{max-width:760px;margin:auto;padding:0 19px}
+.page{min-height:calc(100dvh - 150px);padding:24px 0 42px}
+.launcher-page{padding-top:23px;min-height:calc(100dvh - 140px);position:relative}
+.launcher-welcome{padding:17px 7px 26px}
+.launcher-kicker{font-size:10px;letter-spacing:5px;color:#92879b}
+.launcher-greeting{font-family:Georgia,"Noto Serif SC",serif;font-size:27px;letter-spacing:2px;margin-top:18px;color:#39323e}
+.launcher-sub{font-size:8px;letter-spacing:3px;color:#a69aaa;margin-top:8px}
+.launcher-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:10px;row-gap:24px;padding:2px 1px 24px}
+.launcher-app{border:0;background:transparent;padding:0;display:flex;align-items:center;flex-direction:column;gap:8px;min-width:0;color:#625b68;font-size:11px;letter-spacing:1px}
+.app-icon{width:clamp(57px,17vw,76px);height:clamp(57px,17vw,76px);border-radius:22px;background:rgba(255,255,255,.83);border:1px solid rgba(255,255,255,.92);box-shadow:0 8px 22px rgba(88,72,103,.08),inset 0 1px 0 rgba(255,255,255,.9);display:grid;place-items:center;color:#8f7ba0;font-size:29px;font-weight:300;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:transform .16s,box-shadow .16s}
+.launcher-app:active .app-icon{transform:scale(.94);box-shadow:0 3px 9px rgba(88,72,103,.08)}
+.icon-home{font-size:34px}.icon-memory{font-size:30px}.icon-space{font-size:34px}.icon-people{font-size:31px}
+.launcher-widget{margin:8px 2px 0;padding:15px 17px;border:1px solid rgba(255,255,255,.9);border-radius:23px;background:rgba(255,255,255,.57);display:flex;align-items:center;gap:13px;box-shadow:0 10px 28px rgba(88,72,103,.05);backdrop-filter:blur(14px)}
+.widget-mark{width:37px;height:37px;border-radius:13px;background:#eee7f3;display:grid;place-items:center;color:#a28ab5;font-size:18px;flex:none}
+.widget-title{font:10px Georgia,serif;letter-spacing:1.5px;color:#65586e}
+.widget-copy{font-size:11px;color:#928a98;margin-top:5px}
+.nav{position:fixed;z-index:90;left:13px;right:13px;bottom:calc(10px + env(safe-area-inset-bottom));background:var(--dock-bg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.9);border-radius:28px;padding:10px 9px;box-shadow:0 12px 38px rgba(70,57,85,.12)}
+.nav-inner{max-width:600px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.nav-btn{border:0;background:transparent;color:#89808f;border-radius:18px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px}
+.nav-btn.active{background:rgba(255,255,255,.75);color:#51475a}
+.nav-btn span:last-child{font-size:10px;letter-spacing:1px}
+.dock-icon{font-size:22px;line-height:1;color:#a28bb3}
+.system-appbar{position:fixed;z-index:85;top:34px;left:0;right:0;height:43px;padding:0 18px;display:none;align-items:center;gap:13px;background:rgba(247,244,249,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(150,138,160,.12);font-size:11px;letter-spacing:2px;color:#766b7d}
+.system-appbar.show{display:flex}
+.system-back{width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.8);color:#7d6b8b;font-size:27px;line-height:20px;padding:0}
+.system-appbar-mark{margin-left:auto;color:#ad96be}
+body:not(.launcher-open) .app{padding-top:43px}
+body:not(.launcher-open) .page{padding-top:19px}
+body.launcher-open .system-appbar{display:none}
+body.launcher-open .nav{background:rgba(255,255,255,.72)}
+body.launcher-open .page{padding-bottom:25px}
+@media(max-width:420px){
+  .app{padding-left:16px;padding-right:16px}
+  .launcher-grid{column-gap:7px;row-gap:21px}
+  .launcher-app{font-size:10px}
+  .app-icon{border-radius:20px}
+  .launcher-greeting{font-size:25px}
+  .launcher-widget{margin-top:4px}
+}
+
 </style>
 </head>
-<body>
+<body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
   <div class="love-intro-inner">
     <div class="love-intro-mark"></div>
@@ -279,8 +340,43 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
     <div class="love-intro-author">Author by Lxing.</div>
   </div>
 </div>
+<div class="system-statusbar">
+  <span id="systemTime">10:08</span>
+  <span class="system-status-right"><span class="system-status-network">●●●</span><span>Wi-Fi</span><span class="system-battery"><i></i></span></span>
+</div>
+
 <div class="app">
-<main id="home" class="page active">
+
+<main id="launcher" class="page active launcher-page">
+  <section class="launcher-welcome">
+    <div class="launcher-kicker">LOVE RECORD</div>
+    <div class="launcher-greeting">我们的小宇宙</div>
+    <div class="launcher-sub">A LITTLE WORLD OF OUR OWN</div>
+  </section>
+  <section class="launcher-grid" aria-label="应用">
+    <button class="launcher-app" data-launch-page="home" type="button"><span class="app-icon icon-home">⌂</span><span>首页</span></button>
+    <button class="launcher-app" data-launch-page="memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
+    <button class="launcher-app" data-launch-page="space" type="button"><span class="app-icon icon-space">♡</span><span>我们的空间</span></button>
+    <button class="launcher-app" data-launch-module="people" type="button"><span class="app-icon icon-people">♙</span><span>联系人</span></button>
+    <button class="launcher-app" data-launch-module="forum" type="button"><span class="app-icon icon-forum">◎</span><span>社区</span></button>
+    <button class="launcher-app" data-launch-module="world" type="button"><span class="app-icon icon-world">◇</span><span>世界书</span></button>
+    <button class="launcher-app" data-launch-module="journal" type="button"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
+    <button class="launcher-app" data-launch-page="settings" type="button"><span class="app-icon icon-settings">⚙</span><span>设置</span></button>
+    <button class="launcher-app" data-launch-appearance type="button"><span class="app-icon icon-beautify">✧</span><span>美化</span></button>
+  </section>
+  <div class="launcher-widget">
+    <div class="widget-mark">✦</div>
+    <div><div class="widget-title">LOVE, IN LITTLE THINGS.</div><div class="widget-copy">把喜欢的日子，一点一点收藏起来。</div></div>
+  </div>
+</main>
+
+<div class="system-appbar" id="systemAppbar">
+  <button class="system-back" type="button" data-launch-home aria-label="返回桌面">‹</button>
+  <span id="systemAppTitle">LOVE RECORD</span>
+  <span class="system-appbar-mark">✦</span>
+</div>
+
+<main id="home" class="page">
   <div class="hero">
     <div class="eyebrow">LOVE RECORD</div>
     <h1>OUR LITTLE UNIVERSE</h1>
@@ -358,12 +454,14 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 </main>
 </div>
 
-<nav class="nav"><div class="nav-inner">
-<button class="nav-btn active" type="button" data-page="home"><i class="nav-dot"></i><span>HOME</span></button>
-<button class="nav-btn" type="button" data-page="memories"><i class="nav-dot"></i><span>MEMORIES</span></button>
-<button class="nav-btn" type="button" data-page="space"><i class="nav-dot"></i><span>SPACE</span></button>
-<button class="nav-btn" type="button" data-page="settings"><i class="nav-dot"></i><span>SETTINGS</span></button>
-</div></nav>
+<nav class="nav" aria-label="Dock">
+  <div class="nav-inner">
+    <button class="nav-btn" type="button" data-launch-module="world"><span class="dock-icon">◇</span><span>世界书</span></button>
+    <button class="nav-btn" type="button" data-launch-module="people"><span class="dock-icon">♙</span><span>联系人</span></button>
+    <button class="nav-btn" type="button" data-launch-page="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+    <button class="nav-btn" type="button" data-launch-appearance><span class="dock-icon">✧</span><span>美化</span></button>
+  </div>
+</nav>
 
 
 <div id="moduleModal" class="modal module-modal"><section class="sheet module-sheet"><div class="module-head"><div><div class="eyebrow" id="moduleEyebrow">PEOPLE</div><h2 id="moduleTitle">AI PEOPLE</h2></div><button class="module-close" id="moduleClose" type="button">×</button></div><div id="moduleBody"></div></section></div>
@@ -503,7 +601,26 @@ function applyLanguage(){
  localizeModule();localizeEditors();renderSpacePeople();
 }
 
-function nav(page){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(page).classList.add('active');document.querySelectorAll('.nav-btn').forEach(x=>x.classList.toggle('active',x.dataset.page===page));window.scrollTo(0,0);if(page==='home')renderHome();if(page==='memories')renderMemories();if(page==='space'){if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}renderSpacePeople();renderScene();renderOurHistory()}if(page==='settings')renderSettings()}
+function nav(page){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const target=$(page);if(!target)return;
+  target.classList.add('active');
+  document.body.classList.toggle('launcher-open',page==='launcher');
+  const bar=$('systemAppbar');if(bar)bar.classList.toggle('show',page!=='launcher');
+  const titles={home:'HOME',memories:'MEMORIES',space:'OUR SPACE',settings:'SETTINGS'};
+  const title=$('systemAppTitle');if(title)title.textContent=titles[page]||'LOVE RECORD';
+  window.scrollTo(0,0);
+  if(page==='home')renderHome();
+  if(page==='memories')renderMemories();
+  if(page==='space'){
+    if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){
+      activeSpaceId=state.activeSpaceId;
+      state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice();
+    }
+    renderSpacePeople();renderScene();renderOurHistory();
+  }
+  if(page==='settings')renderSettings();
+}
 function renderSettings(){
 $('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
 renderModelPicker();
@@ -675,7 +792,12 @@ $('motionToggle').onclick=()=>{appearance.motion=!appearance.motion;appearance.p
 $('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults);applyAppearance();renderAppearanceControls();toast('已经恢复默认外观')};
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
-document.addEventListener('click',e=>{const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
+document.addEventListener('click',e=>{
+const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
+const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
+const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){nav('settings');setTimeout(openAppearance,80);return}
+const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('launcher');return}
+const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
@@ -723,6 +845,12 @@ if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('installBox').classList.add('show')});
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
+
+function updateSystemTime(){
+ const el=document.getElementById('systemTime');if(!el)return;
+ el.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
+}
+updateSystemTime();setInterval(updateSystemTime,30000);
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 (async()=>{ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
