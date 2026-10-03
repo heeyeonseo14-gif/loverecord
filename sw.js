@@ -1,14 +1,19 @@
-const CACHE='love-record-chat-settings-v5';
+const CACHE='love-record-v24-chat-storage-v6';
 const ASSETS=[
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
-  './chat-settings-upgrade.js?v=5','./chat-save-fix.js?v=1'
+  './chat-settings-upgrade.js?v=6','./chat-save-fix.js?v=6','./chat-storage-v6.js?v=6'
 ];
 function patchHtml(html){
   if(!html.includes('chat-settings-upgrade.js')){
-    html=html.replace(/<\/body>/i,'<script src="./chat-settings-upgrade.js?v=5"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./chat-settings-upgrade.js?v=6"></script></body>');
   }
   if(!html.includes('chat-save-fix.js')){
-    html=html.replace(/<\/body>/i,'<script src="./chat-save-fix.js?v=1"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./chat-save-fix.js?v=6"></script></body>');
+  } else {
+    html=html.replace(/chat-save-fix\.js(?:\?v=[^"']*)?/g,'chat-save-fix.js?v=6');
+  }
+  if(!html.includes('chat-storage-v6.js')){
+    html=html.replace(/<\/body>/i,'<script src="./chat-storage-v6.js?v=6"></script></body>');
   }
   return html;
 }
