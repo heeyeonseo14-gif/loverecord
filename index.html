@@ -826,6 +826,69 @@ body.chat-conversation-open .nav{display:none!important}
 @media(min-width:700px){.music-playback-cover{width:164px!important}}
 </style>
 
+
+<style id="love-record-our-listening-room-v3">
+.music-together-card.our-listening-room{margin-top:15px!important;padding:18px 17px 15px!important;border-radius:23px!important;background:linear-gradient(145deg,rgba(255,255,255,.84),rgba(246,237,249,.72))!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 12px 30px rgba(117,88,130,.075)!important}
+.our-listening-room .music-together-kicker{font:10px Georgia,serif;letter-spacing:.24em;color:#a38eaa}
+.our-listening-room .music-together-title-row{margin:5px 0 13px}
+.our-listening-room .music-together-title-row h3{font:500 23px Georgia,"Noto Serif SC",serif;color:#514454;margin:0}
+.our-listening-room .music-together-title-row p{font-size:12px;color:#a092a5;margin:5px 0 0}
+.our-listening-room .music-together-heart{font-size:32px;color:#b99bc8;animation:lrRoomHeart 3.2s ease-in-out infinite}
+@keyframes lrRoomHeart{50%{transform:scale(1.09);opacity:.72}}
+.our-listening-room .music-together-button{display:flex!important;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:13px;padding:12px 14px!important;border-radius:17px!important;background:linear-gradient(110deg,#f9f2fa,#eee2f3)!important;border:1px solid rgba(199,171,210,.72)!important;color:#80658d!important;font-size:13px!important;box-shadow:0 5px 15px rgba(159,125,174,.08)}
+.music-together-button-heart{font-size:18px;color:#a985b7}
+.our-listening-room .music-together-arrow{font-size:21px;margin-left:auto}
+.music-together-footnote{text-align:center;font:9px Georgia,serif;letter-spacing:.23em;color:#b5a6ba;margin-top:12px}
+.music-together-active{margin:13px 0 0!important;padding:15px 11px 12px!important;border-radius:19px!important;background:linear-gradient(135deg,rgba(248,240,250,.95),rgba(239,229,244,.78))!important;border:1px solid rgba(255,255,255,.9)}
+.listening-pair{display:flex;align-items:center;justify-content:center;gap:clamp(12px,5vw,27px)}
+.listening-person{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:75px}
+.listening-avatar{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#e7d8ed,#c5a9d1);border:3px solid rgba(255,255,255,.95);box-shadow:0 5px 15px rgba(123,91,139,.13);color:#fff;font:22px Georgia,serif}
+.listening-avatar img{width:100%;height:100%;object-fit:cover}
+.listening-you{background:linear-gradient(145deg,#eadfed,#c9b1d1)}
+.listening-them{background:linear-gradient(145deg,#d9c7e3,#ae8fbd)}
+.listening-person strong{font-size:11px;font-weight:500;color:#76647e;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.listening-heart-center{position:relative;width:42px;height:42px;display:grid;place-items:center;color:#b48fbe;font-size:31px}
+.listening-heart-center span{animation:lrRoomHeart 2.4s ease-in-out infinite}
+.listening-heart-center i{position:absolute;width:7px;height:7px;border-radius:50%;background:#c6a7d0;right:0;top:2px;box-shadow:0 0 0 5px rgba(198,167,208,.13)}
+.listening-room-status{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px;color:#9c86a5;font-size:11px}
+.listening-live-dots{display:flex;align-items:center;gap:3px;height:13px}
+.listening-live-dots i{display:block;width:3px;height:6px;border-radius:4px;background:#b596c2;animation:lrSound 1s ease-in-out infinite alternate}
+.listening-live-dots i:nth-child(2){animation-delay:.25s}.listening-live-dots i:nth-child(3){animation-delay:.5s}
+@keyframes lrSound{to{height:12px;opacity:.55}}
+.listening-room-song{text-align:center;font:11px Georgia,serif;color:#a18ea7;margin-top:7px}
+.listening-room-actions{display:flex;justify-content:center;gap:18px;margin-top:10px}
+.listening-room-actions button{border:0;background:transparent;color:#a18ba9;font-size:11px;padding:4px 8px}
+.listening-room-actions button+button{color:#b6a6ba}
+.music-together-modal{z-index:120000!important;align-items:flex-end!important}
+.our-listening-sheet{padding:13px 20px calc(23px + env(safe-area-inset-bottom))!important;border-radius:28px 28px 0 0!important;background:linear-gradient(160deg,#fcf9fd,#f3edf6)!important;max-height:84dvh!important}
+.listening-sheet-handle{width:38px;height:4px;border-radius:9px;background:#d8c9dd;margin:0 auto 19px}
+.our-listening-sheet header{align-items:flex-start!important;margin-bottom:16px!important}
+.our-listening-sheet header h3{font:500 24px Georgia,"Noto Serif SC",serif!important;color:#514454;margin:6px 0!important}
+.our-listening-sheet header p.listening-sheet-subtitle{font-size:11px;color:#a092a5;margin:5px 0 0}
+.our-listening-sheet header button{width:31px;height:31px;border-radius:50%;background:rgba(232,220,238,.65)!important;font-size:23px!important;line-height:1}
+.listening-current-song{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:16px;background:rgba(235,222,241,.55);margin-bottom:17px}
+.listening-song-disc{width:39px;height:39px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,#c9acd4,#a984b9);color:white;font-size:20px}
+.listening-current-song small{display:block;font:9px Georgia,serif;letter-spacing:.18em;color:#a18ba9}
+.listening-current-song strong{display:block;font-size:12px;font-weight:500;color:#695a70;margin-top:3px}
+.listening-choose-label{font-size:11px;color:#98869f;letter-spacing:.08em;margin:0 2px 9px}
+.music-together-contacts{display:grid;gap:8px;margin-bottom:15px;max-height:34dvh;overflow:auto}
+.music-together-contact.listening-contact{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid rgba(209,190,218,.55);border-radius:17px;background:rgba(255,255,255,.78);cursor:pointer;transition:background .2s,border-color .2s}
+.music-together-contact.listening-contact:has(input:checked){background:#f0e5f4;border-color:#bd9fca;box-shadow:0 0 0 2px rgba(189,159,202,.10)}
+.listening-contact-avatar{width:46px!important;height:46px!important;flex:none}
+.listening-contact-info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.listening-contact-info strong{font-size:13px;color:#5b4c60;font-weight:600}
+.listening-contact-info small{font-size:10px;color:#a192a6}
+.music-together-contact input[type=radio]{width:18px;height:18px;accent-color:#a77bb8;margin-left:auto;flex:none}
+.listening-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:22px 12px;border-radius:17px;background:rgba(255,255,255,.65);color:#a18ba9}
+.listening-empty>span{font-size:29px;color:#c0a4cb;margin-bottom:7px}
+.listening-empty strong{font-size:13px;font-weight:500;color:#776680}
+.listening-empty small{font-size:11px;line-height:1.6;color:#a294a7;margin-top:5px;max-width:240px}
+.listening-start-button{display:flex!important;align-items:center;justify-content:center;gap:9px;width:100%;padding:13px!important;border-radius:17px!important;background:linear-gradient(110deg,#c8a9d2,#a982b8)!important;color:#fff!important;font-size:13px!important;box-shadow:0 8px 18px rgba(161,126,176,.2)}
+.music-together-note{font-size:10px!important;line-height:1.55!important;text-align:center;margin:10px 5px 0!important;color:#aa9cac!important}
+body.music-listening-modal-open{overflow:hidden!important}
+@media(min-width:700px){.our-listening-sheet{border-radius:28px!important;margin-bottom:24px;width:min(92vw,540px)!important}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -924,29 +987,47 @@ body.chat-conversation-open .nav{display:none!important}
     </div>
     <div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div>
 
-    <section class="music-together-card">
-      <div class="music-together-kicker">A SONG FOR TWO</div>
+    <section class="music-together-card our-listening-room">
+      <div class="music-together-kicker">OUR LISTENING ROOM</div>
       <div class="music-together-title-row">
         <div>
-          <h3>和你一起听</h3>
-          <p>把此刻的旋律，分享给喜欢的人。</p>
+          <h3>留一首歌给我们</h3>
+          <p>有些旋律，想和你一起听。</p>
         </div>
-        <span class="music-together-heart">♡</span>
+        <span class="music-together-heart" aria-hidden="true">♡</span>
       </div>
       <div id="musicTogetherActive" class="music-together-active" hidden></div>
       <button id="musicTogetherOpen" class="music-together-button" type="button">
-        <span>♡</span><span>邀请 TA 一起听</span><span class="music-together-arrow">›</span>
+        <span class="music-together-button-heart">♡</span>
+        <span id="musicTogetherButtonText">邀请 TA 进入听歌房间</span>
+        <span class="music-together-arrow">›</span>
       </button>
+      <div class="music-together-footnote">JUST YOU, ME &amp; THIS SONG</div>
     </section>
   </section>
 
   <div class="music-together-modal" id="musicTogetherModal" hidden>
     <div class="music-together-backdrop" data-music-together-close></div>
-    <section class="music-together-sheet" role="dialog" aria-modal="true" aria-labelledby="musicTogetherTitle">
-      <header><div><span class="eyebrow">LISTEN TOGETHER</span><h3 id="musicTogetherTitle">想和谁一起听？</h3></div><button type="button" data-music-together-close aria-label="关闭">×</button></header>
+    <section class="music-together-sheet our-listening-sheet" role="dialog" aria-modal="true" aria-labelledby="musicTogetherTitle">
+      <div class="listening-sheet-handle"></div>
+      <header>
+        <div>
+          <span class="eyebrow">A LITTLE DATE WITH MUSIC</span>
+          <h3 id="musicTogetherTitle">今晚，想和谁一起听？</h3>
+          <p class="listening-sheet-subtitle">选一个联系人，开启你们的专属听歌时光。</p>
+        </div>
+        <button type="button" data-music-together-close aria-label="关闭">×</button>
+      </header>
+      <div class="listening-current-song" id="musicTogetherCurrentSong">
+        <span class="listening-song-disc">♫</span>
+        <span><small>NOW PLAYING</small><strong>还没有选择歌曲</strong></span>
+      </div>
+      <div class="listening-choose-label">选择一位联系人</div>
       <div id="musicTogetherContacts" class="music-together-contacts"></div>
-      <button id="musicTogetherStart" class="music-together-button" type="button">开始一起听 ♡</button>
-      <p class="music-together-note">一起听状态保存在这台设备上；目前不会向其他设备实时同步音频。</p>
+      <button id="musicTogetherStart" class="music-together-button listening-start-button" type="button">
+        <span>♡</span><span>一起听这首歌</span>
+      </button>
+      <p class="music-together-note">一起听状态会保存在这台设备上。跨设备实时同步需要后续接入在线同步服务。</p>
     </section>
   </div>
 
@@ -1768,7 +1849,7 @@ if(loveIntro){
   <script src="./chat-interaction-v9.js?v=15"></script>
   <script src="./chat-interaction-v11.js?v=15"></script>
   <script src="./chat-css-unify.js?v=15"></script>
-  <script src="./music.js?v=9"></script>
+  <script src="./music.js?v=10"></script>
 
 <script>
 (()=>{
