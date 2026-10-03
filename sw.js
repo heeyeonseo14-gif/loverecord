@@ -1,9 +1,9 @@
-const CACHE = 'love-record-space-reading-v1';
+const CACHE = 'love-record-space-fixes-v2';
 const ASSETS = [
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
   './chat-storage-v6.js?v=18','./chat-settings-upgrade.js?v=18','./chat-save-fix.js?v=18',
   './chat-bubble-split.js?v=18','./chat-interaction-v9.js?v=18','./chat-interaction-v11.js?v=18',
-  './chat-css-unify.js?v=18','./space-reading-v1.js'
+  './chat-css-unify.js?v=18','./space-reading-v1.js','./space-fixes-v2.js'
 ];
 function injectScript(html, file) {
   const safeFile = file.replace(/\./g, "\\.");
@@ -23,6 +23,7 @@ function patchHtml(html) {
   html = injectScript(html, 'chat-interaction-v11.js');
   html = injectScript(html, 'chat-css-unify.js');
   html = injectScript(html, 'space-reading-v1.js');
+  html = injectScript(html, 'space-fixes-v2.js');
   return html;
 }
 function htmlResponse(html, source) {
