@@ -154,7 +154,7 @@
     if (!confirm('确定要从聊天列表删除「' + (chatShownName(p) || '这位联系人') + '」吗？这会同时删除聊天记录和该联系人的聊天设置；人物资料仍会保留，可之后重新添加。')) return;
     writeChatContacts(readChatContacts().filter(x => x !== id));
     const threads = readChatThreads(); delete threads[id]; writeChatThreads(threads);
-    const metas = readChatMeta(); delete metas[id]; localStorage.setItem(CHAT_META_KEY, JSON.stringify(metas));
+    const metas = readChatMeta(); delete metas[id]; localStorage.setItem('love-record-chat-meta-v2', JSON.stringify(metas));
     activeChatContactId = ''; closeChatSettings(); renderChat(); toast('联系人已从聊天列表移除');
   }
 
