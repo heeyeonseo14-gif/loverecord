@@ -717,6 +717,15 @@ body.chat-conversation-open .nav{display:none!important}
 .music-player-art.has-cover img{display:block!important;visibility:visible!important;opacity:1!important}
 
 </style>
+<style>
+
+/* LOVE RECORD MUSIC FIX V3 · keep the center artwork above the vinyl sheen */
+#musicMini .music-vinyl-label{z-index:5!important}
+#musicMini .music-vinyl-label .music-vinyl-cover{position:absolute!important;inset:0!important;z-index:1!important;display:block!important;visibility:visible!important;opacity:1!important}
+#musicMini .music-vinyl-label:before{z-index:2!important;pointer-events:none!important}
+#musicMini .music-vinyl:after{pointer-events:none!important}
+
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1602,7 +1611,7 @@ if(loveIntro){
   <script src="./chat-interaction-v9.js?v=15"></script>
   <script src="./chat-interaction-v11.js?v=15"></script>
   <script src="./chat-css-unify.js?v=15"></script>
-  <script src="./music.js?v=7"></script>
+  <script src="./music.js?v=8"></script>
 
 <script>
 (()=>{
