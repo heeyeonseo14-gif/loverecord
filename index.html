@@ -401,6 +401,67 @@ body.launcher-open .page{padding-bottom:25px}
 .launcher-app.is-dragging .app-icon{transform:scale(1.04)}
 .launcher-info.is-dragging{outline:1px dashed rgba(160,130,177,.65);outline-offset:3px}
 @media(max-width:420px){.chat-bubble{font-size:13px}.chat-compose{bottom:86px}}
+
+/* WeChat-inspired chat refresh — Love Record lavender */
+.chat-page.is-conversation{
+  position:fixed!important;z-index:40;top:77px;left:0;right:0;
+  bottom:calc(78px + env(safe-area-inset-bottom));height:auto;min-height:0;
+  margin:0;padding:0 14px!important;overflow:hidden;
+  display:flex;flex-direction:column;background:var(--bg);
+}
+.chat-page.is-conversation .chat-page-heading,
+.chat-page.is-conversation .chat-person-head,
+.chat-page.is-conversation .chat-hint{display:none!important}
+.chat-page.is-conversation .chat-conversation{
+  display:flex!important;flex:1;min-height:0;flex-direction:column;
+  margin:0;overflow:hidden;gap:0;
+}
+.chat-page.is-conversation .chat-messages{
+  flex:1;min-height:0;max-height:none;margin:0;padding:18px 3px 14px;
+  overflow-y:auto;overscroll-behavior:contain;gap:15px;
+}
+.chat-message-row{display:flex;align-items:flex-end;gap:8px;width:100%}
+.chat-message-row.user{justify-content:flex-end}
+.chat-message-row.ai{justify-content:flex-start}
+.chat-message-avatar{
+  width:30px;height:30px;flex:none;border-radius:10px;
+  display:grid;place-items:center;background:linear-gradient(145deg,#eee4f3,#d9c6e2);
+  color:#806b8b;font-size:12px;font-weight:600;
+}
+.chat-message-row.user .chat-message-avatar{order:2;background:#d8c7e1;color:#715d7e}
+.chat-message-row .chat-bubble{max-width:min(76%,430px);padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.65;box-shadow:0 2px 7px rgba(65,48,76,.035)}
+.chat-message-row.ai .chat-bubble{border:0;background:#fff;color:#39333e;border-top-left-radius:5px}
+.chat-message-row.user .chat-bubble{border:0;background:#b99fc8;color:#fff;border-top-right-radius:5px}
+.chat-empty-inline{align-self:center;margin:auto;text-align:center;color:#a29aa6;font-size:14px;padding:30px 12px}
+.chat-page.is-conversation .chat-compose{
+  flex:none;margin:0 0 10px;padding:8px;gap:8px;border-radius:23px;
+  background:rgba(255,255,255,.88);border:1px solid rgba(155,140,166,.18);
+  box-shadow:0 5px 18px rgba(74,57,86,.06);
+}
+.chat-page.is-conversation .chat-compose textarea{
+  min-height:43px;max-height:110px;resize:none;border:0!important;
+  background:transparent!important;box-shadow:none!important;padding:10px 11px;
+  font-size:14px;outline:none;
+}
+.chat-page.is-conversation .chat-compose .btn{
+  min-width:58px;height:42px;border-radius:17px;padding:0 15px;
+}
+.chat-page:not(.is-conversation){padding-top:26px}
+.chat-page:not(.is-conversation) .chat-page-heading{padding:0 4px}
+.chat-page:not(.is-conversation) .chat-contact-list{display:flex;flex-direction:column;gap:0;margin-top:20px}
+.chat-page:not(.is-conversation) .chat-contact-card{
+  position:relative;display:flex;min-height:76px;gap:12px;padding:12px 7px;
+  border:0;border-bottom:1px solid rgba(150,138,160,.15);
+  border-radius:0;background:transparent;box-shadow:none;
+}
+.chat-page:not(.is-conversation) .chat-contact-avatar{width:52px;height:52px;border-radius:16px}
+.chat-page:not(.is-conversation) .chat-contact-info strong{font-size:15px;font-weight:600}
+.chat-page:not(.is-conversation) .chat-contact-info span{font-size:12px;margin-top:6px;color:#99919e}
+.chat-contact-time{font-size:10px;color:#aaa2ae;align-self:flex-start;margin-left:auto;white-space:nowrap}
+.chat-page:not(.is-conversation) .chat-contact-arrow{display:none}
+.chat-page.is-conversation .chat-page-heading{display:none}
+#systemAppbar:has(+ #chat.is-conversation){background:rgba(247,244,249,.97)}
+
 </style>
 
 </head>
@@ -592,13 +653,20 @@ function renderChat(){
  $('systemAppbarAction').hidden=detail;
  if(!detail){
   activeChatContactId='';conversation.hidden=true;list.hidden=false;
-  list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id);return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${esc((p.name||'♡').slice(0,1))}</span><span class="chat-contact-info"><strong>${esc(p.name)}</strong><span>${esc(p.role||p.personality||'AI 联系人')}</span></span><span class="chat-contact-arrow">›</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
+  $('systemAppTitle').textContent='CHAT';
+  const topBack=document.querySelector('#systemAppbar .system-back');
+  if(topBack){topBack.setAttribute('data-launch-home','');topBack.onclick=null;}
+  list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id),thread=readChatThreads()[id]||[],last=thread[thread.length-1];return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${esc((p.name||'♡').slice(0,1))}</span><span class="chat-contact-info"><strong>${esc(p.name||'未命名联系人')}</strong><span>${esc(last?last.text:(p.role||p.personality||'开始聊天'))}</span></span><span class="chat-contact-time">${last?'最近':' '}</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
   return;
  }
  list.hidden=true;conversation.hidden=false;
- const p=contactById(activeChatContactId);$('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
+ const p=contactById(activeChatContactId);
+ const topBack=document.querySelector('#systemAppbar .system-back');
+ $('systemAppTitle').textContent=p.name||'聊天';
+ if(topBack){topBack.removeAttribute('data-launch-home');topBack.onclick=()=>{activeChatContactId='';renderChat()};}
+ $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];
- $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div>').join(''):'<div class="sub" style="text-align:center;padding:34px 12px">你和 '+esc(p.name)+' 的对话从这里开始 ♡</div>';
+ $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':esc((p.name||'♡').slice(0,1)))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div></div>').join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
