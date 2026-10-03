@@ -549,6 +549,43 @@ body.chat-conversation-open .nav{display:none!important}
 
 </style>
 
+
+<style>
+/* OUR SPACE · dedicated character directory / workspace / archive */
+#space.space-redesign{padding:18px 20px 132px;max-width:760px;margin:0 auto;overflow:visible}
+#space [hidden]{display:none!important}
+.space-directory-head{padding:8px 3px 17px}
+.space-directory-head p{max-width:330px}
+#space .space-section{padding:22px 18px;border-radius:27px}
+#space .space-people-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:11px;margin-top:17px}
+#space .space-person-card{display:grid!important;grid-template-columns:62px minmax(0,1fr) 30px!important;align-items:center!important;gap:13px!important;width:100%!important;min-width:0!important;min-height:88px!important;height:auto!important;padding:12px 14px!important;white-space:normal!important;writing-mode:horizontal-tb!important;text-align:left!important;border:1px solid rgba(196,177,207,.46)!important;border-radius:22px!important;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(250,246,252,.72))!important;color:#493e50!important;box-shadow:0 8px 22px rgba(92,68,107,.045),inset 0 1px 0 #fff!important}
+#space .space-person-card.active{border-color:rgba(164,130,181,.8)!important;background:linear-gradient(110deg,rgba(236,222,243,.94),rgba(255,255,255,.9))!important;box-shadow:0 0 0 2px rgba(183,155,199,.14),0 10px 25px rgba(120,91,138,.08)!important}
+#space .space-person-card .space-person-avatar{display:grid!important;place-items:center!important;width:62px!important;height:62px!important;min-width:62px!important;margin:0!important;border-radius:19px!important;background:linear-gradient(145deg,#d9c4e3,#a887b9)!important;color:#fff!important;font:400 25px Georgia,serif!important;overflow:hidden!important}
+#space .space-person-card .space-person-info{display:block!important;min-width:0!important;width:auto!important;margin:0!important;writing-mode:horizontal-tb!important}
+#space .space-person-card .space-person-info b{display:block!important;margin:0!important;font:500 15px/1.35 -apple-system,BlinkMacSystemFont,sans-serif!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;color:#493e50!important}
+#space .space-person-card .space-person-info span{display:block!important;margin:5px 0 0!important;font:11px/1.55 -apple-system,BlinkMacSystemFont,sans-serif!important;color:#94889a!important;white-space:normal!important;overflow-wrap:anywhere!important}
+#space .space-person-card .space-person-arrow{display:grid!important;place-items:center!important;width:29px!important;height:29px!important;margin:0!important;border-radius:50%!important;background:rgba(236,226,241,.82)!important;color:#9879a8!important;font-size:15px!important}
+.workspace-toolbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;padding:6px 0 18px}
+.workspace-back{display:flex;align-items:center;gap:5px;min-height:38px;padding:7px 11px;border:1px solid rgba(255,255,255,.9);border-radius:999px;background:rgba(255,255,255,.7);color:#806b8b;font-size:12px;white-space:nowrap}
+.workspace-back:first-letter{font-size:23px;line-height:12px}
+.workspace-heading{min-width:0;text-align:center}
+.workspace-heading .eyebrow{font-size:8px;letter-spacing:2.4px;color:#a18da9}
+.workspace-heading h1{font:400 clamp(23px,6vw,31px)/1.12 Georgia,'Times New Roman',serif;color:#493b50;margin:5px 0 0;overflow-wrap:anywhere}
+.workspace-heading p{font-size:10px;line-height:1.5;color:#9b8ca1;margin:5px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.workspace-history-link{display:grid;place-items:center;gap:1px;width:54px;height:48px;border:1px solid rgba(255,255,255,.85);border-radius:17px;background:rgba(255,255,255,.72);color:#9879a8}
+.workspace-history-link span{font-size:21px;line-height:1}.workspace-history-link small{font-size:8px;white-space:nowrap}
+.workspace-live-feature{margin:0 0 14px;padding:22px 17px 18px}
+.workspace-surprise{margin:0 0 18px}
+.archive-page-section{margin-top:2px;min-height:45vh}
+.archive-page-section .our-history{margin-top:16px}
+#space .history-count{font-size:14px;min-width:34px;height:34px}
+.dark-mode #space .space-person-card{background:rgba(46,38,52,.88)!important;color:#f0e8f3!important;border-color:#4b3e52!important}
+.dark-mode #space .space-person-card .space-person-info b{color:#f0e8f3!important}
+.dark-mode .workspace-back,.dark-mode .workspace-history-link{background:rgba(46,38,52,.88);border-color:#51445a;color:#d6c4df}
+.dark-mode .workspace-heading h1{color:#f0e8f3}
+@media(max-width:380px){#space.space-redesign{padding-left:15px;padding-right:15px}.workspace-toolbar{gap:7px}.workspace-back{padding:6px 8px;font-size:11px}.workspace-history-link{width:48px}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -624,52 +661,56 @@ body.chat-conversation-open .nav{display:none!important}
 </main>
 
 <main id="space" class="page space-redesign">
-  <header class="space-masthead">
-    <div class="eyebrow" id="spaceTitleEyebrow">OUR PRIVATE UNIVERSE</div>
-    <div class="space-title-row"><h1>OUR SPACE</h1><span class="space-title-mark">✦</span></div>
-    <p>一个只属于你们的世界。角色、故事与每一个正在发生的瞬间。</p>
-  </header>
+  <!-- DIRECTORY: choose a character, then choose or create a shared space -->
+  <div id="spaceDirectoryView">
+    <header class="space-masthead space-directory-head">
+      <div class="eyebrow">OUR PRIVATE UNIVERSE</div>
+      <div class="space-title-row"><h1>OUR SPACE</h1><span class="space-title-mark">✦</span></div>
+      <p>选择想一起生活、聊天和创造故事的人物。每一个空间，都是你们自己的小宇宙。</p>
+    </header>
+    <section class="space-section characters-section" id="spacePeopleCard">
+      <div class="section-topline"><div><div class="eyebrow" id="spacePeopleEyebrow">THE CHARACTERS</div><h2>Characters</h2></div><span class="section-index">01 / PEOPLE</span></div>
+      <div class="sub" id="spacePeopleSub">选择一位角色，进入你们的专属空间。</div>
+      <div id="spacePeopleGrid" class="space-people-grid"></div>
+    </section>
+  </div>
 
-  <section class="space-section characters-section" id="spacePeopleCard">
-    <div class="section-topline"><div><div class="eyebrow" id="spacePeopleEyebrow">THE CHARACTERS</div><h2>Characters</h2></div><span class="section-index">01 / PEOPLE</span></div>
-    <div class="sub" id="spacePeopleSub">选择一位角色，继续你们的故事。</div>
-    <div id="spacePeopleGrid" class="space-people-grid"></div>
-  </section>
+  <!-- WORKSPACE: one selected character + one selected world/persona -->
+  <div id="spaceWorkspaceView" hidden>
+    <header class="workspace-toolbar">
+      <button class="workspace-back" id="spaceBackToDirectory" type="button">‹ <span>所有人物</span></button>
+      <div class="workspace-heading"><div class="eyebrow">OUR LITTLE UNIVERSE</div><h1 id="workspaceTitle">OUR SPACE</h1><p id="workspaceMeta"></p></div>
+      <button class="workspace-history-link" id="spaceHistoryOpen" type="button"><span>⌁</span><small>历史档案</small></button>
+    </header>
+    <section class="live-feature workspace-live-feature">
+      <div class="live-feature-head"><div><div class="eyebrow" id="spaceWhatWill">THE PRESENT</div><h2>Live moment</h2></div><div class="live-clock"><span class="status-dot"></span><span id="aiState">HOME IS ALIVE</span><b id="clock"></b></div></div>
+      <div class="scene scene-glass">
+        <div class="scene-place"><span class="scene-place-dot"></span><span id="place">BEDROOM</span></div>
+        <div class="scene-text" id="sceneText">夜深了。房间里很安静。</div>
+        <div class="scene-quote" id="sceneQuote">“怎么还没睡？”</div>
+      </div>
+      <div class="choices-label">WHAT WILL YOU DO?</div>
+      <div id="choices" class="choices"></div>
+      <div class="chatbox"><div class="chatrow"><input id="freeInput" placeholder="自己说点什么……"><button class="btn primary" id="sendFree" type="button">SEND</button></div></div>
+    </section>
+    <section class="surprise-feature workspace-surprise">
+      <div><div class="eyebrow" id="newMomentEyebrow">A LITTLE UNEXPECTED MOMENT</div><h2>给我们一个惊喜</h2><p class="sub">让 AI 为你们开启一个意想不到的小片段。</p></div>
+      <button class="surprise-orb" id="surprise" type="button" aria-label="给我们一个惊喜">✦</button>
+    </section>
+  </div>
 
-  <section class="world-feature" id="worldFeature">
-    <div class="world-feature-top"><span class="eyebrow">WORLD BOOK · 02</span><span class="world-orbit">✧</span></div>
-    <div class="world-feature-kicker">THE WORLD YOU BUILT</div>
-    <h2 id="worldNameDisplay">A LITTLE UNIVERSE</h2>
-    <p id="worldDescriptionDisplay" class="world-description">每一个故事，都从一个属于你们的地方开始。</p>
-    <div class="world-location-row"><span class="world-location-icon">⌖</span><span id="worldLocationsDisplay">尚未选择世界观</span></div>
-    <button class="world-book-link" type="button" data-launch-module="world">打开世界书 <span>↗</span></button>
-    <div class="world-feature-glow"></div>
-  </section>
-
-  <section class="live-feature">
-    <div class="live-feature-head"><div><div class="eyebrow" id="spaceWhatWill">THE PRESENT · 03</div><h2>Live moment</h2></div><div class="live-clock"><span class="status-dot"></span><span id="aiState">HOME IS ALIVE</span><b id="clock"></b></div></div>
-    <div class="scene scene-glass">
-      <div class="scene-place"><span class="scene-place-dot"></span><span id="place">BEDROOM</span></div>
-      <div class="scene-text" id="sceneText">夜深了。房间里很安静。</div>
-      <div class="scene-quote" id="sceneQuote">“怎么还没睡？”</div>
-    </div>
-    <div class="choices-label">WHAT WILL YOU DO?</div>
-    <div id="choices" class="choices"></div>
-    <div class="chatbox">
-      <div class="chatrow"><input id="freeInput" placeholder="自己说点什么……"><button class="btn primary" id="sendFree" type="button">SEND</button></div>
-    </div>
-  </section>
-
-  <section class="space-section history-section" id="ourHistoryCard">
-    <div class="section-topline"><div><div class="eyebrow">THE ARCHIVE · 04</div><h2>Our history</h2></div><span class="history-count" id="historyCount">0</span></div>
-    <div class="sub" style="margin-top:8px">你们说过的话、一起经历的事，都会安静地留在这里。</div>
-    <div id="ourHistoryBody" class="our-history"></div>
-  </section>
-
-  <section class="surprise-feature">
-    <div><div class="eyebrow" id="newMomentEyebrow">A NEW MOMENT · 05</div><h2>Leave room for a little surprise.</h2><p class="sub">让今天发生一点意料之外的故事。</p></div>
-    <button class="surprise-orb" id="surprise" type="button" aria-label="Surprise us">✦</button>
-  </section>
+  <!-- HISTORY: independent archive view; grows separately from the live space -->
+  <div id="spaceHistoryView" hidden>
+    <header class="workspace-toolbar history-toolbar">
+      <button class="workspace-back" id="spaceHistoryBack" type="button">‹ <span>返回空间</span></button>
+      <div class="workspace-heading"><div class="eyebrow">THE ARCHIVE</div><h1>Our history</h1><p>你们共同经历过的每一段故事。</p></div>
+      <span class="history-count" id="historyCount">0</span>
+    </header>
+    <section class="space-section history-section archive-page-section">
+      <div class="sub">所有互动都会按照时间保存在这里。展开记录可以查看对话，也可以回溯剧情。</div>
+      <div id="ourHistoryBody" class="our-history"></div>
+    </section>
+  </div>
 </main>
 
 <main id="settings" class="page">
@@ -908,6 +949,18 @@ function finishHistoryTurn(id,aiText){const sp=activeSpace();if(!sp)return;const
 function renderOurHistory(){const box=$('ourHistoryBody');if(!box)return;const sp=activeSpace();if(!sp){box.innerHTML='<div class="module-empty">先选择一个 AI 人物，再开始 SPACE。</div>';return}normalizeSpace(sp);const list=sp.history||[];const zh=currentLang()==='zh';$('historyCount').textContent=String(list.length);if(!list.length){box.innerHTML='<div class="module-empty">'+(zh?'还没有记录。你们说过的话会留在这里。':'No history yet.')+'</div>';return}box.innerHTML=list.slice().reverse().map(t=>`<details class="our-history-item"><summary>${esc((t.time||'').toString())} · ${esc((t.userText||'').slice(0,48))}</summary><div class="our-history-content"><div class="history-label">${zh?'你':'YOU'}</div><div class="history-bubble">${esc(t.userText||'')}</div>${t.aiText?`<div class="history-label" style="margin-top:14px">${esc(activeSpacePerson()?.name||'AI')}</div><div class="history-bubble">${esc(t.aiText)}</div>`:''}<div class="history-rollback"><button class="mini-btn danger" data-action="delete-history-turn" data-id="${esc(t.id)}">${zh?'删除并回到这里之前':'DELETE & ROLLBACK'}</button></div></div></details>`).join('')}
 function deleteHistoryTurn(id){const sp=activeSpace();if(!sp)return;normalizeSpace(sp);const idx=sp.history.findIndex(x=>x.id===id);if(idx<0)return;const zh=currentLang()==='zh';if(!confirm(zh?'删除这段记录，并回到它发生之前？后面的剧情也会一起回溯。':'Delete this memory and roll the story back? Later turns will also be removed.'))return;const target=sp.history[idx];sp.scene=cloneObj(target.beforeScene)||baseScene();sp.history=sp.history.slice(0,idx);syncSpaceEvents(sp);save();renderScene();renderOurHistory();toast(zh?'已回溯到上一个话题':'Rolled back to the previous topic')}
 
+let spaceView='directory';
+function setSpaceView(view){
+  spaceView=view;
+  const directory=$('spaceDirectoryView'),workspace=$('spaceWorkspaceView'),archive=$('spaceHistoryView');
+  if(directory)directory.hidden=view!=='directory';
+  if(workspace)workspace.hidden=view!=='workspace';
+  if(archive)archive.hidden=view!=='history';
+  const sp=activeSpace(),person=activeSpacePerson();
+  if(view==='workspace'&&sp){$('workspaceTitle').textContent=sp.title||person.name;$('workspaceMeta').textContent=person.name+(activeSpaceWorld()?.name?' · '+activeSpaceWorld().name:'');}
+  if(view==='history')renderOurHistory();
+  window.scrollTo(0,0);
+}
 function renderSpacePeople(){const box=$('spacePeopleGrid');if(!box)return;const people=state.people.filter(p=>p.id!=='p-yanyan');if(!people.length){box.innerHTML='<div class="module-empty" style="grid-column:1/-1">还没有 AI 人物。先去 HOME → PEOPLE 建立一个吧。</div>';return}box.innerHTML=people.map(p=>{const n=state.spaces.filter(s=>s.personId===p.id).length;const active=activeSpace()?.personId===p.id;const initial=esc((p.name||'?').trim().charAt(0).toUpperCase());const role=esc(p.role||'AI character');return `<button class="space-person-card ${active?'active':''}" type="button" data-action="open-person-space" data-id="${esc(p.id)}"><span class="space-person-avatar">${initial}</span><span class="space-person-info"><b>${esc(p.name)}</b><span>${role} · ${n} ${currentLang()==='zh'?'个空间':'spaces'}${active?' · '+(currentLang()==='zh'?'正在进行':'ACTIVE'):''}</span></span><span class="space-person-arrow">↗</span></button>`}).join('')}
 function openPersonSpace(id){const p=state.people.find(x=>x.id===id);if(!p)return;renderPersonSpaceModal(p);$('spacePersonModal').classList.add('show');document.body.style.overflow='hidden'}
 function closePersonSpace(){$('spacePersonModal').classList.remove('show');document.body.style.overflow=''}
@@ -917,8 +970,8 @@ function openNewSpace(personId){editingSpaceId='';const p=state.people.find(x=>x
 function openEditSpace(spaceId){const sp=state.spaces.find(x=>x.id===spaceId);if(!sp)return;const p=state.people.find(x=>x.id===sp.personId);if(!p)return;editingSpaceId=spaceId;const worlds=state.worlds||[],personas=state.selfPersonas||[];const zh=currentLang()==='zh';$('spacePersonBody').innerHTML=`<div class="sub">${zh?'编辑这个 SPACE。已有剧情和 OUR HISTORY 会保留。':'Edit this SPACE. Existing story and OUR HISTORY will be kept.'}</div><label>${zh?'AI 角色':'AI CHARACTER'}</label><select id="editSpacePerson">${spacePersonOptions(sp.personId,zh)}</select><label>${zh?'空间名称':'SPACE NAME'}</label><input id="editSpaceTitle" value="${esc(sp.title||'')}" placeholder="${zh?'例如：雨夜回家':'e.g. A Rainy Night'}"><div class="space-context"><div><label>${zh?'世界观':'WORLD BOOK'}</label><select id="editSpaceWorld"><option value="">${zh?'不使用世界观':'None'}</option>${worlds.map(w=>`<option value="${esc(w.id)}" ${w.id===sp.worldId?'selected':''}>${esc(w.name)}</option>`).join('')}</select></div><div><label>${zh?'我的自设':'MY PERSONA'}</label><select id="editSpacePersona"><option value="">${zh?'默认自己':'Default me'}</option>${personas.map(x=>`<option value="${esc(x.id)}" ${x.id===sp.personaId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div></div><div class="actions"><button class="btn primary" data-action="save-edit-space" data-id="${esc(spaceId)}">${zh?'保存修改':'SAVE CHANGES'}</button><button class="btn" data-action="back-person-space" data-id="${esc(p.id)}">${zh?'返回':'BACK'}</button></div>`}
 function saveEditSpace(spaceId){const sp=state.spaces.find(x=>x.id===spaceId);if(!sp)return;const title=$('editSpaceTitle')?.value.trim();sp.personId=$('editSpacePerson')?.value||sp.personId;sp.title=title||(currentLang()==='zh'?'新的空间':'New Space');sp.worldId=$('editSpaceWorld')?.value||'';sp.personaId=$('editSpacePersona')?.value||'';editingSpaceId='';save();const p=state.people.find(x=>x.id===sp.personId);if(activeSpaceId===spaceId){state.activeSpaceId=spaceId;state.events=sp.events||[];renderScene();renderOurHistory()}if(p)renderPersonSpaceModal(p);toast(currentLang()==='zh'?'SPACE 已更新':'SPACE updated')}
 function baseScene(){const s=hourScene();return {place:s.place,text:s.text,quote:s.quote,choices:s.choices.slice(0,4),hour:new Date().getHours()}}
-function saveNewSpace(personId){const selectedPerson=$('newSpacePerson')?.value||personId;const title=$('newSpaceTitle')?.value.trim()||(currentLang()==='zh'?'新的空间':'New Space');const sp={id:'spc-'+Date.now(),personId:selectedPerson,title,worldId:$('newSpaceWorld')?.value||'',personaId:$('newSpacePersona')?.value||'',events:[],history:[],scene:baseScene(),createdAt:new Date().toISOString()};state.spaces.push(sp);activeSpaceId=sp.id;state.activeSpaceId=sp.id;state.events=[];save();closePersonSpace();renderSpacePeople();renderScene();renderOurHistory();toast(currentLang()==='zh'?'新的 SPACE 已创建':'New space created')}
-function continueSpace(id){const sp=state.spaces.find(x=>x.id===id);if(!sp)return;normalizeSpace(sp);activeSpaceId=id;state.activeSpaceId=id;state.events=sp.events.slice();save();closePersonSpace();renderSpacePeople();renderScene();renderOurHistory();window.scrollTo(0,0);toast(currentLang()==='zh'?'已继续这个 SPACE':'Space continued')}
+function saveNewSpace(personId){const selectedPerson=$('newSpacePerson')?.value||personId;const title=$('newSpaceTitle')?.value.trim()||(currentLang()==='zh'?'我们的空间':'Our Space');const sp={id:'spc-'+Date.now(),personId:selectedPerson,title,worldId:$('newSpaceWorld')?.value||'',personaId:$('newSpacePersona')?.value||'',events:[],history:[],scene:baseScene(),createdAt:new Date().toISOString()};state.spaces.push(sp);activeSpaceId=sp.id;state.activeSpaceId=sp.id;state.events=[];save();closePersonSpace();renderSpacePeople();setSpaceView('workspace');renderScene();renderOurHistory();toast(currentLang()==='zh'?'你们的空间已开启':'Your space is open')}
+function continueSpace(id){const sp=state.spaces.find(x=>x.id===id);if(!sp)return;normalizeSpace(sp);activeSpaceId=id;state.activeSpaceId=id;state.events=sp.events.slice();save();closePersonSpace();renderSpacePeople();setSpaceView('workspace');renderScene();renderOurHistory();toast(currentLang()==='zh'?'已进入你们的空间':'Space opened')}
 function deleteSpace(id){const target=state.spaces.find(x=>x.id===id);if(!target)return;if(!confirm(currentLang()==='zh'?'删除这个 SPACE？':'Delete this SPACE?'))return;state.spaces=state.spaces.filter(x=>x.id!==id);if(activeSpaceId===id){activeSpaceId='';state.activeSpaceId='';state.events=[]}save();renderSpacePeople();openPersonSpace(target.personId)}
 function renderScene(){const sp=activeSpace();const h=new Date().getHours();if(sp){normalizeSpace(sp);if(!sp.scene){sp.scene=baseScene();save()}else if(!sp.history.length && sp.scene.hour!==h){sp.scene=baseScene();save()}}const s=sp?.scene||baseScene();lastSceneHour=h;const p=activeSpacePerson();$('place').textContent=s.place;$('sceneText').textContent=s.text;$('sceneQuote').textContent=s.quote;$('clock').textContent=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});$('choices').innerHTML='';(s.choices||[]).slice(0,4).forEach((x,i)=>{const b=document.createElement('button');b.className='btn choice';b.type='button';b.dataset.choice=String(i);b.dataset.choiceText=x;b.textContent=x;$('choices').appendChild(b)});updateAIState();const w=activeSpaceWorld(),pe=activeSpacePersona(),title=sp?sp.title:(currentLang()==='zh'?'默认空间 · '+p.name:'Default Space · '+p.name);const card=$('spacePeopleSub');if(card)card.textContent=sp?title+' · '+(w?.name||(currentLang()==='zh'?'未选择世界观':'No world'))+' · '+(pe?.name||(currentLang()==='zh'?'默认自设':'Default persona')):(currentLang()==='zh'?'先选择一位角色，再进入你们的空间。':'Choose a character to enter your shared space.');const wn=$('worldNameDisplay'),wd=$('worldDescriptionDisplay'),wl=$('worldLocationsDisplay');if(wn)wn.textContent=w?.name||(currentLang()==='zh'?'我们的故事，从这里开始':'A LITTLE UNIVERSE');if(wd)wd.textContent=w?.description||(currentLang()==='zh'?'还没有添加世界简介。去世界书，写下这个世界的样子。':'Your world is waiting for its first details. Add a description in the World Book.');if(wl)wl.textContent=w?.locations||(currentLang()==='zh'?'尚未添加地点':'No locations added yet');const who=$('spaceTitleEyebrow');if(who)who.textContent=w?'OUR WORLD · '+(w.name||'SPACE'):'OUR PRIVATE UNIVERSE';renderSpacePeople();renderOurHistory()}
 function updateAIState(){$('aiState').textContent=state.apiBase&&state.apiKey&&state.apiModel?'AI HOME IS ON':'HOME IS ALIVE'}
@@ -985,7 +1038,7 @@ function nav(page){
       activeSpaceId=state.activeSpaceId;
       state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice();
     }
-    renderSpacePeople();renderScene();renderOurHistory();
+    renderSpacePeople();renderScene();renderOurHistory();setSpaceView(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)?'workspace':'directory');
   }
   if(page==='settings')renderSettings();
 }
@@ -1017,7 +1070,7 @@ function fallbackChoices(trigger){const pools=[['继续追问他刚才那句话'
 async function generateDynamicChoices(context){const sp=activeSpace();if(!sp)return;if(!(state.apiBase&&state.apiKey&&state.apiModel)){sp.scene=sp.scene||baseScene();sp.scene.choices=fallbackChoices(context);save();renderScene();return}const person=activeSpacePerson(),world=activeSpaceWorld(),persona=activeSpacePersona();const recent=historyContext(sp)||'无';const prompt=`为 LOVE RECORD 的 SPACE 生成下一轮恰好4个“用户可以选择的行动”。这些选项必须紧接当前剧情，不要重复上一轮，不要替用户决定结果，也不要替用户写已经发生的行动。当前对象：${person?.name||''}；人物身份：${person?.role||''}；人物性格：${person?.personality||''}；人物外貌：${person?.appearance||''}；人物说话方式：${person?.speech||''}；人物背景：${person?.background||''}；人物规则：${person?.instructions||''}；世界观：${world?world.name+'；'+world.description+'；'+world.locations+'；'+world.rules:'无'}；我的自设完整资料：名字=${persona?.name||'默认自己'}；身份=${persona?.role||''}；性格=${persona?.personality||''}；外貌=${persona?.appearance||''}；说话方式=${persona?.speech||''}；背景=${persona?.background||''}；当前时间：${new Date().toLocaleString('zh-CN')}；刚刚发生：${context}；近期记录：${recent}。选项应该符合“我的自设”可以自然做出的行动，但不要替我决定结果。只返回合法 JSON 数组，例如 ["选项1","选项2","选项3","选项4"]，不要 Markdown，不要解释。`;try{const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是剧情互动选项生成器，只输出4条自然的下一步行动。'},{role:'user',content:prompt}],stream:false})},15000);const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status);const j=JSON.parse(raw),txt=extractAIText(j),arr=extractJSONArray(txt);if(!arr||arr.length<4)throw new Error('choices parse failed');sp.scene=sp.scene||baseScene();sp.scene.choices=arr.slice(0,4).map(x=>String(x).trim()).filter(Boolean);if(sp.scene.choices.length<4)throw new Error('not enough choices');save();renderScene()}catch(e){sp.scene=sp.scene||baseScene();sp.scene.choices=fallbackChoices(context);save();renderScene()}}
 async function handleChoice(text){const chosen=String(text||'');const turnId=startHistoryTurn(state.name+'：'+chosen);if(!turnId)return;if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent='他停了一下，看向你。';$('sceneQuote').textContent='正在想怎么回应……';const r=await askAI(chosen,'choice');if(r){setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(chosen+'\n'+r)}else{finishHistoryTurn(turnId,'');toast('AI 暂时没回应，先陪你把这一刻留着');await generateDynamicChoices(chosen)}}else{const replies=['他轻轻笑了一下，没有催你。','他往旁边挪了挪，给你留了位置。','他看了你一会儿，然后把手伸过来。','“好，那我们就这样待一会儿。”'];const r=replies[Math.floor(Math.random()*replies.length)];setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(chosen);toast('这一刻留下来了 ♡')}}
 async function handleFree(){const input=$('freeInput');const text=input.value.trim();if(!text)return;input.value='';const turnId=startHistoryTurn(state.name+'：'+text);if(!turnId)return;if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneQuote').textContent='正在回应……';const r=await askAI(text,'free');if(r){setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(text+'\n'+r)}else{finishHistoryTurn(turnId,'');toast('AI 暂时没回应，检查 API 连接后再试')}}else{const r='嗯，我听着。你慢慢说。';setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(text);toast('内置模式也可以继续聊天 ♡')}}
-async function surprise(){const pool=['厨房里突然想吃一点甜的。','阳台的风刚刚好，适合一起待五分钟。','他突然想听你最近最喜欢的一首歌。','今天晚上留十分钟，不看手机，只陪对方。','他刚刚想起一件小事，准备告诉你。'];const text=pool[Math.floor(Math.random()*pool.length)];const turnId=startHistoryTurn('A LITTLE SURPRISE：'+text);if(!turnId)return;if(state.apiBase&&state.apiKey&&state.apiModel){$('sceneText').textContent=text;$('sceneQuote').textContent='AI 正在把这一刻接下去……';const r=await askAI(text,'surprise');if(r){setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(text+'\n'+r)}else{finishHistoryTurn(turnId,'');toast('AI 没回应，但惊喜已经留下 ♡')}}else{$('sceneText').textContent=text;$('sceneQuote').textContent='“过来。”';finishHistoryTurn(turnId,activeSpacePerson().name+'：过来。');await generateDynamicChoices(text);toast('给你一个小惊喜 ♡')}}
+async function surprise(){const sp=activeSpace();if(!sp){toast('先选择人物并开启一个专属空间 ♡');setSpaceView('directory');return}if(aiBusy){toast('AI 正在回应上一条内容，稍等一下 ♡');return}const pool=['今天发生一件意想不到的小事。','他突然有了一个只想和你分享的计划。','一个平常的瞬间，忽然变得特别起来。','他想带你去一个没去过的地方。','他刚刚想起一件关于你们的小事。'];const text=pool[Math.floor(Math.random()*pool.length)];const turnId=startHistoryTurn('给我们一个惊喜：'+text);if(!turnId)return;$('sceneText').textContent=text;$('sceneQuote').textContent='AI 正在为你们创造一个小惊喜……';if(state.apiBase&&state.apiKey&&state.apiModel){const r=await askAI('请围绕这个意外灵感，结合你的人物设定、我们正在经历的空间和最近的共同记忆，自然地开启一段具体、有细节、适合继续互动的惊喜情节。不要只重复提示语，也不要替用户决定行动。灵感：'+text,'surprise');if(r){setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(text+'\n'+r);toast('惊喜已经送达 ♡')}else{finishHistoryTurn(turnId,'');toast('这次 API 没有成功返回，请查看 Settings → AI / API 的错误详情')}}else{const r='“过来，我突然想到一件想和你一起做的事。”';setSceneResponse(r);finishHistoryTurn(turnId,activeSpacePerson().name+'：'+r);await generateDynamicChoices(text);toast('给你一个小惊喜 ♡')}}
 
 
 function ensureSelfPersonas(){if(!Array.isArray(state.selfPersonas))state.selfPersonas=[]}
@@ -1249,7 +1302,7 @@ $('moduleClose').onclick=closeModule;$('moduleModal').addEventListener('click',e
 $('selfPersonaEditModal').addEventListener('click',e=>{if(e.target.id==='selfPersonaEditModal')closeSelfPersonaEditor()});
 $('personEditClose').onclick=closePersonEditor;$('cancelPerson').onclick=closePersonEditor;$('savePerson').onclick=savePerson;$('selfPersonaEditClose').onclick=closeSelfPersonaEditor;$('cancelSelfPersona').onclick=closeSelfPersonaEditor;$('saveSelfPersona').onclick=saveSelfPersona;$('addSelfPersona').onclick=()=>openSelfPersonaEditor();
 $('worldEditClose').onclick=closeWorldEditor;$('cancelWorld').onclick=closeWorldEditor;$('saveWorld').onclick=saveWorld;
-$('journalEditClose').onclick=closeJournalEditor;$('cancelJournal').onclick=closeJournalEditor;$('saveJournal').onclick=saveJournal;$('spacePersonClose').onclick=closePersonSpace;$('spacePersonModal').addEventListener('click',e=>{if(e.target.id==='spacePersonModal')closePersonSpace()});$('forumDetailClose').onclick=closeForumDetail;$('forumDetailModal').addEventListener('click',e=>{if(e.target.id==='forumDetailModal')closeForumDetail()});
+$('journalEditClose').onclick=closeJournalEditor;$('cancelJournal').onclick=closeJournalEditor;$('saveJournal').onclick=saveJournal;$('spacePersonClose').onclick=closePersonSpace;$('spaceBackToDirectory').onclick=()=>setSpaceView('directory');$('spaceHistoryOpen').onclick=()=>{renderOurHistory();setSpaceView('history')};$('spaceHistoryBack').onclick=()=>setSpaceView('workspace');$('spacePersonModal').addEventListener('click',e=>{if(e.target.id==='spacePersonModal')closePersonSpace()});$('forumDetailClose').onclick=closeForumDetail;$('forumDetailModal').addEventListener('click',e=>{if(e.target.id==='forumDetailModal')closeForumDetail()});
 if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound=true;document.addEventListener('click',e=>{
  const open=e.target.closest('[data-open-module]');if(open){openModule(open.dataset.openModule);return}
  const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
