@@ -186,8 +186,8 @@ function init(){
  $('musicOnlineGo').onclick=searchOnline;$('musicOnlineSearch').addEventListener('keydown',e=>{if(e.key==='Enter')searchOnline()});
  $('musicAddSelected').onclick=addSelected;$('musicSelectAll').onchange=e=>document.querySelectorAll('.music-result-check').forEach(x=>x.checked=e.target.checked);
  $('musicBackToLibrary').onclick=showLibraryView;
- $('musicLyricsImport').onclick=()=>$('musicLyricsFile').click();
- $('musicLyricsFile').onchange=e=>{importLyrics(e.target.files?.[0]);e.target.value=''};
+ 
+ 
  $('musicTogetherOpen').onclick=()=>{renderTogetherPicker();$('musicTogetherModal').hidden=false};
  document.querySelectorAll('[data-music-together-close]').forEach(el=>el.addEventListener('click',closeTogetherModal));
  $('musicTogetherStart').onclick=async()=>{togetherIds=[...$('musicTogetherContacts').querySelectorAll('input:checked')].map(x=>x.value);if(!togetherIds.length){toast('先选择一位联系人吧');return}await saveTogether();renderTogetherActive();closeTogetherModal();toast('一起听已开启 ♡')};
