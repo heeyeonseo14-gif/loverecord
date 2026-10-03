@@ -370,6 +370,25 @@ body.launcher-open .page{padding-bottom:25px}
 }
 </style>
 
+
+<style>
+/* Chat app */
+.chat-page{padding-bottom:130px}
+.chat-messages{display:flex;flex-direction:column;gap:11px;margin-top:22px;min-height:36vh}
+.chat-bubble{max-width:84%;padding:12px 15px;border-radius:19px;line-height:1.65;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-bubble.user{align-self:flex-end;background:#b89bc5;color:#fff;border-bottom-right-radius:6px}
+.chat-bubble.ai{align-self:flex-start;background:#fff;border:1px solid #eee7f0;color:#403847;border-bottom-left-radius:6px}
+.chat-compose{position:sticky;bottom:90px;display:flex;align-items:flex-end;gap:8px;padding:10px;background:rgba(248,245,250,.96);border:1px solid #e8e0eb;border-radius:20px;backdrop-filter:blur(14px);z-index:4}
+.chat-compose textarea{flex:1;min-height:45px;max-height:110px;resize:vertical;border-radius:14px;background:#fff}
+.chat-compose .btn{white-space:nowrap}
+.chat-hint{font-size:11px;color:#9b91a0;margin-top:10px;text-align:center}
+.launcher-app[data-drag-id],.launcher-info[data-drag-id]{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform}
+.launcher-app.is-dragging,.launcher-info.is-dragging{z-index:30;position:relative;cursor:grabbing;filter:drop-shadow(0 9px 14px rgba(75,57,88,.18))}
+.launcher-app.is-dragging .app-icon{transform:scale(1.04)}
+.launcher-info.is-dragging{outline:1px dashed rgba(160,130,177,.65);outline-offset:3px}
+@media(max-width:420px){.chat-bubble{font-size:13px}.chat-compose{bottom:86px}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -393,7 +412,7 @@ body.launcher-open .page{padding-bottom:25px}
     <div class="launcher-greeting">我们的小宇宙</div>
     <div class="launcher-sub">A LITTLE WORLD OF OUR OWN</div>
   </section>
-  <section class="launcher-info" aria-label="我们的纪念日">
+  <section class="launcher-info" aria-label="我们的纪念日" data-drag-id="days-widget">
     <div class="launcher-info-copy">
       <div class="launcher-days"><strong id="launcherDays">0</strong><span>DAYS TOGETHER</span></div>
       <div class="launcher-today"><span class="launcher-today-label">TODAY</span><span id="launcherToday">把今天也留在这里。</span></div>
@@ -409,11 +428,25 @@ body.launcher-open .page{padding-bottom:25px}
     </div>
   </section>
   <section class="launcher-grid" aria-label="应用">
-    <button class="launcher-app" data-launch-page="memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
-    <button class="launcher-app" data-launch-page="space" type="button"><span class="app-icon icon-space">♡</span><span>我们的空间</span></button>
-    <button class="launcher-app" data-launch-module="forum" type="button"><span class="app-icon icon-forum">◎</span><span>社区</span></button>
-    <button class="launcher-app" data-launch-module="journal" type="button"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
+    <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
+    <button class="launcher-app" data-launch-page="space" data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>我们的空间</span></button>
+    <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
+    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-weibo"><span class="app-icon icon-weibo">◉</span><span>微博</span></button>
+    <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
   </section>
+</main>
+
+
+<main id="chat" class="page chat-page">
+  <div class="eyebrow">PRIVATE CHAT</div>
+  <h1>和颜焕聊天</h1>
+  <div class="sub">把想说的话留在这里。</div>
+  <div id="chatMessages" class="chat-messages"></div>
+  <div class="chat-compose">
+    <textarea id="chatInput" rows="2" placeholder="想和他说些什么？"></textarea>
+    <button class="btn primary" id="chatSend" type="button">发送</button>
+  </div>
+  <div class="chat-hint" id="chatHint">聊天记录保存在这台设备。请先在设置中连接 API。</div>
 </main>
 
 <div class="system-appbar" id="systemAppbar">
@@ -527,6 +560,30 @@ function renderHome(){
     photo.innerHTML=a[0]?'<img src="'+URL.createObjectURL(a[0].blob)+'" alt="">':'<span class="polaroid-placeholder">＋</span>';
   });
 }
+
+const CHAT_STORE_KEY='love-record-private-chat-v1';
+function readChat(){try{return JSON.parse(localStorage.getItem(CHAT_STORE_KEY)||'[]')}catch{return []}}
+function writeChat(items){localStorage.setItem(CHAT_STORE_KEY,JSON.stringify(items))}
+function renderChat(){
+  const box=$('chatMessages');if(!box)return;
+  const items=readChat();
+  box.innerHTML=items.length?items.map(m=>'<div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+esc(m.text)+'</div>').join(''):'<div class="sub" style="text-align:center;padding:34px 12px">这里还没有消息。<br>发出第一句话吧 ♡</div>';
+  box.scrollTop=box.scrollHeight;
+  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，才能获得 AI 回复。';
+}
+async function sendChatMessage(){
+  const input=$('chatInput'),textValue=input.value.trim();if(!textValue)return;
+  const items=readChat();items.push({role:'user',text:textValue,at:Date.now()});writeChat(items);input.value='';renderChat();
+  if(!state.apiBase||!state.apiKey||!state.apiModel){toast('请先在设置中连接 API');return}
+  const send=$('chatSend');send.disabled=true;send.textContent='…';
+  try{
+    const reply=await askAI(textValue,'chat');
+    if(reply){const next=readChat();next.push({role:'assistant',text:reply,at:Date.now()});writeChat(next)}
+    else toast('暂时没有收到回复，请检查 API 设置');
+  }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
+  finally{send.disabled=false;send.textContent='发送';renderChat()}
+}
+
 function renderMemories(){getImages('memory').then(a=>{$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+esc(x.date)+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete="'+x.id+'" style="margin-top:9px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">还没有回忆。<br>从一张照片开始吧。</div>'})}
 function hourScene(){const h=new Date().getHours();if(h<7)return{place:'BEDROOM',text:'房间里很安静，只有手机屏幕还亮着。',quote:'“这么晚还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在看什么','逗他说“你管我”']};if(h<11)return{place:'KITCHEN',text:'厨房里有一点早餐的香味。',quote:'“醒啦？过来吃一点。”',choices:['坐下来吃早餐','从背后抱住他','偷吃一口','问他今天想去哪']};if(h<18)return{place:'LIVING ROOM',text:'下午的光落在沙发上，他正在挑歌。',quote:'“来，帮我选一首。”',choices:['坐过去一起听','抢走他的手机','问他为什么选这首','靠着他休息']};if(h<23)return{place:'LIVING ROOM',text:'晚上回到家，客厅只留着一盏灯。',quote:'“今天辛苦了。”',choices:['抱他一下','问他今晚想做什么','一起看电影','什么也不说，陪着他']};return{place:'BEDROOM',text:'夜深了。房间里很安静，他还没有睡。',quote:'“怎么还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在想什么','说“我就是想找你”']}}
 function activeSpace(){return state.spaces.find(x=>x.id===activeSpaceId)||null}
@@ -625,11 +682,12 @@ function nav(page){
   target.classList.add('active');
   document.body.classList.toggle('launcher-open',page==='launcher');
   const bar=$('systemAppbar');if(bar)bar.classList.toggle('show',page!=='launcher');
-  const titles={home:'HOME',memories:'MEMORIES',space:'OUR SPACE',settings:'SETTINGS'};
+  const titles={launcher:'LOVE RECORD',home:'HOME',memories:'MEMORIES',space:'OUR SPACE',settings:'SETTINGS',chat:'CHAT'};
   const title=$('systemAppTitle');if(title)title.textContent=titles[page]||'LOVE RECORD';
   window.scrollTo(0,0);
   if(page==='home')renderHome();
   if(page==='memories')renderMemories();
+  if(page==='chat')renderChat();
   if(page==='space'){
     if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){
       activeSpaceId=state.activeSpaceId;
@@ -810,12 +868,72 @@ $('motionToggle').onclick=()=>{appearance.motion=!appearance.motion;appearance.p
 $('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults);applyAppearance();renderAppearanceControls();toast('已经恢复默认外观')};
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
+
+// Long-press and drag launcher icons / Days Together widget. Positions persist on this device.
+(function(){
+  const KEY='love-record-launcher-positions-v1';
+  let positions={};try{positions=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{positions={}}
+  const getId=el=>el?.dataset?.dragId;
+  function applyPositions(){
+    document.querySelectorAll('#launcher [data-drag-id]').forEach(el=>{
+      const p=positions[getId(el)];if(p){el.style.transform=`translate(${p.x}px, ${p.y}px)`}
+    });
+  }
+  applyPositions();
+  let active=null,timer=null,dragged=false;
+  document.addEventListener('pointerdown',e=>{
+    const el=e.target.closest('#launcher [data-drag-id]');
+    if(!el||e.button!==0||e.target.closest('button:not(.launcher-app),input,textarea'))return;
+    const id=getId(el);if(!id)return;
+    dragged=false;
+    active={el,id,startX:e.clientX,startY:e.clientY,baseX:positions[id]?.x||0,baseY:positions[id]?.y||0,x:positions[id]?.x||0,y:positions[id]?.y||0,pointerId:e.pointerId};
+    timer=setTimeout(()=>{
+      if(!active)return;
+      dragged=true;active.el.classList.add('is-dragging');
+      try{active.el.setPointerCapture(active.pointerId)}catch{}
+      if(navigator.vibrate)navigator.vibrate(22);
+      toast('拖动图标，松开即可放置');
+    },430);
+  },{passive:true});
+  document.addEventListener('pointermove',e=>{
+    if(!active||e.pointerId!==active.pointerId)return;
+    if(!dragged){
+      if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>10){clearTimeout(timer);timer=null;active=null}
+      return;
+    }
+    const dx=e.clientX-active.startX,dy=e.clientY-active.startY;
+    active.x=active.baseX+dx;active.y=active.baseY+dy;
+    active.el.style.transform=`translate(${active.x}px, ${active.y}px)`;
+  });
+  function finish(e){
+    clearTimeout(timer);timer=null;
+    if(active&&dragged){
+      positions[active.id]={x:Math.round(active.x),y:Math.round(active.y)};
+      localStorage.setItem(KEY,JSON.stringify(positions));
+      active.el.classList.remove('is-dragging');
+      e.preventDefault?.();
+      window.__launcherJustDragged=Date.now();
+    }
+    active=null;dragged=false;
+  }
+  document.addEventListener('pointerup',finish);
+  document.addEventListener('pointercancel',finish);
+  document.addEventListener('click',e=>{
+    if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<650){
+      if(e.target.closest('#launcher [data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}
+    }
+  },true);
+})();
+
 document.addEventListener('click',e=>{
 const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
 const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
-const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){nav('settings');setTimeout(openAppearance,80);return}
+const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){openAppearance();return}
 const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('launcher');return}
 const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
+
+$('chatSend').onclick=sendChatMessage;
+$('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
