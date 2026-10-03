@@ -376,7 +376,7 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}${longMemoryText}请像真实聊天对象一样自然回复，不要输出 JSON。请把回复写成 2–5 条自然、简短、连续的聊天消息，每条之间必须用独占一行的 ||| 分隔符；如果内容很短，只发一条，不要为了凑数而拆句。不要输出 ||| 以外的编号或说明。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。请像真实聊天对象一样自然回复，不要输出 JSON。请把回复写成 2–5 条自然、简短、连续的聊天消息，每条之间必须用独占一行的 ||| 分隔符；如果内容很短，只发一条，不要为了凑数而拆句。不要输出 ||| 以外的编号或说明。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
