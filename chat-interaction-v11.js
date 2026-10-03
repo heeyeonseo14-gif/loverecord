@@ -210,6 +210,7 @@
         bubble.textContent='图片加载中…';
         attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-chat-image" src="'+url+'" alt="聊天图片">';else if(bubble.isConnected)bubble.textContent='图片无法读取';}).catch(()=>{bubble.textContent='图片无法读取';});
       } else if(msg.kind==='transfer'){
+        bubble.classList.add('lr-transfer-bubble');
         bubble.innerHTML='<div class="lr-transfer-card"><small>LOVE RECORD · A LITTLE GIFT</small><strong>RM '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span></div>';
       } else if(msg.kind==='location'){
         const place=escapeHtml(msg.place||msg.text||'未填写地点');
