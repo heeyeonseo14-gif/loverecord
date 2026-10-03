@@ -29,6 +29,7 @@
       #${EXTRA_ID} .lr-search-hit{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 12px;color:var(--ink);font:inherit}
       #${EXTRA_ID} .lr-search-hit small{display:block;color:var(--muted);margin-bottom:4px}
       #${EXTRA_ID} .lr-empty{font-size:13px;color:var(--muted);padding:8px 0}
+      #${EXTRA_ID} textarea.lr-custom-css{width:100%;min-height:190px;box-sizing:border-box;border:1px solid var(--line);border-radius:15px;background:#fbf9fc;color:var(--ink);padding:12px;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
       .chat-message-row.lr-search-highlight .chat-bubble{outline:2px solid #b99ac7;box-shadow:0 0 0 5px rgba(185,154,199,.16)}
       .chat-message-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
       .lr-blocked-tag{font-size:10px;color:#9a5365;border:1px solid #dfc6ce;border-radius:99px;padding:2px 7px;margin-left:6px}
@@ -58,6 +59,14 @@
         <div class="sub" style="margin-top:7px">每次请求会带上最近指定条数的聊天消息。</div>
       </section>
       <section class="lr-setting-card">
+        <h3>自定义聊天 CSS</h3>
+        <div class="sub">可以自定义消息气泡、文字颜色、圆角和边框。修改后点击页面底部「保存设置」生效；仅影响当前联系人。</div>
+        <label for="lrCustomChatCss">CSS 代码</label>
+        <textarea id="lrCustomChatCss" class="lr-custom-css" spellcheck="false" placeholder="#chatConversation .chat-bubble.user { background: #d9b8ef; color: #fff; }"></textarea>
+        <div class="sub" style="margin-top:8px">提示：请使用 #chatConversation 开头的选择器。暂不支持 @import、外部 URL 或脚本。</div>
+        <div class="lr-action-row"><button class="btn" id="lrCssExample" type="button">填入示例 CSS</button><button class="btn" id="lrCssClear" type="button">清空自定义样式</button></div>
+      </section>
+      <section class="lr-setting-card">
         <h3>聊天记录</h3>
         <label for="lrSearchKeyword">查找聊天记录</label><input id="lrSearchKeyword" type="search" placeholder="输入关键词搜索这段聊天">
         <div class="lr-action-row"><button class="btn" id="lrSearchButton" type="button">搜索记录</button></div>
@@ -81,6 +90,8 @@
       } catch (_) { toast('我的头像读取失败'); }
       event.target.value = '';
     };
+    document.getElementById('lrCssExample').onclick = () => { document.getElementById('lrCustomChatCss').value = '#chatConversation .chat-bubble.user {\n  background: #d9b8ef;\n  color: #493451;\n  border-radius: 22px 22px 5px 22px;\n}\n\n#chatConversation .chat-bubble.ai {\n  background: #fff1f7;\n  color: #55404d;\n  border-radius: 22px 22px 22px 5px;\n  border: 1px solid #f0dce8;\n}'; };
+    document.getElementById('lrCssClear').onclick = () => { document.getElementById('lrCustomChatCss').value = ''; };
     document.getElementById('lrSearchButton').onclick = searchCurrentThread;
     document.getElementById('lrSearchKeyword').addEventListener('keydown', e => { if (e.key === 'Enter') searchCurrentThread(); });
     document.getElementById('lrDeleteHistory').onclick = deleteCurrentThread;
@@ -114,6 +125,8 @@
     const count = document.getElementById('lrMemoryCount'); if (count) count.value = clampMemory(meta.memoryCount || 16);
     const blocked = document.getElementById('lrToggleBlock'); if (blocked) { blocked.textContent = meta.blocked ? '取消拉黑' : '拉黑联系人'; blocked.classList.toggle('lr-danger', !meta.blocked); }
     const results = document.getElementById('lrSearchResults'); if (results) results.innerHTML = '';
+    const cssBox = document.getElementById('lrCustomChatCss'); if (cssBox) cssBox.value = meta.customChatCss || '';
+    applyCustomChatCss(meta.customChatCss || '');
   }
 
   function applyMessageAvatars() {
@@ -128,6 +141,14 @@
       const p = contactById(activeChatContactId), src = meta.avatar;
       headAvatar.innerHTML = src ? '<img src="' + src + '" alt="' + esc(p?.name || '联系人') + '">' : esc((p?.name || '♡').slice(0,1));
     }
+  }
+
+  function applyCustomChatCss(css) {
+    const id = 'lr-user-chat-custom-css'; let style = document.getElementById(id);
+    if (!style) { style = document.createElement('style'); style.id = id; document.head.appendChild(style); }
+    const value = String(css || '');
+    if (/@import|url\s*\(|expression\s*\(|javascript:|<\/style/i.test(value)) { style.textContent = ''; return false; }
+    style.textContent = value; return true;
   }
 
   function searchCurrentThread() {
@@ -203,6 +224,8 @@
     editingChatMeta.personaId = $('lrPersonaSelect').value;
     editingChatMeta.worldId = $('lrWorldSelect').value;
     editingChatMeta.memoryCount = clampMemory($('lrMemoryCount').value);
+    editingChatMeta.customChatCss = $('lrCustomChatCss')?.value || '';
+    if (!applyCustomChatCss(editingChatMeta.customChatCss)) { toast('CSS 包含不支持的外部引用或危险语法，请检查后再保存'); return; }
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(activeChatContactId, editingChatMeta);
     closeChatSettings(); toast('聊天设置已保存 ♡');
