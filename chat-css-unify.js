@@ -7,192 +7,137 @@
   if (window.__lrChatCssUnifiedV1) return;
   window.__lrChatCssUnifiedV1 = true;
 
-  const EXAMPLE = `/* LOVE RECORD · 完整聊天样式示例
-   这份示例包含：双方气泡、聊天背景、时间戳、图片、转账、位置、
-   输入栏、加号菜单、角色行程和角色心声。可以按需修改或删除。
+  const EXAMPLE = `/* LOVE RECORD · LAVENDER LIQUID GLASS
+   薰衣草液态玻璃主题｜气泡、背景、时间、图片、转账、位置、输入栏和弹窗
 */
 
-/* 聊天背景 */
+/* 聊天背景：柔雾渐层 */
 #chatMessages {
-  background: #f8f3fa !important;
+  background:
+    radial-gradient(circle at 15% 12%, rgba(224,196,244,.48), transparent 38%),
+    radial-gradient(circle at 88% 78%, rgba(194,184,235,.42), transparent 42%),
+    linear-gradient(145deg, #f8f4fc, #eee8f7) !important;
 }
 
-/* 我的消息气泡 */
-#chatMessages .chat-message-row.user .chat-bubble {
-  background: #dec9ed !important;
-  color: #493653 !important;
-  border: 1px solid #d2b8e2 !important;
-  border-radius: 22px 22px 6px 22px !important;
-  box-shadow: 0 4px 14px rgba(125, 94, 143, .08) !important;
+/* 我的气泡：紫水晶玻璃（排除转账卡片外层） */
+#chatMessages .chat-message-row.user .chat-bubble:not(.lr-transfer-bubble) {
+  background: linear-gradient(135deg, rgba(222,202,242,.78), rgba(205,184,231,.58)) !important;
+  color: #493957 !important;
+  border: 1px solid rgba(255,255,255,.88) !important;
+  border-radius: 23px 23px 7px 23px !important;
+  box-shadow: 0 8px 26px rgba(116,88,145,.12), inset 0 1px 0 rgba(255,255,255,.8) !important;
+  backdrop-filter: blur(22px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
 }
 
-/* AI 消息气泡 */
-#chatMessages .chat-message-row.ai .chat-bubble {
-  background: #ffffff !important;
-  color: #39333e !important;
-  border: 1px solid #eee5f1 !important;
-  border-radius: 22px 22px 22px 6px !important;
-  box-shadow: 0 4px 14px rgba(75, 58, 88, .06) !important;
+/* AI 气泡：雾白玻璃 */
+#chatMessages .chat-message-row.ai .chat-bubble:not(.lr-transfer-bubble) {
+  background: rgba(255,255,255,.72) !important;
+  color: #3e3546 !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 23px 23px 23px 7px !important;
+  box-shadow: 0 8px 25px rgba(85,67,105,.075), inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter: blur(24px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
 }
 
-/* 消息之间的间距 */
-#chatMessages .chat-message-row {
-  gap: 9px !important;
-  margin-bottom: 5px !important;
-}
+/* 消息排布与时间 */
+#chatMessages .chat-message-row { gap: 8px !important; margin-bottom: 7px !important; }
+#chatMessages .lr-message-time { color: #9b8da8 !important; font-size: 10px !important; }
 
-/* 时间戳 */
-#chatMessages .lr-message-time {
-  color: #9c8ca4 !important;
-  font-size: 10px !important;
-}
-
-/* 图片消息 */
+/* 图片 */
 #chatMessages .lr-chat-image {
-  border-radius: 16px !important;
-  border: 2px solid #ffffff !important;
-  box-shadow: 0 5px 16px rgba(75, 58, 88, .12) !important;
+  border-radius: 19px !important;
+  border: 1px solid rgba(255,255,255,.9) !important;
+  box-shadow: 0 9px 26px rgba(79,61,99,.16) !important;
 }
 
-/* 转账卡片 */
-#chatMessages .lr-transfer-card {
-  background: linear-gradient(145deg, #c7a9d5, #9876a9) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(255,255,255,.45) !important;
-  border-radius: 22px !important;
-  box-shadow: 0 9px 24px rgba(126, 93, 143, .18) !important;
-}
-#chatMessages .lr-transfer-card small {
-  letter-spacing: 2.5px !important;
-  opacity: .78 !important;
-}
-#chatMessages .lr-transfer-card strong {
-  font-size: 30px !important;
-}
-#chatMessages .lr-transfer-card span {
-  color: rgba(255,255,255,.9) !important;
-}
-
-/* 转账消息：去掉外层普通气泡，只保留转账卡片本身 */
-#chatMessages .chat-bubble.lr-transfer-bubble {
+/* 转账：独立玻璃卡，不要外层重复气泡 */
+#chatMessages .chat-message-row .chat-bubble.lr-transfer-bubble {
   background: transparent !important;
   border: 0 !important;
   box-shadow: none !important;
   padding: 0 !important;
   overflow: visible !important;
+  max-width: min(78%, 430px) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 #chatMessages .lr-transfer-bubble .lr-transfer-card {
   display: block !important;
   box-sizing: border-box !important;
-  min-width: 220px !important;
-  max-width: min(260px, 68vw) !important;
-  padding: 20px !important;
+  width: min(260px, 68vw) !important;
+  min-width: 0 !important;
+  padding: 23px 21px !important;
+  background: linear-gradient(145deg, rgba(205,174,226,.88), rgba(151,119,177,.84)) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.78) !important;
+  border-radius: 27px !important;
+  box-shadow: 0 14px 34px rgba(112,79,139,.22), inset 0 1px 0 rgba(255,255,255,.48) !important;
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
 }
+#chatMessages .lr-transfer-card small { letter-spacing: 2.8px !important; opacity: .82 !important; }
+#chatMessages .lr-transfer-card strong { font: 30px Georgia,serif !important; font-weight: 400 !important; }
+#chatMessages .lr-transfer-card span { color: rgba(255,255,255,.92) !important; }
 
-/* 位置分享卡片 */
+/* 位置卡片 */
 #chatMessages .lr-location-card {
-  display: block !important;
-  min-width: 190px !important;
-  padding: 15px !important;
-  background: #f4edf8 !important;
-  color: #55445f !important;
-  border: 1px solid #e5d8ed !important;
-  border-radius: 18px !important;
-  text-decoration: none !important;
+  display: block !important; min-width: 190px !important; padding: 16px !important;
+  background: rgba(255,255,255,.68) !important; color: #594a66 !important;
+  border: 1px solid rgba(255,255,255,.9) !important; border-radius: 21px !important;
+  text-decoration: none !important; box-shadow: 0 8px 24px rgba(95,72,118,.1) !important;
+  backdrop-filter: blur(20px) saturate(145%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
 }
-#chatMessages .lr-location-pin {
-  background: #e4d4ed !important;
-  color: #896b9b !important;
-  border-radius: 14px !important;
-}
+#chatMessages .lr-location-pin { background: rgba(220,202,237,.72) !important; color: #866a9c !important; border-radius: 15px !important; }
 
-/* 底部输入栏 */
+/* 输入栏与文字框 */
 #chatConversation .chat-compose {
-  background: rgba(255,255,255,.94) !important;
-  border: 1px solid #e8deed !important;
-  border-radius: 24px !important;
-  box-shadow: 0 7px 22px rgba(75, 58, 88, .08) !important;
+  background: rgba(255,255,255,.72) !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 26px !important;
+  box-shadow: 0 10px 30px rgba(92,70,112,.10), inset 0 1px 0 rgba(255,255,255,.95) !important;
+  backdrop-filter: blur(26px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(155%) !important;
+}
+#chatConversation .chat-compose textarea {
+  background: rgba(255,255,255,.56) !important; color: #4d4057 !important;
+  border: 1px solid rgba(255,255,255,.7) !important; border-radius: 17px !important;
 }
 
-/* 左侧加号按钮 */
-#lrChatPlus {
-  background: #ffffff !important;
-  color: #9b7cac !important;
-  border: 1px solid #e4d8e9 !important;
-  border-radius: 15px !important;
-}
-
-/* 加号弹出菜单 */
+/* 加号与弹出菜单 */
+#lrChatPlus { background: rgba(255,255,255,.76) !important; color: #9478a7 !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 16px !important; }
 #lrChatPlusMenu {
-  background: #fffaff !important;
-  border: 1px solid #e7dbea !important;
-  border-radius: 20px !important;
-  box-shadow: 0 12px 34px rgba(70, 48, 82, .14) !important;
+  background: rgba(255,252,255,.78) !important; border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 22px !important; box-shadow: 0 14px 38px rgba(75,55,94,.16) !important;
+  backdrop-filter: blur(26px) saturate(150%) !important; -webkit-backdrop-filter: blur(26px) saturate(150%) !important;
 }
-#lrChatPlusMenu button {
-  color: #55445f !important;
-  border-radius: 13px !important;
-}
+#lrChatPlusMenu button { color: #594a66 !important; border-radius: 14px !important; }
 
-/* 行程弹窗与行程项目 */
-#lrScheduleModal .lr-action-sheet {
-  background: #fffaff !important;
-  border: 1px solid #eadfee !important;
-  border-radius: 27px !important;
+/* 行程、心声、转账和位置弹窗 */
+#lrScheduleModal .lr-action-sheet, #lrThoughtModal .lr-thought-sheet,
+#lrTransferModal .lr-action-sheet, #lrLocationModal .lr-action-sheet {
+  background: rgba(255,252,255,.82) !important; color: #493d52 !important;
+  border: 1px solid rgba(255,255,255,.95) !important; border-radius: 29px !important;
+  box-shadow: 0 20px 60px rgba(70,50,88,.18) !important;
+  backdrop-filter: blur(28px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
 }
-#lrScheduleModal .lr-schedule-item {
-  background: #fbf7fd !important;
-  border: 1px solid #eee4f2 !important;
-  border-radius: 17px !important;
+#lrScheduleModal .lr-schedule-item { background: rgba(255,255,255,.62) !important; border: 1px solid rgba(255,255,255,.9) !important; border-radius: 19px !important; }
+#lrScheduleModal .lr-schedule-time { color: #9879aa !important; }
+#lrScheduleModal .lr-schedule-title { color: #4b3c53 !important; }
+#lrScheduleModal .lr-schedule-detail { color: #8f8296 !important; }
+#lrThoughtModal #lrThoughtText { color: #71627a !important; line-height: 1.9 !important; }
+#lrTransferModal .lr-transfer-preview { background: linear-gradient(145deg, rgba(205,174,226,.9), rgba(151,119,177,.9)) !important; border: 1px solid rgba(255,255,255,.75) !important; border-radius: 24px !important; }
+#lrLocationModal input, #lrLocationModal textarea, #lrTransferModal input {
+  background: rgba(255,255,255,.72) !important; color: #4d4057 !important;
+  border: 1px solid rgba(255,255,255,.92) !important; border-radius: 16px !important;
 }
-#lrScheduleModal .lr-schedule-time {
-  color: #9878a8 !important;
-}
-#lrScheduleModal .lr-schedule-title {
-  color: #4b3c53 !important;
-}
-#lrScheduleModal .lr-schedule-detail {
-  color: #8f8296 !important;
-}
-
-/* 角色心声弹窗 */
-#lrThoughtModal .lr-thought-sheet {
-  background: #fffaff !important;
-  border: 1px solid #eadfee !important;
-  border-radius: 27px !important;
-}
-#lrThoughtModal #lrThoughtText {
-  color: #71627a !important;
-  line-height: 1.9 !important;
-}
-
-/* 转账 / 位置编辑弹窗 */
-#lrTransferModal .lr-action-sheet,
-#lrLocationModal .lr-action-sheet {
-  background: #fffaff !important;
-  border: 1px solid #eadfee !important;
-  border-radius: 27px !important;
-}
-#lrTransferModal .lr-transfer-preview {
-  background: linear-gradient(145deg, #c7a9d5, #9876a9) !important;
-  border-radius: 21px !important;
-}
-#lrLocationModal input,
-#lrLocationModal textarea,
-#lrTransferModal input {
-  background: #fbf7fd !important;
-  border-color: #e7dbea !important;
-  border-radius: 15px !important;
-}
-
-/* 弹窗按钮 */
-#lrScheduleModal .lr-action-buttons button,
-#lrThoughtModal .lr-action-buttons button,
-#lrTransferModal .lr-action-buttons button,
-#lrLocationModal .lr-action-buttons button {
+#lrScheduleModal .lr-action-buttons button, #lrThoughtModal .lr-action-buttons button,
+#lrTransferModal .lr-action-buttons button, #lrLocationModal .lr-action-buttons button {
   border-radius: 999px !important;
-}
-`;
+}`;
 
   function customizeEditor() {
     const legacy = document.getElementById('lr-chat-settings-extra');
@@ -390,26 +335,8 @@
       const fix = document.createElement('style');
       fix.id = 'lr-transfer-single-card-fix';
       fix.textContent = `
-        #chatMessages .chat-message-row .chat-bubble.lr-transfer-bubble,
-        .chat-message-row .chat-bubble.lr-transfer-bubble,
-        #chatMessages .lr-transfer-bubble{
-          background:transparent!important;
-          background-color:transparent!important;
-          border:0!important;
-          box-shadow:none!important;
-          padding:0!important;
-          overflow:visible!important;
-          max-width:min(78%,430px)!important;
-        }
-        #chatMessages .lr-transfer-bubble .lr-transfer-card,
-        .chat-message-row .lr-transfer-bubble .lr-transfer-card{
-          box-sizing:border-box!important;
-          display:block!important;
-          min-width:220px!important;
-          max-width:min(260px,68vw)!important;
-          padding:20px!important;
-          margin:0!important;
-        }
+        #chatMessages .chat-message-row .chat-bubble.lr-transfer-bubble{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;overflow:visible!important;max-width:min(78%,430px)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+        #chatMessages .chat-message-row .lr-transfer-bubble .lr-transfer-card{box-sizing:border-box;display:block;min-width:0;max-width:min(260px,68vw);padding:20px}
       `;
       document.head.appendChild(fix);
     }
