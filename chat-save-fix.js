@@ -17,6 +17,14 @@
       next.worldId = document.getElementById('lrWorldSelect')?.value || '';
       const rawCount = parseInt(document.getElementById('lrMemoryCount')?.value || '16', 10);
       next.memoryCount = Math.min(100, Math.max(1, Number.isFinite(rawCount) ? rawCount : 16));
+      next.userBubbleColor = document.getElementById('lrUserBubbleColor')?.value || next.userBubbleColor || '#b99ac7';
+      next.aiBubbleColor = document.getElementById('lrAiBubbleColor')?.value || next.aiBubbleColor || '#ffffff';
+      next.userTextColor = document.getElementById('lrUserTextColor')?.value || next.userTextColor || '#ffffff';
+      next.aiTextColor = document.getElementById('lrAiTextColor')?.value || next.aiTextColor || '#28242b';
+      next.bubbleRadius = Math.min(36, Math.max(8, parseInt(document.getElementById('lrBubbleRadius')?.value || next.bubbleRadius || '22', 10) || 22));
+      next.chatCustomCss = document.getElementById('lrChatCustomCss')?.value || '';
+      next.autoMemoryCount = Math.min(100, Math.max(1, parseInt(document.getElementById('lrAutoMemoryCount')?.value || next.autoMemoryCount || '15', 10) || 15));
+
       const countInput = document.getElementById('lrMemoryCount');
       if (countInput) countInput.value = next.memoryCount;
       if (typeof window.saveChatMetaSafely !== 'function') throw new Error('聊天存储模块尚未准备好，请刷新后重试。');
