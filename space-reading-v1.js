@@ -131,7 +131,8 @@
     if (!Number.isFinite(+writing.limit) || +writing.limit < 0) writing.limit = 0;
   }
   function persistWriting() {
-    localStorage.setItem(settingsKey(), JSON.stringify(writing));
+    try { localStorage.setItem(settingsKey(), JSON.stringify(writing)); }
+    catch (error) { console.warn('[LOVE RECORD] writing preferences could not be saved:', error); if (typeof toast === 'function') toast('文风设置保存失败，请检查浏览器储存空间'); }
   }
 
   const grid = modal.querySelector('.space-style-grid');
@@ -225,7 +226,7 @@
             readWriting();
             let extra = '';
             if (writing.style) extra += '\n\n【当前空间文风预设】\n' + writing.style + '\n请自然遵循，不要在回复中提及这条指令。';
-            if (+writing.limit > 0) extra += `\n\n【回复长度】本次回复尽量控制在约 ${writing.limit} 个汉字/字符附近，完整自然地结束，不要为了凑字数重复内容。`;
+            if (+writing.limit > 0) extra += `\n\n【回复长度】本次回复以约 ${writing.limit} 个汉字/字符为软目标。必须优先保证剧情完整、句子自然收尾；绝对不要在句子中途截断，不要因为达到字数而删掉必要的结尾。若完整表达略微超过目标字数可以接受。这里是长度控制，不是 max_tokens 截断指令。`;
             if (extra) messages[systemIndex].content += extra;
             // Do not translate a character target into max_tokens: token limits can cut a sentence mid-response.
             nextInit = {...init, body: JSON.stringify(body)};
