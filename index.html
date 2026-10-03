@@ -698,6 +698,16 @@ body.chat-conversation-open .nav{display:none!important}
 @media(prefers-reduced-motion:reduce){#musicMini.is-playing .music-vinyl{animation-duration:12s!important}}
 </style>
 
+<style>
+
+/* LOVE RECORD MUSIC FIX · main artwork mirrors the vinyl label */
+.music-player-art{position:relative!important;overflow:hidden!important}
+.music-player-art .music-player-art-placeholder{display:grid;place-items:center;width:100%;height:100%}
+.music-player-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:inherit;z-index:2}
+.music-player-art.has-cover img{display:block}
+.music-player-art.has-cover .music-player-art-placeholder{visibility:hidden}
+
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -763,7 +773,7 @@ body.chat-conversation-open .nav{display:none!important}
   <div class="music-result-actions"><label><input type="checkbox" id="musicSelectAll"> 全选</label><button id="musicAddSelected" type="button">添加到我的歌单</button></div>
 </section>
   <section class="music-library"><div class="music-section-head"><div><div class="eyebrow">YOUR COLLECTION</div><h2>My Library</h2></div><span id="musicLibraryCount">0 TRACKS</span></div><button class="music-upload" id="musicUpload" type="button"><b>＋</b><span><strong>添加音乐</strong><small>支持单首或批量上传音频</small></span></button><input id="musicFiles" type="file" accept="audio/*" multiple hidden><div id="musicTrackList" class="music-track-list"><div class="music-empty">正在打开音乐库……</div></div></section>
-  <section class="music-player-card"><div class="music-player-art">♫</div><div class="music-cover-tools"><button id="musicCoverChoose" type="button">更换唱片封面</button><input id="musicCoverFile" type="file" accept="image/*" hidden></div><div class="eyebrow">NOW PLAYING</div><h2 id="musicNowTitle">还没有播放歌曲</h2><p id="musicNowArtist">从你的音乐库选择一首歌</p><div class="music-progress-row"><span id="musicCurrentTime">0:00</span><input id="musicProgress" type="range" min="0" max="100" value="0"><span id="musicDuration">0:00</span></div><div class="music-controls"><button id="musicShuffle" type="button" aria-label="随机播放">⤨</button><button id="musicPrev" type="button" aria-label="上一首">|◀</button><button id="musicPlay" class="music-main-play" type="button" aria-label="播放">▶</button><button id="musicNext" type="button" aria-label="下一首">▶|</button><button id="musicRepeat" type="button" aria-label="循环播放">↻</button></div><div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div></section>
+  <section class="music-player-card"><div class="music-player-art" id="musicMainArt"><span class="music-player-art-placeholder">♫</span><img id="musicMainCover" alt="唱片封面"></div><div class="music-cover-tools"><button id="musicCoverChoose" type="button">更换唱片封面</button><input id="musicCoverFile" type="file" accept="image/*" hidden></div><div class="eyebrow">NOW PLAYING</div><h2 id="musicNowTitle">还没有播放歌曲</h2><p id="musicNowArtist">从你的音乐库选择一首歌</p><div class="music-progress-row"><span id="musicCurrentTime">0:00</span><input id="musicProgress" type="range" min="0" max="100" value="0"><span id="musicDuration">0:00</span></div><div class="music-controls"><button id="musicShuffle" type="button" aria-label="随机播放">⤨</button><button id="musicPrev" type="button" aria-label="上一首">|◀</button><button id="musicPlay" class="music-main-play" type="button" aria-label="播放">▶</button><button id="musicNext" type="button" aria-label="下一首">▶|</button><button id="musicRepeat" type="button" aria-label="循环播放">↻</button></div><div class="music-volume"><span>VOLUME</span><input id="musicVolume" type="range" min="0" max="1" step="0.01" value="0.85"></div></section>
   <div class="music-toast" id="musicToast" role="status"></div>
 </main>
 <audio id="lrGlobalAudio" preload="metadata"></audio>
@@ -1583,6 +1593,7 @@ if(loveIntro){
   <script src="./chat-interaction-v9.js?v=15"></script>
   <script src="./chat-interaction-v11.js?v=15"></script>
   <script src="./chat-css-unify.js?v=15"></script>
+  <script src="./music.js?v=6"></script>
 
 <script>
 (()=>{

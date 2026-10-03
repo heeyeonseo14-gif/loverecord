@@ -17,7 +17,13 @@ function fmt(n){if(!Number.isFinite(n))return '0:00';return Math.floor(n/60)+':'
 function toast(s){const el=$('musicToast');if(!el)return;el.textContent=s;el.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('show'),2600)}
 async function saveVinylCover(data){try{await req(db.transaction(META,'readwrite').objectStore(META).put({key:'vinylCover',data}))}catch(e){toast('封面保存失败，请换一张较小的图片')}}
 async function loadVinylCover(){try{const x=await req(db.transaction(META).objectStore(META).get('vinylCover'));if(x?.data)applyVinylCover(x.data)}catch{}}
-function applyVinylCover(data){const img=$('musicVinylCover'),widget=$('musicMini');if(!img||!widget)return;if(data){img.src=data;widget.classList.add('has-cover')}else{img.removeAttribute('src');widget.classList.remove('has-cover')}}
+function applyVinylCover(data){
+ const img=$('musicVinylCover'),main=$('musicMainCover'),widget=$('musicMini'),art=$('musicMainArt');
+ if(img){if(data)img.src=data;else img.removeAttribute('src')}
+ if(main){if(data)main.src=data;else main.removeAttribute('src')}
+ if(widget)widget.classList.toggle('has-cover',!!data);
+ if(art)art.classList.toggle('has-cover',!!data);
+}
 function chooseVinylCover(file){if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=async()=>{const data=reader.result;applyVinylCover(data);await saveVinylCover(data);toast('唱片封面已更新 ♡')};reader.onerror=()=>toast('图片读取失败，请重试');reader.readAsDataURL(file)}
 function updateLabels(t){$('musicNowTitle').textContent=t?.title||'还没有播放歌曲';$('musicNowArtist').textContent=t?(t.artist||t.source||'音乐'):'从音乐库或在线搜索选择一首歌';const mini=$('musicMini');mini.hidden=!t;mini.setAttribute('aria-label',t?'黑胶唱片播放器：'+(t.title||'正在播放'):'音乐播放器')}
 function setButtons(){const playing=!audio.paused;$('musicPlay').textContent=playing?'Ⅱ':'▶';$('musicMini').classList.toggle('is-playing',playing)}
