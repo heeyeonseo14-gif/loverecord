@@ -1,7 +1,7 @@
-const CACHE='love-record-v24-chat-storage-v6';
+const CACHE='love-record-v24-chat-bubbles-v7';
 const ASSETS=[
   './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
-  './chat-settings-upgrade.js?v=6','./chat-save-fix.js?v=6','./chat-storage-v6.js?v=6'
+  './chat-settings-upgrade.js?v=7','./chat-save-fix.js?v=6','./chat-storage-v6.js?v=6','./chat-bubble-split.js?v=7'
 ];
 function patchHtml(html){
   if(!html.includes('chat-settings-upgrade.js')){
@@ -14,6 +14,9 @@ function patchHtml(html){
   }
   if(!html.includes('chat-storage-v6.js')){
     html=html.replace(/<\/body>/i,'<script src="./chat-storage-v6.js?v=6"></script></body>');
+  }
+  if(!html.includes('chat-bubble-split.js')){
+    html=html.replace(/<\/body>/i,'<script src="./chat-bubble-split.js?v=7"></script></body>');
   }
   return html;
 }
