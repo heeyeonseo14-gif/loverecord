@@ -90,15 +90,17 @@
       #lrChatPlusMenu[hidden]{display:none!important}
       #lrChatPlusMenu button{border:0;background:transparent;border-radius:12px;padding:11px 12px;text-align:left;color:#55495d;font:inherit;font-size:14px}
       #lrChatPlusMenu button:active{background:#f2eaf5}
-      .lr-message-time{font-size:10px;color:#a49aa8;line-height:1.2;margin-top:4px;padding:0 4px}
-      .chat-message-row.user .lr-message-time{text-align:right}
-      .chat-message-row.ai .lr-message-time{text-align:left}
-      .chat-message-row{flex-wrap:wrap}
+      .lr-message-time{flex:0 0 auto;font-size:10px;color:#a49aa8;line-height:1.2;padding:0 2px 3px;white-space:nowrap;align-self:flex-end}
+      .chat-message-row{flex-wrap:nowrap;align-items:flex-end;gap:7px}
+      .chat-message-row .chat-bubble{max-width:min(68%,430px)}
       .chat-message-row.user{justify-content:flex-end}
       .chat-message-row.ai{justify-content:flex-start}
-      .chat-message-row .lr-message-time{flex-basis:100%}
-      .chat-message-row.user .lr-message-time{padding-right:56px}
-      .chat-message-row.ai .lr-message-time{padding-left:56px}
+      .chat-message-row.user .chat-message-avatar{order:3}
+      .chat-message-row.user .lr-message-time{order:2}
+      .chat-message-row.user .chat-bubble{order:1}
+      .chat-message-row.ai .chat-message-avatar{order:1}
+      .chat-message-row.ai .chat-bubble{order:2}
+      .chat-message-row.ai .lr-message-time{order:3}
       .lr-chat-image{display:block;max-width:min(62vw,260px);max-height:360px;border-radius:13px;object-fit:cover}
       .lr-transfer-card{min-width:220px;max-width:260px;padding:19px 20px;border-radius:20px;background:linear-gradient(145deg,#c5a7d0,#9877a8);color:#fff;box-shadow:0 9px 22px rgba(126,93,143,.17)}
       .lr-transfer-card small{display:block;opacity:.72;font-size:9px;letter-spacing:2px;margin-bottom:10px}
@@ -193,7 +195,7 @@
     }
     if(!$('lrLocationModal')){
       const modal=document.createElement('div');modal.id='lrLocationModal';modal.className='lr-action-overlay';modal.hidden=true;
-      modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">SHARE A PLACE</div><div class="lr-action-title">发送位置</div><div class="lr-action-desc">手动填写你想分享的地点。不会读取 GPS，也不会获取当前设备位置。</div><label for="lrLocationInput">地点名称 / 地址</label><input id="lrLocationInput" maxlength="160" placeholder="例如：上海、北京等等"><label for="lrLocationNote">补充说明（选填）</label><textarea id="lrLocationNote" maxlength="120" placeholder="例如：我们在正门碰面"></textarea><div class="lr-action-buttons"><button type="button" id="lrLocationCancel">取消</button><button type="button" id="lrLocationSend" class="primary">发送地点</button></div></section>';
+      modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">SHARE A PLACE</div><div class="lr-action-title">发送位置</div><div class="lr-action-desc">手动填写你想分享的地点。不会读取 GPS，也不会获取当前设备位置。</div><label for="lrLocationInput">地点名称 / 地址</label><input id="lrLocationInput" maxlength="160" placeholder="例如：KLCC、吉隆坡国际机场"><label for="lrLocationNote">补充说明（选填）</label><textarea id="lrLocationNote" maxlength="120" placeholder="例如：我们在正门碰面"></textarea><div class="lr-action-buttons"><button type="button" id="lrLocationCancel">取消</button><button type="button" id="lrLocationSend" class="primary">发送地点</button></div></section>';
       document.body.appendChild(modal);$('lrLocationCancel').addEventListener('click',()=>modal.hidden=true);$('lrLocationSend').addEventListener('click',()=>{const place=$('lrLocationInput').value.trim(),note=$('lrLocationNote').value.trim();if(!place){toast('请先填写地点');$('lrLocationInput').focus();return;}pushMessage({role:'user',kind:'location',place,note,text:'位置：'+place+(note?'（'+note+'）':'')});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
     }
   }
