@@ -1,5 +1,29 @@
-const CACHE='love-record-wechat-chat-v3';
-const ASSETS=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r}).catch(()=>caches.match(e.request)))})
+const CACHE='love-record-chat-settings-v4';
+const ASSETS=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./chat-settings-upgrade.js?v=4'];
+function patchHtml(html){
+  if(!html.includes('chat-settings-upgrade.js'))html=html.replace(/<\/body>/i,'<script src="./chat-settings-upgrade.js?v=4"></script></body>');
+  return html;
+}
+function responseFromHtml(html,source){
+  const headers=new Headers(source&&source.headers?source.headers:undefined);
+  headers.delete('content-length');headers.delete('content-encoding');headers.delete('etag');
+  return new Response(patchHtml(html),{status:source&&source.status?source.status:200,statusText:source&&source.statusText?source.statusText:'OK',headers});
+}
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET')return;
+  const url=new URL(event.request.url);
+  const isIndex=url.pathname.endsWith('/')||url.pathname.endsWith('/index.html');
+  event.respondWith(fetch(event.request).then(response=>{
+    if(!response.ok||!isIndex){if(response.ok){const copy=response.clone();caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{})}return response;}
+    return response.text().then(html=>{
+      const patched=responseFromHtml(html,response);
+      caches.open(CACHE).then(cache=>cache.put(event.request,patched.clone())).catch(()=>{});
+      return patched;
+    });
+  }).catch(()=>caches.match(event.request).then(cached=>{
+    if(!cached||!isIndex)return cached;
+    return cached.text().then(html=>responseFromHtml(html,cached));
+  })));
+});
