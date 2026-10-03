@@ -119,18 +119,28 @@ async function importLyrics(file){
  }catch(e){toast('歌词导入失败：'+e.message)}
 }
 function readPeopleForMusic(){
- let people=[],ids=[],metas={};
- // Prefer the app's live in-memory state and official contact helpers.
+ let people=[];
+ // The main app already keeps contacts in memory. Do not parse the entire
+ // settings payload on every invite tap unless the in-memory list is absent.
  try{if(typeof state!=='undefined'&&Array.isArray(state.people))people=state.people}catch{}
+ if(!people.length){
+  try{
+   const saved=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');
+   if(Array.isArray(saved.people))people=saved.people;
+  }catch{}
+ }
+ let ids=[];
  try{if(typeof readChatContacts==='function')ids=readChatContacts()}catch{}
- try{if(typeof chatMeta==='function'){metas={};people.forEach(p=>{metas[p.id]=chatMeta(p.id)||{}})}}catch{}
- // Storage fallback for isolated loading / older builds.
- try{
-  const saved=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');
-  if(!people.length&&Array.isArray(saved.people))people=saved.people;
- }catch{}
- try{if(!ids.length){const savedIds=JSON.parse(localStorage.getItem('love-record-chat-contacts-v2')||'[]');if(Array.isArray(savedIds))ids=savedIds}}catch{}
- try{if(!Object.keys(metas).length)metas=JSON.parse(localStorage.getItem('love-record-chat-meta-v1')||'{}')}catch{}
+ if(!Array.isArray(ids)||!ids.length){
+  try{
+   const savedIds=JSON.parse(localStorage.getItem('love-record-chat-contacts-v2')||'[]');
+   if(Array.isArray(savedIds))ids=savedIds;
+  }catch{}
+ }
+ // Read contact metadata once, rather than reparsing the same storage item
+ // separately for every person.
+ let metas={};
+ try{metas=JSON.parse(localStorage.getItem('love-record-chat-meta-v1')||'{}')||{}}catch{}
  const idSet=new Set((Array.isArray(ids)?ids:[]).map(String));
  return people.filter(p=>p&&p.id!=null&&(!idSet.size||idSet.has(String(p.id)))).map(p=>({
   id:String(p.id),name:metas[p.id]?.remark||p.name||'未命名联系人',
@@ -202,14 +212,19 @@ function closeTogetherModal(){
  document.body.classList.remove('music-listening-modal-open');
 }
 function openTogetherModal(){
- renderTogetherPicker();
- const modal=$('musicTogetherModal');if(!modal){toast('听歌房间暂时无法打开，请刷新页面重试');return}
+ const modal=$('musicTogetherModal');if(!modal)return;
  const song=$('musicTogetherCurrentSong');
  if(song&&current){
   const strong=song.querySelector('strong');if(strong)strong.textContent=current.title||'正在播放';
   const small=song.querySelector('small');if(small)small.textContent=current.artist||'NOW PLAYING';
  }
+ // Show the sheet immediately; build the contact list on the next frame so
+ // a slow storage read cannot make the tap appear to freeze the whole page.
  modal.hidden=false;document.body.classList.add('music-listening-modal-open');
+ requestAnimationFrame(()=>{
+  try{renderTogetherPicker()}
+  catch(err){console.error('Listening room contact render failed:',err);toast('联系人列表暂时无法读取，请稍后再试')}
+ });
 }
 function init(){
  audio=$('lrGlobalAudio');if(!audio)return;
