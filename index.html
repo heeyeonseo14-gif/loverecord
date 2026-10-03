@@ -274,6 +274,15 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
   }
 }
 
+/* Chat list and conversation are two distinct screens; hidden must beat grid styles. */
+.chat-contact-list[hidden],.chat-conversation[hidden]{display:none!important}
+.chat-page.is-conversation .chat-page-heading{display:none}
+.chat-page.is-conversation .chat-conversation{margin-top:0;min-height:calc(100dvh - 210px);display:flex;flex-direction:column}
+.chat-page.is-conversation .chat-person-head{position:sticky;top:0;background:rgba(246,242,248,.94);backdrop-filter:blur(14px);padding:12px 4px 16px;z-index:3}
+.chat-page.is-conversation .chat-messages{flex:1;min-height:42vh;max-height:none;margin:14px 0 18px;padding:4px 2px 20px;overflow-y:auto}
+.chat-page.is-conversation .chat-compose{position:sticky;bottom:88px}
+.chat-page.is-conversation~.system-appbar #systemAppbarAction,.system-appbar-mark[hidden]{display:none!important}
+
 /* LOVE RECORD — smartphone launcher redesign */
 :root{
   --bg:#f1eef5;--card:#fff;--ink:#302b35;--muted:#89818f;
@@ -578,7 +587,10 @@ function contactById(id){return (state.people||[]).find(p=>p.id===id)}
 function renderChat(){
  const ids=readChatContacts().filter((id,i,a)=>a.indexOf(id)===i&&contactById(id));
  const list=$('chatContacts'),conversation=$('chatConversation');
- if(!activeChatContactId||!ids.includes(activeChatContactId)){
+ const detail=!!activeChatContactId&&ids.includes(activeChatContactId);
+ $('chat').classList.toggle('is-conversation',detail);
+ $('systemAppbarAction').hidden=detail;
+ if(!detail){
   activeChatContactId='';conversation.hidden=true;list.hidden=false;
   list.innerHTML=ids.length?ids.map(id=>{const p=contactById(id);return `<button class="chat-contact-card" type="button" data-chat-open="${esc(id)}"><span class="chat-contact-avatar">${esc((p.name||'♡').slice(0,1))}</span><span class="chat-contact-info"><strong>${esc(p.name)}</strong><span>${esc(p.role||p.personality||'AI 联系人')}</span></span><span class="chat-contact-arrow">›</span></button>`}).join(''):'<div class="chat-empty">这里还没有联系人。<br>添加你的人物，开始第一段对话吧 ♡<br><button class="btn primary" type="button" id="chatEmptyAdd">＋ 添加联系人</button></div>';
   return;
@@ -892,7 +904,7 @@ let appearance=Object.assign({},appearanceDefaults,JSON.parse(localStorage.getIt
 const fontChoices={system:{name:'SYSTEM',value:'-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},clean:{name:'CLEAN',value:'Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},serif:{name:'SERIF',value:'Georgia,"Times New Roman",serif'},round:{name:'ROUND',value:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'}};
 const accentChoices=[['#b79bc7','#b79bc7'],['#c89bb0','#c89bb0'],['#9faed0','#9faed0'],['#a9c4a2','#a9c4a2'],['#c7ad8b','#c7ad8b'],['#8e6fae','#8e6fae']];
 const bgChoices={soft:{name:'SOFT PURPLE',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'CREAM',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'MIST BLUE',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'SOFT ROSE',a:'#f6e9ef',b:'#eadce5'},plain:{name:'CLEAN',a:'#f7f3f9',b:'#f7f3f9'}};
-const presetChoices={purple:{name:"YANYAN'S PURPLE",font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:8,opacity:.92,dark:false,motion:true},night:{name:'YAN HUAN NIGHT',font:'serif',fontSize:15,titleScale:1.04,accent:'#9f83bd',bg:'soft',radius:26,blur:14,opacity:.78,dark:true,motion:true},cream:{name:'SOFT MORNING',font:'round',fontSize:16,titleScale:1.02,accent:'#b79bc7',bg:'cream',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
+const presetChoices={purple:{name:'柔雾紫',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:8,opacity:.92,dark:false,motion:true},night:{name:'夜色紫',font:'serif',fontSize:15,titleScale:1.04,accent:'#9f83bd',bg:'soft',radius:26,blur:14,opacity:.78,dark:true,motion:true},cream:{name:'清晨奶油',font:'round',fontSize:16,titleScale:1.02,accent:'#b79bc7',bg:'cream',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
 function saveAppearance(){localStorage.setItem(APPEARANCE_KEY,JSON.stringify(appearance))}
 function applyAppearance(){const root=document.documentElement;root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value;document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.style.backgroundImage=appearance.bgData?'url('+appearance.bgData+')':'';document.body.style.backgroundSize=appearance.bgData?'cover':'';document.body.style.backgroundAttachment=appearance.bgData?'fixed':'';document.body.style.backgroundPosition=appearance.bgData?'center':'';document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
