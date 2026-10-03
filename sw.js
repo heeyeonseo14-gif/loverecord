@@ -1,53 +1,8 @@
-const CACHE = 'love-record-space-fixes-v4-contacts';
-const ASSETS = [
-  './','./index.html','./manifest.json','./icon-192.png','./icon-512.png',
-  './chat-storage-v6.js?v=18','./chat-settings-upgrade.js?v=18','./chat-save-fix.js?v=18',
-  './chat-bubble-split.js?v=18','./chat-interaction-v9.js?v=18','./chat-interaction-v11.js?v=18',
-  './chat-css-unify.js?v=18','./space-reading-v1.js','./space-fixes-v2.js'
-];
-function injectScript(html, file) {
-  const safeFile = file.replace(/\./g, "\\.");
-  const tag = new RegExp("<script\\b[^>]*src=['\"]\\./" + safeFile + "(?:\\?[^'\"]*)?['\"][^>]*>\\s*<\\/script>", "i");
-  const replacement = '<script src="./' + file + '?v=3"></script>'; 
-  if (tag.test(html)) return html.replace(tag, replacement);
-  return html.replace('</body>', replacement + '</body>');
-}
-function patchHtml(html) {
-  html = injectScript(html, 'chat-storage-v6.js');
-  html = injectScript(html, 'chat-settings-upgrade.js');
-  html = injectScript(html, 'chat-save-fix.js');
-  html = injectScript(html, 'chat-bubble-split.js');
-  html = html.replace(/<script\b[^>]*src=["']\.\/chat-interaction-v8\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig, '');
-  html = html.replace(/<script\b[^>]*src=["']\.\/chat-interaction-v10\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig, '');
-  html = injectScript(html, 'chat-interaction-v9.js');
-  html = injectScript(html, 'chat-interaction-v11.js');
-  html = injectScript(html, 'chat-css-unify.js');
-  html = injectScript(html, 'space-reading-v1.js');
-  html = injectScript(html, 'space-fixes-v2.js');
-  return html;
-}
-function htmlResponse(html, source) {
-  const headers = new Headers(source && source.headers ? source.headers : undefined);
-  headers.delete('content-length'); headers.delete('content-encoding'); headers.delete('etag');
-  return new Response(patchHtml(html), {status: source && source.status ? source.status : 200, statusText: source && source.statusText ? source.statusText : 'OK', headers});
-}
-self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
-self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url), isIndex = url.pathname.endsWith('/') || url.pathname.endsWith('/index.html');
-  event.respondWith(fetch(event.request).then(response => {
-    if (!response.ok || !isIndex) {
-      if (response.ok) { const copy = response.clone(); caches.open(CACHE).then(cache => cache.put(event.request, copy)).catch(() => {}); }
-      return response;
-    }
-    return response.text().then(html => {
-      const patched = htmlResponse(html, response);
-      caches.open(CACHE).then(cache => cache.put(event.request, patched.clone())).catch(() => {});
-      return patched;
-    });
-  }).catch(() => caches.match(event.request).then(cached => {
-    if (!cached || !isIndex) return cached;
-    return cached.text().then(html => htmlResponse(html, cached));
-  })));
-});
+const CACHE='love-record-music-v1';
+const ASSETS=['./','./index.html','./manifest.json','./icon-192.png','./icon-512.png','./music.js?v=1','./chat-storage-v6.js?v=4','./chat-settings-upgrade.js?v=4','./chat-save-fix.js?v=4','./chat-bubble-split.js?v=4','./chat-interaction-v9.js?v=4','./chat-interaction-v11.js?v=4','./chat-css-unify.js?v=4','./space-reading-v1.js?v=4','./space-fixes-v3.js?v=4'];
+function inject(html,file){const tag=new RegExp("<script\\b[^>]*src=[\"']\\./"+file.replace(/\\./g,"\\\\.")+"(?:\\?[^\"']*)?[\"'][^>]*>\\s*<\\/script>","i");const replacement='<script src="./'+file+'?v=1"></script>';return tag.test(html)?html.replace(tag,replacement):html.replace('</body>',replacement+'</body>')}
+function patch(html){html=inject(html,'chat-storage-v6.js');html=inject(html,'chat-settings-upgrade.js');html=inject(html,'chat-save-fix.js');html=inject(html,'chat-bubble-split.js');html=html.replace(/<script\b[^>]*src=["']\.\/chat-interaction-v8\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig,'');html=html.replace(/<script\b[^>]*src=["']\.\/chat-interaction-v10\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig,'');html=inject(html,'chat-interaction-v9.js');html=inject(html,'chat-interaction-v11.js');html=inject(html,'chat-css-unify.js');html=inject(html,'space-reading-v1.js');html=html.replace(/<script\b[^>]*src=["']\.\/space-fixes-v2\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig,'');html=html.replace(/<script\b[^>]*src=["']\.\/space-fixes-v3\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>/ig,'');return inject(html,'music.js')}
+function response(html,source){const h=new Headers(source?.headers||{});['content-length','content-encoding','etag'].forEach(x=>h.delete(x));return new Response(patch(html),{status:source?.status||200,statusText:source?.statusText||'OK',headers:h})}
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url),isIndex=u.pathname.endsWith('/')||u.pathname.endsWith('/index.html');e.respondWith(fetch(e.request).then(r=>{if(!r.ok||!isIndex){if(r.ok)caches.open(CACHE).then(c=>c.put(e.request,r.clone())).catch(()=>{});return r}return r.text().then(t=>{const p=response(t,r);caches.open(CACHE).then(c=>c.put(e.request,p.clone())).catch(()=>{});return p})}).catch(()=>caches.match(e.request).then(c=>!c||!isIndex?c:c.text().then(t=>response(t,c)))))});
