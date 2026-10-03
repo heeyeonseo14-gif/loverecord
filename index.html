@@ -661,7 +661,7 @@ body.chat-conversation-open .nav{display:none!important}
 <div id="toast" class="toast"></div>
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
-const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[{id:'p-yanyan',name:'YANYAN',role:'你自己',personality:'真实的你。',appearance:'',speech:'',background:'',instructions:'不要替 YANYAN 决定行动或想法。'},{id:'p-yanhuan',name:'YAN HUAN',role:'恋人',personality:'温柔、清冷、自然。',appearance:'',speech:'',background:'',instructions:'保持角色一致，不要自称 AI。'}],worlds:[],forumPosts:[],journal:[],spaces:[]};
+const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[{id:'p-yanhuan',name:'YAN HUAN',role:'恋人',personality:'温柔、清冷、自然。',appearance:'',speech:'',background:'',instructions:'保持角色一致，不要自称 AI。'}],worlds:[],forumPosts:[],journal:[],spaces:[]};
 let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
@@ -947,8 +947,8 @@ function ensureWorldData(){
   state.spaces.forEach(normalizeSpace);
   if(!state.activeSpaceId && state.spaces.length)state.activeSpaceId=state.spaces[state.spaces.length-1].id;
   let changed=false;
-  if(!state.people.some(x=>x.id==='p-yanyan')){state.people.unshift({...defaults.people[0]});changed=true}
-  if(!state.people.some(x=>x.id==='p-yanhuan')){state.people.push({...defaults.people[1]});changed=true}
+  const peopleBefore=state.people.length;state.people=state.people.filter(x=>x&&x.id!=='p-yanyan');if(state.people.length!==peopleBefore)changed=true;
+  if(!state.people.some(x=>x.id==='p-yanhuan')){state.people.push({...defaults.people[0]});changed=true}
   if(changed)save();
 }
 let editingPersonId='',editingWorldId='',editingForumPostId='';
