@@ -190,8 +190,8 @@
     }
     if(!$('lrTransferModal')){
       const modal=document.createElement('div');modal.id='lrTransferModal';modal.className='lr-action-overlay';modal.hidden=true;
-      modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">A LITTLE GIFT</div><div class="lr-action-title">转账</div><div class="lr-action-desc">制作一张聊天里的转账纪念卡，不会发生真实付款。</div><div class="lr-transfer-preview"><small>LOVE RECORD · TRANSFER</small><strong id="lrTransferPreviewAmount">RM 0.00</strong><span id="lrTransferPreviewNote">给你的小心意</span></div><label for="lrTransferAmount">金额（RM）</label><input id="lrTransferAmount" inputmode="decimal" type="number" min="0.01" step="0.01" placeholder="例如 100.00"><label for="lrTransferNote">备注</label><input id="lrTransferNote" maxlength="60" placeholder="写一句小心意"><div class="lr-action-buttons"><button type="button" id="lrTransferCancel">取消</button><button type="button" id="lrTransferSend" class="primary">发送转账卡</button></div></section>';
-      document.body.appendChild(modal);$('lrTransferCancel').addEventListener('click',()=>modal.hidden=true);$('lrTransferAmount').addEventListener('input',updateTransferPreview);$('lrTransferNote').addEventListener('input',updateTransferPreview);$('lrTransferSend').addEventListener('click',()=>{const value=Number($('lrTransferAmount').value);if(!Number.isFinite(value)||value<=0){toast('请输入有效金额');return;}const note=$('lrTransferNote').value.trim()||'给你的小心意';pushMessage({role:'user',kind:'transfer',amount:value.toFixed(2),note,text:'转账 RM '+value.toFixed(2)});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
+      modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">A LITTLE GIFT</div><div class="lr-action-title">转账</div><div class="lr-action-desc">制作一张聊天里的转账纪念卡，不会发生真实付款。</div><div class="lr-transfer-preview"><small>LOVE RECORD · TRANSFER</small><strong id="lrTransferPreviewAmount">￥0.00</strong><span id="lrTransferPreviewNote">给你的小心意</span></div><label for="lrTransferAmount">金额（￥）</label><input id="lrTransferAmount" inputmode="decimal" type="number" min="0.01" step="0.01" placeholder="例如 100.00"><label for="lrTransferNote">备注</label><input id="lrTransferNote" maxlength="60" placeholder="写一句小心意"><div class="lr-action-buttons"><button type="button" id="lrTransferCancel">取消</button><button type="button" id="lrTransferSend" class="primary">发送转账卡</button></div></section>';
+      document.body.appendChild(modal);$('lrTransferCancel').addEventListener('click',()=>modal.hidden=true);$('lrTransferAmount').addEventListener('input',updateTransferPreview);$('lrTransferNote').addEventListener('input',updateTransferPreview);$('lrTransferSend').addEventListener('click',()=>{const value=Number($('lrTransferAmount').value);if(!Number.isFinite(value)||value<=0){toast('请输入有效金额');return;}const note=$('lrTransferNote').value.trim()||'给你的小心意';pushMessage({role:'user',kind:'transfer',amount:value.toFixed(2),note,currency:'￥',text:'转账 ￥'+value.toFixed(2)});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
     }
     if(!$('lrLocationModal')){
       const modal=document.createElement('div');modal.id='lrLocationModal';modal.className='lr-action-overlay';modal.hidden=true;
@@ -202,16 +202,22 @@
 
   function decorateMessages() {
     const id=activeId(), host=$('chatMessages');if(!id||!host)return;
-    const list=threadFor(id);const rows=[...host.querySelectorAll('.chat-message-row')];
+    const all=threads();const list=Array.isArray(all[id])?all[id]:[];let normalizedTransfer=false;const rows=[...host.querySelectorAll('.chat-message-row')];
     rows.forEach((row,index)=>{
       const msg=list[index];if(!msg)return;
+      /* AI 明确使用【向你转账 52000元】格式时，转换成真正的转账卡片数据。
+         只识别独立的明确转账标记，避免把普通聊天中的金额误判为转账。 */
+      if(!msg.kind&&(msg.role==='assistant'||msg.role==='ai')){
+        const marker=String(msg.text||'').trim().match(/^[【\[]\s*(?:(?:向你|给你)\s*)?转账\s*[:：]?\s*(?:￥|¥|RMB)?\s*([\d,]+(?:\.\d{1,2})?)\s*(?:元|人民币)?\s*[】\]]$/i);
+        if(marker){const amount=Number(marker[1].replace(/,/g,''));if(Number.isFinite(amount)&&amount>0){msg.kind='transfer';msg.amount=amount.toFixed(2);msg.currency='￥';msg.note=msg.note||'给你的小心意';msg.text='转账 ￥'+msg.amount;normalizedTransfer=true;}}
+      }
       const bubble=row.querySelector('.chat-bubble');if(!bubble)return;
       if(msg.kind==='image'&&msg.attachmentId){
         bubble.textContent='图片加载中…';
         attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-chat-image" src="'+url+'" alt="聊天图片">';else if(bubble.isConnected)bubble.textContent='图片无法读取';}).catch(()=>{bubble.textContent='图片无法读取';});
       } else if(msg.kind==='transfer'){
         bubble.classList.add('lr-transfer-bubble');
-        bubble.innerHTML='<div class="lr-transfer-card"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'RM')+' '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span></div>';
+        bubble.innerHTML='<div class="lr-transfer-card"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'￥')+' '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span></div>';
       } else if(msg.kind==='location'){
         const place=escapeHtml(msg.place||msg.text||'未填写地点');
         const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(msg.place||msg.text||'');
@@ -219,6 +225,7 @@
       }
       let stamp=row.querySelector('.lr-message-time');if(!stamp){stamp=document.createElement('div');stamp.className='lr-message-time';row.appendChild(stamp);}stamp.textContent=msg.at?timeText(msg.at):'';
     });
+    if(normalizedTransfer)writeChatThreads(all);
   }
   function localTimeContext() {
     const d=localNow(),h=d.getHours();
@@ -239,7 +246,7 @@
   }
   function updateTransferPreview(){
     const value=Number(String($('lrTransferAmount')?.value||'').replace(/,/g,''));
-    $('lrTransferPreviewAmount').textContent=Number.isFinite(value)&&value>0?'RM '+value.toFixed(2):'RM 0.00';
+    $('lrTransferPreviewAmount').textContent=Number.isFinite(value)&&value>0?'￥'+value.toFixed(2):'￥0.00';
     $('lrTransferPreviewNote').textContent=$('lrTransferNote')?.value.trim()||'给你的小心意';
   }
   function sendLocation() {
