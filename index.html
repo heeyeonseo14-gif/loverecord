@@ -190,7 +190,7 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .music-mini-info b{font-size:13px!important;line-height:1.4}.music-mini-info span{font-size:10px!important}
 .music-mini-bar{margin-top:11px!important}
 .music-mini>button{align-self:center;justify-self:center;width:30px;height:30px;padding:0;font-size:18px}
-.music-mini>button#musicMiniPlay{grid-column:2;grid-row:3}.music-mini>button[data-launch-page="music"]{grid-column:3;grid-row:3}
+
 @media(max-width:420px){.music-mini{width:216px;height:162px;min-width:216px;max-width:216px;left:10px}}
 </style>
 <style>
@@ -673,6 +673,23 @@ body.chat-conversation-open .nav{display:none!important}
 #space .scene,#space .live-feature{border-radius:var(--space-card-radius,26px)}
 #space .scene-text,#space .scene-quote{font-family:var(--space-font,Georgia,'Noto Serif SC',serif)!important}
 @media(max-width:420px){.space-style-sheet{padding-left:17px;padding-right:17px}.workspace-tools{gap:5px}.workspace-style-open{width:40px;height:40px}}
+
+/* MUSIC V4 · compact 1:1 floating vinyl widget */
+.music-mini{position:fixed!important;z-index:45!important;left:14px;right:auto;top:auto;bottom:calc(166px + env(safe-area-inset-bottom))!important;width:78px!important;height:78px!important;min-width:78px!important;max-width:78px!important;min-height:78px!important;max-height:78px!important;aspect-ratio:1/1!important;box-sizing:border-box!important;display:grid!important;place-items:center!important;padding:6px!important;border:1px solid rgba(255,255,255,.88)!important;border-radius:50%!important;background:linear-gradient(145deg,rgba(255,255,255,.76),rgba(224,207,235,.42))!important;backdrop-filter:blur(18px) saturate(1.35)!important;-webkit-backdrop-filter:blur(18px) saturate(1.35)!important;box-shadow:0 9px 26px rgba(91,65,108,.2),inset 0 1px 2px rgba(255,255,255,.95)!important;overflow:hidden!important;touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;cursor:grab!important;transform:none!important;transition:box-shadow .18s ease,opacity .18s ease!important}
+.music-mini[hidden]{display:none!important}
+.music-mini.dragging{cursor:grabbing!important;box-shadow:0 18px 38px rgba(75,55,88,.28),inset 0 1px 2px rgba(255,255,255,.95)!important;opacity:.94}
+.music-vinyl{position:relative;display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;background:repeating-radial-gradient(circle at 50% 50%,#211d25 0 1px,#39323d 1.5px 2px,#17151b 2.5px 4px,#302a35 4.5px 5.5px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),inset 0 0 14px rgba(0,0,0,.62),0 2px 5px rgba(38,26,45,.24)}
+.music-vinyl:before{content:"";position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(255,255,255,.13);background:repeating-radial-gradient(circle at 50% 50%,transparent 0 4px,rgba(255,255,255,.08) 4.5px 5px,transparent 5.5px 8px);pointer-events:none}
+.music-vinyl:after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.27),transparent 35%,transparent 68%,rgba(0,0,0,.22));pointer-events:none}
+.music-vinyl-label{position:absolute;z-index:2;left:50%;top:50%;width:29px;height:29px;transform:translate(-50%,-50%);border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 25%,#eadcf0,#b99ac9 62%,#8f719e);border:1px solid rgba(255,255,255,.72);box-shadow:0 1px 7px rgba(0,0,0,.28)}
+.music-vinyl-label:before{content:"";position:absolute;inset:4px;border:1px solid rgba(255,255,255,.45);border-radius:50%}
+.music-vinyl-label i{display:block;width:4px;height:4px;border-radius:50%;background:#45364b;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.music-mini.is-playing .music-vinyl{animation:lrVinylSpin 3.6s linear infinite}
+.music-mini.dragging .music-vinyl{animation-play-state:paused}
+@keyframes lrVinylSpin{to{transform:rotate(360deg)}}
+.dark-mode .music-mini{background:linear-gradient(145deg,rgba(57,46,65,.9),rgba(34,27,40,.82))!important;border-color:rgba(255,255,255,.22)!important}
+@media(prefers-reduced-motion:reduce){.music-mini.is-playing .music-vinyl{animation-duration:12s}}
+
 </style>
 
 </head>
@@ -744,7 +761,7 @@ body.chat-conversation-open .nav{display:none!important}
   <div class="music-toast" id="musicToast" role="status"></div>
 </main>
 <audio id="lrGlobalAudio" preload="metadata"></audio>
-<div class="music-mini" id="musicMini" hidden><div class="music-mini-grip" aria-label="长按此处移动播放器">⠿ <span>MOVE</span></div><div class="music-mini-info"><b id="musicMiniTitle">—</b><span id="musicMiniArtist">—</span><div class="music-mini-bar"><i id="musicMiniProgress"></i></div></div><button id="musicMiniPlay" type="button" aria-label="播放或暂停">▶</button><button type="button" data-launch-page="music" aria-label="打开音乐">↗</button></div>
+<button class="music-mini" id="musicMini" type="button" hidden aria-label="黑胶唱片播放器：点击播放或暂停，长按移动"><span class="music-vinyl" aria-hidden="true"><span class="music-vinyl-label"><i></i></span></span></button>
 <main id="chat" class="page chat-page">
   <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div></div>
   <section id="chatContacts" class="chat-contact-list"></section>
