@@ -1,80 +1,27 @@
-/* LOVE RECORD V24 · reliable chat storage
-   Uses the same IndexedDB database as chat-interaction-v11.js for image blobs.
-   Keeps compact metadata in localStorage and moves large image data out of quota-limited storage. */
+/* LOVE RECORD V24 · IndexedDB-first contact metadata storage
+   Keeps contact settings, CSS metadata and image references out of localStorage quota. */
 (function(){
  'use strict';
- const META_KEY='love-record-chat-meta-v2', OLD_KEY='love-record-chat-meta-v1';
- const DB_NAME='love-record-chat-files-v1', STORE='attachments';
- let dbPromise, readyPromise;
- const urlCache=Object.create(null);
- function openDB(){
-  if(dbPromise)return dbPromise;
-  dbPromise=new Promise((resolve,reject)=>{
-   const req=indexedDB.open(DB_NAME,1);
-   req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});};
-   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('聊天图片数据库打开失败'));
-  });return dbPromise;
- }
- async function addBlob(blob,name,contactId){
-  const d=await openDB();return new Promise((resolve,reject)=>{
-   const tx=d.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({blob,name:name||'chat-image',type:blob.type||'image/*',contactId:contactId||'',createdAt:Date.now()});
-   r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片保存失败'));
-  });
- }
- async function getBlob(id){
-  const d=await openDB();return new Promise((resolve,reject)=>{
-   const r=d.transaction(STORE,'readonly').objectStore(STORE).get(Number(id));
-   r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);
-  });
- }
- function rawMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||localStorage.getItem(OLD_KEY)||'{}')||{}}catch(_){return {}}}
- function isDataImage(v){return typeof v==='string'&&/^data:image\//i.test(v)}
- function isRef(v){return typeof v==='string'&&/^lrdb:\d+$/.test(v)}
- async function migrate(){
-  await openDB();const all=rawMeta(),compact={};let changed=false;
-  for(const id of Object.keys(all)){
-   const item={...(all[id]||{})};
-   for(const field of ['avatar','backgroundImage','myAvatar']){
-    if(isDataImage(item[field])){
-     try{const blob=await (await fetch(item[field])).blob();item[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id);changed=true;}
-     catch(e){console.warn('[LOVE RECORD] image migration skipped',field,e);}
-    }
-   }
-   compact[id]=item;
-  }
-  if(changed||localStorage.getItem(META_KEY)===null){
-   try{localStorage.setItem(META_KEY,JSON.stringify(compact));}
-   catch(e){throw new Error('聊天资料储存空间不足；图片迁移未能完成：'+e.message);}
-  }
-  try{localStorage.removeItem(OLD_KEY);}catch(_){}
-  for(const id of Object.keys(compact))for(const field of ['avatar','backgroundImage','myAvatar']){
-   const ref=compact[id][field];if(isRef(ref)){const rec=await getBlob(ref.slice(5));if(rec?.blob){const key=id+':'+field+':'+ref;if(!urlCache[key])urlCache[key]=URL.createObjectURL(rec.blob);}}
-  }
- }
- function readMeta(){return rawMeta()}
- function readContactMeta(id){
-  const raw=readMeta()[id]||{},out={...raw};
-  for(const field of ['avatar','backgroundImage','myAvatar']){const v=raw[field]||'';out[field]=isRef(v)?(urlCache[id+':'+field+':'+v]||''):v;}
-  return out;
- }
- async function saveSafely(id,source){
-  await readyPromise;if(!id)throw new Error('没有选择联系人');
-  const all=readMeta(),old={...(all[id]||{})},next={...old,...(source||{})};
-  for(const field of ['avatar','backgroundImage','myAvatar']){
-   const v=next[field];if(!v){delete next[field];continue;}if(isRef(v))continue;
-   const oldRef=old[field],oldUrl=isRef(oldRef)?urlCache[id+':'+field+':'+oldRef]:'';
-   if(oldUrl&&v===oldUrl){next[field]=oldRef;continue;}
-   if(isDataImage(v)){
-    const blob=await (await fetch(v)).blob(),ref='lrdb:'+await addBlob(blob,'chat-meta-'+field,id);next[field]=ref;
-    const rec=await getBlob(ref.slice(5));if(rec?.blob)urlCache[id+':'+field+':'+ref]=URL.createObjectURL(rec.blob);
-   }
-  }
-  all[id]=next;
-  try{localStorage.setItem(META_KEY,JSON.stringify(all));}
-  catch(e){throw new Error('资料仍超过浏览器储存额度。请先缩小头像/背景图片后再保存。');}
-  return readContactMeta(id);
- }
- window.readChatMeta=readMeta;window.writeChatMeta=(id,data)=>{const all=readMeta();all[id]={...(all[id]||{}),...(data||{})};localStorage.setItem(META_KEY,JSON.stringify(all));};
- window.chatMeta=readContactMeta;window.saveChatMetaSafely=saveSafely;
- window.__lrChatStorageReady=readyPromise=migrate().catch(e=>{console.error('[LOVE RECORD] chat storage init failed',e);throw e;});
+ const META_KEY='love-record-chat-meta-v2',OLD_KEY='love-record-chat-meta-v1';
+ const DB_NAME='love-record-chat-files-v1',STORE='attachments',META_STORE='contactMeta';
+ let fileDbPromise,metaDbPromise,readyPromise;
+ const cache=Object.create(null),urlCache=Object.create(null);
+ const isDataImage=v=>typeof v==='string'&&/^data:image\//i.test(v);
+ const isRef=v=>typeof v==='string'&&/^lrdb:\d+$/.test(v);
+ function openFileDB(){if(fileDbPromise)return fileDbPromise;fileDbPromise=new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片数据库打开失败'))});return fileDbPromise}
+ function openMetaDB(){if(metaDbPromise)return metaDbPromise;metaDbPromise=new Promise((resolve,reject)=>{const r=indexedDB.open('love-record-chat-meta-db-v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(META_STORE))r.result.createObjectStore(META_STORE,{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('联系人资料数据库打开失败'))});return metaDbPromise}
+ async function addBlob(blob,name,id){const d=await openFileDB();return new Promise((resolve,reject)=>{const tx=d.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({blob,name:name||'chat-image',type:blob.type||'image/*',contactId:id||'',createdAt:Date.now()});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片保存失败'))})}
+ async function getBlob(id){const d=await openFileDB();return new Promise((resolve,reject)=>{const r=d.transaction(STORE,'readonly').objectStore(STORE).get(Number(id));r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error)})}
+ function legacy(){try{return JSON.parse(localStorage.getItem(META_KEY)||localStorage.getItem(OLD_KEY)||'{}')||{}}catch(_){return {}}}
+ async function externalize(item,id){const out={...(item||{})};for(const field of ['avatar','backgroundImage','myAvatar']){if(isDataImage(out[field])){const blob=await(await fetch(out[field])).blob();out[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id)}}return out}
+ async function hydrateImageRefs(id,item){const out={...item};for(const field of ['avatar','backgroundImage','myAvatar']){const ref=out[field];if(isRef(ref)){const key=id+':'+field+':'+ref;let url=urlCache[key];if(!url){const rec=await getBlob(ref.slice(5));if(rec?.blob){url=URL.createObjectURL(rec.blob);urlCache[key]=url}}out[field]=url||''}}return out}
+ function readMeta(){return cache}
+ function readContactMeta(id){return {...(cache[id]||{})}}
+ async function putRecord(id,item){const d=await openMetaDB();return new Promise((resolve,reject)=>{const tx=d.transaction(META_STORE,'readwrite');tx.objectStore(META_STORE).put({id,data:item,updatedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('联系人资料写入失败'));tx.onabort=()=>reject(tx.error||new Error('联系人资料写入中断'))})}
+ async function saveSafely(id,source){await readyPromise;if(!id)throw new Error('没有选择联系人');const old=cache[id]||{},next={...old,...(source||{})};for(const field of ['avatar','backgroundImage','myAvatar']){const v=next[field];if(!v){delete next[field];continue}if(isDataImage(v)){const blob=await(await fetch(v)).blob();next[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id)}}await putRecord(id,next);cache[id]=next;return await hydrateImageRefs(id,next)}
+ function writeMeta(id,data){const next={...(cache[id]||{}),...(data||{})};cache[id]=next;saveSafely(id,next).catch(e=>console.error('[LOVE RECORD] async contact metadata save failed',e));return next}
+ // Keep the synchronous legacy API readable immediately while IndexedDB hydrates.
+ Object.assign(cache, legacy());
+ readyPromise=(async()=>{const md=await openMetaDB();const stored=await new Promise((resolve,reject)=>{const r=md.transaction(META_STORE,'readonly').objectStore(META_STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)});for(const row of stored)cache[row.id]=row.data||{};const old=legacy();for(const id of Object.keys(old)){if(!cache[id]){const clean=await externalize(old[id],id);await putRecord(id,clean);cache[id]=clean}else{const legacyItem=old[id]||{};const merged={...legacyItem,...cache[id]};const clean=await externalize(merged,id);await putRecord(id,clean);cache[id]=clean}}try{localStorage.removeItem(META_KEY);localStorage.removeItem(OLD_KEY)}catch(_){}window.dispatchEvent(new CustomEvent('lr-contact-meta-ready'));return true})().catch(e=>{console.error('[LOVE RECORD] contact metadata migration failed',e);throw e});
+ window.readChatMeta=readMeta;window.writeChatMeta=writeMeta;window.chatMeta=readContactMeta;window.saveChatMetaSafely=saveSafely;window.__lrChatStorageReady=readyPromise;
 })();
