@@ -1215,11 +1215,14 @@ body.music-listening-modal-open{overflow:hidden!important}
 <div id="toast" class="toast"></div>
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
-const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[{id:'p-yanhuan',name:'YAN HUAN',role:'恋人',personality:'温柔、清冷、自然。',appearance:'',speech:'',background:'',instructions:'保持角色一致，不要自称 AI。'}],worlds:[],forumPosts:[],journal:[],spaces:[]};
+const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
 let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
 function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}
+// Permanently remove the legacy default contact without touching chats or other contacts.
+state.people=(Array.isArray(state.people)?state.people:[]).filter(p=>String(p?.id||'').toLowerCase()!=='p-yanhuan'&&String(p?.name||'').trim().toLowerCase()!=='yan huan');
+save();
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove('show'),1800)}
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});s.createIndex('type','type')}};r.onsuccess=e=>{db=e.target.result;resolve()};r.onerror=()=>reject(r.error)})}
@@ -1559,7 +1562,7 @@ function renderForumComments(p){
  return p.comments.map(c=>`<div class="comment-item"><div class="comment-author">${esc(c.author||'AI')} · ${esc(c.date||'')}</div><div class="comment-body">${esc(c.body||'')}</div></div>`).join('');
 }
 function closeForumDetail(){$('forumDetailModal').classList.remove('show');document.body.style.overflow='';editingForumPostId=''}
-function openPersonEditor(id=''){localizeEditors();editingPersonId=id;const p=state.people.find(x=>x.id===id)||{};$('personEditTitle').textContent=id?'EDIT PERSON':'NEW PERSON';$('personName').value=p.name||'';$('personRole').value=p.role||'';$('personPersonality').value=p.personality||'';$('personAppearance').value=p.appearance||'';$('personSpeech').value=p.speech||'';$('personBackground').value=p.background||'';$('personInstructions').value=p.instructions||'';$('personReferencePreview').textContent=p.referenceImage?'已保存参考图（重新上传可替换）':'可上传人物参考图，保存后供后续生图功能调用。';$('personEditModal').classList.add('show');document.body.style.overflow='hidden'}
+function openPersonEditor(id=''){localizeEditors();editingPersonId=id;const p=state.people.find(x=>x.id===id)||{};$('personEditTitle').textContent=id?'EDIT PERSON':'NEW PERSON';$('personName').value=p.name||'';$('personRole').value=p.role||'';$('personPersonality').value=p.personality||'';$('personAppearance').value=p.appearance||'';$('personSpeech').value=p.speech||'';$('personBackground').value=p.background||'';$('personInstructions').value=p.instructions||'';$('personEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closePersonEditor(){ $('personEditModal').classList.remove('show');document.body.style.overflow=''}
 
 function savePerson(){const name=$('personName').value.trim();if(!name){toast('请先填写人物名字');return}const obj={id:editingPersonId||'p-'+Date.now(),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj}else state.people.push(obj);save();closePersonEditor();renderModule('people');toast('人物已保存')}
