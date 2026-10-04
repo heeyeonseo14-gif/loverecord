@@ -5,20 +5,22 @@
  const META_KEY='love-record-chat-meta-v2',OLD_KEY='love-record-chat-meta-v1';
  const DB_NAME='love-record-chat-files-v1',STORE='attachments',META_STORE='contactMeta';
  let fileDbPromise,metaDbPromise,readyPromise;
- const cache=Object.create(null),urlCache=Object.create(null);
+ const cache=Object.create(null),urlCache=Object.create(null),urlRefs=Object.create(null);
  const isDataImage=v=>typeof v==='string'&&/^data:image\//i.test(v);
  const isRef=v=>typeof v==='string'&&/^lrdb:\d+$/.test(v);
+ const isObjectUrl=v=>typeof v==='string'&&/^blob:/i.test(v);
+ async function persistImageValue(value,name,id){if(isRef(value))return value;if(isObjectUrl(value)&&urlRefs[value])return urlRefs[value];if(isDataImage(value)||isObjectUrl(value)){ const response=await fetch(value);if(!response.ok)throw new Error('图片读取失败，请重新上传');const blob=await response.blob();return 'lrdb:'+await addBlob(blob,name,id)}return value;}
  function openFileDB(){if(fileDbPromise)return fileDbPromise;fileDbPromise=new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片数据库打开失败'))});return fileDbPromise}
  function openMetaDB(){if(metaDbPromise)return metaDbPromise;metaDbPromise=new Promise((resolve,reject)=>{const r=indexedDB.open('love-record-chat-meta-db-v1',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(META_STORE))r.result.createObjectStore(META_STORE,{keyPath:'id'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('联系人资料数据库打开失败'))});return metaDbPromise}
  async function addBlob(blob,name,id){const d=await openFileDB();return new Promise((resolve,reject)=>{const tx=d.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({blob,name:name||'chat-image',type:blob.type||'image/*',contactId:id||'',createdAt:Date.now()});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片保存失败'))})}
  async function getBlob(id){const d=await openFileDB();return new Promise((resolve,reject)=>{const r=d.transaction(STORE,'readonly').objectStore(STORE).get(Number(id));r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error)})}
  function legacy(){try{return JSON.parse(localStorage.getItem(META_KEY)||localStorage.getItem(OLD_KEY)||'{}')||{}}catch(_){return {}}}
  async function externalize(item,id){const out={...(item||{})};for(const field of ['avatar','backgroundImage','myAvatar']){if(isDataImage(out[field])){const blob=await(await fetch(out[field])).blob();out[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id)}}return out}
- async function hydrateImageRefs(id,item){const out={...item};for(const field of ['avatar','backgroundImage','myAvatar']){const ref=out[field];if(isRef(ref)){const key=id+':'+field+':'+ref;let url=urlCache[key];if(!url){const rec=await getBlob(ref.slice(5));if(rec?.blob){url=URL.createObjectURL(rec.blob);urlCache[key]=url}}out[field]=url||''}}return out}
+ async function hydrateImageRefs(id,item){const out={...item};for(const field of ['avatar','backgroundImage','myAvatar']){const ref=out[field];if(isRef(ref)){const key=id+':'+field+':'+ref;let url=urlCache[key];if(!url){const rec=await getBlob(ref.slice(5));if(rec?.blob){url=URL.createObjectURL(rec.blob);urlCache[key]=url;urlRefs[url]=ref}}out[field]=url||''}}return out}
  function readMeta(){return cache}
  function readContactMeta(id){return {...(cache[id]||{})}}
  async function putRecord(id,item){const d=await openMetaDB();return new Promise((resolve,reject)=>{const tx=d.transaction(META_STORE,'readwrite');tx.objectStore(META_STORE).put({id,data:item,updatedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('联系人资料写入失败'));tx.onabort=()=>reject(tx.error||new Error('联系人资料写入中断'))})}
- async function saveSafely(id,source){await readyPromise;if(!id)throw new Error('没有选择联系人');const old=cache[id]||{},next={...old,...(source||{})};for(const field of ['avatar','backgroundImage','myAvatar']){const v=next[field];if(!v){delete next[field];continue}if(isDataImage(v)){const blob=await(await fetch(v)).blob();next[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id)}}await putRecord(id,next);const hydrated=await hydrateImageRefs(id,next);cache[id]=hydrated;return hydrated}
+ async function saveSafely(id,source){await readyPromise;if(!id)throw new Error('没有选择联系人');const old=cache[id]||{},next={...old,...(source||{})};for(const field of ['avatar','backgroundImage','myAvatar']){const v=next[field];if(!v){delete next[field];continue}next[field]=await persistImageValue(v,'chat-meta-'+field,id)}await putRecord(id,next);const hydrated=await hydrateImageRefs(id,next);cache[id]=hydrated;return hydrated}
  function writeMeta(id,data){const next={...(cache[id]||{}),...(data||{})};cache[id]=next;saveSafely(id,next).catch(e=>console.error('[LOVE RECORD] async contact metadata save failed',e));return next}
  // Keep the synchronous legacy API readable immediately while IndexedDB hydrates.
  Object.assign(cache, legacy());
