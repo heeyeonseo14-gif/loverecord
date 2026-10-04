@@ -5,8 +5,9 @@
   window.__lrCommunityV1 = true;
 
   const DB_NAME = 'love-record-community-db';
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const STORE = 'posts';
+  const PROFILE_STORE = 'profile';
   const SETTINGS_KEY = 'yanyan-love-settings-v5';
   const COMMUNITY_KEY = 'love-record-community-profile-v1';
   const CATS = [
@@ -32,13 +33,28 @@
       if (!saved.name && app.name) profile.name = app.name;
     } catch {}
   }
-  function saveProfile() { localStorage.setItem(COMMUNITY_KEY, JSON.stringify(profile)); }
+  function saveProfile() {
+    const meta = {...profile}; delete meta.avatar; delete meta.cover;
+    try { localStorage.setItem(COMMUNITY_KEY, JSON.stringify(meta)); }
+    catch (e) { console.warn('[Community] profile metadata storage quota reached', e); }
+    if (db) {
+      try { const tx=db.transaction(PROFILE_STORE,'readwrite'); tx.objectStore(PROFILE_STORE).put({id:'main',avatar:profile.avatar||'',cover:profile.cover||''}); }
+      catch(e) { console.warn('[Community] profile image storage failed',e); }
+    }
+  }
+  async function loadProfileImages() {
+    if (!db) return;
+    const saved = await new Promise(resolve=>{const r=db.transaction(PROFILE_STORE,'readonly').objectStore(PROFILE_STORE).get('main');r.onsuccess=()=>resolve(r.result||{});r.onerror=()=>resolve({});});
+    profile.avatar=saved.avatar||''; profile.cover=saved.cover||'';
+  }
+
   function openDatabase() {
     return new Promise((resolve,reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = () => {
         const d = req.result;
         if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id'});
+        if (!d.objectStoreNames.contains(PROFILE_STORE)) d.createObjectStore(PROFILE_STORE,{keyPath:'id'});
       };
       req.onsuccess = () => { db=req.result; resolve(db); };
       req.onerror = () => reject(req.error);
@@ -289,7 +305,7 @@
   }
   function saveWorld(){profile.worldSetting=$('lrCmWorldSetting')?.value.trim()||'';saveProfile();toast('社区世界观已保存 ♡');}
   async function saveProfileForm(){const name=$('lrCmProfileName')?.value.trim();if(!name){toast('用户名不能为空');return;}const oldName=profile.name;profile.name=name;profile.bio=$('lrCmProfileBio')?.value.trim()||'';saveProfile();for(const p of posts){if(p.author===oldName){p.author=name;await putPost(p);}}await refreshPosts();render();toast('个人主页已更新 ♡');}
-  function loadProfileImage(file,key){if(!file)return;if(!file.type.startsWith('image/')){toast('请选择图片文件');return;}if(file.size>10*1024*1024){toast('图片请控制在 10MB 以内');return;}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=key==='avatar'?640:1400,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);profile[key]=canvas.toDataURL('image/jpeg',.82);saveProfile();render();toast(key==='avatar'?'头像已更新':'背景封面已更新');};img.onerror=()=>toast('图片读取失败，请换一张试试');img.src=reader.result;};reader.readAsDataURL(file);}
+  function loadProfileImage(file,key){if(!file)return;if(!file.type.startsWith('image/')){toast('请选择图片文件');return;}if(file.size>10*1024*1024){toast('图片请控制在 10MB 以内');return;}const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const max=key==='avatar'?240:900,scale=Math.min(1,max/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);profile[key]=canvas.toDataURL('image/jpeg',.55);saveProfile();render();toast(key==='avatar'?'头像已更新':'背景封面已更新');};img.onerror=()=>toast('图片读取失败，请换一张试试');img.src=reader.result;};reader.readAsDataURL(file);}
   async function handleAction(btn) {
     const a=btn.dataset.cAction,id=btn.dataset.id;
     if(a==='close'){close();return;}
@@ -402,7 +418,7 @@
 `;
   async function init() {
     getProfile(); ensureRoot(); installStyle();
-    try { await openDatabase(); await refreshPosts(); await migrateLegacy(); }
+    try { await openDatabase(); await loadProfileImages(); await refreshPosts(); await migrateLegacy(); }
     catch(e) { console.error('[Community] IndexedDB unavailable',e); toast('社区本地数据库暂时无法打开，请检查浏览器存储权限。'); }
     initialized=true;
   }
