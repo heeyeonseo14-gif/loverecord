@@ -933,7 +933,7 @@ body.music-listening-modal-open{overflow:hidden!important}
     <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
     <button class="launcher-app" data-launch-page="space" data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>我们的空间</span></button>
     <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
-    <button class="launcher-app" data-launch-module="weibo" type="button" data-drag-id="app-weibo"><span class="app-icon icon-weibo">◉</span><span>微博</span></button>
+    <button class="launcher-app" data-launch-module="weibo" type="button" data-drag-id="app-weibo"><span class="app-icon icon-weibo">◉</span><span>VB</span></button>
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
@@ -1546,7 +1546,7 @@ let editingPersonId='',editingWorldId='',editingForumPostId='';
 function openModule(name){$('moduleModal').classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
 function closeModule(){ $('moduleModal').classList.remove('show');document.body.style.overflow=''}
 function renderModule(name){
- const titles={people:['CONTACTS','MY CONTACTS'],forum:['COMMUNITY','AI COMMUNITY'],weibo:['WEIBO','微博'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
+ const titles={people:['CONTACTS','MY CONTACTS'],forum:['COMMUNITY','AI COMMUNITY'],weibo:['VB · SOCIAL','VB'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
  $('moduleEyebrow').textContent=titles[name][0];$('moduleTitle').textContent=titles[name][1];
  const b=$('moduleBody');
  if(name==='weibo'){renderWeibo();return}
