@@ -1292,9 +1292,15 @@ function renderChat(){
  const topBack=document.querySelector('#systemAppbar .system-back');
  $('systemAppTitle').textContent=chatShownName(p);
  $('systemAppbarAction').innerHTML='⚙';$('systemAppbarAction').setAttribute('aria-label','聊天设置');
- $('chatMessages').style.backgroundColor=meta.background||'#f7f3f9';
- $('chatMessages').style.backgroundImage=meta.backgroundImage?'linear-gradient(rgba(247,243,249,.35),rgba(247,243,249,.35)),url("'+meta.backgroundImage+'")':'none';
- $('chatMessages').style.backgroundSize='cover';$('chatMessages').style.backgroundPosition='center';
+ const chatSurface=$('chatMessages');
+ const chatBg=meta.backgroundImage ? 'linear-gradient(rgba(247,243,249,.18),rgba(247,243,249,.18)),url(\"'+meta.backgroundImage+'\")' : 'none';
+ /* Inline !important is intentional: uploaded chat wallpaper must remain visible even when custom CSS uses #chatMessages { background: ... !important }. */
+ chatSurface.style.setProperty('background-color',meta.background||'#f7f3f9','important');
+ chatSurface.style.setProperty('background-image',chatBg,'important');
+ chatSurface.style.setProperty('background-size','cover','important');
+ chatSurface.style.setProperty('background-position','center center','important');
+ chatSurface.style.setProperty('background-repeat','no-repeat','important');
+ chatSurface.style.setProperty('background-attachment','local','important');
  if(topBack){topBack.removeAttribute('data-launch-home');topBack.onclick=()=>{activeChatContactId='';renderChat()};}
  $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];

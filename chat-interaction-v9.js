@@ -459,7 +459,7 @@
         <h3>自定义聊天 CSS</h3>
         <div class="sub">仅作用于当前联系人的聊天界面。可以自定义背景、气泡、字体和间距。</div>
         <label for="lrChatCustomCss">CSS 代码</label>
-        <textarea id="lrChatCustomCss" maxlength="12000" spellcheck="false" placeholder="/* 透明液态玻璃示例：聊天背景照片会自动保留 */\n#chatMessages { background-color: transparent !important; }\n#chatMessages .chat-message-row .chat-bubble { backdrop-filter: blur(20px) saturate(145%); -webkit-backdrop-filter: blur(20px) saturate(145%); border: 1px solid rgba(255,255,255,.72); box-shadow: 0 8px 24px rgba(40,40,40,.08); }\n#chatMessages .chat-message-row.ai .chat-bubble { background: rgba(255,255,255,.58); color: #333; }\n#chatMessages .chat-message-row.user .chat-bubble { background: rgba(255,255,255,.34); color: #333; }"></textarea>
+        <textarea id="lrChatCustomCss" maxlength="12000" spellcheck="false" placeholder="/* 透明液态玻璃示例：聊天背景照片由背景设置管理，请勿给 #chatMessages 设置 background 或 background-image */\n#chatMessages .chat-message-row .chat-bubble { backdrop-filter: blur(20px) saturate(145%); -webkit-backdrop-filter: blur(20px) saturate(145%); border: 1px solid rgba(255,255,255,.72); box-shadow: 0 8px 24px rgba(40,40,40,.08); }\n#chatMessages .chat-message-row.ai .chat-bubble { background: rgba(255,255,255,.58); color: #333; }\n#chatMessages .chat-message-row.user .chat-bubble { background: rgba(255,255,255,.34); color: #333; }"></textarea>
         <div class="lr-v9-actions"><button class="btn" id="lrResetChatCss" type="button">恢复默认 CSS</button></div>
       </section>
       <section class="lr-v9-card">
