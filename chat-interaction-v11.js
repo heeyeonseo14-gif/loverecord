@@ -117,6 +117,24 @@
       .lr-transfer-card small{display:block;opacity:.72;font-size:9px;letter-spacing:2px;margin-bottom:10px}
       .lr-transfer-card strong{display:block;font:29px Georgia,serif;font-weight:400;margin-bottom:9px}
       .lr-transfer-card span{font-size:12px;opacity:.9}
+      .lr-transfer-card{position:relative}
+      .lr-transfer-card.lr-transfer-pending{cursor:pointer}
+      .lr-transfer-card .lr-transfer-hint{display:block;margin-top:13px;padding-top:10px;border-top:1px solid rgba(255,255,255,.28);font-size:11px;opacity:.88}
+      .lr-transfer-card .lr-transfer-state{display:inline-flex;margin-top:12px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.2);font-size:11px}
+      #lrTransferDecision{position:fixed;inset:0;z-index:10060;background:rgba(38,27,43,.42);display:grid;place-items:center;padding:22px;backdrop-filter:blur(7px)}
+      #lrTransferDecision[hidden]{display:none!important}
+      #lrTransferDecision .lr-decision-sheet{width:min(100%,380px);padding:25px 22px 20px;border:1px solid rgba(255,255,255,.8);border-radius:28px;background:linear-gradient(145deg,#fffaff,#f5edf8);box-shadow:0 24px 80px rgba(55,35,65,.24);text-align:center;color:#514258}
+      #lrTransferDecision .lr-decision-mark{width:54px;height:54px;margin:0 auto 13px;border-radius:19px;display:grid;place-items:center;background:linear-gradient(145deg,#d9c0e2,#ad8cbb);color:white;font-size:25px}
+      #lrTransferDecision h3{font-size:20px;font-weight:500;margin:0 0 7px}
+      #lrTransferDecision .lr-decision-sub{font-size:12px;color:#9a8b9e;margin-bottom:18px}
+      #lrTransferDecision .lr-decision-amount{font:34px Georgia,serif;color:#9c7aa9;margin:8px 0}
+      #lrTransferDecision .lr-decision-note{font-size:13px;color:#827487;margin-bottom:22px}
+      #lrTransferDecision .lr-decision-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      #lrTransferDecision button{border:0;border-radius:15px;padding:13px 10px;font:inherit;font-size:14px}
+      #lrTransferDecision [data-decision="accept"]{background:linear-gradient(135deg,#b995c8,#9875a9);color:white}
+      #lrTransferDecision [data-decision="refund"]{background:#eee7f0;color:#806b88}
+      #lrTransferDecision .lr-decision-close{display:block;width:100%;margin-top:11px;background:transparent;color:#a295a8;font-size:12px}
+
       .lr-location-card{display:block;text-decoration:none;color:inherit}
       .lr-location-card small{display:block;color:inherit;opacity:.75;margin-top:5px}
       #lrThoughtModal{position:fixed;inset:0;z-index:10020;background:rgba(35,27,40,.35);display:grid;place-items:center;padding:22px}
@@ -211,6 +229,36 @@
     }
   }
 
+
+  let pendingTransferMessage = null;
+  function ensureTransferDecision() {
+    if ($('lrTransferDecision')) return;
+    const modal=document.createElement('div');
+    modal.id='lrTransferDecision';modal.hidden=true;
+    modal.innerHTML='<section class="lr-decision-sheet"><div class="lr-decision-mark">♡</div><h3>收到一份小心意</h3><div class="lr-decision-sub">LOVE RECORD · A LITTLE GIFT</div><div class="lr-decision-amount" id="lrDecisionAmount">￥0.00</div><div class="lr-decision-note" id="lrDecisionNote">给你的小心意</div><div class="lr-decision-actions"><button type="button" data-decision="accept">✓　接收</button><button type="button" data-decision="refund">↩　退还</button></div><button type="button" class="lr-decision-close">暂时不处理</button></section>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{
+      if(e.target===modal||e.target.closest('.lr-decision-close')){modal.hidden=true;pendingTransferMessage=null;return;}
+      const action=e.target.closest('[data-decision]')?.dataset.decision;
+      if(!action||!pendingTransferMessage)return;
+      const msg=pendingTransferMessage;
+      if(msg.transferStatus==='accepted'||msg.transferStatus==='refunded'){modal.hidden=true;return;}
+      msg.transferStatus=action==='accept'?'accepted':'refunded';
+      msg.transferResolvedAt=Date.now();
+      const all=threads();writeChatThreads(all);
+      modal.hidden=true;pendingTransferMessage=null;
+      if(typeof window.renderChat==='function')window.renderChat();
+      else decorateMessages();
+    });
+  }
+  function openTransferDecision(msg) {
+    if(!msg||msg.kind!=='transfer'||!['assistant','ai'].includes(msg.role)||msg.transferStatus==='accepted'||msg.transferStatus==='refunded')return;
+    ensureTransferDecision();pendingTransferMessage=msg;
+    $('lrDecisionAmount').textContent=(msg.currency||'￥')+' '+(msg.amount||'0.00');
+    $('lrDecisionNote').textContent=msg.note||'给你的小心意';
+    $('lrTransferDecision').hidden=false;
+  }
+
   function decorateMessages() {
     const id=activeId(), host=$('chatMessages');if(!id||!host)return;
     const all=threads();const list=Array.isArray(all[id])?all[id]:[];let normalizedTransfer=false;const rows=[...host.querySelectorAll('.chat-message-row')];
@@ -228,7 +276,13 @@
         attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-chat-image" src="'+url+'" alt="聊天图片">';else if(bubble.isConnected)bubble.textContent='图片无法读取';}).catch(()=>{bubble.textContent='图片无法读取';});
       } else if(msg.kind==='transfer'){
         bubble.classList.add('lr-transfer-bubble');
-        bubble.innerHTML='<div class="lr-transfer-card"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'￥')+' '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span></div>';
+        const resolved=msg.transferStatus==='accepted'?'已接受':msg.transferStatus==='refunded'?'已退还':'';
+        const isIncoming=['assistant','ai'].includes(msg.role);
+        const cardClass=isIncoming&&!resolved?' lr-transfer-pending':'';
+        const state=resolved?'<em class="lr-transfer-state">'+resolved+'</em>':(isIncoming?'<span class="lr-transfer-hint">点击查看 · 接收或退还</span>':'');
+        bubble.innerHTML='<div class="lr-transfer-card'+cardClass+'"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'￥')+' '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span>'+state+'</div>';
+        const card=bubble.querySelector('.lr-transfer-card');
+        if(isIncoming&&!resolved){card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','处理收到的转账');card.onclick=()=>openTransferDecision(msg);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTransferDecision(msg);}};}
       } else if(msg.kind==='location'){
         const place=escapeHtml(msg.place||msg.text||'未填写地点');
         const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(msg.place||msg.text||'');
@@ -356,12 +410,12 @@
     window.renderChat=function(){const result=original.apply(this,arguments);ensureMenu();decorateMessages();checkDueSchedule();return result;};
   }
   function install() {
-    addStyles();ensureMenu();wrapRender();decorateMessages();checkDueSchedule();
+    addStyles();ensureMenu();ensureTransferDecision();wrapRender();decorateMessages();checkDueSchedule();
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDueSchedule();});
     window.addEventListener('focus',checkDueSchedule);
     setInterval(()=>{if(!document.hidden)checkDueSchedule();},30000);
     // If v9 has not wrapped renderChat yet, retry once the DOM settles.
-    setTimeout(()=>{wrapRender();ensureMenu();decorateMessages();},300);
+    setTimeout(()=>{wrapRender();ensureMenu();ensureTransferDecision();decorateMessages();},300);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
