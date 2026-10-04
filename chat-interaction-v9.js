@@ -391,7 +391,7 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=RM note=备注]]，金额必须是正数，备注简短；不要用普通文字伪装转账。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -410,9 +410,17 @@
       const latest = readChatThreads();
       const current = Array.isArray(latest[id]) ? latest[id] : [];
       const now = Date.now();
-      const newMessages = bubbles.map((part, index) => ({
-        role:'assistant', text:part, at:now + index, turnId:'ai-' + now
-      }));
+      const newMessages = bubbles.map((part, index) => {
+        const transfer = part.match(/^\s*\[\[LR_TRANSFER\s+amount=([\d,.]+)\s+currency=(RM|MYR|RMB|CNY|¥|￥)\s+note=([^\]]*)\]\]\s*$/i) || part.match(/^\s*(?:【\s*)?(?:向你转账|给你转账|转账给你)\s*(RM|MYR|RMB|CNY|人民币|¥|￥)?\s*([\d,]+(?:\.\d{1,2})?)\s*(RM|MYR|RMB|CNY|人民币|元|¥|￥)?\s*(?:】)?\s*$/i);
+        if (transfer) {
+          const isProtocol = String(part).includes('LR_TRANSFER');
+          const amount = Number((isProtocol ? transfer[1] : transfer[2]).replace(/,/g,''));
+          const currencyRaw = isProtocol ? transfer[2] : (transfer[1] || transfer[3] || 'RM');
+          const note = isProtocol ? transfer[3] : '给你的小心意';
+          if (Number.isFinite(amount) && amount > 0) return {role:'assistant',kind:'transfer',amount:amount.toFixed(2),currency:/^(RMB|CNY|人民币|元|¥|￥)$/i.test(currencyRaw)?'￥':'RM',note:note.trim()||'给你的小心意',text:'转账 '+currencyRaw+' '+amount.toFixed(2),at:now+index,turnId:'ai-'+now};
+        }
+        return {role:'assistant', text:part, at:now + index, turnId:'ai-' + now};
+      });
       current.splice(Math.min(requestBoundary, current.length), 0, ...newMessages);
       latest[id] = current;
       writeChatThreads(latest);

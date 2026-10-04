@@ -17,7 +17,7 @@ function meta(){return active()&&typeof window.chatMeta==='function'?window.chat
 function saveMeta(v){if(typeof window.saveChatMetaSafely==='function')return window.saveChatMetaSafely(active(),v);window.writeChatMeta(active(),v);return Promise.resolve()}
 function escape(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){if(typeof window.toast==='function')window.toast(s);else alert(s)}
-function quoteText(row){const b=row.querySelector('.chat-bubble');return (b?.innerText||'').trim().slice(0,240)}
+function quoteText(row){const b=row.querySelector('.chat-bubble');if(b?.querySelector('.lr-chat-image'))return '【引用图片：请结合这张聊天图片理解】';return (b?.innerText||'').trim().slice(0,240)}
 function clearMenu(){document.querySelector('.lr-message-menu')?.remove()}
 function showMenu(row){
  clearMenu();const menu=document.createElement('div');menu.className='lr-message-menu';
@@ -43,8 +43,8 @@ function bindLongPress(){
 function decorateRows(){
  const host=$('chatMessages');if(!host)return;
  host.querySelectorAll('.chat-message-row').forEach((row,i)=>{row.dataset.messageIndex=String(i);const bubble=row.querySelector('.chat-bubble');if(!bubble||bubble.dataset.lrQuoteDecorated)return;bubble.dataset.lrQuoteDecorated='1';
-  const raw=bubble.textContent||'';const m=raw.match(/^\[\[LRQUOTE\]\]([\s\S]*?)\[\[\/LRQUOTE\]\]\n?([\s\S]*)$/);
-  if(m){bubble.innerHTML='<div class="lr-quote-preview">'+escape(m[1])+'</div><div class="lr-message-body">'+escape(m[2])+'</div>';}
+  const raw=bubble.textContent||'';const imageQuote=raw.match(/^\[\[LRQUOTE_IMAGE\]\]([\s\S]*?)\[\[\/LRQUOTE_IMAGE\]\]\n?([\s\S]*)$/);const m=raw.match(/^\[\[LRQUOTE\]\]([\s\S]*?)\[\[\/LRQUOTE\]\]\n?([\s\S]*)$/);
+  if(imageQuote){bubble.innerHTML='<div class="lr-quote-preview">▧ '+escape(imageQuote[1]||'引用了一张图片')+'</div><div class="lr-message-body">'+escape(imageQuote[2])+'</div>';}else if(m){bubble.innerHTML='<div class="lr-quote-preview">'+escape(m[1])+'</div><div class="lr-message-body">'+escape(m[2])+'</div>';}
  });
 }
 function injectSettings(){

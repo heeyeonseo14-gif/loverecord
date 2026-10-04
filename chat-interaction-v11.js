@@ -220,7 +220,7 @@
          只识别独立的明确转账标记，避免把普通聊天中的金额误判为转账。 */
       if(!msg.kind&&(msg.role==='assistant'||msg.role==='ai')){
         const marker=String(msg.text||'').trim().match(/^[【\[]\s*(?:(?:向你|给你)\s*)?转账\s*[:：]?\s*(?:￥|¥|RMB)?\s*([\d,]+(?:\.\d{1,2})?)\s*(?:元|人民币)?\s*[】\]]$/i);
-        if(marker){const amount=Number(marker[1].replace(/,/g,''));if(Number.isFinite(amount)&&amount>0){msg.kind='transfer';msg.amount=amount.toFixed(2);msg.currency='￥';msg.note=msg.note||'给你的小心意';msg.text='转账 ￥'+msg.amount;normalizedTransfer=true;}}
+        if(marker){const amount=Number((marker[1]||marker[2]).replace(/,/g,''));if(Number.isFinite(amount)&&amount>0){msg.kind='transfer';msg.amount=amount.toFixed(2);msg.currency='￥';msg.note=msg.note||'给你的小心意';msg.text='转账 ￥'+msg.amount;normalizedTransfer=true;}}
       }
       const bubble=row.querySelector('.chat-bubble');if(!bubble)return;
       if(msg.kind==='image'&&msg.attachmentId){
