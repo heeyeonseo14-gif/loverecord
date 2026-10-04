@@ -889,6 +889,8 @@ body.music-listening-modal-open{overflow:hidden!important}
 @media(min-width:700px){.our-listening-sheet{border-radius:28px!important;margin-bottom:24px;width:min(92vw,540px)!important}}
 </style>
 
+
+<style id="lr-chat-time-divider-style">.lr-chat-time-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:13px 0;color:var(--muted,#999);font-size:11px;letter-spacing:.04em}.lr-chat-time-divider:before,.lr-chat-time-divider:after{content:'';height:1px;flex:1;max-width:72px;background:rgba(140,130,145,.2)}.lr-chat-time-divider span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1296,7 +1298,8 @@ function renderChat(){
  if(topBack){topBack.removeAttribute('data-launch-home');topBack.onclick=()=>{activeChatContactId='';renderChat()};}
  $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];
- $('chatMessages').innerHTML=items.length?items.map(m=>'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':chatAvatarMarkup(p,true))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+renderChatMessageContent(m.text,m.role)+'</div></div>').join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
+ let previousAt=null;
+ $('chatMessages').innerHTML=items.length?items.map(m=>{const at=Number(m.at)||null;let divider='';if(at&&previousAt&&at-previousAt>=10*60*1000){const d=new Date(at);divider='<div class="lr-chat-time-divider"><span>'+d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})+'</span></div>';}if(at)previousAt=at;return divider+'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':chatAvatarMarkup(p,true))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+renderChatMessageContent(m.text,m.role)+'</div></div>';}).join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
@@ -1866,8 +1869,8 @@ if(loveIntro){
   <script src="./chat-settings-upgrade.js?v=17"></script>
   <script src="./chat-save-fix.js?v=15"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
-  <script src="./chat-interaction-v9.js?v=18"></script>
-  <script src="./chat-interaction-v11.js?v=16"></script>
+  <script src="./chat-interaction-v9.js?v=20"></script>
+  <script src="./chat-interaction-v11.js?v=20"></script>
   
   <script src="./chat-css-unify.js?v=16"></script>
   <script src="./music.js?v=11"></script>

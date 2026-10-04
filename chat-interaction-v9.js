@@ -367,10 +367,19 @@
     addTyping();
     try {
       const memoryCount = clampCount(meta.memoryCount || 16, 16);
-      const recent = thread.slice(-memoryCount).map(m => ({
-        role:m.role === 'assistant' ? 'assistant' : 'user',
-        content:safe(m.text)
-      }));
+      const recent = [];
+      for (const m of thread.slice(-memoryCount)) {
+        const role = m.role === 'assistant' ? 'assistant' : 'user';
+        if (m.kind === 'image' && m.attachmentId) {
+          let dataUrl = '';
+          try { dataUrl = await window.lrLoadChatAttachmentDataUrl?.(m.attachmentId) || ''; } catch (e) { console.warn('[LOVE RECORD] image context load failed', e); }
+          const parts = [{type:'text', text: safe(m.text || '[用户发送了一张图片]') + (dataUrl ? '' : '（图片文件暂时无法读取，请勿猜测图片内容）')}];
+          if (dataUrl) parts.push({type:'image_url', image_url:{url:dataUrl, detail:'auto'}});
+          recent.push({role, content:parts});
+        } else {
+          recent.push({role, content:safe(m.text)});
+        }
+      }
       const persona = (state.selfPersonas || []).find(x => x.id === meta.personaId) || null;
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
       const personaText = persona
@@ -382,7 +391,7 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白应短而具体，与对白自然交错；每次回复至少有一处，但不要每句话都加。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。不要输出 JSON。消息气泡规则：自然聊天时通常输出 1–4 个独立气泡；当内容包含不同意思、动作与对白、回应与补充时，用独占一行的 ||| 分隔气泡。每个气泡保持 1–2 句，避免一大段连续长文；短回复仍只发一个气泡。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白应短而具体，与对白自然交错；每次回复至少有一处，但不要每句话都加。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：自然聊天时通常输出 1–4 个独立气泡；当内容包含不同意思、动作与对白、回应与补充时，用独占一行的 ||| 分隔气泡。每个气泡保持 1–2 句，避免一大段连续长文；短回复仍只发一个气泡。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {

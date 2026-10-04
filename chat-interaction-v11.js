@@ -62,6 +62,17 @@
       req.onerror = () => reject(req.error || new Error('图片读取失败'));
     });
   }
+  async function attachmentDataUrl(id) {
+    const record = await loadAttachment(id);
+    if (!record || !record.blob) return '';
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ''));
+      reader.onerror = () => reject(reader.error || new Error('图片读取失败'));
+      reader.readAsDataURL(record.blob);
+    });
+  }
+  window.lrLoadChatAttachmentDataUrl = attachmentDataUrl;
   async function attachmentUrl(id) {
     if (objectUrls.has(id)) return objectUrls.get(id);
     const record = await loadAttachment(id);
