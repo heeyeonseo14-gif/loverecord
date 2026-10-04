@@ -11,7 +11,7 @@
     const style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .lr-ai-message-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:min(76%,430px);min-width:0}
+      .lr-inline-narration{font-style:italic;color:inherit;opacity:.72;font-size:.94em}.lr-ai-message-stack{display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:min(76%,430px);min-width:0}
       .lr-ai-message-stack .chat-bubble{max-width:100%;width:fit-content;box-sizing:border-box}
       .lr-ai-message-stack .lr-ai-bubble-first{border-top-left-radius:5px;border-bottom-left-radius:15px}
       .lr-ai-message-stack .lr-ai-bubble-middle{border-radius:15px}
