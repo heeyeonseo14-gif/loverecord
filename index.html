@@ -891,6 +891,34 @@ body.music-listening-modal-open{overflow:hidden!important}
 
 
 <style id="lr-chat-time-divider-style">.lr-chat-time-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:13px 0;color:var(--muted,#999);font-size:11px;letter-spacing:.04em}.lr-chat-time-divider:before,.lr-chat-time-divider:after{content:'';height:1px;flex:1;max-width:72px;background:rgba(140,130,145,.2)}.lr-chat-time-divider span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}</style>
+<style id="lr-fixed-chat-wallpaper-v1">
+/* Fixed chat wallpaper layer: the message list scrolls independently above it. */
+#chat.chat-page.is-conversation #chatConversation{
+  position:relative!important;
+  isolation:isolate;
+  overflow:hidden!important;
+}
+#chat.chat-page.is-conversation #chatConversation::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background-color:var(--lr-chat-wallpaper-color,#f7f3f9);
+  background-image:var(--lr-chat-wallpaper,none);
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+}
+#chat.chat-page.is-conversation #chatConversation > *{
+  position:relative;
+  z-index:1;
+}
+#chat.chat-page.is-conversation #chatMessages{
+  background:transparent!important;
+  background-image:none!important;
+}
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1293,14 +1321,14 @@ function renderChat(){
  $('systemAppTitle').textContent=chatShownName(p);
  $('systemAppbarAction').innerHTML='⚙';$('systemAppbarAction').setAttribute('aria-label','聊天设置');
  const chatSurface=$('chatMessages');
+ const chatConversation=$('chatConversation');
  const chatBg=meta.backgroundImage ? 'url(\"'+meta.backgroundImage+'\")' : 'none';
- /* Inline !important is intentional: uploaded chat wallpaper must remain visible even when custom CSS uses #chatMessages { background: ... !important }. */
- chatSurface.style.setProperty('background-color',meta.background||'#f7f3f9','important');
- chatSurface.style.setProperty('background-image',chatBg,'important');
- chatSurface.style.setProperty('background-size','100% auto','important');
- chatSurface.style.setProperty('background-position','center top','important');
- chatSurface.style.setProperty('background-repeat','no-repeat','important');
- chatSurface.style.setProperty('background-attachment','local','important'); chatSurface.style.setProperty('filter','none','important');
+ /* Wallpaper belongs to the fixed conversation viewport, never the scrolling message list. */
+ chatConversation.style.setProperty('--lr-chat-wallpaper',chatBg);
+ chatConversation.style.setProperty('--lr-chat-wallpaper-color',meta.background||'#f7f3f9');
+ chatSurface.style.setProperty('background','transparent','important');
+ chatSurface.style.setProperty('background-image','none','important');
+ chatSurface.style.setProperty('filter','none','important');
  if(topBack){topBack.removeAttribute('data-launch-home');topBack.onclick=()=>{activeChatContactId='';renderChat()};}
  $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];
