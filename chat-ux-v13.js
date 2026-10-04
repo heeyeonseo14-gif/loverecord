@@ -54,15 +54,13 @@ function injectSettings(){
  const save=$('chatSaveSettings');(save?.parentElement||screen).insertBefore(card,save||null);
 }
 async function loadSettings(){
- injectSettings();const m=meta();$('lrChatImagePrompt').value=m.imagePrompt||'';$('lrChatNarration').checked=m.narrationEnabled!==false;
- const toggle=$('lrChatNarrationCard');if(toggle){toggle.classList.toggle('is-off',m.narrationEnabled===false);const stateLabel=toggle.querySelector('.lr-switch-state');if(stateLabel)stateLabel.textContent=m.narrationEnabled===false?'旁白关闭':'旁白开启';}
+ injectSettings();const m=meta();$('lrChatImagePrompt').value=m.imagePrompt||'';
  $('lrChatReferenceStatus').textContent=m.referenceAsset?'已保存参考图（重新选择可替换）':'参考图保存在本设备，可在后续生图功能中调用。';
  const css=await get(cssKey(active()));const cssBox=$('lrChatCustomCss');if(cssBox&&css!==null)cssBox.value=css;
 }
 function bindSettings(){
- const narration=$('lrChatNarration');if(narration&&!narration.dataset.bound){narration.dataset.bound='1';narration.addEventListener('change',()=>{const card=$('lrChatNarrationCard');card?.classList.toggle('is-off',narration.checked);const label=card?.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白关闭':'旁白开启'})}
  const file=$('lrChatReferenceImage');if(file&&!file.dataset.bound){file.dataset.bound='1';file.addEventListener('change',async()=>{const f=file.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){toast('请选择图片文件');return}try{const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=data});const scale=Math.min(1,720/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);await put(refKey(active()),c.toDataURL('image/jpeg',.72));$('lrChatReferenceStatus').textContent='参考图已保存到本设备 ♡';}catch(e){toast('参考图保存失败：'+e.message)}})}
- const btn=$('chatSaveSettings');if(btn&&!btn.dataset.lrWrapped){btn.dataset.lrWrapped='1';btn.addEventListener('click',async e=>{e.preventDefault();e.stopImmediatePropagation();try{const patch={imagePrompt:$('lrChatImagePrompt').value.trim(),narrationEnabled:!$('lrChatNarration').checked,referenceAsset:!!(await get(refKey(active())))};const cssBox=$('lrChatCustomCss');if(cssBox)await put(cssKey(active()),cssBox.value||'');await saveMeta(patch);toast('聊天设置已保存 ♡')}catch(err){toast('保存失败：'+err.message)}},{capture:true})}
+ const btn=$('chatSaveSettings');if(btn&&!btn.dataset.lrWrapped){btn.dataset.lrWrapped='1';btn.addEventListener('click',async e=>{try{const patch={imagePrompt:$('lrChatImagePrompt').value.trim(),referenceAsset:!!(await get(refKey(active())))};const cssBox=$('lrChatCustomCss');if(cssBox)await put(cssKey(active()),cssBox.value||'');await saveMeta(patch);toast('聊天设置已保存 ♡')}catch(err){toast('保存失败：'+err.message)}},{capture:true})}
 }
 function patchRender(){
  if(typeof window.renderChat!=='function'||window.renderChat.__lrV13)return;

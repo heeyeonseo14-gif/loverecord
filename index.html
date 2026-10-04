@@ -1220,8 +1220,14 @@ let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
 function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}
-// Permanently remove the legacy default contact without touching chats or other contacts.
-state.people=(Array.isArray(state.people)?state.people:[]).filter(p=>String(p?.id||'').toLowerCase()!=='p-yanhuan'&&String(p?.name||'').trim().toLowerCase()!=='yan huan');
+// Clean legacy/deleted and empty placeholder contacts once, preserving real contacts and chat history.
+const isInvalidContact=p=>{
+  if(!p||typeof p!=='object')return true;
+  const id=String(p.id||'').trim().toLowerCase();
+  const name=String(p.name||'').trim().toLowerCase();
+  return id==='p-yanhuan'||name==='yan huan'||!name||name==='ai character';
+};
+state.people=(Array.isArray(state.people)?state.people:[]).filter(p=>!isInvalidContact(p));
 save();
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove('show'),1800)}
@@ -1346,7 +1352,7 @@ function handleWeiboAction(action,id){const posts=readWeibo(),p=posts.find(x=>x.
 function renderMemories(){getImages('memory').then(a=>{$('memoryGrid').innerHTML=a.length?a.map(x=>'<article class="memory"><div class="photo"><img src="'+URL.createObjectURL(x.blob)+'" alt=""></div><div class="memory-body"><div class="memory-date">'+esc(x.date)+'</div><div class="memory-note">'+esc(x.note||'A little moment.')+'</div><button class="btn" type="button" data-delete="'+x.id+'" style="margin-top:9px;padding:8px 12px">DELETE</button></div></article>').join(''):'<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--muted);font-size:13px">还没有回忆。<br>从一张照片开始吧。</div>'})}
 function hourScene(){const h=new Date().getHours();if(h<7)return{place:'BEDROOM',text:'房间里很安静，只有手机屏幕还亮着。',quote:'“这么晚还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在看什么','逗他说“你管我”']};if(h<11)return{place:'KITCHEN',text:'厨房里有一点早餐的香味。',quote:'“醒啦？过来吃一点。”',choices:['坐下来吃早餐','从背后抱住他','偷吃一口','问他今天想去哪']};if(h<18)return{place:'LIVING ROOM',text:'下午的光落在沙发上，他正在挑歌。',quote:'“来，帮我选一首。”',choices:['坐过去一起听','抢走他的手机','问他为什么选这首','靠着他休息']};if(h<23)return{place:'LIVING ROOM',text:'晚上回到家，客厅只留着一盏灯。',quote:'“今天辛苦了。”',choices:['抱他一下','问他今晚想做什么','一起看电影','什么也不说，陪着他']};return{place:'BEDROOM',text:'夜深了。房间里很安静，他还没有睡。',quote:'“怎么还没睡？”',choices:['走过去坐他旁边','直接钻进被窝','问他在想什么','说“我就是想找你”']}}
 function activeSpace(){return state.spaces.find(x=>x.id===activeSpaceId)||null}
-function activeSpacePerson(){const sp=activeSpace();return state.people.find(p=>p.id===sp?.personId)||state.people.find(p=>p.id==='p-yanhuan')||state.people[0]||defaults.people[1]}
+function activeSpacePerson(){const sp=activeSpace();return state.people.find(p=>p.id===sp?.personId)||state.people[0]||null}
 function activeSpaceWorld(){const sp=activeSpace();return state.worlds.find(w=>w.id===sp?.worldId)||null}
 function activeSpacePersona(){const sp=activeSpace();return state.selfPersonas.find(p=>p.id===sp?.personaId)||null}
 let activeSpaceId='';
@@ -1516,8 +1522,9 @@ function ensureWorldData(){
   state.spaces.forEach(normalizeSpace);
   if(!state.activeSpaceId && state.spaces.length)state.activeSpaceId=state.spaces[state.spaces.length-1].id;
   let changed=false;
-  const peopleBefore=state.people.length;state.people=state.people.filter(x=>x&&x.id!=='p-yanyan');if(state.people.length!==peopleBefore)changed=true;
-  if(!state.people.some(x=>x.id==='p-yanhuan')){state.people.push({...defaults.people[0]});changed=true}
+  const peopleBefore=state.people.length;
+  state.people=state.people.filter(p=>!isInvalidContact(p));
+  if(state.people.length!==peopleBefore)changed=true;
   if(changed)save();
 }
 let editingPersonId='',editingWorldId='',editingForumPostId='';
