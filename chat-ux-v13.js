@@ -49,10 +49,6 @@ function decorateRows(){
 }
 function injectSettings(){
  const screen=$('chatSettingsScreen');if(!screen||$('lrChatCharacterTools'))return;
- const toggle=document.createElement('section');toggle.className='card lr-narration-card';toggle.id='lrChatNarrationCard';
- toggle.innerHTML='<div class="lr-narration-copy"><h3>旁白模式</h3><div class="sub">控制角色回复中是否出现动作、神态与环境描写</div></div><label class="lr-switch" for="lrChatNarration"><input id="lrChatNarration" type="checkbox"><span class="lr-switch-track"></span><span class="lr-switch-state">旁白开启</span></label>';
- const avatar=$('chatSettingsAvatarPreview');const anchor=avatar?.parentElement?.nextElementSibling||screen.querySelector('.card')||screen.firstChild;
- if(anchor)anchor.insertAdjacentElement('afterend',toggle);else screen.appendChild(toggle);
  const card=document.createElement('section');card.className='card';card.id='lrChatCharacterTools';
  card.innerHTML='<h3>人物聊天设置</h3><label>IMAGE GENERATION PROMPT / 生图提示词</label><textarea id="lrChatImagePrompt" rows="4" placeholder="填写这个人物固定的外貌、发型、五官、画风和服装提示词"></textarea><label>REFERENCE IMAGE / 参考图</label><input id="lrChatReferenceImage" type="file" accept="image/*"><div class="sub" id="lrChatReferenceStatus">参考图保存在本设备，可在后续生图功能中调用。</div>';
  const save=$('chatSaveSettings');(save?.parentElement||screen).insertBefore(card,save||null);
@@ -100,3 +96,5 @@ function installStyle(){
 function start(){installStyle();patchRender();decorateRows();bindLongPress();patchSend();const screen=$('chatSettingsScreen');if(screen){new MutationObserver(()=>{if(screen.classList.contains('show')){loadSettings();bindSettings();}}).observe(screen,{attributes:true,attributeFilter:['class']});}document.addEventListener('click',()=>{patchRender();patchSend();const section=document.querySelector('#chatSettingsScreen');if(section?.classList.contains('show')){loadSettings();bindSettings();initCssPresets();}},true);setTimeout(()=>{patchRender();patchSend();},500);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
+
+(function(){const s=document.createElement('style');s.textContent='.lr-narration-card{display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(183,150,197,.25)!important;border-radius:24px!important;padding:18px 19px!important;box-shadow:0 10px 28px rgba(110,82,125,.07);background:linear-gradient(135deg,#fff,#f8f1fb)!important}.lr-narration-copy h3{margin:0 0 6px;font-size:17px;font-weight:500;color:#594b61}.lr-narration-copy .sub{font-size:12px;line-height:1.6;color:#988b9e}.lr-switch{display:flex!important;align-items:center;gap:8px;padding:7px 10px;border-radius:99px;background:#f1eaf4;color:#8b7396;font-size:11px;white-space:nowrap}.lr-switch input{position:absolute;opacity:0;width:1px;height:1px}.lr-switch-track{width:46px;height:26px;border-radius:30px;background:#d8d0dc;position:relative;transition:.2s}.lr-switch-track:after{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0002;transition:.2s}.lr-switch input:checked+.lr-switch-track{background:#b796c5}.lr-switch input:checked+.lr-switch-track:after{transform:translateX(20px)}.lr-narration-card.is-off{background:#fbf9fc!important}';document.head.appendChild(s)})();

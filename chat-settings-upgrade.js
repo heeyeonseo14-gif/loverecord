@@ -17,6 +17,21 @@
       #${EXTRA_ID}{margin-top:14px}
       #${EXTRA_ID} .lr-setting-card{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0}
       #${EXTRA_ID} .lr-setting-card h3{margin:0 0 12px;font-size:17px;font-weight:500}
+      #${EXTRA_ID} .lr-narration-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px!important;border:1px solid rgba(183,150,197,.28)!important;background:linear-gradient(135deg,#fff 0%,#faf5fc 58%,#f4edf8 100%)!important;box-shadow:0 9px 24px rgba(113,85,128,.07)}
+      #${EXTRA_ID} .lr-narration-heading{display:flex;align-items:center;gap:11px}
+      #${EXTRA_ID} .lr-narration-heading h3{margin:0 0 5px;font-size:17px;font-weight:500;color:#594a62}
+      #${EXTRA_ID} .lr-narration-heading p{margin:0;color:#988b9e;font-size:12px;line-height:1.5}
+      #${EXTRA_ID} .lr-narration-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:13px;background:#eee3f3;color:#9b7cab;font-size:22px;flex:none}
+      #${EXTRA_ID} .lr-narration-footnote{margin:12px 0 0 47px;color:#aa9eaf;font-size:11px;line-height:1.5}
+      #${EXTRA_ID} .lr-switch{display:flex!important;align-items:center;gap:8px;padding:8px 10px;border-radius:99px;background:#f0e8f4;color:#8b7396;font-size:11px;white-space:nowrap;flex:none;cursor:pointer}
+      #${EXTRA_ID} .lr-switch input{position:absolute;opacity:0;width:1px;height:1px}
+      #${EXTRA_ID} .lr-switch-track{width:43px;height:25px;border-radius:30px;background:#d8d0dc;position:relative;transition:.2s;flex:none}
+      #${EXTRA_ID} .lr-switch-track:after{content:'';position:absolute;width:19px;height:19px;left:3px;top:3px;border-radius:50%;background:#fff;box-shadow:0 1px 4px #0002;transition:.2s}
+      #${EXTRA_ID} .lr-switch input:checked+.lr-switch-track{background:#b796c5}
+      #${EXTRA_ID} .lr-switch input:checked+.lr-switch-track:after{transform:translateX(18px)}
+      #${EXTRA_ID} .lr-narration-card.is-off{background:linear-gradient(135deg,#fff,#faf8fb)!important}
+      @media(max-width:390px){#${EXTRA_ID} .lr-narration-card{align-items:flex-start;flex-direction:column}#${EXTRA_ID} .lr-narration-footnote{margin-left:0}}
+
       #${EXTRA_ID} label{display:block;margin:10px 0 7px;color:var(--muted);font-size:13px}
       #${EXTRA_ID} input,#${EXTRA_ID} select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 13px;color:var(--ink);font:inherit;box-sizing:border-box}
       #${EXTRA_ID} .lr-avatar-row{display:flex;align-items:center;gap:13px}
@@ -50,6 +65,17 @@
         <div class="lr-avatar-row"><div class="lr-my-avatar" id="lrMyAvatarPreview">我</div><div style="flex:1"><div style="font-size:14px">我的头像</div><div class="sub" style="margin-top:4px">只影响我在这位联系人的聊天气泡旁显示的头像。</div><button class="btn" id="lrChooseMyAvatar" type="button" style="margin-top:9px">更换我的头像</button><input id="lrMyAvatarFile" type="file" accept="image/*" hidden></div></div>
         <label for="lrPersonaSelect">我的人设</label><select id="lrPersonaSelect"></select>
         <div class="sub" style="margin-top:7px">从「我的自设」中选择；没有建立自设时会使用默认的我。</div>
+      </section>
+      <section class="lr-setting-card lr-narration-card" id="lrChatNarrationCard">
+        <div class="lr-narration-copy">
+          <div class="lr-narration-heading"><span class="lr-narration-icon">✧</span><div><h3>旁白模式</h3><p>让对话带上动作、神态与环境描写</p></div></div>
+          <div class="lr-narration-footnote">关闭后只保留角色对话，不生成旁白。</div>
+        </div>
+        <label class="lr-switch" for="lrChatNarration" aria-label="旁白模式开关">
+          <span class="lr-switch-state">旁白开启</span>
+          <input id="lrChatNarration" type="checkbox" checked>
+          <span class="lr-switch-track"></span>
+        </label>
       </section>
       <section class="lr-setting-card">
         <h3>AI 阅读设置</h3>
@@ -98,6 +124,10 @@
   function fillExtraUI() {
     ensureExtraUI();
     const meta = currentMeta();
+    const narration = document.getElementById('lrChatNarration');
+    const narrationCard = document.getElementById('lrChatNarrationCard');
+    if (narration) { narration.checked = meta.narrationEnabled !== false; if (narrationCard) { narrationCard.classList.toggle('is-off', !narration.checked); const label=narrationCard.querySelector('.lr-switch-state'); if(label) label.textContent=narration.checked?'旁白开启':'旁白关闭'; } }
+    if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} }); }
     const avatar = document.getElementById('lrMyAvatarPreview');
     if (avatar) avatar.innerHTML = meta.myAvatar ? '<img src="' + meta.myAvatar + '" alt="我的头像">' : '我';
     const persona = document.getElementById('lrPersonaSelect');
@@ -227,6 +257,7 @@
     editingChatMeta.personaId = $('lrPersonaSelect').value;
     editingChatMeta.worldId = $('lrWorldSelect').value;
     editingChatMeta.memoryCount = clampMemory($('lrMemoryCount').value);
+    editingChatMeta.narrationEnabled = $('lrChatNarration').checked;
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(activeChatContactId, editingChatMeta);
     closeChatSettings(); toast('聊天设置已保存 ♡');
