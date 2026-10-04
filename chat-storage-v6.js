@@ -1,167 +1,80 @@
-/* LOVE RECORD V24 · IndexedDB chat asset migration
-   Moves chat avatar/background data URLs out of localStorage without clearing user data. */
-(function () {
-  'use strict';
-  const OLD_KEY = 'love-record-chat-meta-v1';
-  const NEW_KEY = 'love-record-chat-meta-v2';
-  const IMAGE_FIELDS = ['avatar', 'backgroundImage', 'myAvatar'];
-  const urlCache = Object.create(null);
-  let readyPromise;
-
-  function rawMeta() {
-    try {
-      return JSON.parse(localStorage.getItem(NEW_KEY) || localStorage.getItem(OLD_KEY) || '{}') || {};
-    } catch (_) { return {}; }
-  }
-  function isDataImage(value) {
-    return typeof value === 'string' && /^data:image\//i.test(value);
-  }
-  function isAssetRef(value) {
-    return typeof value === 'string' && /^lrdb:\d+$/.test(value);
-  }
-  function blobFromValue(value) {
-    return fetch(value).then(r => {
-      if (!r.ok) throw new Error('无法读取图片数据');
-      return r.blob();
-    });
-  }
-  function loadRecord(id) {
-    return new Promise((resolve, reject) => {
-      try {
-        const req = db.transaction(STORE, 'readonly').objectStore(STORE).get(Number(id));
-        req.onsuccess = () => resolve(req.result || null);
-        req.onerror = () => reject(req.error || new Error('读取图片失败'));
-      } catch (error) { reject(error); }
-    });
-  }
-  async function resolveAsset(contactId, field, ref) {
-    if (!isAssetRef(ref)) return ref || '';
-    const cacheKey = contactId + ':' + field + ':' + ref;
-    if (urlCache[cacheKey]) return urlCache[cacheKey];
-    const record = await loadRecord(ref.slice(5));
-    if (!record || !record.blob) return '';
-    const url = URL.createObjectURL(record.blob);
-    urlCache[cacheKey] = url;
-    return url;
-  }
-  async function migrate() {
-    await openDB();
-    const hasOld = localStorage.getItem(OLD_KEY) !== null;
-    const hasNew = localStorage.getItem(NEW_KEY) !== null;
-    const meta = rawMeta();
-    const migrated = {};
-    let movedAnyImage = false;
-    for (const contactId of Object.keys(meta)) {
-      const item = Object.assign({}, meta[contactId] || {});
-      for (const field of IMAGE_FIELDS) {
-        const value = item[field];
-        if (isDataImage(value)) {
-          const blob = await blobFromValue(value);
-          const id = await addImage('chat-meta-' + field, blob, contactId);
-          item[field] = 'lrdb:' + id;
-          movedAnyImage = true;
-        }
-      }
-      migrated[contactId] = item;
-    }
-    // Do not create a new backup on every page load. Back up only during migration.
-    if (!hasNew || hasOld || movedAnyImage) {
-      const compactJson = JSON.stringify(migrated);
-      if (hasOld || movedAnyImage) {
-        await addImage('chat-meta-backup', new Blob([compactJson], {type:'application/json'}), 'chat metadata migration backup');
-      }
-      // Free the oversized v1 localStorage slot before writing the compact replacement.
-      try { localStorage.removeItem(OLD_KEY); } catch (_) {}
-      try {
-        localStorage.setItem(NEW_KEY, compactJson);
-      } catch (error) {
-        try { localStorage.setItem(OLD_KEY, compactJson); } catch (_) {}
-        throw error;
-      }
-    }
-    const finalMeta = rawMeta();
-    for (const contactId of Object.keys(finalMeta)) {
-      const item = finalMeta[contactId] || {};
-      for (const field of IMAGE_FIELDS) {
-        if (isAssetRef(item[field])) await resolveAsset(contactId, field, item[field]);
-      }
-    }
-    return true;
-  }
-
-  function readMeta() { return rawMeta(); }
-  function writeMeta(contactId, data) {
-    const all = readMeta();
-    const previous = Object.assign({}, all[contactId] || {});
-    const next = Object.assign({}, previous, data || {});
-    // Rendering may pass an object URL back while toggling a non-image setting.
-    // Keep the durable IndexedDB reference instead of writing that temporary URL.
-    for (const field of IMAGE_FIELDS) {
-      const value = next[field];
-      if (typeof value === 'string' && (/^blob:/.test(value) || isDataImage(value))) {
-        const old = previous[field];
-        if (isAssetRef(old)) next[field] = old;
-      }
-    }
-    all[contactId] = next;
-    localStorage.setItem(NEW_KEY, JSON.stringify(all));
-  }
-  function readContactMeta(contactId) {
-    const raw = readMeta()[contactId] || {};
-    const result = Object.assign({}, raw);
-    for (const field of IMAGE_FIELDS) {
-      const value = raw[field] || '';
-      const key = contactId + ':' + field + ':' + value;
-      result[field] = isAssetRef(value) ? (urlCache[key] || '') : value;
-    }
-    return result;
-  }
-
-  async function saveSafely(contactId, source) {
-    await readyPromise;
-    if (!contactId) throw new Error('没有选择联系人');
-    const all = readMeta();
-    const previous = Object.assign({}, all[contactId] || {});
-    const next = Object.assign({}, previous, source || {});
-    for (const field of IMAGE_FIELDS) {
-      const value = next[field];
-      if (!value) {
-        delete next[field];
-        continue;
-      }
-      if (isAssetRef(value)) continue;
-      const oldRef = previous[field];
-      const oldUrl = isAssetRef(oldRef) ? urlCache[contactId + ':' + field + ':' + oldRef] : '';
-      if (oldUrl && value === oldUrl) {
-        next[field] = oldRef;
-        continue;
-      }
-      const blob = await blobFromValue(value);
-      const id = await addImage('chat-meta-' + field, blob, contactId);
-      next[field] = 'lrdb:' + id;
-      const ref = next[field];
-      const record = await loadRecord(id);
-      if (record && record.blob) {
-        const cacheKey = contactId + ':' + field + ':' + ref;
-        if (urlCache[cacheKey]) URL.revokeObjectURL(urlCache[cacheKey]);
-        urlCache[cacheKey] = URL.createObjectURL(record.blob);
-      }
-    }
-    all[contactId] = next;
-    localStorage.setItem(NEW_KEY, JSON.stringify(all));
-    return readContactMeta(contactId);
-  }
-
-  window.readChatMeta = readMeta;
-  window.writeChatMeta = writeMeta;
-  window.chatMeta = readContactMeta;
-  window.saveChatMetaSafely = saveSafely;
-  readyPromise = migrate().then(() => {
-    console.info('[LOVE RECORD] chat assets migrated to IndexedDB');
-    return true;
-  }).catch(error => {
-    console.error('[LOVE RECORD] chat asset migration failed:', error);
-    throw error;
+/* LOVE RECORD V24 · reliable chat storage
+   Uses the same IndexedDB database as chat-interaction-v11.js for image blobs.
+   Keeps compact metadata in localStorage and moves large image data out of quota-limited storage. */
+(function(){
+ 'use strict';
+ const META_KEY='love-record-chat-meta-v2', OLD_KEY='love-record-chat-meta-v1';
+ const DB_NAME='love-record-chat-files-v1', STORE='attachments';
+ let dbPromise, readyPromise;
+ const urlCache=Object.create(null);
+ function openDB(){
+  if(dbPromise)return dbPromise;
+  dbPromise=new Promise((resolve,reject)=>{
+   const req=indexedDB.open(DB_NAME,1);
+   req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});};
+   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('聊天图片数据库打开失败'));
+  });return dbPromise;
+ }
+ async function addBlob(blob,name,contactId){
+  const d=await openDB();return new Promise((resolve,reject)=>{
+   const tx=d.transaction(STORE,'readwrite'),r=tx.objectStore(STORE).add({blob,name:name||'chat-image',type:blob.type||'image/*',contactId:contactId||'',createdAt:Date.now()});
+   r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('图片保存失败'));
   });
-  window.__lrChatStorageReady = readyPromise;
+ }
+ async function getBlob(id){
+  const d=await openDB();return new Promise((resolve,reject)=>{
+   const r=d.transaction(STORE,'readonly').objectStore(STORE).get(Number(id));
+   r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>reject(r.error);
+  });
+ }
+ function rawMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||localStorage.getItem(OLD_KEY)||'{}')||{}}catch(_){return {}}}
+ function isDataImage(v){return typeof v==='string'&&/^data:image\//i.test(v)}
+ function isRef(v){return typeof v==='string'&&/^lrdb:\d+$/.test(v)}
+ async function migrate(){
+  await openDB();const all=rawMeta(),compact={};let changed=false;
+  for(const id of Object.keys(all)){
+   const item={...(all[id]||{})};
+   for(const field of ['avatar','backgroundImage','myAvatar']){
+    if(isDataImage(item[field])){
+     try{const blob=await (await fetch(item[field])).blob();item[field]='lrdb:'+await addBlob(blob,'chat-meta-'+field,id);changed=true;}
+     catch(e){console.warn('[LOVE RECORD] image migration skipped',field,e);}
+    }
+   }
+   compact[id]=item;
+  }
+  if(changed||localStorage.getItem(META_KEY)===null){
+   try{localStorage.setItem(META_KEY,JSON.stringify(compact));}
+   catch(e){throw new Error('聊天资料储存空间不足；图片迁移未能完成：'+e.message);}
+  }
+  try{localStorage.removeItem(OLD_KEY);}catch(_){}
+  for(const id of Object.keys(compact))for(const field of ['avatar','backgroundImage','myAvatar']){
+   const ref=compact[id][field];if(isRef(ref)){const rec=await getBlob(ref.slice(5));if(rec?.blob){const key=id+':'+field+':'+ref;if(!urlCache[key])urlCache[key]=URL.createObjectURL(rec.blob);}}
+  }
+ }
+ function readMeta(){return rawMeta()}
+ function readContactMeta(id){
+  const raw=readMeta()[id]||{},out={...raw};
+  for(const field of ['avatar','backgroundImage','myAvatar']){const v=raw[field]||'';out[field]=isRef(v)?(urlCache[id+':'+field+':'+v]||''):v;}
+  return out;
+ }
+ async function saveSafely(id,source){
+  await readyPromise;if(!id)throw new Error('没有选择联系人');
+  const all=readMeta(),old={...(all[id]||{})},next={...old,...(source||{})};
+  for(const field of ['avatar','backgroundImage','myAvatar']){
+   const v=next[field];if(!v){delete next[field];continue;}if(isRef(v))continue;
+   const oldRef=old[field],oldUrl=isRef(oldRef)?urlCache[id+':'+field+':'+oldRef]:'';
+   if(oldUrl&&v===oldUrl){next[field]=oldRef;continue;}
+   if(isDataImage(v)){
+    const blob=await (await fetch(v)).blob(),ref='lrdb:'+await addBlob(blob,'chat-meta-'+field,id);next[field]=ref;
+    const rec=await getBlob(ref.slice(5));if(rec?.blob)urlCache[id+':'+field+':'+ref]=URL.createObjectURL(rec.blob);
+   }
+  }
+  all[id]=next;
+  try{localStorage.setItem(META_KEY,JSON.stringify(all));}
+  catch(e){throw new Error('资料仍超过浏览器储存额度。请先缩小头像/背景图片后再保存。');}
+  return readContactMeta(id);
+ }
+ window.readChatMeta=readMeta;window.writeChatMeta=(id,data)=>{const all=readMeta();all[id]={...(all[id]||{}),...(data||{})};localStorage.setItem(META_KEY,JSON.stringify(all));};
+ window.chatMeta=readContactMeta;window.saveChatMetaSafely=saveSafely;
+ window.__lrChatStorageReady=readyPromise=migrate().catch(e=>{console.error('[LOVE RECORD] chat storage init failed',e);throw e;});
 })();
