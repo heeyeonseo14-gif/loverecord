@@ -47,6 +47,7 @@
       #${EXTRA_ID} textarea.lr-custom-css{width:100%;min-height:190px;box-sizing:border-box;border:1px solid var(--line);border-radius:15px;background:#fbf9fc;color:var(--ink);padding:12px;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical}
       .chat-message-row.lr-search-highlight .chat-bubble{outline:2px solid #b99ac7;box-shadow:0 0 0 5px rgba(185,154,199,.16)}
       .chat-message-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+      .lr-inline-narration{font-style:italic;color:inherit;opacity:.78}
       .lr-blocked-tag{font-size:10px;color:#9a5365;border:1px solid #dfc6ce;border-radius:99px;padding:2px 7px;margin-left:6px}
       @media(max-width:420px){#${EXTRA_ID} .lr-setting-card{padding:14px}}
     `;
@@ -127,7 +128,7 @@
     const narration = document.getElementById('lrChatNarration');
     const narrationCard = document.getElementById('lrChatNarrationCard');
     if (narration) { narration.checked = meta.narrationEnabled !== false; if (narrationCard) { narrationCard.classList.toggle('is-off', !narration.checked); const label=narrationCard.querySelector('.lr-switch-state'); if(label) label.textContent=narration.checked?'旁白开启':'旁白关闭'; } }
-    if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} }); }
+    if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} const id=activeChatContactId;if(id){const latest=chatMeta(id);latest.narrationEnabled=!!narration.checked;writeChatMeta(id,latest);editingChatMeta={...editingChatMeta,narrationEnabled:!!narration.checked};} }); }
     const avatar = document.getElementById('lrMyAvatarPreview');
     if (avatar) avatar.innerHTML = meta.myAvatar ? '<img src="' + meta.myAvatar + '" alt="我的头像">' : '我';
     const persona = document.getElementById('lrPersonaSelect');
@@ -200,6 +201,7 @@
     const input = $('chatInput'), textValue = input.value.trim();
     if (!textValue || !activeChatContactId) return;
     const id = activeChatContactId, p = contactById(id), meta = chatMeta(id);
+    const narrationOn = meta.narrationEnabled !== false;
     if (!p) return;
     if (meta.blocked) { toast('这位联系人已被拉黑，请先取消拉黑'); return; }
     const threads = readChatThreads(), items = threads[id] || [];
@@ -214,7 +216,8 @@
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
       const personaText = persona ? `用户当前人设：${persona.name || ''}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。请尊重该人设，但不要替用户决定行动、台词或情绪。` : '用户以本人身份参与聊天，不要替用户决定行动、台词或情绪。';
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${personaText}${worldText}请像真实聊天对象一样自然回复，不要输出 JSON。请根据当前内容、情绪和对话节奏，自然决定连续发送几条聊天消息：普通回复通常 2–4 条，内容较丰富或情绪推进较多时可以 5–7 条，极短回应可以只有 1 条；不要为了凑数而拆句。每条消息之间必须空一行（两个换行符），让 LOVE RECORD 将它们显示成独立气泡。若剧情中角色明确给用户转账、汇款或打钱，请把转账动作单独写成一条消息，并使用明确标记，例如「【向你转账 RM 520.00】」或「【向你转账 ¥52000.00】」；不要把普通提及金额、报价或讨论钱款写成转账标记。`;
+      const narrationRule = narrationOn ? '旁白模式【开启】：可少量穿插动作、神态、语气或环境描写，必须用 [[NARRATION]]...[[/NARRATION]] 包裹，旁白会在同一聊天气泡内以斜体显示；角色台词放在标记外，不要每条都加旁白。' : '旁白模式【关闭，最高优先级】：只输出角色直接说出口的台词；禁止动作、神态、心理、环境、舞台指示、括号内容、第三人称叙述，禁止输出任何 [[NARRATION]] 标记；不要模仿历史消息中的旁白。';
+      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${narrationRule}${personaText}${worldText}像熟悉的人一样自然聊天，优先回应重点，不复述、不客服式总结、不强迫反问；允许短句、停顿、玩笑和自然转移话题。不要输出 JSON。按对话节奏自然分成几条消息，不为凑数拆句。`;
       const response = await fetchTimeout(state.apiBase.replace(/\/+$/,'') + '/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
         body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
@@ -223,10 +226,12 @@
       if (!response.ok) throw new Error('HTTP ' + response.status + ' · ' + raw.slice(0,180));
       const data = JSON.parse(raw), reply = extractAIText(data);
       if (!reply) throw new Error('没有收到有效回复');
+      let safeReply = String(reply);
+      if (!narrationOn) safeReply = safeReply.replace(/\[\[NARRATION\]\][\s\S]*?\[\[\/NARRATION\]\]/gi,'').replace(/[（(][^）)]{1,120}[）)]/g,'').trim();
       const latest = readChatThreads(), thread = latest[id] || [];
       const receivedAt = Date.now();
-      const paragraphs = String(reply).replace(/\r\n?/g, '\n').trim().split(/\n\s*\n+/).map(part => part.trim()).filter(Boolean);
-      const replyParts = paragraphs.length > 1 ? paragraphs : String(reply).replace(/\r\n?/g, '\n').split('\n').map(part => part.trim()).filter(Boolean);
+      const paragraphs = safeReply.replace(/\r\n?/g, '\n').trim().split(/\n\s*\n+/).map(part => part.trim()).filter(Boolean);
+      const replyParts = paragraphs.length > 1 ? paragraphs : safeReply.replace(/\r\n?/g, '\n').split('\n').map(part => part.trim()).filter(Boolean);
       const transferPattern = /(?:【\s*)?(?:向你转账|给你转账|转账给你|给你转了|转给你)\s*(RM|MYR|RMB|CNY|人民币|¥|￥)?\s*([\d,]+(?:\.\d{1,2})?)\s*(RM|MYR|RMB|CNY|人民币|元|¥|￥)?\s*(?:】)?/i;
       replyParts.forEach(part => {
         const match = part.match(transferPattern);

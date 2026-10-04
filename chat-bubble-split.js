@@ -39,7 +39,7 @@
     host.querySelectorAll('.chat-message-row.ai').forEach(row => {
       if (row.dataset.lrSplitApplied === '1') return;
       const original = row.querySelector(':scope > .chat-bubble.ai');
-      if (!original) return;
+      if (!original || original.querySelector('.lr-inline-narration')) return;
       const parts = splitText(original.textContent);
       if (parts.length <= 1) return;
 
