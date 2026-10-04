@@ -362,17 +362,9 @@
     finally{$('lrScheduleGenerate').disabled=false;$('lrScheduleGenerate').textContent='重新生成';scheduleBusy=false;}
   }
   async function triggerSchedule(item, id) {
-    const person=contactById(id);if(!person)return;
-    const time=localTimeContext();
-    const system=`你正在扮演角色「${person.name}」。身份：${person.role||''}；性格：${person.personality||''}；背景：${person.background||''}。${time.text}现在到了你自己的行程时间，请自然地以角色身份主动发来一条简短消息，告诉对方你正在做什么；不要提及系统、定时器或 AI。`;
-    try{
-      const answer=await callModel(system,`当前行程：${item.time} ${item.title}。详情：${item.detail}。请发一条自然的主动消息。`,20000);
-      const all=threads(),list=Array.isArray(all[id])?all[id]:[];const now=Date.now();
-      const parts=answer.split(/\s*(?:\|\|\||\n\s*\n+|\n+)\s*/).map(x=>x.trim()).filter(Boolean).slice(0,3);
-      parts.forEach((text,i)=>list.push({role:'assistant',text,at:now+i,turnId:'schedule-'+item.id}));all[id]=list;writeChatThreads(all);
-      if(id===activeId()&&typeof renderChat==='function')renderChat();
-      return true;
-    }catch(error){console.warn('[LOVE RECORD] schedule trigger failed',error);return false;}
+    // Character schedules are private role context, never a reason to send an unsolicited chat message.
+    // Mark the item as elapsed so the 30-second scheduler does not repeatedly process it.
+    return !!contactById(id);
   }
   async function checkDueSchedule() {
     if(scheduleCheckBusy)return;
