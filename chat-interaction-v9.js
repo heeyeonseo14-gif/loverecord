@@ -391,7 +391,7 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白应短而具体，与对白自然交错；每次回复至少有一处，但不要每句话都加。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：自然聊天时通常输出 1–4 个独立气泡；当内容包含不同意思、动作与对白、回应与补充时，用独占一行的 ||| 分隔气泡。每个气泡保持 1–2 句，避免一大段连续长文；短回复仍只发一个气泡。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -456,20 +456,10 @@
     section.id = 'lrChatV9Settings';
     section.innerHTML = `
       <section class="lr-v9-card">
-        <h3>气泡美化</h3>
-        <div class="lr-v9-row">
-          <div><label for="lrUserBubbleColor">我的气泡颜色</label><input id="lrUserBubbleColor" type="color" value="#b99ac7"></div>
-          <div><label for="lrAiBubbleColor">AI 气泡颜色</label><input id="lrAiBubbleColor" type="color" value="#ffffff"></div>
-          <div><label for="lrUserTextColor">我的文字颜色</label><input id="lrUserTextColor" type="color" value="#ffffff"></div>
-          <div><label for="lrAiTextColor">AI 文字颜色</label><input id="lrAiTextColor" type="color" value="#28242b"></div>
-        </div>
-        <label for="lrBubbleRadius">气泡圆角（8–36）</label><input id="lrBubbleRadius" type="number" min="8" max="36" value="22">
-      </section>
-      <section class="lr-v9-card">
         <h3>自定义聊天 CSS</h3>
         <div class="sub">仅作用于当前联系人的聊天界面。可以自定义背景、气泡、字体和间距。</div>
         <label for="lrChatCustomCss">CSS 代码</label>
-        <textarea id="lrChatCustomCss" maxlength="12000" spellcheck="false" placeholder="#chatMessages .chat-bubble.ai { background: #fff7fb; }"></textarea>
+        <textarea id="lrChatCustomCss" maxlength="12000" spellcheck="false" placeholder="/* 透明液态玻璃示例：聊天背景照片会自动保留 */\n#chatMessages { background-color: transparent !important; }\n#chatMessages .chat-message-row .chat-bubble { backdrop-filter: blur(20px) saturate(145%); -webkit-backdrop-filter: blur(20px) saturate(145%); border: 1px solid rgba(255,255,255,.72); box-shadow: 0 8px 24px rgba(40,40,40,.08); }\n#chatMessages .chat-message-row.ai .chat-bubble { background: rgba(255,255,255,.58); color: #333; }\n#chatMessages .chat-message-row.user .chat-bubble { background: rgba(255,255,255,.34); color: #333; }"></textarea>
         <div class="lr-v9-actions"><button class="btn" id="lrResetChatCss" type="button">恢复默认 CSS</button></div>
       </section>
       <section class="lr-v9-card">
@@ -493,7 +483,7 @@
     $('lrResetChatCss').addEventListener('click', () => {
       $('lrChatCustomCss').value = '';
       applyChatAppearance(activeId());
-      toast('已恢复默认聊天样式');
+      toast('已清空自定义 CSS');
     });
     $('lrToggleLongMemory').addEventListener('click', () => {
       const panel = $('lrLongMemoryPanel');
@@ -521,7 +511,7 @@
         toast('长期记忆已清空');
       } catch (error) { toast('清空失败，请重试'); }
     });
-    ['lrUserBubbleColor','lrAiBubbleColor','lrUserTextColor','lrAiTextColor','lrBubbleRadius','lrChatCustomCss'].forEach(id => {
+    ['lrChatCustomCss'].forEach(id => {
       $(id).addEventListener('input', () => applyDraftAppearance());
     });
   }
