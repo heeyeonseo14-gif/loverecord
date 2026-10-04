@@ -376,13 +376,13 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${person.narrationEnabled===false?'旁白模式已关闭：只输出角色直接说的话，禁止括号动作、心理活动、环境描写和第三人称旁白。':'旁白模式已开启：允许少量自然简短的动作或环境旁白，但不要每条消息都加。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。请像真实聊天对象一样自然回复：优先回应用户刚刚说的重点，不要每次都反问，不要重复用户原话，不要用客服式总结、过度体贴的模板句或刻意的心理分析。允许有停顿、简短回应、轻微玩笑和符合人物性格的表达；不要每条都写动作描写，不要强行推进剧情，也不要替用户决定行动、台词或感受。像熟悉的人在即时聊天，语气有变化，内容贴合上下文。不要输出 JSON。只有内容确实适合拆分时才输出 2–3 条消息，每条之间用独占一行的 ||| 分隔；短回复只发一条，绝不为凑数拆句。不要输出编号或说明。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'当前联系人已关闭旁白模式：回复只能包含角色直接说的话，不得出现括号动作、心理活动、环境描写或第三人称叙述。':'当前联系人已开启旁白模式：回复时请自然结合角色的动作、神态、语气、停顿或周围环境描写，并与角色说的话交织呈现。不要只输出纯对白；每次回复至少在合适的位置加入一处简短、具体的旁白。旁白要贴合当下情境，避免重复动作、流水账或过度文学化。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。不要输出 JSON。只有内容确实适合拆分时才输出 2–3 条消息，每条之间用独占一行的 ||| 分隔；短回复只发一条，绝不为凑数拆句。不要输出编号或说明。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
           method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
-          body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
+          body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false,temperature:0.85})
         },
         25000
       );
