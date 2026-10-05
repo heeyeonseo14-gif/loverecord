@@ -12,16 +12,21 @@
   function load(){try{data={...data,...JSON.parse(localStorage.getItem(KEY)||'{}')};if(!Array.isArray(data.selectedPeople))data.selectedPeople=[];if(!Array.isArray(data.locations))data.locations=[];if(!Array.isArray(data.history))data.history=[];}catch(e){}}
   function save(){data.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
   function people(){
-    // index.html keeps `state` as a top-level lexical variable, so it is not exposed
-    // as window.state. Read the same persistent store directly, while still using
-    // window.state when a future build exposes it.
+    // Read the same persistent people store used by LOVE RECORD itself.
+    // Do not depend on window.state: the main app declares `let state`, which is
+    // a global lexical binding rather than a window property.
     try{
-      const live=window.state;
-      if(Array.isArray(live?.people)) return live.people.filter(p=>p&&p.id!=='p-yanyan');
       const raw=localStorage.getItem('yanyan-love-settings-v5');
-      const stored=raw?JSON.parse(raw):{};
-      return Array.isArray(stored.people)?stored.people.filter(p=>p&&p.id!=='p-yanyan'):[];
-    }catch(e){return []}
+      const parsed=raw?JSON.parse(raw):null;
+      const list=Array.isArray(parsed?.people)?parsed.people:[];
+      if(list.length)return list.filter(p=>p&&p.id!=='p-yanyan'&&String(p.name||'').trim());
+    }catch(e){}
+    try{
+      if(typeof state!=='undefined' && Array.isArray(state.people)){
+        return state.people.filter(p=>p&&p.id!=='p-yanyan'&&String(p.name||'').trim());
+      }
+    }catch(e){}
+    return [];
   }
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
@@ -48,6 +53,7 @@
   function installStyles(){
     if($('lrSpaceV2Style'))return;
     const s=document.createElement('style');s.id='lrSpaceV2Style';s.textContent=`
+.lr-space-v2.active ~ .nav{display:none!important}
 #space.lr-space-v2{position:relative;padding:0 0 110px;background:linear-gradient(180deg,#f8f4f9 0%,#f1edf4 100%);min-height:calc(100dvh - 150px);overflow:hidden}
 #space.lr-space-v2 *{box-sizing:border-box}.lr-space-v2-screen{min-height:calc(100dvh - 150px);padding:24px 0}.lr-space-v2.hidden{display:none!important}
 .lr-space-v2-intro{position:fixed;inset:0;z-index:5000;background:radial-gradient(circle at 50% 40%,#fff 0,#f4edf7 40%,#d8c6e0 100%);display:grid;place-items:center;opacity:1;pointer-events:auto;transition:opacity .7s ease}.lr-space-v2-intro.hide{opacity:0;pointer-events:none}.lr-space-v2-intro-inner{text-align:center;transform:translateY(12px);animation:lrSpaceIntro 1.25s ease both}.lr-space-v2-intro-mark{width:76px;height:76px;border-radius:50%;margin:0 auto 22px;background:radial-gradient(circle at 35% 30%,#fff,#d5b9df 58%,#a987b8);box-shadow:0 18px 55px rgba(126,92,145,.22);animation:lrSpaceOrb 2.2s ease-in-out infinite}.lr-space-v2-intro-title{font:400 42px/1 Georgia,'Noto Serif SC',serif;letter-spacing:.12em;color:#55465d}.lr-space-v2-intro-sub{margin-top:12px;color:#95869b;letter-spacing:.16em;font-size:11px}.lr-space-v2-intro-line{width:54px;height:1px;background:#c79ab5;margin:20px auto}
@@ -146,6 +152,9 @@
        finishes opening. Activate the page shell directly instead. */
     activateSpacePage();
     replaceSpace();
+    // The directory is created dynamically, so render the real contacts immediately.
+    // Without this call the new SPACE opens correctly but the people grid stays empty.
+    renderPeople();
     show('directory');
     const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';
     intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';
