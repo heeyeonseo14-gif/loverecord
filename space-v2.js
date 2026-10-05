@@ -73,7 +73,7 @@
   }
   function replaceSpace(){
     const old=$('space');if(!old)return;
-    old.className='page lr-space-v2';
+    old.className='page active lr-space-v2';
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>空间</h1><p>先选择今天一起进入这个世界的人。</p></div></div>
@@ -140,6 +140,7 @@
     if(!target)return false;
     target.classList.add('active');
     document.body.classList.remove('launcher-open');
+    const dock=document.querySelector('.nav');if(dock)dock.style.display='none';
     const bar=$('systemAppbar');if(bar)bar.classList.add('show');
     const title=$('systemAppTitle');if(title)title.textContent='SPACE';
     window.scrollTo(0,0);
