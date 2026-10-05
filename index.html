@@ -1713,7 +1713,7 @@ applyAppearance();
 })();
 
 document.addEventListener('click',e=>{
-const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
+const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
 const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
 const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){openAppearance();return}
 const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('launcher');return}
@@ -1923,6 +1923,6 @@ if(loveIntro){
 })();
 </script>
 
-<script src="./space-v2.js?v=5"></script>
+<script src="./space-v2.js?v=7"></script>
 </body>
 </html>
