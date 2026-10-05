@@ -11,7 +11,18 @@
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   function load(){try{data={...data,...JSON.parse(localStorage.getItem(KEY)||'{}')};if(!Array.isArray(data.selectedPeople))data.selectedPeople=[];if(!Array.isArray(data.locations))data.locations=[];if(!Array.isArray(data.history))data.history=[];}catch(e){}}
   function save(){data.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
-  function people(){return Array.isArray(window.state?.people)?window.state.people.filter(p=>p&&p.id!=='p-yanyan'):[]}
+  function people(){
+    // index.html keeps `state` as a top-level lexical variable, so it is not exposed
+    // as window.state. Read the same persistent store directly, while still using
+    // window.state when a future build exposes it.
+    try{
+      const live=window.state;
+      if(Array.isArray(live?.people)) return live.people.filter(p=>p&&p.id!=='p-yanyan');
+      const raw=localStorage.getItem('yanyan-love-settings-v5');
+      const stored=raw?JSON.parse(raw):{};
+      return Array.isArray(stored.people)?stored.people.filter(p=>p&&p.id!=='p-yanyan'):[];
+    }catch(e){return []}
+  }
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
   function apiConfig(){const s=window.state||{};return {base:String(s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String(s.apiKey||$('apiKey')?.value||'').trim(),model:String(s.apiModel||$('apiModel')?.value||'').trim()}}
@@ -56,7 +67,7 @@
   }
   function replaceSpace(){
     const old=$('space');if(!old)return;
-    old.className='page active lr-space-v2';
+    old.className='page lr-space-v2';
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>空间</h1><p>先选择今天一起进入这个世界的人。</p></div></div>
@@ -135,7 +146,6 @@
        finishes opening. Activate the page shell directly instead. */
     activateSpacePage();
     replaceSpace();
-    const target=$('space'); if(target) target.classList.add('active');
     show('directory');
     const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';
     intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';
