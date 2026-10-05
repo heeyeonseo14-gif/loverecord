@@ -56,7 +56,7 @@
   }
   function replaceSpace(){
     const old=$('space');if(!old)return;
-    old.className='page lr-space-v2';
+    old.className='page active lr-space-v2';
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>空间</h1><p>先选择今天一起进入这个世界的人。</p></div></div>
@@ -135,6 +135,7 @@
        finishes opening. Activate the page shell directly instead. */
     activateSpacePage();
     replaceSpace();
+    const target=$('space'); if(target) target.classList.add('active');
     show('directory');
     const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';
     intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';
