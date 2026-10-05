@@ -117,7 +117,29 @@
     try{const clean=out.replace(/^```json\s*|^```|```$/g,'').trim();const j=JSON.parse(clean);data.worldNote=String(j.worldName||'我们的世界');data.locations=(Array.isArray(j.locations)?j.locations:[]).slice(0,8).map((l,i)=>({id:'loc-'+Date.now()+'-'+i,name:String(l.name||('地点 '+(i+1))),type:String(l.type||'地点'),purpose:String(l.purpose||''),description:String(l.description||''),atmosphere:String(l.atmosphere||''),storyHooks:Array.isArray(l.storyHooks)?l.storyHooks:[],icon:String(l.icon||'⌂').slice(0,2)}));save();renderMap();toast('地图已经生成。选一个地方开始剧情。')}catch(e){toast('AI 返回的地图格式不正确，请再试一次。')}
   }
   async function enterMap(){if(!data.selectedPeople.length){toast('至少选择一位同行者。');return}save();$('lrSpaceMapMeta').textContent='同行者：'+data.selectedPeople.map(id=>person(id)?.name).filter(Boolean).join('、');show('map');renderMap();if(!data.locations.length)await seedMap()}
-  function open(){load();installStyles();if(typeof window.nav==='function')window.nav('space');replaceSpace();show('directory');const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';document.body.appendChild(intro);setTimeout(()=>intro.classList.add('hide'),1700);setTimeout(()=>intro.remove(),2400);}
+  function activateSpacePage(){
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    const target=$('space');
+    if(!target)return false;
+    target.classList.add('active');
+    document.body.classList.remove('launcher-open');
+    const bar=$('systemAppbar');if(bar)bar.classList.add('show');
+    const title=$('systemAppTitle');if(title)title.textContent='SPACE';
+    window.scrollTo(0,0);
+    return true;
+  }
+  function open(){
+    load();installStyles();
+    /* Do not call the legacy nav('space') here. The old Space renderer expects
+       the removed legacy DOM (#place, #choices, etc.) and can throw before V2
+       finishes opening. Activate the page shell directly instead. */
+    activateSpacePage();
+    replaceSpace();
+    show('directory');
+    const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';
+    intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';
+    document.body.appendChild(intro);setTimeout(()=>intro.classList.add('hide'),1700);setTimeout(()=>intro.remove(),2400);
+  }
   function init(){load();installStyles();const launch=document.querySelector('[data-launch-page="space"]');if(launch){launch.querySelector('span:last-child')?.replaceChildren(document.createTextNode('空间'));launch.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open();},{capture:true})}document.addEventListener('click',e=>{const p=e.target.closest?.('[data-space-person]');if(p){const id=p.dataset.spacePerson;data.selectedPeople=data.selectedPeople.includes(id)?data.selectedPeople.filter(x=>x!==id):[...data.selectedPeople,id];save();renderPeople();return}const l=e.target.closest?.('[data-space-location]');if(l){enterLocation(l.dataset.spaceLocation);return}});document.addEventListener('click',e=>{if(e.target.id==='lrSpaceEnter')enterMap();if(e.target.id==='lrSpaceBackPeople'){show('directory');renderPeople()}if(e.target.id==='lrSpaceBackMap')show('map');if(e.target.id==='lrSpaceCreateBtn')show('create');if(e.target.id==='lrSpaceCreateBack')show('map');if(e.target.id==='lrSpaceCreateSubmit')createLocation();if(e.target.id==='lrSpaceStorySend')sendStory()});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
