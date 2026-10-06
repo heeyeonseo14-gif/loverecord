@@ -82,7 +82,7 @@
         <section class="lr-space-v2-panel"><h2>今天，谁会来到这里？</h2><div class="lr-space-v2-sub">支持单人或多人。选择完成后，AI 会根据同行者共同开启今天的空间。</div><div id="lrSpacePeople" class="lr-space-people"></div><div class="lr-space-actions"><button id="lrSpaceEnter" class="lr-space-primary" type="button" disabled>进入空间</button></div></section>
       </div>
       <div id="lrSpaceV2Map" class="lr-space-v2-screen" hidden>
-        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">THE WORLD</div><div class="lr-space-map-heading-row"><div><h1 class="lr-space-fixed-title">空间地图</h1><button id="lrSpaceWorldTitleBtn" class="lr-space-world-title-btn" type="button"><span id="lrSpaceWorldTitle">我们的世界</span><span class="lr-space-title-edit">编辑世界名称</span></button></div></div><p id="lrSpaceMapMeta">选择一个地方，让故事从这里开始。</p></div><button id="lrSpaceBackPeople" class="lr-space-secondary" type="button">更换同行者</button></div>
+        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">THE WORLD</div><div class="lr-space-map-heading-row"><div><h1 class="lr-space-fixed-title">空间地图</h1><button id="lrSpaceWorldTitleBtn" class="lr-space-world-title-btn" type="button" aria-label="编辑世界名称"><span id="lrSpaceWorldTitle">我们的世界</span><span class="lr-space-title-edit">编辑世界名称</span></button></div></div><p id="lrSpaceMapMeta">选择一个地方，让故事从这里开始。</p></div><button id="lrSpaceBackPeople" class="lr-space-secondary" type="button">更换同行者</button></div>
         <div class="lr-space-map" id="lrSpaceMap"><div class="lr-space-map-title"><span>PLACES · STORIES · MOMENTS</span></div><div id="lrSpaceMapLocations"></div><div class="lr-space-map-add"><button id="lrSpaceCreateBtn" class="lr-space-primary" type="button">＋ 创建地点</button></div><div id="lrSpaceSeasonFX" class="lr-space-season-fx" aria-hidden="true"></div></div>
       </div>
       <div id="lrSpaceV2Story" class="lr-space-v2-screen" hidden>
@@ -95,9 +95,14 @@
       <div id="lrSpaceLocationEdit" class="lr-space-modal"><section class="lr-space-sheet"><div class="lr-space-sheet-head"><div><div class="lr-space-v2-kicker">EDIT PLACE</div><h2>编辑地点</h2><p>长按地图上的地点即可打开。</p></div><button class="lr-space-close" id="lrSpaceLocationEditClose" type="button">×</button></div><label>地点图片</label><label id="lrSpaceLocationPreview" class="lr-space-location-preview" for="lrSpaceLocationImage"><span>上传地点图片</span></label><input id="lrSpaceLocationImage" type="file" accept="image/*" hidden><label>地点名称</label><input id="lrSpaceLocationName" class="lr-space-input"><label>地点类型</label><input id="lrSpaceLocationType" class="lr-space-input"><label>地点用途</label><input id="lrSpaceLocationPurpose" class="lr-space-input" placeholder="例如：居住空间 / 餐饮休闲 / 公共空间"><label>地点概要</label><textarea id="lrSpaceLocationDescription" class="lr-space-textarea"></textarea><label>氛围</label><input id="lrSpaceLocationAtmosphere" class="lr-space-input" placeholder="例如：安静、温暖、适合聊天"><div class="lr-space-edit-actions"><button id="lrSpaceLocationDelete" class="lr-space-danger" type="button">删除地点</button><button id="lrSpaceLocationSave" class="lr-space-primary" type="button">保存修改</button></div></section></div>
       <div id="lrSpaceV2Busy" class="lr-space-busy"><div class="lr-space-busy-box"><div class="lr-space-spinner"></div><div class="lr-space-busy-text">正在生成…</div></div></div>`;
     renderPeople();renderMap();renderCreatedList();
-    // Bind the SPACE controls directly as well as through delegation. This avoids
-    // click conflicts with the main app's global handlers on mobile/PWA.
-    const bind=(id,fn)=>{const el=$(id);if(el)el.onclick=e=>{e.preventDefault();e.stopPropagation();fn(e)}};
+  }
+  function bindSpaceControls(){
+    const bind=(id,fn)=>{
+      const el=$(id);
+      if(!el || el.dataset.lrBound==='1')return;
+      el.dataset.lrBound='1';
+      el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();fn(e)},{capture:true});
+    };
     bind('lrSpaceCreateBtn',()=>show('create'));
     bind('lrSpaceCreateBack',()=>show('map'));
     bind('lrSpaceCreateSubmit',()=>createLocation());
@@ -202,6 +207,7 @@
        finishes opening. Activate the page shell directly instead. */
     activateSpacePage();
     replaceSpace();
+    bindSpaceControls();
     // The directory is created dynamically, so render the real contacts immediately.
     // Without this call the new SPACE opens correctly but the people grid stays empty.
     renderPeople();
@@ -223,10 +229,24 @@
     document.addEventListener('pointercancel',e=>{const l=e.target.closest?.('[data-space-location]');if(l)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('pointermove',e=>{const l=e.target.closest?.('[data-space-location]');if(l&&Math.abs(e.movementX)+Math.abs(e.movementY)>12)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('click',e=>{
-      const id=e.target.id;
-      if(id==='lrSpaceEnter')enterMap();if(id==='lrSpaceBackPeople'){show('directory');renderPeople()}if(id==='lrSpaceBackMap')show('map');if(id==='lrSpaceCreateBtn')show('create');if(id==='lrSpaceCreateBack')show('map');if(id==='lrSpaceCreateSubmit')createLocation();if(id==='lrSpaceStorySend')sendStory();
-      if(id==='lrSpaceSettingsClose')closeWorldSettings();if(id==='lrSpaceSettingsSave')saveWorldSettings();if(id==='lrSpaceWorldEditClose')closeWorldEditor();if(id==='lrSpaceWorldSave')saveWorldEditor();if(id==='lrSpaceWorldTitleBtn')openWorldEditor();if(id==='lrSpaceLocationEditClose')closeLocationEditor();if(id==='lrSpaceLocationSave')saveLocationEditor();if(id==='lrSpaceLocationDelete')deleteLocationEditor();
-      if(id==='systemAppbarAction'&&$('space')?.classList.contains('active'))openWorldSettings();
+      const el=e.target.closest?.('button,[role="button"],select');
+      const id=el?.id||e.target.id;
+      if(id==='lrSpaceEnter')enterMap();
+      else if(id==='lrSpaceBackPeople'){show('directory');renderPeople()}
+      else if(id==='lrSpaceBackMap')show('map');
+      else if(id==='lrSpaceCreateBtn')show('create');
+      else if(id==='lrSpaceCreateBack')show('map');
+      else if(id==='lrSpaceCreateSubmit')createLocation();
+      else if(id==='lrSpaceStorySend')sendStory();
+      else if(id==='lrSpaceSettingsClose')closeWorldSettings();
+      else if(id==='lrSpaceSettingsSave')saveWorldSettings();
+      else if(id==='lrSpaceWorldEditClose')closeWorldEditor();
+      else if(id==='lrSpaceWorldSave')saveWorldEditor();
+      else if(id==='lrSpaceWorldTitleBtn')openWorldEditor();
+      else if(id==='lrSpaceLocationEditClose')closeLocationEditor();
+      else if(id==='lrSpaceLocationSave')saveLocationEditor();
+      else if(id==='lrSpaceLocationDelete')deleteLocationEditor();
+      else if(id==='systemAppbarAction'&&$('space')?.classList.contains('active'))openWorldSettings();
     });
     document.addEventListener('change',e=>{if(e.target?.id!=='lrSpaceLocationImage')return;const f=e.target.files?.[0],p=$('lrSpaceLocationPreview');if(f&&p){const r=new FileReader();r.onload=()=>p.innerHTML=`<img src="${esc(String(r.result||''))}" alt="">`;r.readAsDataURL(f)}});
     $('systemAppbarAction')?.addEventListener('click',()=>{if($('space')?.classList.contains('active'))openWorldSettings()});
