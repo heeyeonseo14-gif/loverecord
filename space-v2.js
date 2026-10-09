@@ -125,7 +125,7 @@
       <div id="lrSpaceV2Map" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">THE WORLD</div><div class="lr-space-map-heading-row"><div><h1 class="lr-space-fixed-title">空间地图</h1><button id="lrSpaceWorldTitleBtn" class="lr-space-world-title-btn" type="button" aria-label="编辑世界名称"><span id="lrSpaceWorldTitle">我们的世界</span><span class="lr-space-title-edit">编辑世界名称</span></button></div></div><p id="lrSpaceMapMeta">选择一个地方，让故事从这里开始。</p></div><button id="lrSpaceBackPeople" class="lr-space-secondary" type="button">更换同行者</button></div>
         <div class="lr-space-map" id="lrSpaceMap"><div class="lr-space-map-title"><span>PLACES · STORIES · MOMENTS</span></div><div id="lrSpaceMapLocations"></div><div class="lr-space-map-add"><button id="lrSpaceCreateBtn" class="lr-space-primary" type="button">＋ 创建地点</button></div><div id="lrSpaceSeasonFX" class="lr-space-season-fx" aria-hidden="true"></div></div>
-        <section class="lr-space-life-panel"><div class="lr-space-life-head"><div><h2>此刻 · 世界动态</h2><small>WORLD ACTIVITY & MEMORIES</small></div><button id="lrSpaceWorldRefresh" class="lr-space-secondary" type="button">更新世界</button></div><div class="lr-space-livebar"><div><b><span class="lr-space-live-dot"></span><span id="lrSpaceClock">世界正在准备中</span></b><small id="lrSpaceWeatherLine">时间、日程与地点会在这里联动</small></div><span style="font-size:22px">✿</span></div><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">✧</span><b>角色动态</b><small>看看大家此刻在哪里、正在做什么</small><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenEvents" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">❀</span><b>世界事件</b><small>正在发生的活动与世界变化</small><span class="lr-space-world-card-link">查看事件　›</span></button><button id="lrSpaceOpenMemories" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">♡</span><b>剧情回顾</b><small>回看你们一路走来的故事</small><span class="lr-space-world-card-link">回顾剧情　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">☘</span><b>成长乐园</b><small>萌宠、育儿与成长日记</small><span class="lr-space-world-card-link">进入乐园　›</span></button></div><div class="lr-space-life-actions"><button id="lrSpaceInviteBtn" class="lr-space-secondary" type="button">发起活动邀请</button></div><div id="lrSpaceInvites"></div></section>
+        <section class="lr-space-life-panel"><div class="lr-space-life-head"><div><h2>此刻 · 世界动态</h2><small>WORLD ACTIVITY & MEMORIES</small></div><button id="lrSpaceWorldRefresh" class="lr-space-secondary" type="button">更新世界</button></div><div class="lr-space-livebar"><div><b><span class="lr-space-live-dot"></span><span id="lrSpaceClock">世界正在准备中</span></b><small id="lrSpaceWeatherLine">时间、日程与地点会在这里联动</small></div><span style="font-size:22px">✿</span></div><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">✧</span><b>角色动态</b><small>看看大家此刻在哪里、正在做什么</small><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenEvents" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">❀</span><b>世界事件</b><small>正在发生的活动与世界变化</small><span class="lr-space-world-card-link">查看事件　›</span></button><button id="lrSpaceOpenMemories" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">♡</span><b>剧情回顾</b><small>回看你们一路走来的故事</small><span class="lr-space-world-card-link">回顾剧情　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">☘</span><b>成长乐园</b><small>萌宠、育儿与成长日记</small><span class="lr-space-world-card-link">进入乐园　›</span></button></div></section>
       </div>
       <div id="lrSpaceV2Story" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">CURRENT PLACE</div><h1 id="lrSpaceCurrentPlaceTitle">当前地点</h1></div><div class="lr-space-story-head-actions"><button id="lrSpaceReviewStory" class="lr-space-secondary" type="button">回顾剧情</button><button id="lrSpaceBackMap" class="lr-space-secondary" type="button">返回地图</button></div></div>
@@ -145,9 +145,12 @@
   function bindSpaceControls(){
     const bind=(id,fn)=>{
       const el=$(id);
-      if(!el || el.dataset.lrBound==='1')return;
-      el.dataset.lrBound='1';
-      el.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();fn(e)},{capture:true});
+      if(!el)return;
+      // Assign the target handler directly: mobile WebViews and legacy delegated
+      // listeners can swallow bubbled clicks on dynamically replaced controls.
+      el.onclick=e=>{e.preventDefault();e.stopPropagation();try{fn(e)}catch(err){console.error('[Space control]',id,err);toast('这个功能暂时无法打开，请稍后再试。')}};
+      el.style.pointerEvents='auto';
+      el.style.touchAction='manipulation';
     };
     bind('lrSpaceCreateBtn',()=>show('create'));
     bind('lrSpaceCreateBack',()=>show('map'));
@@ -170,7 +173,6 @@
     bind('lrSpaceOpenEvents',()=>showAllActivity('events'));
     bind('lrSpaceOpenMemories',()=>openStoryReview());
     bind('lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets'));
-    bind('lrSpaceInviteBtn',()=>makeInvite());
     bind('lrSpaceGrowthClose',()=>closeGrowthGarden());
     bind('lrSpaceMemoryClose',()=>closeMemoryArchive());
     bind('lrSpaceOpenMemoryArchive',()=>openMemoryArchive('cards'));
@@ -416,8 +418,6 @@
       else if(el?.dataset?.growthTab){growthTab=el.dataset.growthTab;renderGrowthGarden()}
       else if(id==='lrSpaceOpenPeopleDynamics'){showAllActivity('people')}
       else if(id==='lrSpaceOpenEvents'){showAllActivity('events')}
-      else if(id==='lrSpaceInviteBtn')makeInvite();
-      else if(el?.dataset?.inviteAction)handleInviteAction(el);
       else if(id==='lrSpaceStorySend')sendStory();
       else if(id==='lrSpaceOpenMemoryArchive')openMemoryArchive('cards');
       else if(id==='lrSpaceMemoryClose')closeMemoryArchive();
