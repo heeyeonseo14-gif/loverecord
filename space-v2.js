@@ -148,12 +148,9 @@
       if(!el)return;
       // Assign the target handler directly: mobile WebViews and legacy delegated
       // listeners can swallow bubbled clicks on dynamically replaced controls.
-      // Capture-phase tap binding is resilient to legacy delegated handlers in the host app.
-      el.addEventListener('click',e=>{e.stopImmediatePropagation();try{fn(e)}catch(err){console.error('[Space control]',id,err);toast('这个功能暂时无法打开，请稍后再试。')}},{capture:true});
+      el.onclick=e=>{e.preventDefault();e.stopPropagation();try{fn(e)}catch(err){console.error('[Space control]',id,err);toast('这个功能暂时无法打开，请稍后再试。')}};
       el.style.pointerEvents='auto';
       el.style.touchAction='manipulation';
-      el.style.position = el.style.position || 'relative';
-      el.style.zIndex = '10';
     };
     bind('lrSpaceCreateBtn',()=>show('create'));
     bind('lrSpaceCreateBack',()=>show('map'));
@@ -176,8 +173,6 @@
     bind('lrSpaceOpenEvents',()=>showAllActivity('events'));
     bind('lrSpaceOpenMemories',()=>openStoryReview());
     bind('lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets'));
-    // Explicit touch fallback for mobile browsers/PWAs that fail to dispatch click reliably.
-    [['lrSpaceOpenPeopleDynamics',()=>showAllActivity('people')],['lrSpaceOpenEvents',()=>showAllActivity('events')],['lrSpaceOpenMemories',()=>openStoryReview()],['lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets')],['lrSpaceWorldRefresh',()=>{simulateWorld();toast('世界动态已更新。')}]].forEach(([id,fn])=>{const el=$(id);if(!el||el.dataset.lrTapBound==='1')return;el.dataset.lrTapBound='1';el.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){e.preventDefault();e.stopImmediatePropagation();try{fn(e)}catch(err){console.error('[Space tap]',id,err);toast('暂时无法打开，请再试一次。')}}},{capture:true});});
     bind('lrSpaceGrowthClose',()=>closeGrowthGarden());
     bind('lrSpaceMemoryClose',()=>closeMemoryArchive());
     bind('lrSpaceOpenMemoryArchive',()=>openMemoryArchive('cards'));
@@ -387,6 +382,23 @@
   window.openLoveRecordSpaceV2=()=>{open()};
   function init(){
     load();installStyles();
+    // Global capture-phase routing for the Space dashboard. This runs before legacy
+    // document handlers and survives DOM replacement, unlike one-time element binding.
+    if(!window.__lrSpaceGlobalTapRouter){
+      window.__lrSpaceGlobalTapRouter=true;
+      document.addEventListener('click',function(e){
+        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenEvents,#lrSpaceOpenMemories,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
+        if(!card)return;
+        e.preventDefault();e.stopImmediatePropagation();
+        try{
+          if(card.id==='lrSpaceOpenPeopleDynamics')showAllActivity('people');
+          else if(card.id==='lrSpaceOpenEvents')showAllActivity('events');
+          else if(card.id==='lrSpaceOpenMemories')openStoryReview();
+          else if(card.id==='lrSpaceOpenGrowthGarden')openGrowthGarden('pets');
+          else if(card.id==='lrSpaceWorldRefresh'){simulateWorld();toast('世界动态已更新。');}
+        }catch(err){console.error('[Space global tap router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
+      },true);
+    }
     const launch=document.querySelector('[data-space-v2-launch]');if(launch){launch.querySelector('span:last-child')?.replaceChildren(document.createTextNode('空间'));launch.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();},{capture:true})}
     document.addEventListener('click',e=>{
       const p=e.target.closest?.('[data-space-person]');if(p){const id=p.dataset.spacePerson;data.selectedPeople=data.selectedPeople.includes(id)?data.selectedPeople.filter(x=>x!==id):[...data.selectedPeople,id];save();renderPeople();return}
