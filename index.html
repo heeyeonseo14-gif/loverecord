@@ -1915,7 +1915,7 @@ if(loveIntro){
  $('spaceStyleApply').addEventListener('click',()=>{apply(true);close()});$('spaceStyleReset').addEventListener('click',()=>{fill(defaults);apply(true)});
  $('spacePresetSave').addEventListener('click',()=>{const name=$('spacePresetName').value.trim()||('我的预设 '+(presets.length+1));presets.push({name,value:vals()});localStorage.setItem(presetKey(),JSON.stringify(presets));$('spacePresetName').value='';renderPresets();if(typeof toast==='function')toast('预设已保存')});
  $('spaceCssExampleInsert').addEventListener('click',()=>{const code=examples[$('spaceCssExample').value];if(!code)return;const area=$('spaceStyleCustomCss');area.value=(area.value.trim()?area.value.trim()+'\n\n':'')+code;area.focus()});
- $('spaceThemeExport').addEventListener('click',()=>{const payload={format:'LOVE_RECORD_SPACE_THEME',version:1,name:activeSpace()?.title||'Space Theme',theme:vals()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='love-record-space-theme.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+ $('spaceThemeExport').addEventListener('click',()=>{const payload={format:'LOVE_RECORD_SPACE_THEME',version:1,name:activeSpace()?.title||'Space Theme',theme:vals()};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='love-record-space-v23-dashboard-20261009';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
  $('spaceThemeImportBtn').addEventListener('click',()=>$('spaceThemeImportFile').click());
  $('spaceThemeImportFile').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const obj=JSON.parse(String(reader.result||''));const theme=obj.theme||obj.value||obj;if(!theme||typeof theme!=='object')throw new Error('bad');fill(theme);apply(true);if(typeof toast==='function')toast('主题导入成功，可以另存为预设 ♡')}catch(err){alert('主题文件格式不正确，请选择 LOVE RECORD 导出的 JSON 文件。')}e.target.value=''};reader.readAsText(file)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modal.hidden)close()});
@@ -1923,6 +1923,6 @@ if(loveIntro){
 })();
 </script>
 
-<script src="./space-v2.js?v=22"></script>
+<script src="./space-v2.js?v=23"></script>
 </body>
 </html>

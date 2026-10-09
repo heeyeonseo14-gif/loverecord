@@ -125,7 +125,7 @@
       <div id="lrSpaceV2Map" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">THE WORLD</div><div class="lr-space-map-heading-row"><div><h1 class="lr-space-fixed-title">空间地图</h1><button id="lrSpaceWorldTitleBtn" class="lr-space-world-title-btn" type="button" aria-label="编辑世界名称"><span id="lrSpaceWorldTitle">我们的世界</span><span class="lr-space-title-edit">编辑世界名称</span></button></div></div><p id="lrSpaceMapMeta">选择一个地方，让故事从这里开始。</p></div><button id="lrSpaceBackPeople" class="lr-space-secondary" type="button">更换同行者</button></div>
         <div class="lr-space-map" id="lrSpaceMap"><div class="lr-space-map-title"><span>PLACES · STORIES · MOMENTS</span></div><div id="lrSpaceMapLocations"></div><div class="lr-space-map-add"><button id="lrSpaceCreateBtn" class="lr-space-primary" type="button">＋ 创建地点</button></div><div id="lrSpaceSeasonFX" class="lr-space-season-fx" aria-hidden="true"></div></div>
-        <section class="lr-space-life-panel"><div class="lr-space-life-head"><div><h2>此刻 · 世界动态</h2><small>WORLD ACTIVITY & MEMORIES</small></div><button id="lrSpaceWorldRefresh" class="lr-space-secondary" type="button">更新世界</button></div><div class="lr-space-livebar"><div><b><span class="lr-space-live-dot"></span><span id="lrSpaceClock">世界正在准备中</span></b><small id="lrSpaceWeatherLine">时间、日程与地点会在这里联动</small></div><span style="font-size:22px">✿</span></div><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">✧</span><b>角色动态</b><small>看看大家此刻在哪里、正在做什么</small><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenEvents" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">❀</span><b>世界事件</b><small>正在发生的活动与世界变化</small><span class="lr-space-world-card-link">查看事件　›</span></button><button id="lrSpaceOpenMemories" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">♡</span><b>剧情回顾</b><small>回看你们一路走来的故事</small><span class="lr-space-world-card-link">回顾剧情　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">☘</span><b>成长乐园</b><small>萌宠、育儿与成长日记</small><span class="lr-space-world-card-link">进入乐园　›</span></button></div></section>
+        <section class="lr-space-life-panel"><div class="lr-space-life-head"><div><h2>此刻 · 世界动态</h2><small>WORLD ACTIVITY & MEMORIES</small></div><button id="lrSpaceWorldRefresh" class="lr-space-secondary" type="button">更新世界</button></div><div class="lr-space-livebar"><div><b><span class="lr-space-live-dot"></span><span id="lrSpaceClock">世界正在准备中</span></b><small id="lrSpaceWeatherLine">时间、日程与地点会在这里联动</small></div><span style="font-size:22px">✿</span></div><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">✧</span><b>角色动态</b><small>看看大家此刻正在做什么</small><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">☘</span><b>成长乐园</b><small>萌宠、育儿与成长日记</small><span class="lr-space-world-card-link">进入乐园　›</span></button></div></section>
       </div>
       <div id="lrSpaceV2Story" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">CURRENT PLACE</div><h1 id="lrSpaceCurrentPlaceTitle">当前地点</h1></div><div class="lr-space-story-head-actions"><button id="lrSpaceReviewStory" class="lr-space-secondary" type="button">回顾剧情</button><button id="lrSpaceBackMap" class="lr-space-secondary" type="button">返回地图</button></div></div>
@@ -169,9 +169,7 @@
     // Bind the World Activity dashboard controls directly in capture phase.
     // This avoids the legacy app's delegated click handlers swallowing taps on mobile.
     bind('lrSpaceWorldRefresh',()=>{simulateWorld();toast('世界动态已更新。')});
-    bind('lrSpaceOpenPeopleDynamics',()=>showAllActivity('people'));
-    bind('lrSpaceOpenEvents',()=>showAllActivity('events'));
-    bind('lrSpaceOpenMemories',()=>openStoryReview());
+    bind('lrSpaceOpenPeopleDynamics',()=>showPeopleDynamics());
     bind('lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets'));
     bind('lrSpaceGrowthClose',()=>closeGrowthGarden());
     bind('lrSpaceMemoryClose',()=>closeMemoryArchive());
@@ -222,6 +220,25 @@
   function renderActivity(){const clock=$('lrSpaceClock'),weather=$('lrSpaceWeatherLine'),box=$('lrSpaceActivityTimeline');if(clock){const d=worldNow();clock.textContent=new Intl.DateTimeFormat('zh-CN',{weekday:'long',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',timeZone:data.timeSense?.enabled?data.timeSense.zone:'Asia/Kuala_Lumpur'}).format(d)}if(weather)weather.textContent=(data.season&&data.season!=='none'?({spring:'春日花开',summer:'夏日光影',autumn:'秋叶轻落',winter:'冬日飘雪'}[data.season]||''): '世界时间持续推进')+' · '+(data.locations.length+' 个地点');if(box){const entries=[...data.activityLog].sort((a,b)=>b.at-a.at).slice(0,8);box.innerHTML=entries.length?entries.map(a=>`<div class="lr-space-activity"><time>${esc(fmtTime(a.at))}</time><div><b>${esc(a.title)}</b><p>${esc(a.detail)}${a.status==='pending'?'（待决定）':''}</p></div></div>`).join(''):'<div class="lr-space-activity"><time>NOW</time><div><b>世界正在等待第一段生活</b><p>进入地点或更新世界，活动会出现在这里。</p></div></div>'}renderInvites()}
   function renderInvites(){const box=$('lrSpaceInvites');if(!box)return;const pending=data.invites.filter(x=>x.status==='pending');box.innerHTML=pending.slice(0,3).map(x=>`<div class="lr-space-invite"><b>${esc(x.title)}</b><p>${esc(x.detail)}</p><div class="lr-space-life-actions"><button class="lr-space-primary" data-invite-action="accept" data-invite-id="${esc(x.id)}">接受</button><button class="lr-space-secondary" data-invite-action="decline" data-invite-id="${esc(x.id)}">暂不参加</button></div></div>`).join('')}
   function makeInvite(){const peopleList=selectedSummary();if(!peopleList.length){toast('先选择同行者，再创建活动邀请。');return}const who=peopleList[0],loc=data.locations[0];const title=who.name+' 邀请你一起'+(loc?'去'+loc.name+'看看':'度过一点时间');const inv={id:'inv-'+Date.now(),title,detail:'这是一个活动提案。你可以接受或暂不参加；未回应不会自动视为接受。',status:'pending',createdAt:Date.now(),locationId:loc?.id||'',personId:who.id};data.invites.unshift(inv);addActivity('收到活动邀请',title,{kind:'invite',personId:who.id,locationId:loc?.id||'',status:'pending'});save();renderActivity();toast('活动邀请已创建。')}
+  function showPeopleDynamics(){
+    const modal=$('lrSpaceActivityModal'),list=$('lrSpaceActivityList');if(!modal||!list)return;
+    $('lrSpaceActivityTitle').textContent='角色动态';$('lrSpaceActivityKicker').textContent='CHARACTER MOMENTS';$('lrSpaceActivitySubtitle').textContent='看看大家此刻的日常。';
+    const peopleList=selectedSummary();
+    const verbs=['正在散步','正在吃饭','正在逛街','正在工作','正在休息','正在看书','正在喝咖啡','正在回家的路上'];
+    const now=Date.now();
+    if(!peopleList.length){list.innerHTML='<div class="lr-space-review-empty"><div style="font-size:28px;margin-bottom:10px">✧</div><b>还没有角色动态</b><p>先选择角色并进入空间，大家的日常就会出现在这里。</p></div>';}
+    else {
+      list.innerHTML=peopleList.map((p,i)=>{
+        const schedule=data.characterSchedule?.[p.id]||{};
+        const place=data.locations.find(l=>l.id===schedule.locationId);
+        const old=data.activityLog.filter(a=>a.personId===p.id).sort((a,b)=>b.at-a.at)[0];
+        const status= schedule.status && schedule.updatedAt && now-schedule.updatedAt<12*3600000 ? ({'早晨':'正在开始新的一天','上午':'正在处理日常事务','午间':'正在吃饭或休息','下午':'正在忙自己的事情','傍晚':'正在散步或逛街','夜晚':'正在休息'}[schedule.status]||schedule.status) : verbs[Math.floor((now/3600000+i*3)%verbs.length)];
+        const location=place?.name|| (old?.locationId?locationById(old.locationId)?.name:'') || '在自己的日常里';
+        return `<article class="lr-space-review-item" style="display:flex;align-items:center;gap:12px"><div style="width:42px;height:42px;flex:0 0 42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#f4e8ff,#fbe8f1);color:#8b6b9c;font-size:18px">${esc((p.name||'?').slice(0,1))}</div><div style="min-width:0;flex:1"><b>${esc(p.name||'未命名角色')}</b><div class="lr-space-review-text" style="margin-top:4px">${esc(status)} · ${esc(location)}</div></div><span style="color:#b29bc0;font-size:18px">✧</span></article>`;
+      }).join('');
+    }
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  }
   function showAllActivity(mode='all'){
     const modal=$('lrSpaceActivityModal'),list=$('lrSpaceActivityList');if(!modal||!list)return;
     const isPeople=mode==='people';const entries=[...data.activityLog].filter(a=>mode==='all'||(isPeople?!!a.personId:a.kind==='event'||a.kind==='invite'||a.kind==='system')).sort((a,b)=>b.at-a.at);
@@ -387,13 +404,11 @@
     if(!window.__lrSpaceGlobalTapRouter){
       window.__lrSpaceGlobalTapRouter=true;
       document.addEventListener('click',function(e){
-        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenEvents,#lrSpaceOpenMemories,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
+        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
         if(!card)return;
         e.preventDefault();e.stopImmediatePropagation();
         try{
-          if(card.id==='lrSpaceOpenPeopleDynamics')showAllActivity('people');
-          else if(card.id==='lrSpaceOpenEvents')showAllActivity('events');
-          else if(card.id==='lrSpaceOpenMemories')openStoryReview();
+          if(card.id==='lrSpaceOpenPeopleDynamics')showPeopleDynamics();
           else if(card.id==='lrSpaceOpenGrowthGarden')openGrowthGarden('pets');
           else if(card.id==='lrSpaceWorldRefresh'){simulateWorld();toast('世界动态已更新。');}
         }catch(err){console.error('[Space global tap router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
