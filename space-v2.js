@@ -102,7 +102,7 @@
 .lr-space-livebar b{display:block;font-size:13px;color:#76546f}.lr-space-livebar small{display:block;margin-top:4px;color:#a28a9f;font-size:10px}.lr-space-live-dot{width:8px;height:8px;border-radius:50%;background:#d98eaf;display:inline-block;margin-right:6px;box-shadow:0 0 0 4px #f8e4ed}
 .lr-space-life-panel{background:rgba(255,252,254,.9);border:1px solid #f1dce8;border-radius:24px;padding:17px;margin-top:15px;box-shadow:0 12px 30px rgba(175,119,157,.08)}
 .lr-space-life-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.lr-space-life-head h2{margin:0;font:400 21px Georgia,'Noto Serif SC',serif;color:#624c69}.lr-space-life-head small{color:#b28da5;font-size:10px;letter-spacing:.08em}
-.lr-space-world-cards{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:14px 0 4px;position:relative;z-index:2;pointer-events:auto}.lr-space-world-card{position:relative;z-index:3;pointer-events:auto;touch-action:manipulation;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;min-height:132px;padding:14px 13px;border:1px solid #efdfeb;border-radius:19px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(252,241,248,.9));color:#6d566f;box-shadow:0 6px 20px rgba(171,125,162,.05)}.lr-space-world-card-icon{display:grid;place-items:center;width:31px;height:31px;border-radius:11px;background:#f6e6f0;color:#bd86a7;font-size:20px}.lr-space-world-card b{font-size:13px;font-weight:600}.lr-space-world-card small{font-size:10px;line-height:1.6;color:#a18da2;min-height:30px}.lr-space-world-card-link{margin-top:auto;font-size:10px;color:#b07e9d}.lr-space-growth-add{width:100%;padding:12px;border:1px dashed #d9bfd8;border-radius:15px;background:#fcf7fc;color:#9c779b;font-size:12px;margin:6px 0 12px}.lr-space-growth-item{display:flex;gap:12px;align-items:flex-start;padding:13px;border:1px solid #eee2ef;border-radius:17px;background:rgba(255,255,255,.8);margin:9px 0}.lr-space-growth-avatar{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#f8e5ef,#eee6fb);font-size:25px;flex:none}.lr-space-growth-item h4{margin:0 0 4px;color:#66506f;font-size:14px}.lr-space-growth-item p{margin:0;color:#96869b;font-size:11px;line-height:1.7;white-space:pre-wrap}.lr-space-growth-item small{display:block;margin-top:6px;color:#bd8ba8;font-size:10px}.lr-space-growth-empty{text-align:center;padding:26px 14px;color:#a18fa4;font-size:12px;line-height:1.9}.lr-space-growth-form{padding:12px;border:1px solid #eee1ef;border-radius:17px;background:#fcf8fc;margin-bottom:12px}.lr-space-growth-form label{display:block;color:#917b96;font-size:11px;margin:8px 0 5px}.lr-space-growth-form .lr-space-primary{margin-top:12px;width:100%}
+.lr-space-shortcuts-panel{padding:12px!important;margin-top:12px!important;position:relative;z-index:10}.lr-space-world-cards{display:flex;flex-direction:column;gap:12px;margin:0;position:relative;z-index:11;pointer-events:auto}.lr-space-world-card{appearance:none;-webkit-appearance:none;position:relative;z-index:12;isolation:isolate;width:100%;min-height:82px;box-sizing:border-box;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(194,132,171,.18);cursor:pointer;display:flex;flex-direction:row;align-items:center;text-align:left;gap:13px;padding:15px;border:1px solid #efdfeb;border-radius:20px;background:linear-gradient(110deg,rgba(255,255,255,.98),rgba(252,241,248,.94));color:#6d566f;box-shadow:0 6px 20px rgba(171,125,162,.07);user-select:none}.lr-space-world-card:active{transform:scale(.99);background:#fff0f7}.lr-space-world-card-icon{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border-radius:14px;background:#f6e6f0;color:#bd86a7;font-size:22px;pointer-events:none}.lr-space-card-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px;pointer-events:none}.lr-space-world-card b{font-size:15px;font-weight:600;pointer-events:none}.lr-space-world-card small{font-size:11px;line-height:1.5;color:#a18da2;pointer-events:none}.lr-space-world-card-link{margin-left:auto;flex:none;font-size:11px;color:#b07e9d;pointer-events:none}.lr-space-growth-add{width:100%;padding:12px;border:1px dashed #d9bfd8;border-radius:15px;background:#fcf7fc;color:#9c779b;font-size:12px;margin:6px 0 12px}.lr-space-growth-item{display:flex;gap:12px;align-items:flex-start;padding:13px;border:1px solid #eee2ef;border-radius:17px;background:rgba(255,255,255,.8);margin:9px 0}.lr-space-growth-avatar{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:linear-gradient(145deg,#f8e5ef,#eee6fb);font-size:25px;flex:none}.lr-space-growth-item h4{margin:0 0 4px;color:#66506f;font-size:14px}.lr-space-growth-item p{margin:0;color:#96869b;font-size:11px;line-height:1.7;white-space:pre-wrap}.lr-space-growth-item small{display:block;margin-top:6px;color:#bd8ba8;font-size:10px}.lr-space-growth-empty{text-align:center;padding:26px 14px;color:#a18fa4;font-size:12px;line-height:1.9}.lr-space-growth-form{padding:12px;border:1px solid #eee1ef;border-radius:17px;background:#fcf8fc;margin-bottom:12px}.lr-space-growth-form label{display:block;color:#917b96;font-size:11px;margin:8px 0 5px}.lr-space-growth-form .lr-space-primary{margin-top:12px;width:100%}
 .lr-space-activity{display:grid;grid-template-columns:58px 1fr;gap:10px;padding:11px 0;border-top:1px solid #f4e8ef}.lr-space-activity:first-child{border-top:0}.lr-space-activity time{font-size:11px;color:#bf83a2;padding-top:2px}.lr-space-activity b{display:block;font-size:12px;color:#6d566f}.lr-space-activity p{margin:4px 0 0;font-size:11px;line-height:1.6;color:#9b879b}.lr-space-life-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.lr-space-life-actions button{font-size:11px;padding:9px 12px}
 .lr-space-invite{padding:12px;border-radius:16px;background:#fff4f8;border:1px solid #f0d6e4;margin:8px 0}.lr-space-invite b{font-size:12px;color:#7b5872}.lr-space-invite p{font-size:11px;color:#9b879b;line-height:1.5;margin:5px 0 9px}
 .lr-space-season-fx span{opacity:.8}
@@ -125,7 +125,7 @@
       <div id="lrSpaceV2Map" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">THE WORLD</div><div class="lr-space-map-heading-row"><div><h1 class="lr-space-fixed-title">空间地图</h1><button id="lrSpaceWorldTitleBtn" class="lr-space-world-title-btn" type="button" aria-label="编辑世界名称"><span id="lrSpaceWorldTitle">我们的世界</span><span class="lr-space-title-edit">编辑世界名称</span></button></div></div><p id="lrSpaceMapMeta">选择一个地方，让故事从这里开始。</p></div><button id="lrSpaceBackPeople" class="lr-space-secondary" type="button">更换同行者</button></div>
         <div class="lr-space-map" id="lrSpaceMap"><div class="lr-space-map-title"><span>PLACES · STORIES · MOMENTS</span></div><div id="lrSpaceMapLocations"></div><div class="lr-space-map-add"><button id="lrSpaceCreateBtn" class="lr-space-primary" type="button">＋ 创建地点</button></div><div id="lrSpaceSeasonFX" class="lr-space-season-fx" aria-hidden="true"></div></div>
-        <section class="lr-space-life-panel"><div class="lr-space-life-head"><div><h2>此刻 · 世界动态</h2><small>WORLD ACTIVITY & MEMORIES</small></div><button id="lrSpaceWorldRefresh" class="lr-space-secondary" type="button">更新世界</button></div><div class="lr-space-livebar"><div><b><span class="lr-space-live-dot"></span><span id="lrSpaceClock">世界正在准备中</span></b><small id="lrSpaceWeatherLine">时间、日程与地点会在这里联动</small></div><span style="font-size:22px">✿</span></div><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">✧</span><b>角色动态</b><small>看看大家此刻正在做什么</small><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button"><span class="lr-space-world-card-icon">☘</span><b>成长乐园</b><small>萌宠、育儿与成长日记</small><span class="lr-space-world-card-link">进入乐园　›</span></button></div></section>
+        <section class="lr-space-life-panel lr-space-shortcuts-panel"><div class="lr-space-world-cards"><button id="lrSpaceOpenPeopleDynamics" class="lr-space-world-card" type="button" aria-label="打开角色动态"><span class="lr-space-world-card-icon">✧</span><span class="lr-space-card-copy"><b>角色动态</b><small>看看大家此刻正在做什么</small></span><span class="lr-space-world-card-link">查看动态　›</span></button><button id="lrSpaceOpenGrowthGarden" class="lr-space-world-card" type="button" aria-label="打开成长乐园"><span class="lr-space-world-card-icon">☘</span><span class="lr-space-card-copy"><b>成长乐园</b><small>萌宠、育儿与成长日记</small></span><span class="lr-space-world-card-link">进入乐园　›</span></button></div></section>
       </div>
       <div id="lrSpaceV2Story" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">CURRENT PLACE</div><h1 id="lrSpaceCurrentPlaceTitle">当前地点</h1></div><div class="lr-space-story-head-actions"><button id="lrSpaceReviewStory" class="lr-space-secondary" type="button">回顾剧情</button><button id="lrSpaceBackMap" class="lr-space-secondary" type="button">返回地图</button></div></div>
@@ -403,7 +403,19 @@
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
       window.__lrSpaceGlobalTapRouter=true;
-      const routeSpaceCard=function(e){
+      // Android/mobile fallback: route touch pointerup directly, independent of click bubbling.
+      // Keep this on document capture so dynamically rendered cards are also covered.
+      document.addEventListener('pointerup',function(e){
+        if(e.pointerType!=='touch')return;
+        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden');
+        if(!card)return;
+        e.preventDefault();e.stopImmediatePropagation();
+        try{
+          if(card.id==='lrSpaceOpenPeopleDynamics')showPeopleDynamics();
+          else openGrowthGarden('pets');
+        }catch(err){console.error('[Space touch router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
+      },true);
+      document.addEventListener('click',function(e){
         const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
         if(!card)return;
         e.preventDefault();e.stopImmediatePropagation();
@@ -411,18 +423,8 @@
           if(card.id==='lrSpaceOpenPeopleDynamics')showPeopleDynamics();
           else if(card.id==='lrSpaceOpenGrowthGarden')openGrowthGarden('pets');
           else if(card.id==='lrSpaceWorldRefresh'){simulateWorld();toast('世界动态已更新。');}
-        }catch(err){console.error('[Space card route]',card.id,err);toast('打开失败：请重新进入空间。');}
-      };
-      // Capture click plus touch-end fallback for mobile browsers/WebViews.
-      document.addEventListener('click',routeSpaceCard,true);
-      document.addEventListener('touchend',function(e){
-        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden');
-        if(!card)return;
-        if(card.dataset.lrTouchHandled==='1'){delete card.dataset.lrTouchHandled;return;}
-        card.dataset.lrTouchHandled='1';
-        setTimeout(()=>delete card.dataset.lrTouchHandled,700);
-        routeSpaceCard(e);
-      },{capture:true,passive:false});
+        }catch(err){console.error('[Space global tap router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
+      },true);
     }
     const launch=document.querySelector('[data-space-v2-launch]');if(launch){launch.querySelector('span:last-child')?.replaceChildren(document.createTextNode('空间'));launch.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();},{capture:true})}
     document.addEventListener('click',e=>{
