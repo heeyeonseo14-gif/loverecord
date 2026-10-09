@@ -148,9 +148,12 @@
       if(!el)return;
       // Assign the target handler directly: mobile WebViews and legacy delegated
       // listeners can swallow bubbled clicks on dynamically replaced controls.
-      el.onclick=e=>{e.preventDefault();e.stopPropagation();try{fn(e)}catch(err){console.error('[Space control]',id,err);toast('这个功能暂时无法打开，请稍后再试。')}};
+      // Capture-phase tap binding is resilient to legacy delegated handlers in the host app.
+      el.addEventListener('click',e=>{e.stopImmediatePropagation();try{fn(e)}catch(err){console.error('[Space control]',id,err);toast('这个功能暂时无法打开，请稍后再试。')}},{capture:true});
       el.style.pointerEvents='auto';
       el.style.touchAction='manipulation';
+      el.style.position = el.style.position || 'relative';
+      el.style.zIndex = '10';
     };
     bind('lrSpaceCreateBtn',()=>show('create'));
     bind('lrSpaceCreateBack',()=>show('map'));
@@ -173,6 +176,8 @@
     bind('lrSpaceOpenEvents',()=>showAllActivity('events'));
     bind('lrSpaceOpenMemories',()=>openStoryReview());
     bind('lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets'));
+    // Explicit touch fallback for mobile browsers/PWAs that fail to dispatch click reliably.
+    [['lrSpaceOpenPeopleDynamics',()=>showAllActivity('people')],['lrSpaceOpenEvents',()=>showAllActivity('events')],['lrSpaceOpenMemories',()=>openStoryReview()],['lrSpaceOpenGrowthGarden',()=>openGrowthGarden('pets')],['lrSpaceWorldRefresh',()=>{simulateWorld();toast('世界动态已更新。')}]].forEach(([id,fn])=>{const el=$(id);if(!el||el.dataset.lrTapBound==='1')return;el.dataset.lrTapBound='1';el.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){e.preventDefault();e.stopImmediatePropagation();try{fn(e)}catch(err){console.error('[Space tap]',id,err);toast('暂时无法打开，请再试一次。')}}},{capture:true});});
     bind('lrSpaceGrowthClose',()=>closeGrowthGarden());
     bind('lrSpaceMemoryClose',()=>closeMemoryArchive());
     bind('lrSpaceOpenMemoryArchive',()=>openMemoryArchive('cards'));
