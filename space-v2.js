@@ -403,7 +403,7 @@
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
       window.__lrSpaceGlobalTapRouter=true;
-      document.addEventListener('click',function(e){
+      const routeSpaceCard=function(e){
         const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
         if(!card)return;
         e.preventDefault();e.stopImmediatePropagation();
@@ -411,8 +411,18 @@
           if(card.id==='lrSpaceOpenPeopleDynamics')showPeopleDynamics();
           else if(card.id==='lrSpaceOpenGrowthGarden')openGrowthGarden('pets');
           else if(card.id==='lrSpaceWorldRefresh'){simulateWorld();toast('世界动态已更新。');}
-        }catch(err){console.error('[Space global tap router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
-      },true);
+        }catch(err){console.error('[Space card route]',card.id,err);toast('打开失败：请重新进入空间。');}
+      };
+      // Capture click plus touch-end fallback for mobile browsers/WebViews.
+      document.addEventListener('click',routeSpaceCard,true);
+      document.addEventListener('touchend',function(e){
+        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden');
+        if(!card)return;
+        if(card.dataset.lrTouchHandled==='1'){delete card.dataset.lrTouchHandled;return;}
+        card.dataset.lrTouchHandled='1';
+        setTimeout(()=>delete card.dataset.lrTouchHandled,700);
+        routeSpaceCard(e);
+      },{capture:true,passive:false});
     }
     const launch=document.querySelector('[data-space-v2-launch]');if(launch){launch.querySelector('span:last-child')?.replaceChildren(document.createTextNode('空间'));launch.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();},{capture:true})}
     document.addEventListener('click',e=>{
