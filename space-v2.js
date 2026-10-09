@@ -86,8 +86,8 @@
 .lr-space-activity{display:grid;grid-template-columns:58px 1fr;gap:10px;padding:11px 0;border-top:1px solid #f4e8ef}.lr-space-activity:first-child{border-top:0}.lr-space-activity time{font-size:11px;color:#bf83a2;padding-top:2px}.lr-space-activity b{display:block;font-size:12px;color:#6d566f}.lr-space-activity p{margin:4px 0 0;font-size:11px;line-height:1.6;color:#9b879b}.lr-space-life-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.lr-space-life-actions button{font-size:11px;padding:9px 12px}
 .lr-space-invite{padding:12px;border-radius:16px;background:#fff4f8;border:1px solid #f0d6e4;margin:8px 0}.lr-space-invite b{font-size:12px;color:#7b5872}.lr-space-invite p{font-size:11px;color:#9b879b;line-height:1.5;margin:5px 0 9px}
 .lr-space-season-fx span{opacity:.8}
-.lr-space-story-place{display:none!important}.lr-space-story-head-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.lr-space-review-sheet{max-height:86dvh}.lr-space-review-list{display:flex;flex-direction:column;gap:0}.lr-space-review-item{padding:14px 0;border-top:1px solid #f0e3ec}.lr-space-review-item:first-child{border-top:0}.lr-space-review-meta{display:flex;justify-content:space-between;gap:10px;color:#b27e9b;font-size:11px;margin-bottom:6px}.lr-space-review-item b{display:block;color:#70546e;font-size:13px;margin-bottom:7px}.lr-space-review-text{white-space:pre-wrap;color:#827487;font-size:13px;line-height:1.85}.lr-space-review-empty{padding:28px 10px;text-align:center;color:#a18fa3;font-size:13px;line-height:1.8}
-@media(max-width:560px){.lr-space-people{grid-template-columns:1fr}.lr-space-map{min-height:500px}.lr-space-v2-head{align-items:flex-start}.lr-space-v2-head h1{font-size:30px}}
+.lr-space-story-place{display:none!important}.lr-space-story-head-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.lr-space-review-sheet{max-height:86dvh}.lr-space-review-list{display:flex;flex-direction:column;gap:0}.lr-space-review-item{padding:14px 0;border-top:1px solid #f0e3ec}.lr-space-review-item:first-child{border-top:0}.lr-space-review-meta{display:flex;justify-content:space-between;gap:10px;color:#b27e9b;font-size:11px;margin-bottom:6px}.lr-space-review-item b{display:block;color:#70546e;font-size:13px;margin-bottom:7px}.lr-space-review-text{white-space:pre-wrap;color:#827487;font-size:13px;line-height:1.85}.lr-space-review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.lr-space-review-actions button{font-size:11px;padding:8px 12px}.lr-space-review-jump{background:linear-gradient(135deg,#dfa0bc,#c57fa8)!important;color:#fff!important;border-color:transparent!important}.lr-space-review-empty{padding:28px 10px;text-align:center;color:#a18fa3;font-size:13px;line-height:1.8}#lrSpaceV2Story .lr-space-v2-head h1{font-size:27px;line-height:1.25;overflow-wrap:anywhere;max-width:100%}#lrSpaceV2Story .lr-space-v2-head{align-items:center;gap:10px}#lrSpaceV2Story .lr-space-story-head-actions{flex-direction:column;align-items:stretch;flex:none}#lrSpaceV2Story .lr-space-story-head-actions button{padding:9px 12px;font-size:12px}
+@media(max-width:560px){.lr-space-people{grid-template-columns:1fr}.lr-space-map{min-height:500px}.lr-space-v2-head{align-items:flex-start}.lr-space-v2-head h1{font-size:30px}#lrSpaceV2Story .lr-space-v2-head h1{font-size:23px;max-width:calc(100vw - 210px)}#lrSpaceV2Story .lr-space-story-head-actions button{white-space:nowrap;padding:9px 10px}}
 `;
     document.head.appendChild(s);
   }
@@ -182,7 +182,31 @@
   function renderInvites(){const box=$('lrSpaceInvites');if(!box)return;const pending=data.invites.filter(x=>x.status==='pending');box.innerHTML=pending.slice(0,3).map(x=>`<div class="lr-space-invite"><b>${esc(x.title)}</b><p>${esc(x.detail)}</p><div class="lr-space-life-actions"><button class="lr-space-primary" data-invite-action="accept" data-invite-id="${esc(x.id)}">接受</button><button class="lr-space-secondary" data-invite-action="decline" data-invite-id="${esc(x.id)}">暂不参加</button></div></div>`).join('')}
   function makeInvite(){const peopleList=selectedSummary();if(!peopleList.length){toast('先选择同行者，再创建活动邀请。');return}const who=peopleList[0],loc=data.locations[0];const title=who.name+' 邀请你一起'+(loc?'去'+loc.name+'看看':'度过一点时间');const inv={id:'inv-'+Date.now(),title,detail:'这是一个活动提案。你可以接受或暂不参加；未回应不会自动视为接受。',status:'pending',createdAt:Date.now(),locationId:loc?.id||'',personId:who.id};data.invites.unshift(inv);addActivity('收到活动邀请',title,{kind:'invite',personId:who.id,locationId:loc?.id||'',status:'pending'});save();renderActivity();toast('活动邀请已创建。')}
   function showAllActivity(){const entries=[...data.activityLog].sort((a,b)=>b.at-a.at);const lines=entries.slice(0,100).map(a=>fmtTime(a.at)+'  '+a.title+'\n'+a.detail).join('\n\n');alert(lines||'目前还没有活动记录。')}
-  function openStoryReview(){const modal=$('lrSpaceStoryReview'),list=$('lrSpaceReviewList');if(!modal||!list)return;const entries=[...(data.history||[])].sort((a,b)=>a.at-b.at);list.innerHTML=entries.length?entries.map((h,i)=>`<article class="lr-space-review-item"><div class="lr-space-review-meta"><span>${esc(fmtTime(h.at))}</span><span>${esc(h.place||'未知地点')}</span></div><b>第 ${i+1} 段剧情</b><div class="lr-space-review-text">${esc(h.text||'')}</div></article>`).join(''):'<div class="lr-space-review-empty">这里还没有剧情记录。进入一个地点并开始互动后，故事会自动保存在这里。</div>';modal.classList.add('show');modal.setAttribute('aria-hidden','false')}
+  function openStoryReview(){
+    const modal=$('lrSpaceStoryReview'),list=$('lrSpaceReviewList');if(!modal||!list)return;
+    const entries=[...(data.history||[])].sort((a,b)=>b.at-a.at);
+    list.innerHTML=entries.length?entries.map((h,i)=>`<article class="lr-space-review-item"><div class="lr-space-review-meta"><span>${esc(fmtTime(h.at))}</span><span>${esc(h.place||'未知地点')}</span></div><b>第 ${entries.length-i} 段剧情</b><div class="lr-space-review-text">${esc(h.text||'')}</div><div class="lr-space-review-actions"><button class="lr-space-secondary lr-space-review-jump" type="button" data-review-jump="${esc(h.id)}">回到这段剧情</button><button class="lr-space-secondary" type="button" data-review-delete="${esc(h.id)}">删除记录</button></div></article>`).join(''):'<div class="lr-space-review-empty">这里还没有剧情记录。进入地点后，写下你的行动并发送，生成的剧情就会保存在这里。</div>';
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  }
+  function jumpToHistory(id){
+    const h=(data.history||[]).find(x=>x.id===id);if(!h)return;
+    if(h.locationId&&locationById(h.locationId))data.currentLocation=h.locationId;
+    else if(!data.currentLocation){toast('原地点已不存在，仍可查看记录，但无法在该地点继续。');}
+    data.activeStoryThread=h.threadId||data.activeStoryThread||('thread-'+Date.now());save();
+    const loc=locationById(data.currentLocation);
+    $('lrSpaceCurrentPlaceTitle').textContent=loc?.name||h.place||'剧情回顾';
+    $('lrSpaceStoryPlace').textContent=loc?.name||h.place||'';
+    $('lrSpaceStoryTitle').textContent='';$('lrSpaceStoryMeta').textContent='';
+    $('lrSpaceStoryBody').textContent=h.text||'';makeStoryActions(h.text||'');
+    closeStoryReview();show('story');window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function deleteHistoryEntry(id){
+    const h=(data.history||[]).find(x=>x.id===id);if(!h)return;
+    if(!confirm('确定删除这段剧情记录吗？删除后无法恢复。'))return;
+    data.history=data.history.filter(x=>x.id!==id);
+    data.memories=(data.memories||[]).filter(m=>!(m.at===h.at&&m.place===h.place&&String(m.text||'')===String(h.text||'').slice(0,1200)));
+    save();openStoryReview();toast('这段剧情记录已删除。');
+  }
   function closeStoryReview(){const modal=$('lrSpaceStoryReview');if(modal){modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}}
   function handleInviteAction(btn){const inv=data.invites.find(x=>x.id===btn.dataset.inviteId);if(!inv)return;inv.status=btn.dataset.inviteAction==='accept'?'accepted':'declined';inv.respondedAt=Date.now();addActivity(inv.status==='accepted'?'已接受邀请':'暂不参加邀请',inv.title,{kind:'invite',personId:inv.personId,locationId:inv.locationId,status:inv.status});save();renderActivity();toast(inv.status==='accepted'?'已接受邀请。':'已记录你的选择。')}
   function renderMap(){
@@ -201,12 +225,18 @@
     const out=await callAPI(system,JSON.stringify({idea:prompt,world:worldContext(),people:selectedSummary()}));if(!out)return;
     try{const clean=out.replace(/^```json\s*|^```|```$/g,'').trim();const j=JSON.parse(clean);const loc={id:'loc-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:String(j.name||'未命名地点'),type:String(j.type||'地点'),purpose:String(j.purpose||''),description:String(j.description||''),atmosphere:String(j.atmosphere||''),storyHooks:Array.isArray(j.storyHooks)?j.storyHooks:[],icon:String(j.icon||'⌂').slice(0,2)};data.locations.push(loc);save();$('lrSpaceCreatePrompt').value='';renderMap();renderCreatedList();show('map');toast('地点已加入空间地图。')}catch(e){toast('AI 返回的地点资料格式不正确，请再试一次。')}
   }
-  async function enterLocation(id){
-    const loc=locationById(id);if(!loc||busy)return;data.currentLocation=id;if(!data.activeStoryThread)data.activeStoryThread='thread-'+Date.now();save();show('story');
-    $('lrSpaceStoryPlace').textContent=loc.name;$('lrSpaceCurrentPlaceTitle').textContent=loc.name;$('lrSpaceStoryTitle').textContent='';$('lrSpaceStoryMeta').textContent='';$('lrSpaceStoryBody').textContent='正在让这个地点发生故事……';$('lrSpaceStoryActions').innerHTML='';
-    const system=`你是 LOVE RECORD【空间】里的剧情导演。用户刚进入一个地点，请根据地点设定、同行人物和世界状态开启一段自然、具体、有画面感的剧情。不要替用户决定行动、台词、思想或情绪。可以让同行人物主动行动。不要写成游戏任务清单。结尾留出自然可回应的空间。只返回剧情正文。`;
-    const user=JSON.stringify({world:worldContext(),location:loc,people:selectedSummary(),recent:data.history.slice(-8)});
-    const out=await callAPI(system,user);if(out){appendHistory(loc.name,out);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out)}else{$('lrSpaceStoryBody').textContent='这次 API 没有成功返回。你可以重新进入这个地点再试一次。'}
+  function enterLocation(id){
+    const loc=locationById(id);if(!loc)return;
+    data.currentLocation=id;
+    if(!data.activeStoryThread)data.activeStoryThread='thread-'+Date.now();
+    save();show('story');
+    $('lrSpaceStoryPlace').textContent=loc.name;
+    $('lrSpaceCurrentPlaceTitle').textContent=loc.name;
+    $('lrSpaceStoryTitle').textContent='';$('lrSpaceStoryMeta').textContent='';
+    const previous=[...(data.history||[])].reverse().find(h=>h.locationId===id||h.place===loc.name);
+    $('lrSpaceStoryBody').textContent=previous?previous.text:'这里还没有开始剧情。写下你想说的话或想做的事，再点击「继续」，AI 才会生成新的剧情。';
+    $('lrSpaceStoryActions').innerHTML='';
+    if(previous)makeStoryActions(previous.text);
   }
   function makeStoryActions(text){$('lrSpaceStoryActions').innerHTML='';const defaults=['继续观察眼前发生的事情','回应同行的人','做一个和当前地点有关的小行动'];defaults.forEach(t=>{const b=document.createElement('button');b.className='lr-space-secondary';b.type='button';b.textContent=t;b.onclick=()=>continueStory(t);$('lrSpaceStoryActions').appendChild(b)});}
   async function continueStory(action){if(busy)return;const loc=locationById(data.currentLocation);if(!loc)return;const system=`你是 LOVE RECORD【空间】的剧情导演。继续上一段地点剧情。只写新的剧情正文。不要替用户决定行动、台词、思想或情绪；用户的行动只有在输入明确后才发生。同行人物可以自然回应。保持地点和连续性。`;
@@ -263,6 +293,10 @@
     document.addEventListener('pointercancel',e=>{const l=e.target.closest?.('[data-space-location]');if(l)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('pointermove',e=>{const l=e.target.closest?.('[data-space-location]');if(l&&Math.abs(e.movementX)+Math.abs(e.movementY)>12)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('click',e=>{
+      const jump=e.target.closest?.('[data-review-jump]');
+      if(jump){jumpToHistory(jump.dataset.reviewJump);return}
+      const del=e.target.closest?.('[data-review-delete]');
+      if(del){deleteHistoryEntry(del.dataset.reviewDelete);return}
       const el=e.target.closest?.('button,[role="button"],select');
       const id=el?.id||e.target.id;
       if(id==='lrSpaceEnter')enterMap();
