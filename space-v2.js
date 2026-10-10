@@ -305,8 +305,28 @@
   }
   function createCustomHomeFurniture(){const name=String($('lrSpaceCustomFurnitureName')?.value||'').trim();const kind=$('lrSpaceCustomFurnitureKind')?.value||'sofa';const color=$('lrSpaceCustomFurnitureColor')?.value||'#e7a8bf';if(!name){toast('先给这件家具起个名字。');return}const items=ensureHomeItems();items.push({id:'home-custom-'+Date.now(),type:kind,name,customColor:color,x:22+(items.length%5)*10,y:42+(items.length%4)*8,rotation:0});save();renderHome();const input=$('lrSpaceCustomFurnitureName');if(input)input.value='';toast('已生成像素家具「'+name+'」并放进房间。');}
   function filterHomeFurniture(){const q=String($('lrSpaceFurnitureSearch')?.value||'').trim().toLowerCase();document.querySelectorAll('#lrSpaceFurnitureTray [data-home-add-item]').forEach(b=>{b.hidden=!!q&&!String((b.dataset.furnitureLabel||b.textContent||'')).toLowerCase().includes(q)});}
-  function selectHomeFurniture(id){const tools=$('lrSpaceFurnitureTools');if(!tools)return;const item=ensureHomeItems().find(x=>x.id===id);if(!item){tools.innerHTML='';return}const meta=homeItemMeta[item.type]||{label:item.name||'自定义家具'};tools.innerHTML=`<span style="align-self:center;color:#8c7196;font-size:12px">已选中：${meta.label}</span><button type="button" data-home-rotate="${esc(id)}">↻ 旋转</button><button type="button" data-home-remove="${esc(id)}">移除家具</button>`;document.querySelectorAll('.lr-space-furniture-item').forEach(el=>el.classList.toggle('selected',el.dataset.homeItem===id))}
-  function renderHome(){const h=data.home||{};ensureHomeItems();const colors={lavender:'#f1e3f6',rose:'#fbe5ee',sky:'#e5effa'};const chosen=h.customWall||colors[h.wall]||colors.lavender;const room=$('lrSpacePixelRoom');if(room){room.style.backgroundColor=chosen;room.style.backgroundImage=`linear-gradient(rgba(255,255,255,.30) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.30) 2px,transparent 2px)`;room.querySelector('.lr-space-room-window')?.style.setProperty('background',`linear-gradient(${chosen},#fff0f5)`)}const items=$('lrSpaceRoomItems');if(items)items.innerHTML=ensureHomeItems().map(it=>{const m=it.name?{label:it.name}:(homeItemMeta[it.type]||{label:'自定义家具'});let svg=pixelFurnitureSvg(it.type);if(it.customColor)svg=svg.replace(/fill="#[0-9a-fA-F]{6}"/g,`fill="${it.customColor}"`);return `<button type="button" class="lr-space-furniture-item" data-home-item="${esc(it.id)}" style="left:${Math.max(1,Math.min(96,it.x))}%;top:${Math.max(3,Math.min(90,it.y))}%;transform:rotate(${it.rotation||0}deg)" aria-label="${esc(m.label)}，拖动移动"><b>${svg}</b></button>`}).join('');document.querySelectorAll('[data-home-group="wall"] [data-home-value]').forEach(b=>b.classList.toggle('active',h.wall===b.dataset.homeValue&&!h.customWall));const picker=$('lrSpaceCustomWallColor');if(picker)picker.value=/^#[0-9a-f]{6}$/i.test(h.customWall||'')?h.customWall:(colors[h.wall]||colors.lavender);document.querySelectorAll('[data-pixel-icon]').forEach(el=>el.innerHTML=pixelFurnitureSvg(el.dataset.pixelIcon));const tools=$('lrSpaceFurnitureTools');if(tools&&!tools.querySelector('[data-home-rotate]'))tools.innerHTML='';}
+  function selectHomeFurniture(id){const tools=$('lrSpaceFurnitureTools');if(!tools)return;const item=ensureHomeItems().find(x=>x.id===id);if(!item){tools.innerHTML='';return}const meta=homeItemMeta[item.type]||{label:item.name||'自定义家具'};tools.innerHTML=`<span style="align-self:center;color:#8c7196;font-size:12px">已选中：${meta.label}</span><button type="button" data-home-rotate="${esc(id)}">↻ 旋转</button><button type="button" data-home-remove="${esc(id)}">移除家具</button>`;document.querySelectorAll('.lr-space-furniture-item').forEach(el=>el.classList.toggle('selected',el.dataset.homeItem===id));bindHomeFurnitureControls()}
+  function bindHomeFurnitureControls(){
+    // Bind to the actual current controls after each render. No competing global/capture routers.
+    document.querySelectorAll('#lrSpaceFurnitureTray [data-home-add-item]').forEach(button=>{
+      button.onclick=e=>{e.preventDefault();e.stopPropagation();try{addHomeFurniture(button.dataset.homeAddItem)}catch(err){console.error('[Space furniture add]',err);toast('家具没有放进去，请重新打开我的空间。')}};
+      button.style.pointerEvents='auto';button.style.touchAction='manipulation';
+    });
+    const customButton=$('lrSpaceCustomFurnitureAdd');
+    if(customButton){customButton.onclick=e=>{e.preventDefault();e.stopPropagation();try{createCustomHomeFurniture()}catch(err){console.error('[Space custom furniture]',err);toast('自定义家具生成失败，请检查名称后重试。')}};customButton.style.pointerEvents='auto';customButton.style.touchAction='manipulation';}
+    document.querySelectorAll('#lrSpaceRoomItems [data-home-item]').forEach(el=>{
+      el.onclick=e=>{e.preventDefault();e.stopPropagation();selectHomeFurniture(el.dataset.homeItem)};
+      el.onpointerdown=e=>{if(e.button!==undefined&&e.button!==0)return;e.stopPropagation();try{startHomeFurnitureDrag(e,el)}catch(err){console.error('[Space furniture drag]',err);toast('家具暂时无法移动。')}};
+      el.style.pointerEvents='auto';el.style.touchAction='none';
+    });
+    document.querySelectorAll('#lrSpaceFurnitureTools [data-home-rotate]').forEach(button=>{
+      button.onclick=e=>{e.preventDefault();e.stopPropagation();const item=ensureHomeItems().find(x=>x.id===button.dataset.homeRotate);if(!item)return;item.rotation=((Number(item.rotation)||0)+90)%360;save();renderHome();selectHomeFurniture(item.id);toast('家具方向已调整。')};
+    });
+    document.querySelectorAll('#lrSpaceFurnitureTools [data-home-remove]').forEach(button=>{
+      button.onclick=e=>{e.preventDefault();e.stopPropagation();const id=button.dataset.homeRemove;data.home.items=ensureHomeItems().filter(x=>x.id!==id);save();renderHome();toast('家具已收回仓库。')};
+    });
+  }
+  function renderHome(){const h=data.home||{};ensureHomeItems();const colors={lavender:'#f1e3f6',rose:'#fbe5ee',sky:'#e5effa'};const chosen=h.customWall||colors[h.wall]||colors.lavender;const room=$('lrSpacePixelRoom');if(room){room.style.backgroundColor=chosen;room.style.backgroundImage=`linear-gradient(rgba(255,255,255,.30) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.30) 2px,transparent 2px)`;room.querySelector('.lr-space-room-window')?.style.setProperty('background',`linear-gradient(${chosen},#fff0f5)`)}const items=$('lrSpaceRoomItems');if(items)items.innerHTML=ensureHomeItems().map(it=>{const m=it.name?{label:it.name}:(homeItemMeta[it.type]||{label:'自定义家具'});let svg=pixelFurnitureSvg(it.type);if(it.customColor)svg=svg.replace(/fill="#[0-9a-fA-F]{6}"/g,`fill="${it.customColor}"`);return `<button type="button" class="lr-space-furniture-item" data-home-item="${esc(it.id)}" style="left:${Math.max(1,Math.min(96,it.x))}%;top:${Math.max(3,Math.min(90,it.y))}%;transform:rotate(${it.rotation||0}deg)" aria-label="${esc(m.label)}，拖动移动"><b>${svg}</b></button>`}).join('');document.querySelectorAll('[data-home-group="wall"] [data-home-value]').forEach(b=>b.classList.toggle('active',h.wall===b.dataset.homeValue&&!h.customWall));const picker=$('lrSpaceCustomWallColor');if(picker)picker.value=/^#[0-9a-f]{6}$/i.test(h.customWall||'')?h.customWall:(colors[h.wall]||colors.lavender);document.querySelectorAll('[data-pixel-icon]').forEach(el=>el.innerHTML=pixelFurnitureSvg(el.dataset.pixelIcon));const tools=$('lrSpaceFurnitureTools');if(tools&&!tools.querySelector('[data-home-rotate]'))tools.innerHTML='';bindHomeFurnitureControls();}
 
   function addHomeNote(){const input=$('lrSpaceHomeNote'),text=String(input?.value||'').trim();if(!text){toast('先写下一段想收藏的纪念。');return}data.home.notes=data.home.notes||[];data.home.notes.push({id:'home-note-'+Date.now(),text,at:Date.now()});if(data.home.notes.length>100)data.home.notes=data.home.notes.slice(-100);input.value='';save();renderHome();addActivity('收藏了一段生活纪念',text,{kind:'memory'});save();toast('已收藏到我的空间。')}
   function openMissions(){renderMissions();const m=$('lrSpaceMissionsModal');if(m){m.classList.add('show');m.setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}}
@@ -513,7 +533,7 @@
     window.scrollTo(0,0);
     return true;
   }
-  function applyV33HomeStyles(){if(document.getElementById('lrSpaceV33HomeFix'))return;const st=document.createElement('style');st.id='lrSpaceV33HomeFix';st.textContent="/* V34 · robust mobile furniture add, custom generation and drag routing */\n.lr-space-home-viewport{aspect-ratio:4/3;height:auto;max-height:78vw;min-height:0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x}\n.lr-space-home-preview{width:1200px!important;height:900px!important;min-height:900px!important}\n.lr-space-pixel-room{width:1200px!important;height:900px!important}\n.lr-space-pixel-room:before{height:560px!important}.lr-space-pixel-room:after{height:340px!important}.lr-space-room-rug{bottom:105px!important}.lr-space-room-window{top:70px!important}\n.lr-space-room-items{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none!important}.lr-space-room-items .lr-space-furniture-item{pointer-events:auto!important}.lr-space-furniture-item{width:104px!important;min-width:104px!important;height:92px!important;min-height:92px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;outline:0;touch-action:none!important;cursor:grab;z-index:4}\n.lr-space-furniture-item b{width:100%!important;height:100%!important;display:flex;align-items:center;justify-content:center;filter:drop-shadow(3px 4px 0 rgba(125,91,142,.20))}.lr-space-furniture-item b svg{width:100%!important;height:100%!important;image-rendering:pixelated;overflow:visible}.lr-space-furniture-item span{display:none!important}.lr-space-furniture-item.selected{outline:2px dashed #b37fc0!important;outline-offset:2px}.lr-space-furniture-item.is-dragging{z-index:30;cursor:grabbing;filter:drop-shadow(0 6px 5px rgba(112,72,128,.25))}\n.lr-space-furniture-search{width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:8px;padding:12px;background:#fffaff;color:#705b79;margin:6px 0 10px;font:inherit;font-size:13px}.lr-space-custom-furniture{border:1px solid #ead8e7;border-radius:10px;padding:12px;margin:10px 0;background:#fffaff}.lr-space-custom-furniture-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) 42px;gap:8px;align-items:center}.lr-space-custom-furniture-row input[type=text],.lr-space-custom-furniture-row select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:7px;padding:10px;background:white;color:#705b79;font:inherit;font-size:12px}.lr-space-custom-furniture-row input[type=color]{width:40px;height:38px;border:0;background:transparent;padding:0}.lr-space-custom-furniture-row button{grid-column:1/-1;border:0;border-radius:8px;padding:12px;background:#c77fa9;color:white;font:inherit}.lr-space-furniture-tray button[hidden]{display:none!important}\n@media(max-width:560px){.lr-space-home-viewport{max-height:none;height:auto;aspect-ratio:4/3}.lr-space-home-preview{height:900px!important}.lr-space-pixel-room{height:900px!important}.lr-space-custom-furniture-row{grid-template-columns:minmax(0,1fr) 42px}.lr-space-custom-furniture-row select{grid-column:1/2}.lr-space-custom-furniture-row input[type=color]{grid-column:2;grid-row:1;justify-self:center}}\n";document.head.appendChild(st)}
+  function applyV33HomeStyles(){if(document.getElementById('lrSpaceV33HomeFix'))return;const st=document.createElement('style');st.id='lrSpaceV33HomeFix';st.textContent="/* V39 · consolidated direct-bound mobile furniture controls */\n.lr-space-home-viewport{aspect-ratio:4/3;height:auto;max-height:78vw;min-height:0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x}\n.lr-space-home-preview{width:1200px!important;height:900px!important;min-height:900px!important}\n.lr-space-pixel-room{width:1200px!important;height:900px!important}\n.lr-space-pixel-room:before{height:560px!important}.lr-space-pixel-room:after{height:340px!important}.lr-space-room-rug{bottom:105px!important}.lr-space-room-window{top:70px!important}\n.lr-space-room-items{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none!important}.lr-space-room-items .lr-space-furniture-item{pointer-events:auto!important}.lr-space-furniture-item{width:104px!important;min-width:104px!important;height:92px!important;min-height:92px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;outline:0;touch-action:none!important;cursor:grab;z-index:4}\n.lr-space-furniture-item b{width:100%!important;height:100%!important;display:flex;align-items:center;justify-content:center;filter:drop-shadow(3px 4px 0 rgba(125,91,142,.20))}.lr-space-furniture-item b svg{width:100%!important;height:100%!important;image-rendering:pixelated;overflow:visible}.lr-space-furniture-item span{display:none!important}.lr-space-furniture-item.selected{outline:2px dashed #b37fc0!important;outline-offset:2px}.lr-space-furniture-item.is-dragging{z-index:30;cursor:grabbing;filter:drop-shadow(0 6px 5px rgba(112,72,128,.25))}\n.lr-space-furniture-search{width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:8px;padding:12px;background:#fffaff;color:#705b79;margin:6px 0 10px;font:inherit;font-size:13px}.lr-space-custom-furniture{border:1px solid #ead8e7;border-radius:10px;padding:12px;margin:10px 0;background:#fffaff}.lr-space-custom-furniture-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) 42px;gap:8px;align-items:center}.lr-space-custom-furniture-row input[type=text],.lr-space-custom-furniture-row select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:7px;padding:10px;background:white;color:#705b79;font:inherit;font-size:12px}.lr-space-custom-furniture-row input[type=color]{width:40px;height:38px;border:0;background:transparent;padding:0}.lr-space-custom-furniture-row button{grid-column:1/-1;border:0;border-radius:8px;padding:12px;background:#c77fa9;color:white;font:inherit}.lr-space-furniture-tray button[hidden]{display:none!important}\n@media(max-width:560px){.lr-space-home-viewport{max-height:none;height:auto;aspect-ratio:4/3}.lr-space-home-preview{height:900px!important}.lr-space-pixel-room{height:900px!important}.lr-space-custom-furniture-row{grid-template-columns:minmax(0,1fr) 42px}.lr-space-custom-furniture-row select{grid-column:1/2}.lr-space-custom-furniture-row input[type=color]{grid-column:2;grid-row:1;justify-self:center}}\n";document.head.appendChild(st)}
   async function open(){
     load();await hydrateHistoryFromIDB();installStyles();applyV33HomeStyles();
     /* Do not call the legacy nav('space') here. The old Space renderer expects
@@ -533,32 +553,6 @@
   window.openLoveRecordSpaceV2=()=>{open()};
   function init(){
     load();installStyles();applyV33HomeStyles();
-    // V37: window-capture fallback runs before legacy document-level handlers.
-    if(!window.__lrSpaceHomeTapRouterV37){
-      window.__lrSpaceHomeTapRouterV37=true;
-      window.addEventListener('click',function(e){
-        const target=e.target;
-        const add=target&&target.closest?target.closest('#lrSpaceFurnitureTray [data-home-add-item]'):null;
-        const custom=target&&target.closest?target.closest('#lrSpaceCustomFurnitureAdd'):null;
-        const rotate=target&&target.closest?target.closest('[data-home-rotate]'):null;
-        const remove=target&&target.closest?target.closest('[data-home-remove]'):null;
-        if(!add&&!custom&&!rotate&&!remove)return;
-        e.preventDefault();e.stopImmediatePropagation();
-        try{
-          if(add){addHomeFurniture(add.dataset.homeAddItem);return;}
-          if(custom){createCustomHomeFurniture();return;}
-          if(rotate){const item=ensureHomeItems().find(x=>x.id===rotate.dataset.homeRotate);if(item){item.rotation=((item.rotation||0)+90)%360;save();renderHome();selectHomeFurniture(item.id);toast('家具方向已调整。')}return;}
-          if(remove){const id=remove.dataset.homeRemove;data.home.items=ensureHomeItems().filter(x=>x.id!==id);save();renderHome();toast('家具已收回仓库。');}
-        }catch(err){console.error('[Space furniture V37]',err);toast('家具操作失败：'+(err&&err.message?err.message:'请重新打开我的空间'));}
-      },true);
-      window.addEventListener('pointerdown',function(e){
-        const target=e.target;
-        const furniture=target&&target.closest?target.closest('#lrSpaceRoomItems [data-home-item]'):null;
-        if(!furniture)return;
-        e.stopImmediatePropagation();
-        try{startHomeFurnitureDrag(e,furniture)}catch(err){console.error('[Space furniture drag V37]',err);}
-      },{capture:true,passive:false});
-    }
     // Global capture-phase routing for the Space dashboard. This runs before legacy
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
@@ -574,43 +568,16 @@
       },true);
     }
     const launch=document.querySelector('[data-space-v2-launch]');if(launch){launch.querySelector('span:last-child')?.replaceChildren(document.createTextNode('空间'));launch.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();},{capture:true})}
-    // V34: handle home controls in capture phase so older delegated handlers or
-    // mobile overlay click listeners cannot swallow the tap before furniture actions run.
-    if(!window.__lrSpaceHomeTapRouter){
-      window.__lrSpaceHomeTapRouter=true;
-      document.addEventListener('click',function(e){
-        const add=e.target.closest?.('#lrSpaceFurnitureTray [data-home-add-item]');
-        const custom=e.target.closest?.('#lrSpaceCustomFurnitureAdd');
-        const rotate=e.target.closest?.('[data-home-rotate]');
-        const remove=e.target.closest?.('[data-home-remove]');
-        if(!add&&!custom&&!rotate&&!remove)return;
-        e.preventDefault();e.stopImmediatePropagation();
-        try{
-          if(add){addHomeFurniture(add.dataset.homeAddItem);return;}
-          if(custom){createCustomHomeFurniture();return;}
-          if(rotate){const it=ensureHomeItems().find(x=>x.id===rotate.dataset.homeRotate);if(it){it.rotation=((it.rotation||0)+90)%360;save();renderHome();selectHomeFurniture(it.id);toast('家具方向已调整。')}return;}
-          if(remove){const id=remove.dataset.homeRemove;data.home.items=ensureHomeItems().filter(x=>x.id!==id);save();renderHome();toast('家具已收回仓库。');}
-        }catch(err){console.error('[Space home control]',err);toast('家具操作失败，请重新打开我的空间。');}
-      },true);
-      document.addEventListener('pointerdown',function(e){
-        const f=e.target.closest?.('#lrSpaceRoomItems [data-home-item]');if(!f)return;
-        e.stopImmediatePropagation();startHomeFurnitureDrag(e,f);
-      },{capture:true,passive:false});
-    }
     document.addEventListener('click',e=>{
       const p=e.target.closest?.('[data-space-person]');if(p){const id=p.dataset.spacePerson;data.selectedPeople=data.selectedPeople.includes(id)?data.selectedPeople.filter(x=>x!==id):[...data.selectedPeople,id];save();renderPeople();return}
       const l=e.target.closest?.('[data-space-location]');if(l){if(l.dataset.longPressed==='1'){l.dataset.longPressed='';return}enterLocation(l.dataset.spaceLocation);return}
     });
     document.addEventListener('input',e=>{if(e.target?.id==='lrSpaceFurnitureSearch'){filterHomeFurniture();return}if(e.target?.id==='lrSpaceCustomWallColor'){ if(!data.home)data.home={};data.home.customWall=e.target.value;const room=$('lrSpacePixelRoom');if(room){room.style.backgroundColor=e.target.value;room.querySelector('.lr-space-room-window')?.style.setProperty('background',`linear-gradient(${e.target.value},#fff0f5)`)}save();}});
-    document.addEventListener('pointerdown',e=>{const f=e.target.closest?.('[data-home-item]');if(f){startHomeFurnitureDrag(e,f);return}const l=e.target.closest?.('[data-space-location]');if(!l)return;clearTimeout(l._lrHold);l._lrHold=setTimeout(()=>{l.dataset.longPressed='1';openLocationEditor(l.dataset.spaceLocation);if(navigator.vibrate)navigator.vibrate(18)},620)},{passive:true});
+    document.addEventListener('pointerdown',e=>{const l=e.target.closest?.('[data-space-location]');if(!l)return;clearTimeout(l._lrHold);l._lrHold=setTimeout(()=>{l.dataset.longPressed='1';openLocationEditor(l.dataset.spaceLocation);if(navigator.vibrate)navigator.vibrate(18)},620)},{passive:true});
     document.addEventListener('pointerup',e=>{const l=e.target.closest?.('[data-space-location]');if(l)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('pointercancel',e=>{const l=e.target.closest?.('[data-space-location]');if(l)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('pointermove',e=>{const l=e.target.closest?.('[data-space-location]');if(l&&Math.abs(e.movementX)+Math.abs(e.movementY)>12)clearTimeout(l._lrHold)},{passive:true});
     document.addEventListener('click',e=>{
-      const addItem=e.target.closest?.('[data-home-add-item]');if(addItem){addHomeFurniture(addItem.dataset.homeAddItem);return}if(e.target.closest?.('#lrSpaceCustomFurnitureAdd')){createCustomHomeFurniture();return}
-      const roomItem=e.target.closest?.('[data-home-item]');if(roomItem){selectHomeFurniture(roomItem.dataset.homeItem);return}
-      const rotateItem=e.target.closest?.('[data-home-rotate]');if(rotateItem){const it=ensureHomeItems().find(x=>x.id===rotateItem.dataset.homeRotate);if(it){it.rotation=((it.rotation||0)+90)%360;const el=document.querySelector(`[data-home-item="${CSS.escape(it.id)}"]`);if(el)el.style.transform=`rotate(${it.rotation}deg)`;save();toast('家具方向已调整。')}return}
-      const removeItem=e.target.closest?.('[data-home-remove]');if(removeItem){data.home.items=ensureHomeItems().filter(x=>x.id!==removeItem.dataset.homeRemove);save();renderHome();toast('家具已收回仓库。');return}
       const hv=e.target.closest?.('[data-home-value]');if(hv){const group=hv.closest('[data-home-group]');if(group&&data.home){data.home[group.dataset.homeGroup]=hv.dataset.homeValue;if(group.dataset.homeGroup==='wall')data.home.customWall='';save();renderHome()}return}
       const ma=e.target.closest?.('[data-mission-action]');if(ma){handleMissionAction(ma);return}
       const pa=e.target.closest?.('[data-person-action]');if(pa){doCharacterAction(pa);return}
