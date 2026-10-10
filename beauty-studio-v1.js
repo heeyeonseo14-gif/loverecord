@@ -25,15 +25,38 @@
     window.saveAppearance=function(){try{return original()}catch(e){try{const compact={};['preset','font','fontSize','titleScale','accent','textColor','bg','radius','blur','opacity','dark','motion'].forEach(k=>{if(typeof appearance!=='undefined'&&appearance[k]!==undefined)compact[k]=appearance[k]});localStorage.setItem(APPEARANCE_FALLBACK_KEY,JSON.stringify(compact));return true}catch(err){if(typeof window.toast==='function')window.toast('设置保存失败：储存空间不足；请先勿清除网站资料');return false}}};
     window.__lrQuotaSafeSaveInstalled=true;
   }
+  function syncThemeToPages(key){
+    const pages=['launcher','music','chat'];
+    const classes=Object.values(themeMap);
+    pages.forEach(id=>{
+      const page=document.getElementById(id);if(!page)return;
+      page.classList.remove(...classes);
+      if(themeMap[key])page.classList.add(themeMap[key]);
+    });
+    // The home photo belongs only to the launcher. It must never become the body/chat/Space background.
+    const home=document.getElementById('launcher');
+    if(home){
+      const photo=typeof appearance!=='undefined'&&appearance.bgData?appearance.bgData:'';
+      const gradients={
+        obsidian:'radial-gradient(ellipse at 8% 0%,rgba(116,104,139,.22),transparent 48%),radial-gradient(ellipse at 100% 38%,rgba(79,84,105,.20),transparent 45%)',
+        pearl:'radial-gradient(ellipse at 0% 0%,rgba(255,255,255,.96),transparent 48%),radial-gradient(ellipse at 100% 35%,rgba(221,220,230,.38),transparent 46%)',
+        amethyst:'radial-gradient(ellipse at 8% 0%,rgba(255,255,255,.82),transparent 45%),radial-gradient(ellipse at 100% 30%,rgba(195,165,224,.30),transparent 44%)'
+      };
+      home.style.backgroundImage=photo?`${gradients[key]||gradients.amethyst},url("${photo}")`:(gradients[key]||'');
+      home.style.backgroundSize=photo?'cover,cover':'';
+      home.style.backgroundPosition=photo?'center,center':'';
+      home.style.backgroundAttachment=photo?'fixed,fixed':'';
+    }
+    const colors={obsidian:['#f3f1f7','#17171c'],pearl:['#302b35','#f3f2f5'],amethyst:['#352a40','#eee7f5']};
+    pages.forEach(id=>{const page=document.getElementById(id);if(!page)return;const c=colors[key]||colors.amethyst;page.style.setProperty('--ink',c[0]);page.style.setProperty('--theme-text',c[0]);page.style.setProperty('--bg',c[1]);page.style.color=c[0];page.style.backgroundColor=c[1];});
+    window.__lrCurrentGlassTheme=key||'';
+    document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>{b.classList.toggle('active',b.dataset.lrGlassTheme===key);b.setAttribute('aria-pressed',String(b.dataset.lrGlassTheme===key))});
+  }
   function applyTheme(key,save=true){
     if(!themeMap[key])return;
-    document.body.classList.remove(...Object.values(themeMap));
-    document.body.classList.add(themeMap[key]);
-    document.documentElement.style.setProperty('--ink',key==='obsidian'?'#f3f1f7':'#302b35');
-    document.documentElement.style.setProperty('--theme-text',key==='obsidian'?'#f3f1f7':'#302b35');
+    syncThemeToPages(key);
     const current=safeRead();current.glassTheme=key;if(typeof appearance!=='undefined')appearance.glassTheme=key;
     if(save&&!window.__lrAppearanceEditing)safeWrite(current);
-    document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>b.classList.toggle('active',b.dataset.lrGlassTheme===key));
   }
   function addThemePresets(){
     if(typeof presetChoices==='undefined')return;
@@ -52,12 +75,10 @@
       '<button type="button" class="lr-beauty-theme" data-lr-glass-theme="amethyst"><span class="lr-beauty-chip" style="background:linear-gradient(135deg,#faf4ff,#cbb3e5 55%,#a98acb)"></span><strong>紫晶</strong><small>Amethyst</small></button></div>';
     presetSection.insertAdjacentElement('afterend',section);
     section.addEventListener('click',e=>{const b=e.target.closest('[data-lr-glass-theme]');if(!b)return;const key=b.dataset.lrGlassTheme;
-      // Let the existing preset system update its normal values; then persist the independent glass theme.
-      const before=safeRead();
-      if(typeof window.applyPreset==='function'&&typeof presetChoices!=='undefined'&&presetChoices[key])window.applyPreset(key);
-      const v=safeRead();if(before.customFontName)v.customFontName=before.customFontName;if(before.customFontUrl)v.customFontUrl=before.customFontUrl;v.glassTheme=key;
-      if(!window.__lrAppearanceEditing)safeWrite(v);
+      // Theme selection changes only the glass theme; preserve custom photo, font, accent and all other controls.
+      if(typeof appearance!=='undefined')appearance.glassTheme=key;
       applyTheme(key,false);
+      if(!window.__lrAppearanceEditing)safeWrite(Object.assign({},safeRead(),{glassTheme:key}));
     });
   }
   function applySavedCustomFont(saved){
@@ -101,10 +122,11 @@
     if(saved.customFontName&&saved.customFontUrl){applySavedCustomFont(saved);previewFont()}
   }
   function init(){
+    const savebar=document.getElementById('lrAppearanceSavebar');if(savebar&&savebar.parentElement!==document.body)document.body.appendChild(savebar);
     installQuotaSafeAppearanceSave();
     if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
-    addThemePresets();mountThemePicker();mountFontControls();
-    const saved=safeRead();const bootTheme=saved.glassTheme||(typeof appearance!=='undefined'&&themeMap[appearance.glassTheme]?appearance.glassTheme:(typeof appearance!=='undefined'&&themeMap[appearance.preset]?appearance.preset:''));if(bootTheme)applyTheme(bootTheme,false);
+    mountThemePicker();mountFontControls();
+    const saved=safeRead();const bootTheme=themeMap[saved.glassTheme]?saved.glassTheme:(typeof appearance!=='undefined'&&themeMap[appearance.glassTheme]?appearance.glassTheme:'amethyst');applyTheme(bootTheme,false);
     // Preserve the independent theme/font settings when the legacy appearance function saves its object.
     if(typeof applyAppearance==='function'){
       const originalApplyAppearance=applyAppearance;
@@ -125,7 +147,7 @@
       if(themeMap[key]){const v=safeRead();v.glassTheme=key;safeWrite(v);applyTheme(key,false)}
       else {const v=safeRead();if(themeMap[v.glassTheme])applyTheme(v.glassTheme,false)}
     });
-    const observer=new MutationObserver(()=>{const v=safeRead();if(themeMap[v.glassTheme])document.body.classList.add(themeMap[v.glassTheme]);document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>b.classList.toggle('active',b.dataset.lrGlassTheme===v.glassTheme))});
+    const observer=new MutationObserver(()=>{const v=safeRead();document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>{b.classList.toggle('active',b.dataset.lrGlassTheme===v.glassTheme);b.setAttribute('aria-pressed',String(b.dataset.lrGlassTheme===v.glassTheme))})});
     const grid=document.getElementById('presetGrid');if(grid)observer.observe(grid,{childList:true,subtree:true});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
