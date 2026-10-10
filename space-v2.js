@@ -533,6 +533,32 @@
   window.openLoveRecordSpaceV2=()=>{open()};
   function init(){
     load();installStyles();applyV33HomeStyles();
+    // V37: window-capture fallback runs before legacy document-level handlers.
+    if(!window.__lrSpaceHomeTapRouterV37){
+      window.__lrSpaceHomeTapRouterV37=true;
+      window.addEventListener('click',function(e){
+        const target=e.target;
+        const add=target&&target.closest?target.closest('#lrSpaceFurnitureTray [data-home-add-item]'):null;
+        const custom=target&&target.closest?target.closest('#lrSpaceCustomFurnitureAdd'):null;
+        const rotate=target&&target.closest?target.closest('[data-home-rotate]'):null;
+        const remove=target&&target.closest?target.closest('[data-home-remove]'):null;
+        if(!add&&!custom&&!rotate&&!remove)return;
+        e.preventDefault();e.stopImmediatePropagation();
+        try{
+          if(add){addHomeFurniture(add.dataset.homeAddItem);return;}
+          if(custom){createCustomHomeFurniture();return;}
+          if(rotate){const item=ensureHomeItems().find(x=>x.id===rotate.dataset.homeRotate);if(item){item.rotation=((item.rotation||0)+90)%360;save();renderHome();selectHomeFurniture(item.id);toast('家具方向已调整。')}return;}
+          if(remove){const id=remove.dataset.homeRemove;data.home.items=ensureHomeItems().filter(x=>x.id!==id);save();renderHome();toast('家具已收回仓库。');}
+        }catch(err){console.error('[Space furniture V37]',err);toast('家具操作失败：'+(err&&err.message?err.message:'请重新打开我的空间'));}
+      },true);
+      window.addEventListener('pointerdown',function(e){
+        const target=e.target;
+        const furniture=target&&target.closest?target.closest('#lrSpaceRoomItems [data-home-item]'):null;
+        if(!furniture)return;
+        e.stopImmediatePropagation();
+        try{startHomeFurnitureDrag(e,furniture)}catch(err){console.error('[Space furniture drag V37]',err);}
+      },{capture:true,passive:false});
+    }
     // Global capture-phase routing for the Space dashboard. This runs before legacy
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
