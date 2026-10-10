@@ -12,21 +12,87 @@ function setSpeech(t){const e=$('lr3dSpeech');if(e)e.textContent=t}
 function act(a){state.bond=Math.min(99,(state.bond||0)+1);state.care=(state.care||0)+(a==='feed'?1:0);state.mood=a==='pet'?'被摸摸，好开心！':a==='feed'?'吃饱饱啦，谢谢你！':'耶！最喜欢和你玩！';setSpeech(a==='pet'?'呼噜呼噜～好舒服！':a==='feed'?'啊呜！能量补充完成！':'追到你啦！再玩一次嘛！');$('lr3dLevel').textContent='✦ 亲密度 Lv.'+(1+Math.floor(state.bond/5));$('lr3dNote').textContent='亲密度 '+state.bond+' · 照料 '+state.care+' 次';persist();const stage=$('lr3dStage');stage.classList.remove('playing');void stage.offsetWidth;stage.classList.add('playing');if(root){root.rotation.y+=a==='play'?Math.PI*2:.3;root.scale.setScalar(a==='play'?1.08:1.02);setTimeout(()=>root&&root.scale.setScalar(1),450)}}
 function open(tab='pets'){ensure();mode=tab;state.kind=tab==='children'?'children':'pets';overlay.style.display='block';document.body.style.overflow='hidden';overlay.querySelectorAll('[data-kind]').forEach(x=>x.classList.toggle('active',x.dataset.kind===state.kind));$('lr3dName').value=state.name||'团团';$('lr3dSkin').value=state.skin||'#ffd5c9';$('lr3dOutfit').value=state.outfit||'#caa6dd';$('lr3dAccessory').value=state.accessory||'蝴蝶结';$('lr3dOutfitStyle').value=state.outfitStyle||'日常套装';$('lr3dHair').value=state.hair||'蓬松短发';$('lr3dStageAge').value=String(state.stage||0);startThree();}
 function close(){if(overlay)overlay.style.display='none';document.body.style.overflow='';if(raf)cancelAnimationFrame(raf);raf=0;if(renderer){renderer.dispose();renderer.domElement.remove();renderer=null}scene=camera=root=clock=null;threeReady=false}
-function startThree(){const stage=$('lr3dStage'),loading=$('lr3dLoading');if(renderer){renderer.dispose();renderer.domElement.remove();renderer=null}if(raf)cancelAnimationFrame(raf);stage.querySelectorAll('canvas').forEach(c=>c.remove());loading.hidden=false;const old=document.querySelector('script[data-lr-three]');const init=()=>{if(!window.THREE){fallback();return}try{const T=window.THREE;scene=new T.Scene();scene.background=new T.Color('#f5e9f7');scene.fog=new T.Fog('#f5e9f7',7,15);camera=new T.PerspectiveCamera(32,stage.clientWidth/stage.clientHeight,.1,100);camera.position.set(0,1.6,7.8);camera.lookAt(0,1.15,0);renderer=new T.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.shadowMap.enabled=true;stage.prepend(renderer.domElement);scene.add(new T.HemisphereLight(0xffffff,0xc5a6c8,2));const key=new T.DirectionalLight(0xffffff,2.1);key.position.set(-3,5,5);key.castShadow=true;scene.add(key);const fill=new T.PointLight(0xf4c8e8,1.2);fill.position.set(3,2,2);scene.add(fill);const floor=new T.Mesh(new T.CircleGeometry(2.25,64),new T.MeshStandardMaterial({color:'#e7d4ed',roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-.03;floor.receiveShadow=true;scene.add(floor);for(let i=0;i<8;i++){const petal=new T.Mesh(new T.SphereGeometry(.055,10,8),new T.MeshStandardMaterial({color:i%2?'#f0c9df':'#d5c5ef'}));const a=i*Math.PI/4;petal.position.set(Math.cos(a)*1.75,.01,Math.sin(a)*.85);petal.scale.set(1,.2,1.6);scene.add(petal)}rebuildCharacter();loading.hidden=true;threeReady=true;clock=new T.Clock();const animate=()=>{if(!renderer||!overlay||overlay.style.display==='none')return;raf=requestAnimationFrame(animate);const t=clock.getElapsedTime();if(root){root.position.y=.04+Math.sin(t*2.3)*.055;root.rotation.y=Math.sin(t*.55)*.12;root.children.forEach(o=>{if(o.userData.armSide)o.rotation.z=Math.sin(t*2.7+o.userData.armSide)*.08});}renderer.render(scene,camera)};animate();new ResizeObserver(()=>{if(!renderer||!camera)return;const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}).observe(stage);renderer.domElement.addEventListener('pointerdown',()=>act('pet'));}catch(e){console.warn('3D scene fallback',e);fallback()}};if(window.THREE){init();return}if(old){old.addEventListener('load',init,{once:true});old.addEventListener('error',fallback,{once:true});return}const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';sc.async=true;sc.dataset.lrThree='1';sc.onload=init;sc.onerror=fallback;document.head.appendChild(sc);}
+function startThree(){const stage=$('lr3dStage'),loading=$('lr3dLoading');if(renderer){renderer.dispose();renderer.domElement.remove();renderer=null}if(raf)cancelAnimationFrame(raf);stage.querySelectorAll('canvas').forEach(c=>c.remove());loading.hidden=false;const old=document.querySelector('script[data-lr-three]');const init=()=>{if(!window.THREE){fallback();return}try{const T=window.THREE;scene=new T.Scene();scene.background=new T.Color('#f5e9f7');scene.fog=new T.Fog('#f5e9f7',7,15);camera=new T.PerspectiveCamera(32,stage.clientWidth/stage.clientHeight,.1,100);camera.position.set(0,1.6,7.8);camera.lookAt(0,1.15,0);renderer=new T.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));renderer.setSize(stage.clientWidth,stage.clientHeight);renderer.outputColorSpace=T.SRGBColorSpace;renderer.shadowMap.enabled=true;stage.prepend(renderer.domElement);scene.add(new T.HemisphereLight(0xffffff,0xc5a6c8,2));const key=new T.DirectionalLight(0xffffff,2.1);key.position.set(-3,5,5);key.castShadow=true;scene.add(key);const fill=new T.PointLight(0xf4c8e8,1.2);fill.position.set(3,2,2);scene.add(fill);const floor=new T.Mesh(new T.CircleGeometry(2.25,64),new T.MeshStandardMaterial({color:'#e7d4ed',roughness:.9}));floor.rotation.x=-Math.PI/2;floor.position.y=-.03;floor.receiveShadow=true;scene.add(floor);for(let i=0;i<8;i++){const petal=new T.Mesh(new T.SphereGeometry(.055,10,8),new T.MeshStandardMaterial({color:i%2?'#f0c9df':'#d5c5ef'}));const a=i*Math.PI/4;petal.position.set(Math.cos(a)*1.75,.01,Math.sin(a)*.85);petal.scale.set(1,.2,1.6);scene.add(petal)}rebuildCharacter();loading.hidden=true;threeReady=true;clock=new T.Clock();const animate=()=>{if(!renderer||!overlay||overlay.style.display==='none')return;raf=requestAnimationFrame(animate);const t=clock.getElapsedTime();if(root){root.position.y=.04+Math.sin(t*2.3)*.055;root.rotation.y=Math.sin(t*.55)*.12;root.traverse(o=>{if(o.userData.arm)o.rotation.z=Math.sin(t*2.7+o.userData.armSide)*.09});}renderer.render(scene,camera)};animate();new ResizeObserver(()=>{if(!renderer||!camera)return;const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h)}).observe(stage);let drag=null,moved=false;renderer.domElement.style.touchAction='pan-y';renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,rot:root?root.rotation.y:0};moved=false;renderer.domElement.setPointerCapture?.(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(!drag||!root)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)>5||Math.abs(dy)>5)moved=true;if(moved)root.rotation.y=drag.rot+dx*.012});renderer.domElement.addEventListener('pointerup',()=>{if(!moved)act('pet');drag=null});renderer.domElement.addEventListener('pointercancel',()=>{drag=null});}catch(e){console.warn('3D scene fallback',e);fallback()}};if(window.THREE){init();return}if(old){old.addEventListener('load',init,{once:true});old.addEventListener('error',fallback,{once:true});return}const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';sc.async=true;sc.dataset.lrThree='1';sc.onload=init;sc.onerror=fallback;document.head.appendChild(sc);}
 function fallback(){const l=$('lr3dLoading'),f=$('lr3dFallback'),c=$('lr3dChibi');if(l){l.hidden=true;l.style.display='none'}if(f)f.hidden=false;if(c){c.style.setProperty('--skin',state.skin||'#ffd5c9');c.style.setProperty('--outfit',state.outfit||'#caa6dd')}setSpeech('小小世界已准备好！点点我试试看。')}
 function mat(color,rough=.72){return new THREE.MeshStandardMaterial({color,roughness:rough})}
 function ball(parent,color,pos,scale,seg=24){const m=new THREE.Mesh(new THREE.SphereGeometry(1,seg,seg),mat(color));m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
-function rebuildCharacter(){if(!scene||!window.THREE)return;const T=window.THREE;if(root)scene.remove(root);root=new T.Group();scene.add(root);const skin=state.skin||'#ffd5c9',outfit=state.outfit||'#caa6dd';const growScale=[.88,1,1.09][Math.max(0,Math.min(2,state.stage||0))];root.scale.setScalar(growScale);ball(root,outfit,[0,.59,0],[state.outfitStyle==='小裙子'?.43:.37,.46,.29]);ball(root,skin,[0,1.53,0],[.53,.54,.45],32);if(state.kind==='pets'){// 软萌猫耳与小尾巴
-const ear1=ball(root,skin,[-.34,2.00,-.005],[.17,.30,.135]);ear1.rotation.z=-.32;const ear2=ball(root,skin,[.34,2.00,-.005],[.17,.30,.135]);ear2.rotation.z=.32;ball(root,'#f3a9bd',[-.34,2.02,.105],[.075,.16,.03]);ball(root,'#f3a9bd',[.34,2.02,.105],[.075,.16,.03]);const tail=ball(root,skin,[.43,.45,-.08],[.16,.34,.15]);tail.rotation.z=-.65;}else{ball(root,skin,[-.29,2.0,0],[.12,.27,.12]);ball(root,skin,[.29,2.0,0],[.12,.27,.12]);ball(root,'#7c5b53',[0,2.03,-.04],[.48,.2,.43]);ball(root,'#7c5b53',[-.22,1.92,.16],[.19,.21,.28]);ball(root,'#7c5b53',[.22,1.92,.16],[.19,.21,.28]);}
-// 服装层次与发型细节（程序化几何体）
-if(state.outfitStyle==='睡衣'){ball(root,'#fff1fa',[0,.62,.27],[.23,.12,.035]);ball(root,'#e7a1c6',[0,.75,.29],[.05,.05,.025])}else if(state.outfitStyle==='小裙子'){const skirt=ball(root,state.outfit||'#caa6dd',[0,.43,0],[.45,.22,.34]);skirt.scale.y=.55}else if(state.outfitStyle==='探险装'){ball(root,'#f0d28d',[-.19,.68,.27],[.09,.18,.035]);ball(root,'#f0d28d',[.19,.68,.27],[.09,.18,.035])}
-if(state.hair==='双丸子'){ball(root,outfit,[-.42,1.91,0],[.16,.17,.15]);ball(root,outfit,[.42,1.91,0],[.16,.17,.15])}else if(state.hair==='小卷毛'){for(let i=0;i<5;i++)ball(root,outfit,[-.28+i*.14,2.00,-.02],[.09,.10,.09],16)}
-// eyes, blush and nose
-ball(root,'#594654',[-.2,1.61,.424],[.055,.075,.035],16);ball(root,'#594654',[.2,1.61,.424],[.055,.075,.035],16);ball(root,'#f2a7bb',[-.34,1.48,.405],[.095,.045,.025],16);ball(root,'#f2a7bb',[.34,1.48,.405],[.095,.045,.025],16);ball(root,'#9e6e85',[0,1.49,.47],[.045,.035,.025],16);
-// legs
-const l=ball(root,skin,[-.2,.18,.02],[.15,.24,.16]);l.userData.leg=-1;const r=ball(root,skin,[.2,.18,.02],[.15,.24,.16]);r.userData.leg=1;
-const arm1=ball(root,skin,[-.43,.70,.015],[.115,.27,.125]);arm1.rotation.z=-.55;arm1.userData.armSide=-1;const arm2=ball(root,skin,[.43,.70,.015],[.115,.27,.125]);arm2.rotation.z=.55;arm2.userData.armSide=1;
-if(state.accessory==='蝴蝶结'){ball(root,'#e7a1c6',[-.3,2.05,.12],[.14,.09,.05]);ball(root,'#e7a1c6',[-.16,2.05,.12],[.14,.09,.05]);ball(root,'#f7d9e9',[-.23,2.05,.17],[.045,.045,.025])}else if(state.accessory==='小皇冠'){const crown=ball(root,'#e9c96f',[0,2.1,0],[.24,.09,.16]);crown.position.y=2.12}else if(state.accessory==='围巾'){ball(root,'#e7a1c6',[0,1.1,.03],[.42,.1,.34])}root.scale.multiplyScalar(.9);}
+function rebuildCharacter(){
+ if(!scene||!window.THREE)return;
+ const T=window.THREE;if(root)scene.remove(root);root=new T.Group();scene.add(root);
+ const skin=state.skin||'#ffd5c9',outfit=state.outfit||'#caa6dd',child=state.kind==='children';
+ const age=Math.max(0,Math.min(2,Number(state.stage)||0)),scale=[.91,1,1.07][age];
+ const cloth=state.outfitStyle==='探险装'?'#b8cfa8':outfit;
+ const detail=state.outfitStyle==='睡衣'?'#fff1fa':state.outfitStyle==='探险装'?'#e5c47e':'#f8e8f4';
+ const group=new T.Group();root.add(group);
+ // softly layered body, clothing and limbs
+ ball(group,skin,[0,.72,0],[.28,.27,.25],24); // neck
+ ball(group,cloth,[0,.57,0],[state.outfitStyle==='小裙子'?.43:.36,.43,.29],32);
+ if(state.outfitStyle==='小裙子'){
+   const skirt=ball(group,cloth,[0,.39,0],[.46,.25,.34],32);skirt.scale.y=.78;
+   const hem=ball(group,detail,[0,.30,.005],[.435,.055,.33],24);
+ }else if(state.outfitStyle==='探险装'){
+   ball(group,'#e8c77f',[-.18,.64,.275],[.095,.15,.025],16);ball(group,'#e8c77f',[.18,.64,.275],[.095,.15,.025],16);
+   ball(group,'#6c987b',[0,.49,.292],[.07,.09,.025],16);
+ }else if(state.outfitStyle==='睡衣'){
+   ball(group,detail,[0,.63,.28],[.22,.13,.025],20);ball(group,'#e7a1c6',[0,.74,.30],[.045,.045,.025],16);
+   for(let i=0;i<3;i++)ball(group,'#e7a1c6',[-.14+i*.14,.49,.282],[.025,.025,.018],12);
+ }
+ // short sleeves / arms with little hands; separate pivots make motion readable
+ const armL=new T.Group();armL.position.set(-.34,.72,0);group.add(armL);ball(armL,cloth,[-.015,-.025,0],[.13,.20,.14],20);ball(armL,skin,[-.035,-.18,.015],[.105,.105,.105],20);armL.userData.armSide=-1;armL.userData.arm=true;
+ const armR=new T.Group();armR.position.set(.34,.72,0);group.add(armR);ball(armR,cloth,[.015,-.025,0],[.13,.20,.14],20);ball(armR,skin,[.035,-.18,.015],[.105,.105,.105],20);armR.userData.armSide=1;armR.userData.arm=true;
+ // legs and shoes, spaced to avoid the floating-body look
+ for(const side of [-1,1]){ball(group,skin,[side*.17,.17,.015],[.125,.22,.14],20);ball(group,child?'#f6dce8':'#f4e5ed',[side*.18,.055,.075],[.145,.085,.19],20);}
+ // head, slightly oversized but with neck connection
+ ball(group,skin,[0,1.48,0],[.53,.55,.45],40);
+ if(!child){
+   const e1=ball(group,skin,[-.35,1.94,-.015],[.16,.27,.13],24);e1.rotation.z=-.3;
+   const e2=ball(group,skin,[.35,1.94,-.015],[.16,.27,.13],24);e2.rotation.z=.3;
+   ball(group,'#f3a9bd',[-.35,1.96,.085],[.075,.15,.025],16);ball(group,'#f3a9bd',[.35,1.96,.085],[.075,.15,.025],16);
+   // tiny tail, curved impression from overlapping soft capsules
+   const tail1=ball(group,skin,[.42,.43,-.12],[.13,.23,.12],20);tail1.rotation.z=-.45;
+   ball(group,skin,[.48,.57,-.12],[.105,.16,.10],20);
+ }else{
+   // hairstyle cap and side locks; selectable styles alter the silhouette
+   const hair=state.hair==='双丸子'?'#8d665c':state.hair==='小卷毛'?'#a77d70':'#806052';
+   ball(group,hair,[0,1.83,-.055],[.49,.23,.40],32);
+   ball(group,hair,[-.30,1.70,.245],[.16,.28,.18],20);ball(group,hair,[.30,1.70,.245],[.16,.28,.18],20);
+   if(state.hair==='双丸子'){ball(group,hair,[-.38,1.97,-.02],[.15,.15,.14]);ball(group,hair,[.38,1.97,-.02],[.15,.15,.14]);}
+   else if(state.hair==='小卷毛'){for(let i=0;i<7;i++)ball(group,hair,[-.30+i*.10,1.98+Math.sin(i)*.035,.02],[.105,.11,.10],16);}
+   else if(state.hair==='长耳朵'){ball(group,hair,[-.38,1.95,0],[.12,.27,.11]);ball(group,hair,[.38,1.95,0],[.12,.27,.11]);}
+   else {ball(group,hair,[-.15,1.95,.10],[.18,.12,.12]);ball(group,hair,[.08,1.98,.10],[.18,.13,.12]);}
+ }
+ // face: glossy eyes with highlights, blush, nose and a curved smile
+ for(const side of [-1,1]){
+   ball(group,'#4b3b50',[side*.19,1.54,.408],[.061,.088,.035],20);
+   ball(group,'#ffffff',[side*.205,1.575,.439],[.019,.024,.012],12);
+   ball(group,'#f2a2bd',[side*.335,1.39,.382],[.095,.045,.025],16);
+ }
+ ball(group,child?'#b77f78':'#a96f88',[0,1.42,.445],[.042,.032,.025],16);
+ // smile built from small beads so it stays lightweight and works without textures
+ ball(group,'#815568',[-.035,1.365,.438],[.025,.012,.012],12);ball(group,'#815568',[.035,1.365,.438],[.025,.012,.012],12);
+ // clothing details: collar, buttons, pocket and strap
+ ball(group,detail,[-.105,.82,.265],[.105,.07,.025],16);ball(group,detail,[.105,.82,.265],[.105,.07,.025],16);
+ if(state.outfitStyle==='探险装'){
+   const strap=ball(group,'#e8c77f',[.12,.60,.282],[.055,.29,.025],16);strap.rotation.z=-.18;
+   ball(group,'#d3ad69',[.12,.49,.31],[.09,.075,.025],16);
+ }else{
+   for(let i=0;i<3;i++)ball(group,detail,[0,.65-i*.09,.292],[.022,.022,.014],12);
+ }
+ // hair variants for pet mode too, keeping the ears readable
+ if(!child){
+   if(state.hair==='双丸子'){ball(group,outfit,[-.43,1.86,0],[.13,.14,.13]);ball(group,outfit,[.43,1.86,0],[.13,.14,.13]);}
+   else if(state.hair==='小卷毛'){for(let i=0;i<5;i++)ball(group,outfit,[-.25+i*.125,1.91,-.02],[.075,.08,.075],14);}
+ }
+ if(state.accessory==='蝴蝶结'){
+   ball(group,'#e7a1c6',[-.29,1.99,.15],[.12,.075,.045],16);ball(group,'#e7a1c6',[-.17,1.99,.15],[.12,.075,.045],16);ball(group,'#f9ddec',[-.23,1.99,.19],[.035,.035,.02],12);
+ }else if(state.accessory==='小皇冠'){
+   ball(group,'#e9c96f',[0,2.05,0],[.22,.075,.13],20);for(let i=-1;i<=1;i++)ball(group,'#f8e3a2',[i*.12,2.11,.01],[.045,.07,.045],12);
+ }else if(state.accessory==='围巾'){
+   ball(group,'#e7a1c6',[0,1.04,.04],[.37,.09,.30],24);ball(group,'#e7a1c6',[.20,.94,.25],[.09,.18,.045],16);
+ }
+ // rotate/drag uses this root; grow by age after proportions are assembled
+ root.scale.setScalar(scale*.9);
+}
 function applyColors(){if(root)rebuildCharacter()}
 window.LRGrowth3D={open};
 })();
