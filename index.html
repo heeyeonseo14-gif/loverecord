@@ -890,6 +890,25 @@ body.music-listening-modal-open{overflow:hidden!important}
 
 
 <style id="lr-chat-time-divider-style">.lr-chat-time-divider{display:flex;align-items:center;justify-content:center;gap:10px;margin:13px 0;color:var(--muted,#999);font-size:11px;letter-spacing:.04em}.lr-chat-time-divider:before,.lr-chat-time-divider:after{content:'';height:1px;flex:1;max-width:72px;background:rgba(140,130,145,.2)}.lr-chat-time-divider span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.58);border:1px solid rgba(255,255,255,.75)}</style>
+<style>
+
+/* CONTACT EDITOR SAVE FIX: keep the editor above the fixed navigation and make action buttons reachable on mobile. */
+#personEditModal, #selfPersonaEditModal { z-index: 120 !important; }
+#personEditModal .module-sheet, #selfPersonaEditModal .module-sheet {
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom)) !important;
+}
+#personEditModal .actions, #selfPersonaEditModal .actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 12px 0 calc(8px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,.97);
+}
+
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1579,7 +1598,22 @@ function closeForumDetail(){$('forumDetailModal').classList.remove('show');docum
 function openPersonEditor(id=''){localizeEditors();editingPersonId=id;const p=state.people.find(x=>x.id===id)||{};$('personEditTitle').textContent=id?'EDIT PERSON':'NEW PERSON';$('personName').value=p.name||'';$('personRole').value=p.role||'';$('personPersonality').value=p.personality||'';$('personAppearance').value=p.appearance||'';$('personSpeech').value=p.speech||'';$('personBackground').value=p.background||'';$('personInstructions').value=p.instructions||'';$('personEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closePersonEditor(){ $('personEditModal').classList.remove('show');document.body.style.overflow=''}
 
-function savePerson(){const name=$('personName').value.trim();if(!name){toast('请先填写人物名字');return}const obj={id:editingPersonId||'p-'+Date.now(),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj}else state.people.push(obj);save();closePersonEditor();renderModule('people');toast('人物已保存')}
+function savePerson(){
+ const name=$('personName').value.trim();
+ if(!name){toast('请先填写人物名字');$('personName').focus();return}
+ try{
+  if(!Array.isArray(state.people))state.people=[];
+  const obj={id:editingPersonId||'p-'+Date.now(),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};
+  if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj;else state.people.push(obj)}else state.people.push(obj);
+  save();
+  closePersonEditor();
+  renderModule('people');
+  toast('人物已保存 ♡');
+ }catch(err){
+  console.error('[LOVE RECORD] person save failed',err);
+  toast('保存失败：浏览器储存空间可能已满，请先导出备份');
+ }
+}
 function openWorldEditor(id=''){localizeEditors();editingWorldId=id;const w=state.worlds.find(x=>x.id===id)||{};$('worldEditTitle').textContent=id?'EDIT WORLD':'NEW WORLD';$('worldName').value=w.name||'';$('worldDescription').value=w.description||'';$('worldLocations').value=w.locations||'';$('worldRules').value=w.rules||'';$('worldEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closeWorldEditor(){$('worldEditModal').classList.remove('show');document.body.style.overflow=''}
 function saveWorld(){const name=$('worldName').value.trim();if(!name){toast('请先填写世界名称');return}const obj={id:editingWorldId||'w-'+Date.now(),name,description:$('worldDescription').value.trim(),locations:$('worldLocations').value.trim(),rules:$('worldRules').value.trim()};if(editingWorldId){const i=state.worlds.findIndex(x=>x.id===editingWorldId);if(i>=0)state.worlds[i]=obj}else state.worlds.push(obj);save();closeWorldEditor();renderModule('world');toast('世界已保存')}
