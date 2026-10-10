@@ -194,7 +194,7 @@
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
       if(action==='thought') showInnerThought();
-      if(action==='foodie'||action==='market'){try{if(activeId())sessionStorage.setItem('lr-life-active-contact',activeId());if(window.LoveRecordLifeApps)window.LoveRecordLifeApps.open(action==='foodie'?'food':'shop');else toast('请刷新页面后再试');}catch(error){toast('应用打开失败，请稍后重试');}}
+      if(action==='foodie'||action==='market'){try{const cid=activeId();if(cid){sessionStorage.setItem('lr-life-active-contact',cid);const person=(window.state&&Array.isArray(window.state.people)?window.state.people:[]).find(p=>String(p.id)===String(cid));localStorage.setItem('lr-life-chat-context-v1',JSON.stringify({contactId:String(cid),contactName:person?.name||'',kind:action==='foodie'?'food':'shop',at:Date.now()}));}if(window.LoveRecordLifeApps)window.LoveRecordLifeApps.open(action==='foodie'?'food':'shop');else toast('请刷新页面后再试');}catch(error){toast('应用打开失败，请稍后重试');}}
     });
     document.addEventListener('click', event => { if(menuOpen && !menu.contains(event.target) && event.target!==plus){menu.hidden=true;menuOpen=false;plus.textContent='＋';} });
     const picker=document.createElement('input');picker.type='file';picker.accept='image/*';picker.hidden=true;picker.id='lrChatImageInput';compose.appendChild(picker);

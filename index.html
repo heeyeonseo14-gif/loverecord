@@ -960,6 +960,22 @@ body.music-listening-modal-open{overflow:hidden!important}
 }
 
 </style>
+<style id="lr-chat-polish-v32">
+#chat .chat-conversation{min-width:0;overflow:hidden;background:transparent}
+#chat .chat-messages{width:100%;max-width:100%;box-sizing:border-box;overflow-x:hidden;border-inline:0!important;outline:0;background-clip:padding-box!important;scrollbar-width:thin;scrollbar-color:rgba(168,137,188,.18) transparent}
+#chat .chat-messages::-webkit-scrollbar{width:3px}#chat .chat-messages::-webkit-scrollbar-thumb{background:rgba(168,137,188,.18);border-radius:99px}
+#chat .chat-messages:before,#chat .chat-messages:after{display:none!important;content:none!important}
+#chat .chat-compose{position:relative;z-index:20;gap:10px}
+#chat .chat-compose-plus{flex:0 0 48px;width:48px;height:48px;border-radius:17px;box-shadow:0 4px 16px rgba(100,73,120,.07)}
+#chat .chat-plus-menu{z-index:80;max-width:calc(100vw - 36px);box-shadow:0 18px 48px rgba(65,45,80,.2);border:1px solid rgba(180,157,192,.28)}
+#chat .chat-hint{display:none!important}
+#chatAddModal .chat-picker-item{cursor:pointer;touch-action:manipulation;user-select:none}
+#chatAddModal #chatConfirmPeople{position:sticky;bottom:0;min-height:48px;touch-action:manipulation;z-index:10}
+.chat-order-card{overflow:hidden;border:1px solid rgba(255,255,255,.75);box-shadow:0 10px 28px rgba(85,55,110,.12);border-radius:24px;background:linear-gradient(145deg,rgba(190,160,207,.95),rgba(169,137,190,.95));padding:10px}
+.chat-order-card .order-main{border-radius:18px;background:rgba(255,255,255,.95);padding:18px 20px}
+.chat-order-card .order-kicker{padding:8px 12px;color:#695271;letter-spacing:.16em;font-size:11px;text-align:center}
+.chat-order-card .order-total{display:flex;justify-content:space-between;gap:12px;padding-top:12px;margin-top:12px;border-top:1px solid #eee5f1;font-weight:600}
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1112,7 +1128,7 @@ body.music-listening-modal-open{overflow:hidden!important}
   <section id="chatConversation" class="chat-conversation" hidden>
     <div class="chat-person-head"><button id="chatBackToContacts" class="chat-back" type="button">‹</button><div class="chat-person-avatar" id="chatPersonAvatar">♡</div><div class="chat-person-meta"><strong id="chatPersonName"></strong><span id="chatPersonRole"></span></div></div>
     <div id="chatMessages" class="chat-messages"></div>
-    <div class="chat-compose"><button class="chat-compose-plus" id="chatComposePlus" type="button" aria-label="更多功能">＋</button><div class="chat-plus-menu" id="chatPlusMenu" hidden><button type="button" data-chat-life="food">♡ 点外卖 <span>Foodie</span></button><button type="button" data-chat-life="shop">✧ 购物 <span>Orange Market</span></button></div><textarea id="chatInput" rows="2" placeholder="发送一条消息……"></textarea><button class="btn primary" id="chatSend" type="button">发送</button></div>
+    <div class="chat-compose"><textarea id="chatInput" rows="2" placeholder="发送一条消息……"></textarea><button class="btn primary" id="chatSend" type="button">发送</button></div>
     <div class="chat-hint" id="chatHint">对话记录仅保存在本设备。</div>
   </section>
 </main>
@@ -1288,7 +1304,7 @@ body.music-listening-modal-open{overflow:hidden!important}
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
 const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
-let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
+let state=Object.assign({},defaults,(()=>{let saved={};try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}}catch(e){console.warn('[LOVE RECORD] settings JSON unreadable',e)}try{const api=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}');saved={...saved,...Object.fromEntries(Object.entries(api).filter(([k,v])=>v!==undefined&&v!==null&&v!==''))}}catch{}return saved})());
 // Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
 const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
 try {
@@ -1350,13 +1366,30 @@ function persistPeopleRecovery(){
 
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
-function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}
+function save(){
+ const full=JSON.stringify(state);
+ try{localStorage.setItem(SETTINGS_KEY,full);try{localStorage.setItem('love-record-api-settings-v1',JSON.stringify({apiBase:state.apiBase,apiKey:state.apiKey,apiModel:state.apiModel,modelList:state.modelList||[]}))}catch{}return true}
+ catch(err){
+  console.warn('[LOVE RECORD] settings quota exceeded; writing compact recoverable snapshot',err);
+  // Large scene/history payloads can exhaust localStorage. Keep the essential settings and contacts writable;
+  // do not mutate in-memory state or erase the user's content from the current session.
+  const compact={...state};
+  for(const k of ['spaces','journal','forumPosts','worlds','events']){if(Array.isArray(compact[k])&&JSON.stringify(compact[k]).length>12000)compact[k]=[]}
+  if(Array.isArray(compact.modelList)&&compact.modelList.length>80)compact.modelList=compact.modelList.slice(0,80);
+  try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(compact));persistPeopleRecovery();return true}
+  catch(second){
+   // Save API configuration independently if possible; avoid an uncaught quota exception halting all controls.
+   try{localStorage.setItem('love-record-api-settings-v1',JSON.stringify({apiBase:state.apiBase,apiKey:state.apiKey,apiModel:state.apiModel,modelList:state.modelList||[]}))}catch(e){console.warn('[LOVE RECORD] API settings local persistence also full',e)}
+   persistPeopleRecovery();return false;
+  }
+ }
+}
 // Clean legacy/deleted and empty placeholder contacts once, preserving real contacts and chat history.
 const isInvalidContact=p=>{
   if(!p||typeof p!=='object')return true;
   const id=String(p.id||'').trim().toLowerCase();
   const name=String(p.name||'').trim().toLowerCase();
-  return id==='p-yanhuan'||name==='yan huan'||!name||name==='ai character';
+  return id==='p-yanyan'||!name||name==='ai character';
 };
 state.people=(Array.isArray(state.people)?state.people:[]).filter(p=>!isInvalidContact(p));
 save();
@@ -1386,8 +1419,9 @@ function chatMeta(id){try{if(window.chatMeta&&typeof window.chatMeta==='function
 function writeChatMeta(id,data){if(window.writeChatMeta&&typeof window.writeChatMeta==='function')return window.writeChatMeta(id,data);const all=readChatMeta();all[id]={...(all[id]||{}),...data};try{localStorage.setItem(CHAT_META_KEY,JSON.stringify(all))}catch(e){console.error(e);toast('保存失败：浏览器空间不足')}return all[id]}
 function chatShownName(p){return chatMeta(p.id).remark||p.name||'未命名联系人'}
 function chatAvatarMarkup(p,small=false){const meta=chatMeta(p.id),name=chatShownName(p);return meta.avatar?`<img src="${esc(meta.avatar)}" alt="${esc(name)}">`:esc((name||'♡').slice(0,1))}
-function readChatContacts(){try{return JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]')}catch{return []}}
-function writeChatContacts(a){localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(a))}
+function readChatContacts(){let a=[];try{a=JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]')}catch{}if(!Array.isArray(a))a=[];try{const b=JSON.parse(localStorage.getItem('love-record-chat-contacts-recovery-v1')||'[]');if(Array.isArray(b))a=[...a,...b]}catch{}return [...new Set(a.map(String))]}
+function writeChatContacts(a){const value=JSON.stringify([...new Set((a||[]).map(String))]);let saved=false;try{localStorage.setItem(CHAT_CONTACTS_KEY,value);saved=true}catch(e){console.warn('[LOVE RECORD] primary chat contacts storage full',e)}try{localStorage.setItem('love-record-chat-contacts-recovery-v1',value);saved=true}catch(e){console.warn('[LOVE RECORD] recovery chat contacts storage full',e)}if(!saved)throw new Error('浏览器存储空间不足')}
+
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
 function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a))}
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
@@ -1455,23 +1489,26 @@ function imageToChatData(file,max=1800,quality=.92){return new Promise((resolve,
 async function saveChatSettings(){editingChatMeta.remark=$('chatRemarkInput').value.trim();try{if(window.saveChatMetaSafely){const saved=await window.saveChatMetaSafely(activeChatContactId,editingChatMeta);editingChatMeta={...saved}}else{writeChatMeta(activeChatContactId,editingChatMeta)}closeChatSettings();toast('聊天设置已保存 ♡')}catch(err){console.error('[LOVE RECORD] chat settings save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}}
 function openChatAdd(){ $('chatAddModal').classList.add('show');document.body.style.overflow='hidden';$('chatPeoplePicker').hidden=true;}
 function closeChatAdd(){$('chatAddModal').classList.remove('show');document.body.style.overflow=''}
-function renderChatPeoplePicker(){
+async function renderChatPeoplePicker(){
  const box=$('chatPeoplePicker'),contacts=readChatContacts();
+ try{const stored=await loadPeopleFromIndexedDB();if(stored.length){const map=new Map((state.people||[]).map(x=>[String(x.id),x]));stored.forEach(x=>{if(x&&x.id)map.set(String(x.id),x)});state.people=Array.from(map.values())}}catch(e){console.warn('[LOVE RECORD] picker contact hydrate failed',e)}
  const candidates=(state.people||[]).filter(p=>String(p.id)!=='p-yanyan'&&!contacts.map(String).includes(String(p.id)));
  box.hidden=false;
  box.innerHTML=candidates.length?candidates.map(p=>`<label class="chat-picker-item"><input type="checkbox" value="${esc(p.id)}"><span><b>${esc(p.name)}</b><br><span class="sub">${esc(p.role||p.personality||'AI 人物')}</span></span></label>`).join('')+'<button class="btn primary" id="chatConfirmPeople" type="button" style="width:100%;margin-top:12px">添加选中的联系人</button>':'<div class="module-empty">没有可添加的人物。请先去「联系人」创建人物。</div>'; const confirm=box.querySelector('#chatConfirmPeople');if(confirm){confirm.type='button';confirm.onclick=e=>{e.preventDefault();e.stopPropagation();confirmChatPeople()};}
 }
-function confirmChatPeople(){
+async function confirmChatPeople(){
  const box=$('chatPeoplePicker');
  const selected=[...box.querySelectorAll('input[type=checkbox]')].filter(x=>x.checked).map(x=>String(x.value));
  if(!selected.length){toast('先勾选至少一位联系人');return}
  const ids=readChatContacts().map(String),added=[];
  selected.forEach(pid=>{const person=contactById(pid);if(person&&!ids.includes(String(pid))){ids.push(String(pid));added.push(String(pid))}});
  if(!added.length){toast('所选人物已在聊天联系人中，或人物资料已不存在');return}
- writeChatContacts(ids);
- // Verify persistence before closing the modal, so a failed write is visible rather than silent.
- const saved=readChatContacts();
- if(!added.every(pid=>saved.includes(pid))){toast('联系人保存失败，请检查浏览器储存权限');return}
+ let persisted=false;
+ try{writeChatContacts(ids);persisted=added.every(pid=>readChatContacts().map(String).includes(pid))}catch(e){console.warn('[LOVE RECORD] local chat contact save failed',e)}
+ // A full settings quota must not prevent adding a chat contact: preserve a recoverable list and retry via IndexedDB.
+ try{localStorage.setItem('love-record-chat-contacts-recovery-v1',JSON.stringify(ids));persisted=persisted||added.every(pid=>JSON.parse(localStorage.getItem('love-record-chat-contacts-recovery-v1')||'[]').map(String).includes(pid))}catch(e){console.warn('[LOVE RECORD] chat contact recovery local save failed',e)}
+ try{await savePeopleToIndexedDB(state.people||[]);persisted=true}catch(e){console.warn('[LOVE RECORD] contact IndexedDB save failed',e)}
+ if(!persisted){toast('联系人暂时无法保存：浏览器存储已满。请先清理空间再试');return}
  closeChatAdd();activeChatContactId='';renderChat();toast('已添加 '+added.length+' 位联系人 ♡');
 }
 async function sendChatMessage(){
@@ -1632,7 +1669,7 @@ function renderModelPicker(){
 }
 
 async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}finally{clearTimeout(t)}}
-function apiErrorText(e){if(e&&e.name==='AbortError')return'请求超时：15 秒内没有收到回复。';if(e&&e.message==='Failed to fetch')return'浏览器无法连接 API：常见原因是 CORS、网络拦截或中转站暂时不可用。';return e?.message||String(e)||'未知错误'}
+function apiErrorText(e){if(e&&(e.name==='AbortError'||/signal is aborted|aborted without reason/i.test(String(e.message||''))))return'请求被中止或超时：中转站未在限定时间内返回结果。若 /models 已成功但对话失败，请检查所选模型是否支持 /chat/completions、网络/CORS 与中转站限流。';if(e&&e.message==='Failed to fetch')return'浏览器无法连接 API：常见原因是 CORS、网络拦截或中转站暂时不可用。';return e?.message||String(e)||'未知错误'}
 function setApiDebug(text,on=false){const el=$('apiDebug');if(!el)return;el.textContent=text;el.style.color=on?'#526255':'';}
 async function loadModels(){const base=$('apiBase').value.trim().replace(/\/+$/,'');const key=$('apiKey').value.trim();if(!base||!key){toast('先填写 API 地址和 Key');setApiDebug('请先填写 API 地址和 API Key。');return false}toast('正在读取模型…');try{const r=await fetchTimeout(base+'/models',{headers:{Authorization:'Bearer '+key}},8000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,180):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('模型列表不是有效 JSON')}const ids=Array.isArray(j.data)?j.data.map(x=>x.id).filter(Boolean):[];if(!ids.length)throw new Error('NO_MODELS · /models 没有返回可用模型');state.apiBase=base;state.apiKey=key;state.modelList=ids;state.apiModel=ids.includes(state.apiModel)?state.apiModel:ids[0];save();renderSettings();setApiDebug('模型读取成功：'+ids.length+' 个。当前：'+state.apiModel,true);toast('找到 '+ids.length+' 个模型');return true}catch(e){const msg=apiErrorText(e);setApiDebug('读取 /models 失败：'+msg);toast('模型读取失败，已显示具体原因');return false}}
 
@@ -1923,8 +1960,9 @@ $('chatSend').onclick=sendChatMessage;
 const chatPicker=$('chatPeoplePicker');
 chatPicker.addEventListener('change',e=>{if(e.target.matches('input[type="checkbox"]'))e.target.closest('.chat-picker-item')?.classList.toggle('selected',e.target.checked)},true);
 chatPicker.addEventListener('pointerup',e=>{const b=e.target.closest('#chatConfirmPeople');if(b){e.preventDefault();e.stopPropagation();confirmChatPeople()}},true);
-const chatPlus=$('chatComposePlus'),chatPlusMenu=$('chatPlusMenu');
-if(chatPlus&&chatPlusMenu){chatPlus.onclick=()=>{chatPlusMenu.hidden=!chatPlusMenu.hidden};document.addEventListener('click',e=>{if(!e.target.closest('#chatComposePlus')&&!e.target.closest('#chatPlusMenu'))chatPlusMenu.hidden=true});chatPlusMenu.addEventListener('click',e=>{const b=e.target.closest('[data-chat-life]');if(!b)return;chatPlusMenu.hidden=true;try{localStorage.setItem('lr-life-chat-context-v1',JSON.stringify({contactId:activeChatContactId,contactName:contactById(activeChatContactId)?.name||'',kind:b.dataset.chatLife,at:Date.now()}))}catch{}if(window.LoveRecordLifeApps)window.LoveRecordLifeApps.open(b.dataset.chatLife);else toast('生活应用尚未载入，请刷新后重试')})}
+// Remove duplicate compose-plus controls left by legacy UI injections; keep the single canonical button.
+ document.querySelectorAll('#chat .chat-compose-plus').forEach((b,i)=>{if(i>0)b.remove()});
+ // The unified action menu is injected by chat-interaction-v11.js; avoid rendering a second plus button.
 window.addEventListener('lr-life-order-created',e=>{const o=e.detail||{},ctx=(()=>{try{return JSON.parse(localStorage.getItem('lr-life-chat-context-v1')||'{}')}catch{return {}}})();const cid=String(o.contactId||ctx.contactId||'');if(!cid||!contactById(cid))return;const threads=readChatThreads(),items=threads[cid]||[],kind=o.orderKind==='food'?'food':'shop',sender=o.placedBy==='ai'?(contactById(cid)?.name||'TA'):'你',names=(o.items||[]).map(x=>(x.name||'商品')+' × '+(x.qty||1)).join('、')||'订单已创建';items.push({role:o.placedBy==='ai'?'assistant':'user',text:'[[LR_ORDER|'+kind+'|'+sender+'|'+(o.orderNo||'订单已创建')+'|'+names+'|RMB '+(Number(o.total)||0).toFixed(2)+']]',at:Date.now()});threads[cid]=items;writeChatThreads(threads);if(String(activeChatContactId)===cid)renderChat();});
 
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
@@ -2072,7 +2110,7 @@ if(loveIntro){
   <script src="./chat-save-fix.js?v=16"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=22"></script>
-  <script src="./chat-interaction-v11.js?v=21"></script>
+  <script src="./chat-interaction-v11.js?v=32"></script>
   <script src="./chat-ux-v13.js?v=3"></script>
   
   <script src="./chat-css-unify.js?v=16"></script>
@@ -2131,6 +2169,6 @@ if(loveIntro){
 </script>
 
 <script src="./space-v2.js?v=39"></script>
-<script src="./life-apps.js?v=20261010-api3"></script>
+<script src="./life-apps.js?v=20261010-v32"></script>
 </body>
 </html>
