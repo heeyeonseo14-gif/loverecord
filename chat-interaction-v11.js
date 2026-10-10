@@ -180,7 +180,7 @@
     if (!compose || $('lrChatPlus')) return;
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
-    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button>`;
+    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="foodie">♨　点外卖 · Foodie</button><button type="button" data-lr-action="market">🛍　去购物 · Orange Market</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
@@ -194,6 +194,7 @@
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
       if(action==='thought') showInnerThought();
+      if(action==='foodie'||action==='market'){try{if(activeId())sessionStorage.setItem('lr-life-active-contact',activeId());if(window.LoveRecordLifeApps)window.LoveRecordLifeApps.open(action==='foodie'?'food':'shop');else toast('请刷新页面后再试');}catch(error){toast('应用打开失败，请稍后重试');}}
     });
     document.addEventListener('click', event => { if(menuOpen && !menu.contains(event.target) && event.target!==plus){menu.hidden=true;menuOpen=false;plus.textContent='＋';} });
     const picker=document.createElement('input');picker.type='file';picker.accept='image/*';picker.hidden=true;picker.id='lrChatImageInput';compose.appendChild(picker);
