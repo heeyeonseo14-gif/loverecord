@@ -1019,6 +1019,20 @@ input:focus,textarea:focus,select:focus{
 .dark-mode .music-result-meta strong{color:#3b3044!important}
 
 </style>
+
+/* V25: remove duplicate simulated status bar; compact launcher proportions on mobile */
+.system-statusbar{display:none!important}
+body{padding-top:0!important}
+.launcher-page{min-height:auto!important;padding-top:clamp(8px,2vh,18px)!important;padding-bottom:28px!important}
+.launcher-welcome{padding-top:12px!important;padding-bottom:clamp(12px,3vh,24px)!important}
+.launcher-info{margin-top:0!important}
+@media(max-width:420px){
+  .launcher-welcome{padding-left:5px!important;padding-right:5px!important}
+  .launcher-greeting{font-size:clamp(24px,6.3vw,28px)!important;letter-spacing:1px!important}
+  .launcher-sub{letter-spacing:clamp(1.5px,0.7vw,3px)!important}
+  .launcher-info{margin-bottom:16px!important}
+  .launcher-grid{row-gap:18px!important;padding-bottom:18px!important}
+}
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1029,11 +1043,6 @@ input:focus,textarea:focus,select:focus{
     <div class="love-intro-author">Author by Lxing.</div>
   </div>
 </div>
-<div class="system-statusbar">
-  <span id="systemTime">10:08</span>
-  <span class="system-status-right"><span class="system-status-network">●●●</span><span>Wi-Fi</span><span class="system-battery"><i></i></span></span>
-</div>
-
 <div class="app">
 
 <main id="launcher" class="page active launcher-page">
