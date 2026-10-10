@@ -404,18 +404,6 @@
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
       window.__lrSpaceGlobalTapRouter=true;
-      // Android/mobile fallback: route touch pointerup directly, independent of click bubbling.
-      // Keep this on document capture so dynamically rendered cards are also covered.
-      document.addEventListener('pointerup',function(e){
-        if(e.pointerType!=='touch')return;
-        const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden');
-        if(!card)return;
-        e.preventDefault();e.stopImmediatePropagation();
-        try{
-          if(card.id==='lrSpaceOpenPeopleDynamics')showPeopleDynamics();
-          else openGrowthGarden('pets');
-        }catch(err){console.error('[Space touch router]',card.id,err);toast('暂时无法打开，请稍后再试。');}
-      },true);
       document.addEventListener('click',function(e){
         const card=e.target.closest?.('#lrSpaceOpenPeopleDynamics,#lrSpaceOpenGrowthGarden,#lrSpaceWorldRefresh');
         if(!card)return;
