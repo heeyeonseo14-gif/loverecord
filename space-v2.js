@@ -73,6 +73,23 @@
     if($('lrSpaceV2Style'))return;
     const s=document.createElement('style');s.id='lrSpaceV2Style';s.textContent=`
 .lr-space-v2.active ~ .nav{display:none!important}
+#lrSpaceActivityModal .lr-space-review-item{overflow:hidden}
+#lrSpaceActivityModal .lr-space-review-item b{display:block;min-width:0;overflow-wrap:anywhere;line-height:1.45}
+.lr-space-growth-item[data-growth-open]{cursor:pointer;touch-action:manipulation}
+.lr-space-growth-item[data-growth-open] .lr-space-growth-item-copy{min-width:0}
+.lr-space-pet-detail{padding:8px 0 18px}
+.lr-space-pet-hero{display:flex;align-items:center;gap:14px;padding:18px;border-radius:24px;background:linear-gradient(135deg,#f9e8f5,#f0eafb);margin-bottom:16px}
+.lr-space-pet-hero .lr-space-growth-avatar{width:72px;height:72px;flex:0 0 72px;font-size:36px}
+.lr-space-pet-hero h3{margin:0 0 5px;font-size:22px}.lr-space-pet-hero p{margin:0;color:#8e788e;font-size:13px}
+.lr-space-pet-section{border:1px solid #eadce8;background:rgba(255,255,255,.8);border-radius:20px;padding:16px;margin:12px 0}
+.lr-space-pet-section h4{margin:0 0 12px;font-size:16px}
+.lr-space-pet-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lr-space-pet-fields label{display:block;font-size:12px;color:#967f93;margin-bottom:6px}
+.lr-space-pet-fields input,.lr-space-pet-fields select{width:100%;min-width:0;border:1px solid #e5d6e4;border-radius:12px;background:#fff;padding:11px;color:#655468;font:inherit}
+.lr-space-pet-actions{display:flex;gap:10px;margin-top:14px}.lr-space-pet-actions button{flex:1;min-height:44px;border-radius:14px}
+.lr-space-pet-back{border:1px solid #e3d4e2;background:#fff;color:#8d6f88;padding:10px 15px;border-radius:14px;margin-bottom:12px}
+@media(max-width:380px){.lr-space-pet-fields{grid-template-columns:1fr}.lr-space-pet-hero{align-items:flex-start}}
+
 #space.lr-space-v2{position:relative;padding:0 0 110px;background:linear-gradient(180deg,#f8f4f9 0%,#f1edf4 100%);min-height:calc(100dvh - 150px);overflow:hidden}
 #space.lr-space-v2 *{box-sizing:border-box}.lr-space-v2-screen{min-height:calc(100dvh - 150px);padding:24px 0}.lr-space-v2.hidden{display:none!important}
 .lr-space-v2-intro{position:fixed;inset:0;z-index:5000;background:radial-gradient(circle at 50% 40%,#fff 0,#f4edf7 40%,#d8c6e0 100%);display:grid;place-items:center;opacity:1;pointer-events:auto;transition:opacity .7s ease}.lr-space-v2-intro.hide{opacity:0;pointer-events:none}.lr-space-v2-intro-inner{text-align:center;transform:translateY(12px);animation:lrSpaceIntro 1.25s ease both}.lr-space-v2-intro-mark{width:76px;height:76px;border-radius:50%;margin:0 auto 22px;background:radial-gradient(circle at 35% 30%,#fff,#d5b9df 58%,#a987b8);box-shadow:0 18px 55px rgba(126,92,145,.22);animation:lrSpaceOrb 2.2s ease-in-out infinite}.lr-space-v2-intro-title{font:400 42px/1 Georgia,'Noto Serif SC',serif;letter-spacing:.12em;color:#55465d}.lr-space-v2-intro-sub{margin-top:12px;color:#95869b;letter-spacing:.16em;font-size:11px}.lr-space-v2-intro-line{width:54px;height:1px;background:#c79ab5;margin:20px auto}
@@ -352,8 +369,27 @@
     const addLabel=isDiary?'＋ 记录成长瞬间':growthTab==='pets'?'＋ 添加一位萌宠':'＋ 添加家庭中的孩子';
     let html=`<button class="lr-space-growth-add" id="lrSpaceGrowthAdd" type="button">${addLabel}</button><div id="lrSpaceGrowthFormHost"></div>`;
     if(!items.length)html+=`<div class="lr-space-growth-empty"><div style="font-size:30px;margin-bottom:8px">${isDiary?'📔':growthTab==='pets'?'🐾':'🌱'}</div><b>${isDiary?'把第一次和每一个小进步记下来':growthTab==='pets'?'给家里的小可爱建一份档案':'建立一份成长档案'}</b><p>${isDiary?'第一次见面、第一次撒娇、第一次学会新本领，都值得被记住。':growthTab==='pets'?'记录名字、性格、喜好和日常照料。':'记录成长阶段、性格变化与珍贵日常。'}</p><small>内容保存在当前设备的 Space 中。</small></div>`;
-    else html+=items.slice().reverse().map(x=>`<article class="lr-space-growth-item"><div class="lr-space-growth-avatar">${esc(x.emoji||(isDiary?'📖':growthTab==='pets'?'🐾':'🧸'))}</div><div class="lr-space-growth-item-copy"><h4>${esc(x.name||x.title||'成长记录')}</h4><p>${esc(x.note||x.content||'还没有添加描述。')}</p><small>${esc(x.stage||x.kind||(isDiary?'成长日记':growthTab==='pets'?'萌宠档案':'成长档案'))}${x.date?' · '+esc(x.date):''}</small><div class="lr-space-growth-item-actions"><button type="button" data-growth-delete="${esc(x.id||'') }" class="lr-space-growth-delete">删除记录</button></div></div></article>`).join('');
+    else html+=items.slice().reverse().map(x=>`<article class="lr-space-growth-item" ${!isDiary?`data-growth-open="${esc(x.id||'')}"`:''}><div class="lr-space-growth-avatar">${esc(x.emoji||(isDiary?'📖':growthTab==='pets'?'🐾':'🧸'))}</div><div class="lr-space-growth-item-copy"><h4>${esc(x.name||x.title||'成长记录')}</h4><p>${esc(x.note||x.content||'还没有添加描述。')}</p><small>${esc(x.stage||x.kind||(isDiary?'成长日记':growthTab==='pets'?'萌宠档案':'成长档案'))}${x.date?' · '+esc(x.date):''}</small><div class="lr-space-growth-item-actions">${!isDiary?'<span style="font-size:12px;color:#a184a0;margin-right:8px">查看档案与自定义 ›</span>':''}<button type="button" data-growth-delete="${esc(x.id||'') }" class="lr-space-growth-delete">删除记录</button></div></div></article>`).join('');
     box.innerHTML=html;const add=$('lrSpaceGrowthAdd');if(add)add.onclick=()=>showGrowthForm();
+  }
+  function openGrowthDetail(id){
+    const g=data.growthGarden||(data.growthGarden={pets:[],children:[],diary:[]});
+    const arr=g[growthTab]||[];const item=arr.find(x=>String(x.id||'')===String(id));if(!item)return;
+    const box=$('lrSpaceGrowthContent');if(!box)return;
+    const isPet=growthTab==='pets';const title=isPet?'萌宠档案':'成长档案';
+    const defaults={skin:item.skin||'自然肤色',outfit:item.outfit||'日常休闲',stage:item.stage||(isPet?'幼年期':'幼儿期'),personality:item.personality||'',likes:item.likes||''};
+    box.innerHTML=`<button class="lr-space-pet-back" id="lrSpaceGrowthBack" type="button">← 返回成长乐园</button><div class="lr-space-pet-detail">
+      <div class="lr-space-pet-hero"><div class="lr-space-growth-avatar">${esc(item.emoji||(isPet?'🐾':'🧸'))}</div><div><h3>${esc(item.name||title)}</h3><p>${title} · 可自定义档案</p></div></div>
+      <div class="lr-space-pet-section"><h4>基础信息</h4><div class="lr-space-pet-fields">
+      <div><label>昵称</label><input id="lrPetName" maxlength="60" value="${esc(item.name||'')}"></div>
+      <div><label>${isPet?'宠物类型 / 阶段':'成长阶段'}</label><input id="lrPetStage" maxlength="60" value="${esc(defaults.stage)}"></div>
+      <div><label>外观 / 肤色</label><select id="lrPetSkin">${['自然肤色','白皙','小麦色','健康肤色','奶油色毛发','橘色毛发','自定义'].map(v=>`<option ${defaults.skin===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div><label>穿搭 / 配饰</label><select id="lrPetOutfit">${['日常休闲','可爱连衣裙','居家睡衣','户外运动','小围巾','蝴蝶结','自定义'].map(v=>`<option ${defaults.outfit===v?'selected':''}>${v}</option>`).join('')}</select></div>
+      <div><label>性格</label><input id="lrPetPersonality" maxlength="120" value="${esc(defaults.personality)}" placeholder="例如：黏人、活泼、慢热"></div>
+      <div><label>喜欢的东西</label><input id="lrPetLikes" maxlength="120" value="${esc(defaults.likes)}" placeholder="例如：晒太阳、玩球"></div></div></div>
+      <div class="lr-space-pet-section"><h4>${isPet?'日常照料':'育儿记录'}</h4><p style="margin:0 0 12px;color:#927d91;font-size:13px">${isPet?'把性格、喜好、外观与照料习惯收进同一份萌宠档案。':'自定义成长阶段、肤色与穿搭，并持续记录孩子的变化。'}</p><label style="display:block;font-size:12px;color:#967f93;margin-bottom:6px">备注 / 照料与成长记录</label><textarea id="lrPetNote" class="lr-space-textarea" maxlength="1200">${esc(item.note||item.content||'')}</textarea><div class="lr-space-pet-actions"><button class="lr-space-primary" id="lrPetSave" type="button">保存档案</button></div></div></div>`;
+    $('lrSpaceGrowthBack').onclick=renderGrowthGarden;
+    $('lrPetSave').onclick=()=>{item.name=$('lrPetName').value.trim()||item.name;item.stage=$('lrPetStage').value.trim();item.skin=$('lrPetSkin').value;item.outfit=$('lrPetOutfit').value;item.personality=$('lrPetPersonality').value.trim();item.likes=$('lrPetLikes').value.trim();item.note=$('lrPetNote').value.trim();item.content=item.note;save();renderGrowthGarden();toast('档案已保存。')};
   }
   function showGrowthForm(){const host=$('lrSpaceGrowthFormHost');if(!host)return;const diary=growthTab==='diary';host.innerHTML=`<div class="lr-space-growth-form"><label>${diary?'记录标题':'名字'}</label><input id="lrGrowthName" class="lr-space-input" maxlength="60" placeholder="${diary?'例如：第一次学会握手':'给这个小家伙取个名字'}"><label>${diary?'发生了什么？':(growthTab==='pets'?'宠物类型 / 性格':'成长阶段 / 性格')}</label><textarea id="lrGrowthNote" class="lr-space-textarea" maxlength="1200" placeholder="写下想记住的小细节…"></textarea>${diary?'':'<label>代表表情</label><select id="lrGrowthEmoji" class="lr-space-select"><option value="🐾">🐾 萌宠</option><option value="🐱">🐱 猫咪</option><option value="🐶">🐶 狗狗</option><option value="🐰">🐰 兔兔</option><option value="🧸">🧸 孩子</option><option value="🌷">🌷 其他</option></select>'}<button id="lrSpaceGrowthSave" class="lr-space-primary" type="button">保存记录</button></div>`;const saveBtn=$('lrSpaceGrowthSave');if(saveBtn)saveBtn.onclick=()=>{const name=$('lrGrowthName')?.value.trim(),note=$('lrGrowthNote')?.value.trim();if(!name){toast('先给这份记录起个名字吧。');return}const g=data.growthGarden||(data.growthGarden={pets:[],children:[],diary:[]});const arr=g[growthTab]||(g[growthTab]=[]);arr.push({id:'growth-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name,title:name,note,content:note,emoji:diary?'📖':($('lrGrowthEmoji')?.value||'🐾'),stage:diary?'成长日记':growthTab==='pets'?'萌宠档案':'成长档案',date:new Date().toLocaleDateString('zh-CN'),createdAt:Date.now()});save();renderGrowthGarden();toast('已收藏这段小小的成长。')}}
   function openMemoryArchive(tab='cards'){const modal=$('lrSpaceMemoryArchive');if(!modal)return;modal.classList.add('show');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';renderMemoryArchive(tab)}
@@ -436,6 +472,8 @@
     document.addEventListener('click',e=>{
       if(e.target?.id==='lrSpaceActivityModal'){closeActivityModal();return}
       if(e.target?.id==='lrSpaceGrowthGarden'){closeGrowthGarden();return}
+      const growthOpen=e.target.closest?.('[data-growth-open]');
+      if(growthOpen&&!e.target.closest?.('[data-growth-delete]')){openGrowthDetail(growthOpen.dataset.growthOpen);return}
       const growthDelete=e.target.closest?.('[data-growth-delete]');
       if(growthDelete){const id=growthDelete.dataset.growthDelete;const arr=data.growthGarden?.[growthTab]||[];const idx=arr.findIndex(x=>String(x.id||'')===String(id));if(idx>=0){arr.splice(idx,1);save();renderGrowthGarden();toast('这条成长记录已删除。')}return}
       const memoryTab=e.target.closest?.('[data-memory-tab]');if(memoryTab){renderMemoryArchive(memoryTab.dataset.memoryTab);return}
