@@ -441,6 +441,8 @@ body{padding-top:34px;padding-bottom:calc(104px + env(safe-area-inset-bottom));}
 .app-icon{width:clamp(57px,17vw,76px);height:clamp(57px,17vw,76px);border-radius:22px;background:rgba(255,255,255,.83);border:1px solid rgba(255,255,255,.92);box-shadow:0 8px 22px rgba(88,72,103,.08),inset 0 1px 0 rgba(255,255,255,.9);display:grid;place-items:center;color:#8f7ba0;font-size:29px;font-weight:300;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:transform .16s,box-shadow .16s}
 .launcher-app:active .app-icon{transform:scale(.94);box-shadow:0 3px 9px rgba(88,72,103,.08)}
 .icon-home{font-size:34px}.icon-memory{font-size:30px}.icon-space{font-size:34px}.icon-people{font-size:31px}
+.icon-foodie{color:#438fce;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(220,239,255,.84));border-color:rgba(255,255,255,.98)}
+.icon-orange-market{color:#d88735;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(255,231,190,.88));border-color:rgba(255,255,255,.98)}
 .launcher-widget{margin:8px 2px 0;padding:15px 17px;border:1px solid rgba(255,255,255,.9);border-radius:23px;background:rgba(255,255,255,.57);display:flex;align-items:center;gap:13px;box-shadow:0 10px 28px rgba(88,72,103,.05);backdrop-filter:blur(14px)}
 .widget-mark{width:37px;height:37px;border-radius:13px;background:#eee7f3;display:grid;place-items:center;color:#a28ab5;font-size:18px;flex:none}
 .widget-title{font:10px Georgia,serif;letter-spacing:1.5px;color:#65586e}
@@ -956,6 +958,8 @@ body.music-listening-modal-open{overflow:hidden!important}
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
+    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>外卖</span></button>
+    <button class="launcher-app" data-launch-life="shop" type="button" data-drag-id="app-orange-market"><span class="app-icon icon-orange-market">🛍</span><span>购物</span></button>
   </section>
 </main>
 
@@ -2020,5 +2024,6 @@ if(loveIntro){
 </script>
 
 <script src="./space-v2.js?v=39"></script>
+<script src="./life-apps.js?v=1"></script>
 </body>
 </html>
