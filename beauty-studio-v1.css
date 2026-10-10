@@ -11,3 +11,15 @@
 #launcher.lr-glass-obsidian .sub,#launcher.lr-glass-obsidian .eyebrow,#music.lr-glass-obsidian .sub,#music.lr-glass-obsidian .eyebrow,#chat.lr-glass-obsidian .sub{color:var(--muted)}
 .lr-beauty-theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:12px}.lr-beauty-theme{min-width:0;border:1px solid var(--line);border-radius:16px;padding:10px 7px;background:var(--card);color:var(--ink);text-align:left;cursor:pointer;appearance:none;-webkit-appearance:none}.lr-beauty-theme.active{outline:2px solid var(--accent);outline-offset:1px;box-shadow:0 0 0 3px rgba(169,138,203,.18)}.lr-beauty-theme.active:after{content:'✓';float:right;font-weight:700;color:var(--accent)}.lr-beauty-chip{display:block;height:43px;border-radius:10px;margin-bottom:8px;border:1px solid rgba(120,110,130,.15)}.lr-beauty-theme strong{display:block;font-size:12px}.lr-beauty-theme small{display:block;margin-top:3px;font-size:10px;opacity:.72}
 .lr-custom-font-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.lr-custom-font-grid input{width:100%;box-sizing:border-box}.lr-font-help{font-size:11px;line-height:1.6;color:var(--muted);margin-top:8px}.lr-font-preview{padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);margin-top:10px;overflow-wrap:anywhere}@media(min-width:500px){.lr-custom-font-grid{grid-template-columns:1fr 1fr}.lr-custom-font-grid .lr-font-full{grid-column:1/-1}}
+/* V24: the selected theme fills the whole Home/Music viewport, not just the inset main element. */
+body.lr-theme-viewport{background-color:var(--lr-viewport-bg,#eee7f5)!important}
+body.lr-viewport-obsidian{--lr-viewport-bg:#17171c;background-color:#17171c!important;color:#f3f1f7}
+body.lr-viewport-pearl{--lr-viewport-bg:#f3f2f5;background-color:#f3f2f5!important;color:#302b35}
+body.lr-viewport-amethyst{--lr-viewport-bg:#eee7f5;background-color:#eee7f5!important;color:#352a40}
+body.lr-theme-viewport .app{background:transparent!important}
+body.lr-viewport-obsidian .nav{background:rgba(25,24,30,.94)!important;border-color:rgba(255,255,255,.16)!important}
+body.lr-viewport-obsidian .nav-btn{color:#c9c2d2!important}
+body.lr-viewport-obsidian .nav-btn.active{background:rgba(255,255,255,.10)!important;color:#fff!important}
+#appearancePreview[data-preview-theme="obsidian"]{background:linear-gradient(145deg,#292630,#17171c)!important;color:#f3f1f7!important}
+#appearancePreview[data-preview-theme="pearl"]{background:linear-gradient(145deg,#fff,#e9e7ee)!important;color:#302b35!important}
+#appearancePreview[data-preview-theme="amethyst"]{background:linear-gradient(145deg,#f9f3ff,#cdb6e4)!important;color:#352a40!important}

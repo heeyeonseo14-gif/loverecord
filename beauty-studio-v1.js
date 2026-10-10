@@ -47,9 +47,24 @@
       home.style.backgroundPosition=photo?'center,center':'';
       home.style.backgroundAttachment=photo?'fixed,fixed':'';
     }
-    const colors={obsidian:['#f3f1f7','#17171c'],pearl:['#302b35','#f3f2f5'],amethyst:['#352a40','#eee7f5']};
-    pages.forEach(id=>{const page=document.getElementById(id);if(!page)return;const c=colors[key]||colors.amethyst;page.style.setProperty('--ink',c[0]);page.style.setProperty('--theme-text',c[0]);page.style.setProperty('--bg',c[1]);page.style.color=c[0];page.style.backgroundColor=c[1];});
+    const colors={obsidian:{text:'#f3f1f7',bg:'#17171c'},pearl:{text:'#302b35',bg:'#f3f2f5'},amethyst:{text:'#352a40',bg:'#eee7f5'}};
+    const c=colors[key]||colors.amethyst;
+    pages.forEach(id=>{const page=document.getElementById(id);if(!page)return;page.style.setProperty('--ink',c.text);page.style.setProperty('--theme-text',c.text);page.style.setProperty('--bg',c.bg);page.style.color=c.text;page.style.backgroundColor=id==='chat'?'transparent':c.bg;});
     window.__lrCurrentGlassTheme=key||'';
+    window.__lrPreviewGlassTheme=previewKey=>{
+      const k=previewKey||window.__lrCurrentGlassTheme||'amethyst';const pc=colors[k]||colors.amethyst;const pv=document.getElementById('appearancePreview');
+      if(pv){pv.dataset.previewTheme=k;pv.style.background=k==='obsidian'?'linear-gradient(145deg,#25232c,#17171c)':k==='pearl'?'linear-gradient(145deg,#fff,#e9e7ee)':'linear-gradient(145deg,#f9f3ff,#cdb6e4)';pv.style.color=pc.text;const card=pv.querySelector('.preview-card');if(card){card.style.background=k==='obsidian'?'rgba(45,43,52,.78)':k==='pearl'?'rgba(255,255,255,.78)':'rgba(248,243,252,.72)';card.style.color=pc.text;card.style.border='1px solid '+(k==='obsidian'?'rgba(255,255,255,.22)':'rgba(255,255,255,.8)')}pv.querySelectorAll('.eyebrow').forEach(el=>el.style.color=k==='obsidian'?'#c9c2d2':k==='pearl'?'#77727f':'#8a779b');}
+    };
+    window.__lrApplyThemeToPages=applyTheme;
+    window.__lrSyncThemeViewport=(pageName)=>{
+      const active=pageName||document.querySelector('.page.active')?.id||'launcher';
+      const themed=active==='launcher'||active==='music';document.body.classList.toggle('lr-theme-viewport',themed);
+      document.body.classList.remove('lr-viewport-obsidian','lr-viewport-pearl','lr-viewport-amethyst');
+      if(themed)document.body.classList.add('lr-viewport-'+(key||'amethyst'));
+      document.body.style.backgroundColor=themed?c.bg:'';
+      const nav=document.querySelector('.nav');if(nav&&themed&&key==='obsidian'){nav.style.background='rgba(25,24,30,.94)';nav.style.borderColor='rgba(255,255,255,.16)';nav.querySelectorAll('.nav-btn').forEach(b=>b.style.color='#c9c2d2')}else if(nav){nav.style.background='';nav.style.borderColor='';nav.querySelectorAll('.nav-btn').forEach(b=>b.style.color='')}
+    };
+    window.__lrPreviewGlassTheme(key);
     document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>{b.classList.toggle('active',b.dataset.lrGlassTheme===key);b.setAttribute('aria-pressed',String(b.dataset.lrGlassTheme===key))});
   }
   function applyTheme(key,save=true){
@@ -77,7 +92,7 @@
     section.addEventListener('click',e=>{const b=e.target.closest('[data-lr-glass-theme]');if(!b)return;const key=b.dataset.lrGlassTheme;
       // Theme selection changes only the glass theme; preserve custom photo, font, accent and all other controls.
       if(typeof appearance!=='undefined')appearance.glassTheme=key;
-      applyTheme(key,false);
+      applyTheme(key,false);window.__lrPreviewGlassTheme?.(key);window.__lrSyncThemeViewport?.();
       if(!window.__lrAppearanceEditing)safeWrite(Object.assign({},safeRead(),{glassTheme:key}));
     });
   }
@@ -126,7 +141,7 @@
     installQuotaSafeAppearanceSave();
     if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
     mountThemePicker();mountFontControls();
-    const saved=safeRead();const bootTheme=themeMap[saved.glassTheme]?saved.glassTheme:(typeof appearance!=='undefined'&&themeMap[appearance.glassTheme]?appearance.glassTheme:'amethyst');applyTheme(bootTheme,false);
+    const saved=safeRead();const bootTheme=themeMap[saved.glassTheme]?saved.glassTheme:(typeof appearance!=='undefined'&&themeMap[appearance.glassTheme]?appearance.glassTheme:'amethyst');applyTheme(bootTheme,false);window.__lrSyncThemeViewport?.();
     // Preserve the independent theme/font settings when the legacy appearance function saves its object.
     if(typeof applyAppearance==='function'){
       const originalApplyAppearance=applyAppearance;
