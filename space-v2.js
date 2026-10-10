@@ -33,21 +33,22 @@
   async function persistHistoryRecord(record){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});return true}catch(e){console.error('Could not persist Space history to IndexedDB',e);historyStorageReady=false;try{const stored={...data};stored.history=data.history;localStorage.setItem(KEY,JSON.stringify(stored))}catch(_){}toast('剧情档案存储失败。请检查浏览器存储空间；本次内容仍保留在当前页面中。');return false}}
   async function deleteHistoryRecordFromIDB(id){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}catch(e){console.warn('Could not delete archived history record',e)}}
   function people(){
-    // Read the same persistent people store used by LOVE RECORD itself.
-    // Do not depend on window.state: the main app declares `let state`, which is
-    // a global lexical binding rather than a window property.
+    // Merge the main settings list with in-memory contacts. The in-memory list may
+    // include contacts recovered from the independent IndexedDB store when the
+    // main localStorage settings blob could not be written.
+    const byId=new Map();
     try{
       const raw=localStorage.getItem('yanyan-love-settings-v5');
       const parsed=raw?JSON.parse(raw):null;
       const list=Array.isArray(parsed?.people)?parsed.people:[];
-      if(list.length)return list.filter(p=>p&&p.id!=='p-yanyan'&&String(p.name||'').trim());
+      list.forEach(p=>{if(p&&p.id&&String(p.name||'').trim())byId.set(String(p.id),p)});
     }catch(e){}
     try{
-      if(typeof state!=='undefined' && Array.isArray(state.people)){
-        return state.people.filter(p=>p&&p.id!=='p-yanyan'&&String(p.name||'').trim());
+      if(typeof state!=='undefined'&&Array.isArray(state.people)){
+        state.people.forEach(p=>{if(p&&p.id&&String(p.name||'').trim())byId.set(String(p.id),p)});
       }
     }catch(e){}
-    return [];
+    return Array.from(byId.values()).filter(p=>p.id!=='p-yanyan');
   }
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
