@@ -5,6 +5,8 @@
   --lr-glass-shadow: 0 16px 42px rgba(35, 25, 45, .10);
 }
 body.lr-glass-amethyst {
+  --bg: #eee7f5;
+  --theme-page-bg: #eee7f5;
   --card: rgba(246,240,251,.72);
   --muted: #82758e;
   --line: rgba(255,255,255,.64);
@@ -13,8 +15,11 @@ body.lr-glass-amethyst {
   --accent-soft: #c9b3e2;
   --lr-glass-border: rgba(255,255,255,.64);
   --lr-glass-shadow: 0 18px 46px rgba(100,72,126,.15);
+  background-image: radial-gradient(ellipse at 8% 0%,rgba(255,255,255,.82),transparent 45%), radial-gradient(ellipse at 100% 30%,rgba(195,165,224,.30),transparent 44%) !important;
 }
 body.lr-glass-pearl {
+  --bg: #f3f2f5;
+  --theme-page-bg: #f3f2f5;
   --card: rgba(255,255,255,.72);
   --muted: #85818d;
   --line: rgba(255,255,255,.84);
@@ -23,8 +28,11 @@ body.lr-glass-pearl {
   --accent-soft: #c7c2d0;
   --lr-glass-border: rgba(255,255,255,.82);
   --lr-glass-shadow: 0 18px 44px rgba(45,42,56,.08);
+  background-image: radial-gradient(ellipse at 0% 0%,rgba(255,255,255,.96),transparent 48%), radial-gradient(ellipse at 100% 35%,rgba(221,220,230,.38),transparent 46%) !important;
 }
 body.lr-glass-obsidian {
+  --bg: #17171c;
+  --theme-page-bg: #17171c;
   --card: rgba(39,39,47,.70);
   --muted: #b1adbb;
   --line: rgba(255,255,255,.14);
@@ -33,6 +41,7 @@ body.lr-glass-obsidian {
   --accent-soft: #d8cfe7;
   --lr-glass-border: rgba(255,255,255,.19);
   --lr-glass-shadow: 0 18px 48px rgba(0,0,0,.26);
+  background-image: radial-gradient(ellipse at 10% 0%,rgba(116,104,139,.22),transparent 48%), radial-gradient(ellipse at 100% 38%,rgba(79,84,105,.20),transparent 45%) !important;
 }
 /* Glass treatment only for general app surfaces. Space's pixel/scene artwork is intentionally excluded. */
 body.lr-glass-amethyst .card,
@@ -125,21 +134,3 @@ body.lr-glass-obsidian .nav { background-color: rgba(25,25,31,.78); }
 .lr-font-help { font-size:11px;line-height:1.6;color:var(--muted);margin-top:8px; }
 .lr-font-preview { padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card);margin-top:10px;overflow-wrap:anywhere; }
 @media(min-width:500px){.lr-custom-font-grid{grid-template-columns:1fr 1fr}.lr-custom-font-grid .lr-font-full{grid-column:1/-1}}
-
-/* V3: glass themes must not paint black/colored gutters around Space and Chat. */
-body.lr-glass-amethyst,body.lr-glass-pearl,body.lr-glass-obsidian{background-image:none!important}
-body.lr-glass-amethyst,body.lr-glass-pearl,body.lr-glass-obsidian{background-color:var(--theme-page-bg,var(--bg))!important}
-/* V3: unmistakable selected state without a dark frame. */
-.lr-beauty-theme{position:relative;transition:border-color .18s,box-shadow .18s,transform .18s}
-.lr-beauty-theme.active{outline:3px solid var(--accent,#a98acb)!important;outline-offset:2px;border-color:var(--accent,#a98acb)!important;box-shadow:0 0 0 5px color-mix(in srgb,var(--accent,#a98acb) 18%,transparent),0 8px 24px rgba(40,25,55,.10)!important;transform:translateY(-1px)}
-.lr-beauty-theme.active:after{content:"✓";position:absolute;right:9px;top:9px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--accent,#a98acb);color:white;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-.lr-beauty-actions{position:sticky;bottom:0;z-index:20;display:flex;gap:10px;padding:12px 0 calc(12px + env(safe-area-inset-bottom));margin-top:12px;background:linear-gradient(180deg,transparent,rgba(245,242,248,.94) 22%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.lr-beauty-actions button{flex:1;min-height:46px;border-radius:15px;font-size:14px;font-weight:600;border:1px solid var(--line);cursor:pointer}
-.lr-beauty-actions .lr-save{background:var(--accent,#a98acb);color:#fff;border-color:transparent}
-.lr-beauty-actions .lr-cancel{background:rgba(255,255,255,.86);color:var(--ink,#352a40)}
-body.lr-glass-obsidian .lr-beauty-actions{background:linear-gradient(180deg,transparent,rgba(24,23,29,.95) 22%)}
-body.lr-glass-obsidian .lr-beauty-actions .lr-cancel{background:rgba(45,43,52,.96);color:#f5f2f9}
-
-/* V3: theme selection is a surface treatment only; preserve the user-selected text color. */
-body.lr-glass-amethyst,body.lr-glass-pearl,body.lr-glass-obsidian{color:var(--ink)!important}
-body.lr-glass-amethyst .card,body.lr-glass-amethyst .sheet,body.lr-glass-amethyst .module-sheet,body.lr-glass-amethyst .preview-card,body.lr-glass-pearl .card,body.lr-glass-pearl .sheet,body.lr-glass-pearl .module-sheet,body.lr-glass-pearl .preview-card{color:var(--ink)}
