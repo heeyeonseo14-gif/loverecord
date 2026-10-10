@@ -4,8 +4,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eee7f5",
-  "theme_color": "#eee7f5",
+  "background_color": "#f7f3f9",
+  "theme_color": "#f5f0f7",
   "description": "A little world of our own.",
   "icons": [
     {

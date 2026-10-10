@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#eee7f5">
+<meta name="theme-color" content="#f7f3f9">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
@@ -910,129 +910,7 @@ body.music-listening-modal-open{overflow:hidden!important}
   background: rgba(255,255,255,.97);
 }
 
-
-/* LOVE RECORD · Fixed Amethyst Liquid Glass theme
-   Visual-only layer: preserve existing app data and feature scripts. */
-:root{
-  --bg:#eee7f5 !important;
-  --card:rgba(255,252,255,.68) !important;
-  --ink:#342a3c !important;
-  --muted:#8d8096 !important;
-  --line:rgba(255,255,255,.78) !important;
-  --soft:rgba(207,183,222,.34) !important;
-  --purple:#a985c1 !important;
-  --dark:#342a3c !important;
-  --accent:#a985c1 !important;
-  --accent-soft:#cbb1db !important;
-  --card-radius:26px !important;
-  --card-blur:24px !important;
-  --card-opacity:.72 !important;
-  --card-shadow:0 16px 42px rgba(89,61,105,.12),inset 0 1px 0 rgba(255,255,255,.9) !important;
-}
-html{background:#eee7f5!important}
-body{
-  background-color:#eee7f5!important;
-  color:#342a3c;
-}
-body:before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:0;
-  pointer-events:none;
-  background:
-    radial-gradient(ellipse at 12% 8%,rgba(255,255,255,.78),transparent 42%),
-    radial-gradient(ellipse at 88% 18%,rgba(220,190,239,.54),transparent 44%),
-    radial-gradient(ellipse at 50% 100%,rgba(191,158,211,.32),transparent 48%),
-    linear-gradient(145deg,#f6f0fa 0%,#eee5f4 48%,#e5d9ee 100%);
-}
-.app,.page,.launcher-page,.music-page{background:transparent!important}
-.app{position:relative;z-index:1}
-.nav,.system-statusbar,.modal,.module-modal,.sheet,.module-sheet{position:relative;z-index:2}
-.page{color:#342a3c}
-.card,.launcher-info,.launcher-days,.home-moment-mini,.appearance-section,
-.music-search-panel,.music-library,.music-player-card,.music-online-results,
-.music-mini,.module-sheet,.module-modal,.sheet,.modal-content,.chat-panel,
-.chat-contacts-panel,.chat-conversation-panel,.workspace-toolbar,.space-people-card,
-.forum-post,.module-item,.module-empty,.history-bubble:not(.user),.chat-message:not(.user){
-  background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(250,244,253,.48))!important;
-  border:1px solid rgba(255,255,255,.86)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(188,157,207,.12),0 16px 40px rgba(88,61,104,.10)!important;
-  -webkit-backdrop-filter:blur(24px) saturate(1.35)!important;
-  backdrop-filter:blur(24px) saturate(1.35)!important;
-}
-.nav{
-  background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(246,238,250,.64))!important;
-  border:1px solid rgba(255,255,255,.9)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 12px 34px rgba(88,61,104,.12)!important;
-  -webkit-backdrop-filter:blur(30px) saturate(1.5)!important;
-  backdrop-filter:blur(30px) saturate(1.5)!important;
-}
-.launcher-app .app-icon,.app-icon,.dock-icon{
-  background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(245,236,250,.76))!important;
-  border:1px solid rgba(255,255,255,.96)!important;
-  box-shadow:inset 0 1px 0 #fff,0 10px 25px rgba(100,69,118,.11)!important;
-  color:#9273a4!important;
-}
-button,.btn,.primary,.music-together-button,.music-online-row button,.music-result-actions button{
-  -webkit-tap-highlight-color:transparent;
-}
-.btn.primary,.primary,.music-together-button{
-  color:#fff!important;
-  background:linear-gradient(135deg,#c6a8d8,#9d7bb4)!important;
-  border:1px solid rgba(255,255,255,.7)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 8px 20px rgba(139,102,160,.2)!important;
-}
-input,textarea,select{
-  border-color:rgba(177,147,194,.28)!important;
-}
-input:focus,textarea:focus,select:focus{
-  outline:2px solid rgba(174,139,196,.35)!important;
-  outline-offset:1px;
-}
-.appearance-option.active,.chat-bg-option.active{
-  border:2px solid #a985c1!important;
-  box-shadow:0 0 0 3px rgba(169,133,193,.15),inset 0 1px 0 rgba(255,255,255,.9)!important;
-}
-.modal,.module-modal,.sheet,.module-sheet{
-  -webkit-backdrop-filter:blur(22px) saturate(1.3)!important;
-  backdrop-filter:blur(22px) saturate(1.3)!important;
-}
-.music-heading h1,.music-section-head h2,.music-player-card h2,
-.launcher-greeting,.launcher-days,.launcher-info,.card h2,.card h3{
-  color:#3b3044;
-}
-.dark-mode{
-  color:#342a3c!important;
-  background-color:#eee7f5!important;
-}
-.dark-mode .page,.dark-mode .app{color:#342a3c!important;background:transparent!important}
-.dark-mode .card,.dark-mode .launcher-info,.dark-mode .launcher-days,
-.dark-mode .home-moment-mini,.dark-mode .music-search-panel,.dark-mode .music-library,
-.dark-mode .music-player-card,.dark-mode .music-online-results,.dark-mode .music-mini,
-.dark-mode .module-sheet,.dark-mode .module-modal,.dark-mode .sheet,.dark-mode .modal-content{
-  background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(250,244,253,.48))!important;
-  color:#342a3c!important;
-}
-.dark-mode .music-heading h1,.dark-mode .music-section-head h2,
-.dark-mode .music-player-card h2,.dark-mode .music-track-meta strong,
-.dark-mode .music-result-meta strong{color:#3b3044!important}
-
 </style>
-
-/* V25: remove duplicate simulated status bar; compact launcher proportions on mobile */
-.system-statusbar{display:none!important}
-body{padding-top:0!important}
-.launcher-page{min-height:auto!important;padding-top:clamp(8px,2vh,18px)!important;padding-bottom:28px!important}
-.launcher-welcome{padding-top:12px!important;padding-bottom:clamp(12px,3vh,24px)!important}
-.launcher-info{margin-top:0!important}
-@media(max-width:420px){
-  .launcher-welcome{padding-left:5px!important;padding-right:5px!important}
-  .launcher-greeting{font-size:clamp(24px,6.3vw,28px)!important;letter-spacing:1px!important}
-  .launcher-sub{letter-spacing:clamp(1.5px,0.7vw,3px)!important}
-  .launcher-info{margin-bottom:16px!important}
-  .launcher-grid{row-gap:18px!important;padding-bottom:18px!important}
-}
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1043,6 +921,11 @@ body{padding-top:0!important}
     <div class="love-intro-author">Author by Lxing.</div>
   </div>
 </div>
+<div class="system-statusbar">
+  <span id="systemTime">10:08</span>
+  <span class="system-status-right"><span class="system-status-network">●●●</span><span>Wi-Fi</span><span class="system-battery"><i></i></span></span>
+</div>
+
 <div class="app">
 
 <main id="launcher" class="page active launcher-page">
