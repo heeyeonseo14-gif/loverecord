@@ -19,18 +19,54 @@
     if(!ok&&typeof window.toast==='function')window.toast('设置暂时无法保存：浏览器储存空间不足；现有资料未被清除');return ok};
   // If the original appearance JSON cannot be rewritten because it contains a large background image,
   // keep a compact set of appearance controls separately instead of discarding the background or data.
+  let beautyEditing=false;
+  let beautySnapshot=null;
+  function compactAppearance(){const out={};['preset','font','fontSize','titleScale','accent','textColor','bg','radius','blur','opacity','dark','motion'].forEach(k=>{if(typeof appearance!=='undefined'&&appearance[k]!==undefined)out[k]=appearance[k]});return out}
+  function persistCompactAppearance(){try{localStorage.setItem(APPEARANCE_FALLBACK_KEY,JSON.stringify(compactAppearance()));return true}catch(e){if(typeof window.toast==='function')window.toast('保存失败：浏览器无法写入设置；原有资料未被清除');return false}}
   function installQuotaSafeAppearanceSave(){
     if(typeof window.saveAppearance!=='function'||window.__lrQuotaSafeSaveInstalled)return;
-    const original=window.saveAppearance;
-    window.saveAppearance=function(){try{return original()}catch(e){try{const compact={};['preset','font','fontSize','titleScale','accent','textColor','bg','radius','blur','opacity','dark','motion'].forEach(k=>{if(typeof appearance!=='undefined'&&appearance[k]!==undefined)compact[k]=appearance[k]});localStorage.setItem(APPEARANCE_FALLBACK_KEY,JSON.stringify(compact));return true}catch(err){if(typeof window.toast==='function')window.toast('设置保存失败：储存空间不足；请先勿清除网站资料');return false}}};
+    window.saveAppearance=function(){if(beautyEditing)return true;return persistCompactAppearance()};
     window.__lrQuotaSafeSaveInstalled=true;
+  }
+  function takeBeautySnapshot(){
+    if(beautySnapshot)return;
+    beautySnapshot={appearance:typeof appearance!=='undefined'?JSON.parse(JSON.stringify(appearance)):null,theme:safeRead().glassTheme||null,fontName:safeRead().customFontName||'',fontUrl:safeRead().customFontUrl||''};
+    beautyEditing=true;
+  }
+  function mountSaveCancel(){
+    const sheet=document.querySelector('#appearanceModal .appearance-sheet');if(!sheet||document.getElementById('lrBeautyActions'))return;
+    const bar=document.createElement('div');bar.id='lrBeautyActions';bar.className='lr-beauty-actions';bar.innerHTML='<button type="button" class="lr-cancel" id="lrBeautyCancel">取消</button><button type="button" class="lr-save" id="lrBeautySave">保存</button>';sheet.appendChild(bar);
+    document.getElementById('lrBeautySave').addEventListener('click',()=>{
+      if(!persistCompactAppearance())return;
+      const selected=document.querySelector('[data-lr-glass-theme].active')?.dataset.lrGlassTheme;const current=safeRead();if(selected)current.glassTheme=selected;if(current.glassTheme)safeWrite(current);
+      const fontName=document.getElementById('lrCustomFontName')?.value?.trim();const fontUrl=document.getElementById('lrCustomFontUrl')?.value?.trim();if(fontName&&fontUrl)safeWrite({customFontName:fontName,customFontUrl:fontUrl});
+      beautyEditing=false;beautySnapshot=null;
+      if(typeof window.toast==='function')window.toast('美化设置保存成功');
+      const modal=document.getElementById('appearanceModal');modal?.classList.remove('show');document.body.style.overflow='';
+    });
+    document.getElementById('lrBeautyCancel').addEventListener('click',cancelBeautyChanges);
+  }
+  function cancelBeautyChanges(){
+    if(beautySnapshot&&beautySnapshot.appearance&&typeof appearance!=='undefined'){appearance=JSON.parse(JSON.stringify(beautySnapshot.appearance));}
+    beautyEditing=false;
+    if(beautySnapshot){
+      const old=beautySnapshot;
+      if(old.theme){safeWrite({glassTheme:old.theme});applyTheme(old.theme,false)}else{document.body.classList.remove(...Object.values(themeMap));try{localStorage.removeItem(THEME_KEY)}catch(_){}}
+      if(old.fontName&&old.fontUrl){safeWrite({customFontName:old.fontName,customFontUrl:old.fontUrl});applySavedCustomFont({customFontName:old.fontName,customFontUrl:old.fontUrl})}
+      else{try{localStorage.removeItem(FONT_KEY)}catch(_){};document.getElementById('lrCustomFontFace')?.remove();document.body.style.fontFamily=''}
+    }
+    beautySnapshot=null;
+    if(typeof window.applyAppearance==='function')window.applyAppearance();
+    if(typeof window.renderAppearanceControls==='function')window.renderAppearanceControls();
+    if(typeof window.toast==='function')window.toast('已取消本次美化修改');
+    const modal=document.getElementById('appearanceModal');modal?.classList.remove('show');document.body.style.overflow='';
   }
   function applyTheme(key,save=true){
     if(!themeMap[key])return;
     document.body.classList.remove(...Object.values(themeMap));
     document.body.classList.add(themeMap[key]);
     const current=safeRead();current.glassTheme=key;
-    if(save)safeWrite(current);
+    if(save&&!beautyEditing)safeWrite(current);
     document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>b.classList.toggle('active',b.dataset.lrGlassTheme===key));
   }
   function addThemePresets(){
@@ -51,9 +87,10 @@
     presetSection.insertAdjacentElement('afterend',section);
     section.addEventListener('click',e=>{const b=e.target.closest('[data-lr-glass-theme]');if(!b)return;const key=b.dataset.lrGlassTheme;
       // Let the existing preset system update its normal values; then persist the independent glass theme.
-      const before=safeRead();
-      if(typeof window.applyPreset==='function'&&typeof presetChoices!=='undefined'&&presetChoices[key])window.applyPreset(key);
-      const v=safeRead();if(before.customFontName)v.customFontName=before.customFontName;if(before.customFontUrl)v.customFontUrl=before.customFontUrl;v.glassTheme=key;safeWrite(v);applyTheme(key,false);
+      takeBeautySnapshot();
+      // A glass theme is purely visual. Do not call the legacy preset system: that would overwrite
+      // text color, dark mode, background data and other existing appearance preferences.
+      const v=safeRead();v.glassTheme=key;if(!beautyEditing)safeWrite(v);applyTheme(key,false);
     });
   }
   function applySavedCustomFont(saved){
@@ -86,12 +123,12 @@
       let style=document.getElementById('lrCustomFontFace');if(!style){style=document.createElement('style');style.id='lrCustomFontFace';document.head.appendChild(style)}
       style.textContent='@font-face{font-family:"LRUserCustomFont";src:url("'+parsed.href.replace(/["\\]/g,'')+'");font-display:swap;}';
       document.body.style.fontFamily='"LRUserCustomFont", "'+safeName+'", -apple-system, BlinkMacSystemFont, sans-serif';
-      const v=safeRead();v.customFontName=safeName;v.customFontUrl=parsed.href;v.font='custom';safeWrite(v);if(typeof appearance!=='undefined'){appearance.customFontName=safeName;appearance.customFontUrl=parsed.href;appearance.font='custom'}previewFont();
+      const v=safeRead();v.customFontName=safeName;v.customFontUrl=parsed.href;v.font='custom';if(!beautyEditing)safeWrite(v);if(typeof appearance!=='undefined'){appearance.customFontName=safeName;appearance.customFontUrl=parsed.href;appearance.font='custom'}previewFont();
       if(typeof window.toast==='function')window.toast('自定义字体已应用');
     });
     document.getElementById('lrResetCustomFont').addEventListener('click',()=>{
       document.getElementById('lrCustomFontFace')?.remove();document.body.style.fontFamily='';
-      const v=safeRead();delete v.customFontName;delete v.customFontUrl;if(v.font==='custom')v.font='system';safeWrite(v);if(typeof appearance!=='undefined'){delete appearance.customFontName;delete appearance.customFontUrl;if(appearance.font==='custom')appearance.font='system'}name.value='';url.value='';preview.style.fontFamily='';
+      const v=safeRead();delete v.customFontName;delete v.customFontUrl;if(v.font==='custom')v.font='system';if(!beautyEditing)safeWrite(v);if(typeof appearance!=='undefined'){delete appearance.customFontName;delete appearance.customFontUrl;if(appearance.font==='custom')appearance.font='system'}name.value='';url.value='';preview.style.fontFamily='';
       if(typeof window.applyAppearance==='function')window.applyAppearance();if(typeof window.toast==='function')window.toast('已恢复默认字体');
     });
     if(saved.customFontName&&saved.customFontUrl){applySavedCustomFont(saved);previewFont()}
@@ -99,7 +136,13 @@
   function init(){
     installQuotaSafeAppearanceSave();
     if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
-    addThemePresets();mountThemePicker();mountFontControls();
+    mountThemePicker();mountFontControls();mountSaveCancel();
+    const appearanceModal=document.getElementById('appearanceModal');
+    document.getElementById('openAppearance')?.addEventListener('click',()=>{beautySnapshot=null;takeBeautySnapshot()},{capture:true});
+    document.querySelectorAll('[data-launch-appearance]').forEach(el=>el.addEventListener('click',()=>{beautySnapshot=null;takeBeautySnapshot()},{capture:true}));
+    if(appearanceModal){const mo=new MutationObserver(()=>{if(appearanceModal.classList.contains('show')&&!beautySnapshot)takeBeautySnapshot()});mo.observe(appearanceModal,{attributes:true,attributeFilter:['class']});}
+    document.getElementById('closeAppearance')?.addEventListener('click',e=>{if(beautyEditing){e.preventDefault();e.stopImmediatePropagation();cancelBeautyChanges()}},true);
+    appearanceModal?.addEventListener('click',e=>{if(e.target===appearanceModal&&beautyEditing){e.preventDefault();e.stopImmediatePropagation();cancelBeautyChanges()}},true);
     const saved=safeRead();if(themeMap[saved.glassTheme])applyTheme(saved.glassTheme,false);
     // Preserve the independent theme/font settings when the legacy appearance function saves its object.
     if(typeof applyAppearance==='function'){
