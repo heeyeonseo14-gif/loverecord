@@ -193,15 +193,44 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 @media(max-width:420px){.music-mini{width:216px;height:162px;min-width:216px;max-width:216px;left:10px}}
 
 /* LOVE RECORD polish: fixed wallpaper, clean edges, reliable contact picker */
-#chatConversation{position:relative;isolation:isolate;background:#f7f3f9;border-radius:22px;overflow:visible}
-#chatMessages{background-color:#f7f3f9!important;background-attachment:fixed!important;background-repeat:no-repeat!important;background-position:center center!important;background-size:cover!important;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(166,132,184,.22) transparent}
+#chatConversation{position:relative;isolation:isolate;background:transparent!important;border-radius:0!important;overflow:visible;width:100%;margin-left:0!important;margin-right:0!important}
+#chatMessages{background-color:#f7f3f9!important;background-attachment:scroll!important;background-repeat:no-repeat!important;background-position:center top!important;background-size:100% auto!important;overscroll-behavior:contain;scrollbar-width:none!important;}
 #chatConversation,#chatMessages{border-left:0!important;border-right:0!important;box-shadow:none}
 #chatPeoplePicker{display:grid;gap:9px;margin-top:14px;max-height:42vh;overflow:auto;padding:2px 1px 8px;position:relative;z-index:2;pointer-events:auto}
 #chatPeoplePicker[hidden]{display:none!important}
-#chatPeoplePicker .chat-picker-item{cursor:pointer;min-height:52px;position:relative;z-index:1;pointer-events:auto}
+#chatPeoplePicker .chat-picker-item{display:flex;align-items:center;gap:12px;cursor:pointer;min-height:52px;position:relative;z-index:1;pointer-events:auto}
 #chatPeoplePicker .chat-picker-item input{accent-color:#aa8cba;cursor:pointer}
 #chatPeoplePicker #chatConfirmPeople{position:sticky;bottom:0;z-index:3;pointer-events:auto;box-shadow:0 -6px 16px rgba(255,255,255,.8)}
-#chatAddModal .sheet{max-height:88dvh;overflow-y:auto;overscroll-behavior:contain}
+#chatAddModal .sheet{max-height:88dvh;overflow-y:auto;overscroll-behavior:contain;position:relative;z-index:1002}
+#chatAddModal .module-head,#chatAddModal .sub,#chatAddModal #chatAddFromPeople,#chatAddModal #chatPeoplePicker{position:relative;z-index:2}
+#chatPeoplePicker .chat-picker-item{touch-action:manipulation}
+#chatPeoplePicker input[type=checkbox]{width:22px;height:22px;flex:0 0 22px;pointer-events:auto}
+#chatMessages{background-image:var(--chat-background-image,none)!important;background-attachment:scroll!important;background-size:cover!important;background-position:center top!important}
+#chatConversation{background:transparent!important}
+#chatMessages::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+#chatMessages::-webkit-scrollbar-thumb{background:transparent!important}
+#chat.chat-page,#chat.chat-page.active{padding-left:0!important;padding-right:0!important}
+#chatConversation{padding-left:0!important;padding-right:0!important}
+#chatMessages{width:100%;margin-left:0!important;margin-right:0!important;border:0!important;border-radius:0!important;background-color:transparent!important}
+#chatMessages::before,#chatMessages::after{display:none!important}
+.chat-compose{position:relative}
+.chat-compose-plus{width:44px;height:44px;flex:0 0 44px;border:1px solid rgba(180,157,192,.32);border-radius:16px;background:rgba(255,255,255,.88);color:#a889bc;font-size:28px;line-height:1;display:grid;place-items:center}
+.chat-plus-menu button span{display:block;margin-left:25px;font-size:11px;letter-spacing:.08em;color:#a08fa7}
+.chat-message-row{background:transparent!important}
+.chat-messages{background-color:#f7f3f9}
+.chat-conversation-open #chat{background:#f7f3f9!important}
+
+.chat-plus-menu{position:absolute;left:12px;bottom:calc(100% + 10px);z-index:50;display:grid;gap:4px;min-width:210px;padding:10px;border:1px solid rgba(180,157,192,.25);border-radius:20px;background:rgba(255,255,255,.94);box-shadow:0 16px 42px rgba(65,45,80,.16);backdrop-filter:blur(18px)}
+.chat-plus-menu[hidden]{display:none!important}
+.chat-plus-menu button{border:0;background:transparent;text-align:left;padding:13px 14px;border-radius:13px;color:#5c4d63;font:inherit}
+.chat-plus-menu button:active{background:#f2eaf6}
+.chat-order-card{display:block;width:min(300px,100%);overflow:hidden;border:1px solid rgba(183,157,198,.3);border-radius:20px;background:linear-gradient(145deg,#fff,#f8f2fb);box-shadow:0 8px 24px rgba(76,52,90,.08);color:#514257}
+.chat-order-card .order-kicker{padding:12px 15px;background:linear-gradient(100deg,#eee2f4,#f8edf5);font-size:10px;letter-spacing:.18em}
+.chat-order-card .order-main{padding:14px 15px}
+.chat-order-card .order-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.chat-order-card .order-meta{font-size:12px;color:#8d7f92;line-height:1.6}
+.chat-order-card .order-total{display:flex;justify-content:space-between;align-items:center;padding-top:12px;margin-top:10px;border-top:1px solid #eee4f1;font-weight:600}
+
 </style>
 <style>
 .world-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.world-tile{border:1px solid var(--line);background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(246,239,249,.85));border-radius:21px;padding:17px;text-align:left;color:var(--ink);min-height:82px}.world-tile b{display:block;font-size:12px;letter-spacing:2px;font-weight:500}.world-tile span{display:block;font-size:12px;color:var(--muted);margin-top:7px}.module-modal{align-items:flex-end}.space-person-modal{align-items:stretch}.space-person-modal .module-sheet{height:100%;max-height:none;border-radius:0;margin:0;max-width:none;padding-top:20px}.module-sheet{max-height:91vh}.module-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.module-close{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px}.module-list{display:grid;gap:10px;margin-top:15px}.module-item{border:1px solid var(--line);border-radius:20px;padding:15px;background:rgba(255,255,255,.75)}.module-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.module-item h3{margin:0}.module-meta{font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px}.mini-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}.mini-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font-size:11px;color:var(--ink)}.mini-btn.danger{color:#9a6575}.module-empty{padding:28px 8px;text-align:center;color:var(--muted);font-size:13px}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.check-pill{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;font-size:12px}.check-pill input{width:auto;margin-right:7px}.forum-post{border:1px solid var(--line);border-radius:20px;padding:15px;background:#fff}.forum-post+.forum-post{margin-top:10px}.forum-author{font-size:11px;letter-spacing:1px;color:var(--muted)}.forum-title{font-size:15px;margin-top:7px;line-height:1.55}.forum-body{font-size:13px;line-height:1.75;margin-top:7px;white-space:pre-wrap}.forum-reply{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;line-height:1.7}.forum-open{width:100%;text-align:left;border:0;background:transparent;padding:0;color:inherit;cursor:pointer}
@@ -1083,7 +1112,7 @@ body.music-listening-modal-open{overflow:hidden!important}
   <section id="chatConversation" class="chat-conversation" hidden>
     <div class="chat-person-head"><button id="chatBackToContacts" class="chat-back" type="button">‹</button><div class="chat-person-avatar" id="chatPersonAvatar">♡</div><div class="chat-person-meta"><strong id="chatPersonName"></strong><span id="chatPersonRole"></span></div></div>
     <div id="chatMessages" class="chat-messages"></div>
-    <div class="chat-compose"><textarea id="chatInput" rows="2" placeholder="发送一条消息……"></textarea><button class="btn primary" id="chatSend" type="button">发送</button></div>
+    <div class="chat-compose"><button class="chat-compose-plus" id="chatComposePlus" type="button" aria-label="更多功能">＋</button><div class="chat-plus-menu" id="chatPlusMenu" hidden><button type="button" data-chat-life="food">♡ 点外卖 <span>Foodie</span></button><button type="button" data-chat-life="shop">✧ 购物 <span>Orange Market</span></button></div><textarea id="chatInput" rows="2" placeholder="发送一条消息……"></textarea><button class="btn primary" id="chatSend" type="button">发送</button></div>
     <div class="chat-hint" id="chatHint">对话记录仅保存在本设备。</div>
   </section>
 </main>
@@ -1361,9 +1390,11 @@ function readChatContacts(){try{return JSON.parse(localStorage.getItem(CHAT_CONT
 function writeChatContacts(a){localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(a))}
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
 function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a))}
-function contactById(id){return (state.people||[]).find(p=>p.id===id)}
+function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
 function renderChatMessageContent(value, role){
  const raw=String(value==null?'':value);
+ const orderMatch=raw.match(/^\[\[LR_ORDER\|(food|shop)\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\]\]$/);
+ if(orderMatch){const kind=orderMatch[1]==='food'?'外卖订单':'购物订单',sender=orderMatch[2]||'你',title=orderMatch[3]||'订单已创建',detail=orderMatch[4]||'',total=orderMatch[5]||'RMB 0.00';return '<article class="chat-order-card"><div class="order-kicker">LOVE RECORD · '+kind+'</div><div class="order-main"><div class="order-title">'+esc(sender)+'给你'+(orderMatch[1]==='food'?'点了外卖':'买了物品')+'</div><div class="order-meta">'+esc(title)+'<br>'+esc(detail)+'</div><div class="order-total"><span>订单金额</span><span>'+esc(total)+'</span></div></div></article>';}
  if(role!=='assistant')return esc(raw);
  const token=/\[\[NARRATION\]\]([\s\S]*?)\[\[\/NARRATION\]\]/gi;
  let out='',last=0,match;
@@ -1422,25 +1453,26 @@ function openChatSettings(){
 function closeChatSettings(){ $('chatSettingsScreen').classList.remove('show');$('chatSettingsScreen').setAttribute('aria-hidden','true');$('systemAppbar').classList.add('show');renderChat(); }
 function imageToChatData(file,max=1800,quality=.92){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);resolve(c.toDataURL('image/jpeg',quality))};img.onerror=reject;img.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
 async function saveChatSettings(){editingChatMeta.remark=$('chatRemarkInput').value.trim();try{if(window.saveChatMetaSafely){const saved=await window.saveChatMetaSafely(activeChatContactId,editingChatMeta);editingChatMeta={...saved}}else{writeChatMeta(activeChatContactId,editingChatMeta)}closeChatSettings();toast('聊天设置已保存 ♡')}catch(err){console.error('[LOVE RECORD] chat settings save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}}
-function openChatAdd(){ $('chatAddModal').classList.add('show');document.body.style.overflow='hidden';$('chatPeoplePicker').hidden=true;$('chatNpcStatus').textContent='';}
+function openChatAdd(){ $('chatAddModal').classList.add('show');document.body.style.overflow='hidden';$('chatPeoplePicker').hidden=true;}
 function closeChatAdd(){$('chatAddModal').classList.remove('show');document.body.style.overflow=''}
 function renderChatPeoplePicker(){
  const box=$('chatPeoplePicker'),contacts=readChatContacts();
- const candidates=(state.people||[]).filter(p=>p.id!=='p-yanyan'&&!contacts.includes(p.id));
+ const candidates=(state.people||[]).filter(p=>String(p.id)!=='p-yanyan'&&!contacts.map(String).includes(String(p.id)));
  box.hidden=false;
- box.innerHTML=candidates.length?candidates.map(p=>`<label class="chat-picker-item"><input type="checkbox" value="${esc(p.id)}"><span><b>${esc(p.name)}</b><br><span class="sub">${esc(p.role||p.personality||'AI 人物')}</span></span></label>`).join('')+'<button class="btn primary" id="chatConfirmPeople" type="button" style="width:100%;margin-top:12px">添加选中的联系人</button>':'<div class="module-empty">没有可添加的人物。请先去「联系人」创建人物。</div>'; const confirm=box.querySelector('#chatConfirmPeople');if(confirm)confirm.onclick=confirmChatPeople;
+ box.innerHTML=candidates.length?candidates.map(p=>`<label class="chat-picker-item"><input type="checkbox" value="${esc(p.id)}"><span><b>${esc(p.name)}</b><br><span class="sub">${esc(p.role||p.personality||'AI 人物')}</span></span></label>`).join('')+'<button class="btn primary" id="chatConfirmPeople" type="button" style="width:100%;margin-top:12px">添加选中的联系人</button>':'<div class="module-empty">没有可添加的人物。请先去「联系人」创建人物。</div>'; const confirm=box.querySelector('#chatConfirmPeople');if(confirm){confirm.type='button';confirm.onclick=e=>{e.preventDefault();e.stopPropagation();confirmChatPeople()};}
 }
-function confirmChatPeople(){const box=$('chatPeoplePicker');const selected=[...box.querySelectorAll('input[type=checkbox]:checked')].map(x=>x.value);if(!selected.length){toast('先选择至少一位联系人');return}const ids=readChatContacts();selected.forEach(id=>{if(contactById(id)&&!ids.includes(id))ids.push(id)});writeChatContacts(ids);closeChatAdd();activeChatContactId='';renderChat();toast('联系人已添加 ♡')}
-async function createRandomNpc(){
- if(!state.apiBase||!state.apiKey||!state.apiModel){$('chatNpcStatus').textContent='请先到设置 → AI / API 连接 API，才能随机生成 NPC。';return}
- if(aiBusy){toast('AI 正在处理另一条请求');return}
- const btn=$('chatRandomNpc');btn.disabled=true;btn.textContent='正在生成……';$('chatNpcStatus').textContent='正在为你创造一位新朋友……';aiBusy=true;
- const prompt='请创造一个原创、适合长期聊天的虚构 AI NPC 联系人。不要使用颜焕、YANYAN 或现有预设人物。请输出单个 JSON 对象，字段：name（中文姓名）, role（身份）, personality（性格）, appearance（外貌）, speech（说话风格）, background（背景）, instructions（角色扮演规则）。人物要具体、有辨识度、自然可信，避免极端设定。只输出 JSON。';
- try{
-  const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是原创虚构人物设计器，只输出一个合法 JSON 对象。'},{role:'user',content:prompt}],stream:false})},25000);
-  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw),txt=extractAIText(data);let npc;try{npc=JSON.parse(txt.replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'').trim())}catch{const m=txt.match(/\{[\s\S]*\}/);if(m)npc=JSON.parse(m[0])}if(!npc||!npc.name)throw new Error('AI 返回的人物资料无法读取');
-  const person={id:'npc-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:String(npc.name).slice(0,30),role:String(npc.role||'原创 NPC'),personality:String(npc.personality||''),appearance:String(npc.appearance||''),speech:String(npc.speech||''),background:String(npc.background||''),instructions:String(npc.instructions||'')};state.people.push(person);save();const ids=readChatContacts();ids.push(person.id);writeChatContacts(ids);closeChatAdd();activeChatContactId=person.id;renderChat();toast(person.name+' 已加入联系人 ♡');
- }catch(e){$('chatNpcStatus').textContent='生成失败：'+apiErrorText(e);toast('NPC 生成失败，请检查 API 设置')}finally{aiBusy=false;btn.disabled=false;btn.textContent='✦ 随机添加 NPC'}
+function confirmChatPeople(){
+ const box=$('chatPeoplePicker');
+ const selected=[...box.querySelectorAll('input[type=checkbox]')].filter(x=>x.checked).map(x=>String(x.value));
+ if(!selected.length){toast('先勾选至少一位联系人');return}
+ const ids=readChatContacts().map(String),added=[];
+ selected.forEach(pid=>{const person=contactById(pid);if(person&&!ids.includes(String(pid))){ids.push(String(pid));added.push(String(pid))}});
+ if(!added.length){toast('所选人物已在聊天联系人中，或人物资料已不存在');return}
+ writeChatContacts(ids);
+ // Verify persistence before closing the modal, so a failed write is visible rather than silent.
+ const saved=readChatContacts();
+ if(!added.every(pid=>saved.includes(pid))){toast('联系人保存失败，请检查浏览器储存权限');return}
+ closeChatAdd();activeChatContactId='';renderChat();toast('已添加 '+added.length+' 位联系人 ♡');
 }
 async function sendChatMessage(){
  const input=$('chatInput'),textValue=input.value.trim();if(!textValue||!activeChatContactId)return;
@@ -1450,9 +1482,9 @@ async function sendChatMessage(){
  const send=$('chatSend');send.disabled=true;send.textContent='…';aiBusy=true;
  try{
   const recent=items.slice(-16).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.text}));
-  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。';
+  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。若用户明确要求你替 TA 点外卖或买东西，且你愿意主动安排，请在回复末尾另起一行输出机器指令 [[LR_AI_ORDER:food|菜品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词必须是你建议的具体商品名称。不要在未被要求或未明确表达下单意愿时输出指令。订单只是本地模拟、需用户确认地址，不要声称已真实付款或配送。';
   const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},20000);
-  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw),reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');const latest=readChatThreads(),thread=latest[activeChatContactId]||[];thread.push({role:'assistant',text:reply,at:Date.now()});latest[activeChatContactId]=thread;writeChatThreads(latest);
+  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(!made.ok)reply+='\n\n（我想给你准备一份小惊喜，不过当前目录里没找到合适的商品；我们一起挑选吧。）';else reply+='\n\n（我先把这份小惊喜放进 LOVE RECORD 的模拟订单里啦。收货地址还需要你确认，暂时不会真实付款或配送。）';}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];thread.push({role:'assistant',text:reply,at:Date.now()});latest[activeChatContactId]=thread;writeChatThreads(latest);
  }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
  finally{aiBusy=false;send.disabled=false;send.textContent='发送';renderChat()}
 }
@@ -1888,6 +1920,13 @@ const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('laun
 const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
 
 $('chatSend').onclick=sendChatMessage;
+const chatPicker=$('chatPeoplePicker');
+chatPicker.addEventListener('change',e=>{if(e.target.matches('input[type="checkbox"]'))e.target.closest('.chat-picker-item')?.classList.toggle('selected',e.target.checked)},true);
+chatPicker.addEventListener('pointerup',e=>{const b=e.target.closest('#chatConfirmPeople');if(b){e.preventDefault();e.stopPropagation();confirmChatPeople()}},true);
+const chatPlus=$('chatComposePlus'),chatPlusMenu=$('chatPlusMenu');
+if(chatPlus&&chatPlusMenu){chatPlus.onclick=()=>{chatPlusMenu.hidden=!chatPlusMenu.hidden};document.addEventListener('click',e=>{if(!e.target.closest('#chatComposePlus')&&!e.target.closest('#chatPlusMenu'))chatPlusMenu.hidden=true});chatPlusMenu.addEventListener('click',e=>{const b=e.target.closest('[data-chat-life]');if(!b)return;chatPlusMenu.hidden=true;try{localStorage.setItem('lr-life-chat-context-v1',JSON.stringify({contactId:activeChatContactId,contactName:contactById(activeChatContactId)?.name||'',kind:b.dataset.chatLife,at:Date.now()}))}catch{}if(window.LoveRecordLifeApps)window.LoveRecordLifeApps.open(b.dataset.chatLife);else toast('生活应用尚未载入，请刷新后重试')})}
+window.addEventListener('lr-life-order-created',e=>{const o=e.detail||{},ctx=(()=>{try{return JSON.parse(localStorage.getItem('lr-life-chat-context-v1')||'{}')}catch{return {}}})();const cid=String(o.contactId||ctx.contactId||'');if(!cid||!contactById(cid))return;const threads=readChatThreads(),items=threads[cid]||[],kind=o.orderKind==='food'?'food':'shop',sender=o.placedBy==='ai'?(contactById(cid)?.name||'TA'):'你',names=(o.items||[]).map(x=>(x.name||'商品')+' × '+(x.qty||1)).join('、')||'订单已创建';items.push({role:o.placedBy==='ai'?'assistant':'user',text:'[[LR_ORDER|'+kind+'|'+sender+'|'+(o.orderNo||'订单已创建')+'|'+names+'|RMB '+(Number(o.total)||0).toFixed(2)+']]',at:Date.now()});threads[cid]=items;writeChatThreads(threads);if(String(activeChatContactId)===cid)renderChat();});
+
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
 $('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd();const b=e.target.closest('#chatConfirmPeople');if(b){e.preventDefault();confirmChatPeople()}});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if(!$('chat').classList.contains('active'))return;if($('chat').classList.contains('is-conversation'))openChatSettings();else openChatAdd()});
 $('chatSettingsBack').onclick=closeChatSettings;$('chatSaveSettings').onclick=saveChatSettings;$('chatChooseAvatar').onclick=()=>$('chatAvatarFile').click();$('chatChooseBackground').onclick=()=>$('chatBackgroundFile').click();$('chatClearBackground').onclick=()=>{editingChatMeta.background='#f7f3f9';editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.toggle('active',b.dataset.chatBg==='#f7f3f9'))};$('chatAvatarFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.avatar=await imageToChatData(f,640,.88);$('chatSettingsAvatarPreview').innerHTML='<img src="'+editingChatMeta.avatar+'" alt="">'}catch{toast('头像读取失败')}e.target.value=''};$('chatBackgroundFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.backgroundImage=await imageToChatData(f,2200,.94);document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.remove('active'))}catch{toast('背景读取失败')}e.target.value=''};document.querySelectorAll('.chat-bg-option').forEach(b=>b.onclick=()=>{editingChatMeta.background=b.dataset.chatBg;editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(x=>x.classList.toggle('active',x===b))});
