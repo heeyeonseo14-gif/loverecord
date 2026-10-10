@@ -8,8 +8,6 @@ body.lr-glass-amethyst {
   --bg: #eee7f5;
   --theme-page-bg: #eee7f5;
   --card: rgba(246,240,251,.72);
-  --ink: #352a40;
-  --theme-text: #352a40;
   --muted: #82758e;
   --line: rgba(255,255,255,.64);
   --soft: rgba(206,184,229,.35);
@@ -23,8 +21,6 @@ body.lr-glass-pearl {
   --bg: #f3f2f5;
   --theme-page-bg: #f3f2f5;
   --card: rgba(255,255,255,.72);
-  --ink: #34323a;
-  --theme-text: #34323a;
   --muted: #85818d;
   --line: rgba(255,255,255,.84);
   --soft: rgba(227,224,233,.65);
@@ -38,8 +34,6 @@ body.lr-glass-obsidian {
   --bg: #17171c;
   --theme-page-bg: #17171c;
   --card: rgba(39,39,47,.70);
-  --ink: #f3f1f7;
-  --theme-text: #f3f1f7;
   --muted: #b1adbb;
   --line: rgba(255,255,255,.14);
   --soft: rgba(255,255,255,.08);

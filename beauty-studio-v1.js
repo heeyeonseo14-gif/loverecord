@@ -2,14 +2,29 @@
 (function(){
   'use strict';
   const KEY='yanyan-love-appearance-v1';
+  const THEME_KEY='love-record-glass-theme-v1';
+  const FONT_KEY='love-record-custom-font-v1';
+  const APPEARANCE_FALLBACK_KEY='love-record-appearance-overrides-v1';
   const themeMap={obsidian:'lr-glass-obsidian',pearl:'lr-glass-pearl',amethyst:'lr-glass-amethyst'};
   const themeMeta={
     obsidian:{name:'黑曜 Obsidian',preset:{font:'system',fontSize:15,titleScale:1,accent:'#c0b5d7',textColor:'#f3f1f7',bg:'plain',radius:26,blur:20,opacity:.76,dark:true,motion:true}},
     pearl:{name:'珍珠白 Pearl',preset:{font:'system',fontSize:15,titleScale:1,accent:'#9e98ad',textColor:'#34323a',bg:'plain',radius:28,blur:20,opacity:.78,dark:false,motion:true}},
     amethyst:{name:'紫晶 Amethyst',preset:{font:'system',fontSize:15,titleScale:1,accent:'#a98acb',textColor:'#352a40',bg:'soft',radius:29,blur:20,opacity:.76,dark:false,motion:true}}
   };
-  const safeRead=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(_){return {}}};
-  const safeWrite=v=>{try{localStorage.setItem(KEY,JSON.stringify(v));return true}catch(e){if(typeof window.toast==='function')window.toast('设置保存失败：浏览器储存空间可能不足');return false}};
+  const parseStored=k=>{try{return JSON.parse(localStorage.getItem(k)||'{}')||{}}catch(_){return {}}};
+  const safeRead=()=>Object.assign({},parseStored(KEY),parseStored(APPEARANCE_FALLBACK_KEY),parseStored(THEME_KEY),parseStored(FONT_KEY));
+  // Store only the tiny values this add-on owns; never rewrite the legacy appearance blob (it may contain a large background image).
+  const safeWrite=v=>{let ok=true;try{if(v.glassTheme){localStorage.setItem(THEME_KEY,JSON.stringify({glassTheme:v.glassTheme}))}}catch(e){ok=false}
+    try{if(v.customFontName||v.customFontUrl){localStorage.setItem(FONT_KEY,JSON.stringify({customFontName:v.customFontName||'',customFontUrl:v.customFontUrl||''}))}}catch(e){ok=false}
+    if(!ok&&typeof window.toast==='function')window.toast('设置暂时无法保存：浏览器储存空间不足；现有资料未被清除');return ok};
+  // If the original appearance JSON cannot be rewritten because it contains a large background image,
+  // keep a compact set of appearance controls separately instead of discarding the background or data.
+  function installQuotaSafeAppearanceSave(){
+    if(typeof window.saveAppearance!=='function'||window.__lrQuotaSafeSaveInstalled)return;
+    const original=window.saveAppearance;
+    window.saveAppearance=function(){try{return original()}catch(e){try{const compact={};['preset','font','fontSize','titleScale','accent','textColor','bg','radius','blur','opacity','dark','motion'].forEach(k=>{if(typeof appearance!=='undefined'&&appearance[k]!==undefined)compact[k]=appearance[k]});localStorage.setItem(APPEARANCE_FALLBACK_KEY,JSON.stringify(compact));return true}catch(err){if(typeof window.toast==='function')window.toast('设置保存失败：储存空间不足；请先勿清除网站资料');return false}}};
+    window.__lrQuotaSafeSaveInstalled=true;
+  }
   function applyTheme(key,save=true){
     if(!themeMap[key])return;
     document.body.classList.remove(...Object.values(themeMap));
@@ -82,6 +97,8 @@
     if(saved.customFontName&&saved.customFontUrl){applySavedCustomFont(saved);previewFont()}
   }
   function init(){
+    installQuotaSafeAppearanceSave();
+    if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
     addThemePresets();mountThemePicker();mountFontControls();
     const saved=safeRead();if(themeMap[saved.glassTheme])applyTheme(saved.glassTheme,false);
     // Preserve the independent theme/font settings when the legacy appearance function saves its object.
