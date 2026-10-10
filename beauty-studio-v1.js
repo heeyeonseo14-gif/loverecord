@@ -29,8 +29,10 @@
     if(!themeMap[key])return;
     document.body.classList.remove(...Object.values(themeMap));
     document.body.classList.add(themeMap[key]);
-    const current=safeRead();current.glassTheme=key;
-    if(save)safeWrite(current);
+    document.documentElement.style.setProperty('--ink',key==='obsidian'?'#f3f1f7':'#302b35');
+    document.documentElement.style.setProperty('--theme-text',key==='obsidian'?'#f3f1f7':'#302b35');
+    const current=safeRead();current.glassTheme=key;if(typeof appearance!=='undefined')appearance.glassTheme=key;
+    if(save&&!window.__lrAppearanceEditing)safeWrite(current);
     document.querySelectorAll('[data-lr-glass-theme]').forEach(b=>b.classList.toggle('active',b.dataset.lrGlassTheme===key));
   }
   function addThemePresets(){
@@ -53,7 +55,9 @@
       // Let the existing preset system update its normal values; then persist the independent glass theme.
       const before=safeRead();
       if(typeof window.applyPreset==='function'&&typeof presetChoices!=='undefined'&&presetChoices[key])window.applyPreset(key);
-      const v=safeRead();if(before.customFontName)v.customFontName=before.customFontName;if(before.customFontUrl)v.customFontUrl=before.customFontUrl;v.glassTheme=key;safeWrite(v);applyTheme(key,false);
+      const v=safeRead();if(before.customFontName)v.customFontName=before.customFontName;if(before.customFontUrl)v.customFontUrl=before.customFontUrl;v.glassTheme=key;
+      if(!window.__lrAppearanceEditing)safeWrite(v);
+      applyTheme(key,false);
     });
   }
   function applySavedCustomFont(saved){
@@ -100,7 +104,7 @@
     installQuotaSafeAppearanceSave();
     if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
     addThemePresets();mountThemePicker();mountFontControls();
-    const saved=safeRead();if(themeMap[saved.glassTheme])applyTheme(saved.glassTheme,false);
+    const saved=safeRead();const bootTheme=saved.glassTheme||(typeof appearance!=='undefined'&&themeMap[appearance.glassTheme]?appearance.glassTheme:(typeof appearance!=='undefined'&&themeMap[appearance.preset]?appearance.preset:''));if(bootTheme)applyTheme(bootTheme,false);
     // Preserve the independent theme/font settings when the legacy appearance function saves its object.
     if(typeof applyAppearance==='function'){
       const originalApplyAppearance=applyAppearance;

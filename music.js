@@ -129,20 +129,11 @@ function readPeopleForMusic(){
    if(Array.isArray(saved.people))people=saved.people;
   }catch{}
  }
- let ids=[];
- try{if(typeof readChatContacts==='function')ids=readChatContacts()}catch{}
- if(!Array.isArray(ids)||!ids.length){
-  try{
-   const savedIds=JSON.parse(localStorage.getItem('love-record-chat-contacts-v2')||'[]');
-   if(Array.isArray(savedIds))ids=savedIds;
-  }catch{}
- }
- // Read contact metadata once, rather than reparsing the same storage item
- // separately for every person.
+ // Together-listen is a picker for every saved contact, not only contacts
+ // already opened in chat. Do not filter the people list by chat history.
  let metas={};
  try{metas=JSON.parse(localStorage.getItem('love-record-chat-meta-v1')||'{}')||{}}catch{}
- const idSet=new Set((Array.isArray(ids)?ids:[]).map(String));
- return people.filter(p=>p&&p.id!=null&&(!idSet.size||idSet.has(String(p.id)))).map(p=>({
+ return people.filter(p=>p&&p.id!=null).map(p=>({
   id:String(p.id),name:metas[p.id]?.remark||p.name||'未命名联系人',
   role:p.role||p.personality||'联系人',avatar:metas[p.id]?.avatar||p.avatar||''
  }));
@@ -163,7 +154,7 @@ function renderTogetherPicker(){
   const strong=document.createElement('strong');strong.textContent=p.name;
   const small=document.createElement('small');small.textContent=p.role;
   info.append(strong,small);
-  const check=document.createElement('input');check.type='radio';check.name='musicTogetherPerson';check.value=p.id;check.checked=togetherIds.map(String).includes(p.id);
+  const check=document.createElement('input');check.type='checkbox';check.name='musicTogetherPerson';check.value=p.id;check.checked=togetherIds.map(String).includes(p.id);
   label.append(avatar,info,check);box.append(label);
  });
 }
@@ -176,29 +167,27 @@ function getMusicUserName(){
 function renderTogetherActive(){
  const box=$('musicTogetherActive'),buttonText=$('musicTogetherButtonText');
  if(!box)return;box.innerHTML='';
- const people=readPeopleForMusic(),person=people.find(p=>togetherIds.map(String).includes(p.id));
- if(!person){box.hidden=true;if(buttonText)buttonText.textContent='邀请 TA 进入听歌房间';return}
- box.hidden=false;if(buttonText)buttonText.textContent='更换一起听的对象';
- const pair=document.createElement('div');pair.className='listening-pair';
- const you=document.createElement('div');you.className='listening-person';
+ const people=readPeopleForMusic(),selected=people.filter(p=>togetherIds.map(String).includes(p.id));
+ if(!selected.length){box.hidden=true;if(buttonText)buttonText.textContent='邀请 TA 进入听歌房间';return}
+ box.hidden=false;if(buttonText)buttonText.textContent=selected.length>1?`与 ${selected.length} 位联系人一起听`:'更换一起听的对象';
+ const pairWrap=document.createElement('div');pairWrap.className='listening-pair listening-pair-multi';
  const myName=getMusicUserName();
+ const you=document.createElement('div');you.className='listening-person';
  const youAvatar=document.createElement('span');youAvatar.className='listening-avatar listening-you';youAvatar.textContent=(myName||'我').slice(0,1);
- const youName=document.createElement('strong');youName.textContent=myName;
- you.append(youAvatar,youName);
- const center=document.createElement('div');center.className='listening-heart-center';center.innerHTML='<span>♡</span><i></i>';
- const them=document.createElement('div');them.className='listening-person';
- const themAvatar=document.createElement('span');themAvatar.className='listening-avatar listening-them';
- if(person.avatar){const img=document.createElement('img');img.src=person.avatar;img.alt='';themAvatar.append(img)}else themAvatar.textContent=(person.name||'♡').slice(0,1);
- const themName=document.createElement('strong');themName.textContent=person.name;
- them.append(themAvatar,themName);pair.append(you,center,them);box.append(pair);
+ const youName=document.createElement('strong');youName.textContent=myName;you.append(youAvatar,youName);pairWrap.append(you);
+ selected.forEach(person=>{
+  const center=document.createElement('div');center.className='listening-heart-center';center.innerHTML='<span>♡</span><i></i>';pairWrap.append(center);
+  const them=document.createElement('div');them.className='listening-person';
+  const avatar=document.createElement('span');avatar.className='listening-avatar listening-them';
+  if(person.avatar){const img=document.createElement('img');img.src=person.avatar;img.alt='';avatar.append(img)}else avatar.textContent=(person.name||'♡').slice(0,1);
+  const name=document.createElement('strong');name.textContent=person.name;them.append(avatar,name);pairWrap.append(them);
+ });
+ box.append(pairWrap);
  const status=document.createElement('div');status.className='listening-room-status';
- status.innerHTML='<span class="listening-live-dots"><i></i><i></i><i></i></span><span>你们正在共享这段音乐时光</span>';
- box.append(status);
- const song=document.createElement('div');song.className='listening-room-song';
- song.textContent=current?`${current.title||'正在播放'}${current.artist?' · '+current.artist:''}`:'等待一首歌开始';
- box.append(song);
+ status.innerHTML='<span class="listening-live-dots"><i></i><i></i><i></i></span><span>'+ (selected.length>1?`你们正在共享这段音乐时光（${selected.length} 位联系人）`:'你们正在共享这段音乐时光')+'</span>';box.append(status);
+ const song=document.createElement('div');song.className='listening-room-song';song.textContent=current?`${current.title||'正在播放'}${current.artist?' · '+current.artist:''}`:'等待一首歌开始';box.append(song);
  const actions=document.createElement('div');actions.className='listening-room-actions';
- const change=document.createElement('button');change.type='button';change.textContent='更换 TA';change.onclick=()=>openTogetherModal();
+ const change=document.createElement('button');change.type='button';change.textContent='更换联系人';change.onclick=()=>openTogetherModal();
  const stop=document.createElement('button');stop.type='button';stop.textContent='结束一起听';stop.onclick=()=>{togetherIds=[];saveTogether();renderTogetherActive();toast('已结束你们的听歌时光')};
  actions.append(change,stop);box.append(actions);
 }
@@ -259,9 +248,9 @@ function init(){
  document.querySelectorAll('[data-music-together-close]').forEach(el=>el.addEventListener('click',closeTogetherModal));
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('musicTogetherModal')?.hidden)closeTogetherModal()});
  $('musicTogetherStart').onclick=async()=>{
-  const selected=$('musicTogetherContacts')?.querySelector('input[name="musicTogetherPerson"]:checked');
-  if(!selected){toast('先选择一位联系人吧 ♡');return}
-  togetherIds=[String(selected.value)];await saveTogether();renderTogetherActive();closeTogetherModal();toast('你们的专属听歌时间开始啦 ♡')
+  const selected=[...($('musicTogetherContacts')?.querySelectorAll('input[name="musicTogetherPerson"]:checked')||[])].map(x=>String(x.value));
+  if(!selected.length){toast('至少选择一位联系人吧 ♡');return}
+  togetherIds=selected;await saveTogether();renderTogetherActive();closeTogetherModal();toast(selected.length>1?`你们的专属听歌时间开始啦（${selected.length} 位联系人）♡`:'你们的专属听歌时间开始啦 ♡')
  };
  openDB().then(async()=>{
   await loadVinylCover();const saved=await loadState();await all();await loadTogether();
