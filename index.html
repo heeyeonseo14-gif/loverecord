@@ -1756,59 +1756,71 @@ $('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
 
-// Long-press and drag launcher icons / Days Together widget. Positions persist on this device.
+// LOVE RECORD launcher layout persistence repair: restore saved offsets after refresh/cache revalidation.
 (function(){
-  const KEY='love-record-launcher-positions-v1';
-  let positions={};try{positions=JSON.parse(localStorage.getItem(KEY)||'{}')}catch{positions={}}
+  const KEY='love-record-launcher-positions-v2';
+  const LEGACY=['love-record-launcher-positions-v1','love-record-launcher-layout-v1','love-record-home-positions-v1'];
+  let positions={};
+  try{
+    positions=JSON.parse(localStorage.getItem(KEY)||'null')||{};
+    if(!Object.keys(positions).length){
+      for(const k of LEGACY){const old=JSON.parse(localStorage.getItem(k)||'null');if(old&&Object.keys(old).length){positions=old;break}}
+    }
+  }catch{positions={}}
   const getId=el=>el?.dataset?.dragId;
+  function persist(){try{localStorage.setItem(KEY,JSON.stringify(positions));localStorage.setItem('love-record-launcher-positions-v1',JSON.stringify(positions))}catch(e){console.warn('launcher layout could not be saved',e)}}
   function applyPositions(){
-    document.querySelectorAll('#launcher [data-drag-id]').forEach(el=>{
-      const p=positions[getId(el)];if(p){el.style.transform=`translate(${p.x}px, ${p.y}px)`}
+    const nodes=document.querySelectorAll('#launcher [data-drag-id]');
+    nodes.forEach(el=>{
+      const id=getId(el),p=positions[id];
+      if(p&&Number.isFinite(Number(p.x))&&Number.isFinite(Number(p.y))){
+        el.style.setProperty('transform',`translate3d(${Number(p.x)}px, ${Number(p.y)}px, 0)`,'important');
+      }
     });
   }
+  // Reapply after browser restores the page or the service worker refreshes the document.
   applyPositions();
+  window.addEventListener('pageshow',()=>requestAnimationFrame(applyPositions));
+  window.addEventListener('load',()=>requestAnimationFrame(applyPositions));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)requestAnimationFrame(applyPositions)});
+  const observer=new MutationObserver(()=>applyPositions());
+  const launcher=document.getElementById('launcher');if(launcher)observer.observe(launcher,{childList:true,subtree:true});
   let active=null,timer=null,dragged=false;
   document.addEventListener('pointerdown',e=>{
     const el=e.target.closest('#launcher [data-drag-id]');
     if(!el||e.button!==0||e.target.closest('button:not(.launcher-app),input,textarea'))return;
     const id=getId(el);if(!id)return;
     dragged=false;
-    active={el,id,startX:e.clientX,startY:e.clientY,baseX:positions[id]?.x||0,baseY:positions[id]?.y||0,x:positions[id]?.x||0,y:positions[id]?.y||0,pointerId:e.pointerId};
+    const p=positions[id]||{x:0,y:0};
+    active={el,id,startX:e.clientX,startY:e.clientY,baseX:Number(p.x)||0,baseY:Number(p.y)||0,x:Number(p.x)||0,y:Number(p.y)||0,pointerId:e.pointerId};
     timer=setTimeout(()=>{
       if(!active)return;
       dragged=true;active.el.classList.add('is-dragging');
       try{active.el.setPointerCapture(active.pointerId)}catch{}
       if(navigator.vibrate)navigator.vibrate(22);
-      toast('拖动图标，松开即可放置');
+      if(typeof toast==='function')toast('拖动图标，松开即可放置');
     },430);
   },{passive:true});
   document.addEventListener('pointermove',e=>{
     if(!active||e.pointerId!==active.pointerId)return;
-    if(!dragged){
-      if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>10){clearTimeout(timer);timer=null;active=null}
-      return;
-    }
-    const dx=e.clientX-active.startX,dy=e.clientY-active.startY;
-    active.x=active.baseX+dx;active.y=active.baseY+dy;
-    active.el.style.transform=`translate(${active.x}px, ${active.y}px)`;
+    if(!dragged){if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>10){clearTimeout(timer);timer=null;active=null}return}
+    active.x=active.baseX+e.clientX-active.startX;active.y=active.baseY+e.clientY-active.startY;
+    active.el.style.setProperty('transform',`translate3d(${active.x}px, ${active.y}px, 0)`,'important');
   });
   function finish(e){
     clearTimeout(timer);timer=null;
     if(active&&dragged){
-      positions[active.id]={x:Math.round(active.x),y:Math.round(active.y)};
-      localStorage.setItem(KEY,JSON.stringify(positions));
+      positions[active.id]={x:Math.round(active.x),y:Math.round(active.y)};persist();
       active.el.classList.remove('is-dragging');
-      e.preventDefault?.();
+      if(e&&e.cancelable)e.preventDefault();
       window.__launcherJustDragged=Date.now();
     }
     active=null;dragged=false;
   }
-  document.addEventListener('pointerup',finish);
-  document.addEventListener('pointercancel',finish);
+  document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
+  window.addEventListener('pagehide',persist);
   document.addEventListener('click',e=>{
-    if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<650){
-      if(e.target.closest('#launcher [data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}
-    }
+    if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<650&&e.target.closest('#launcher [data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}
   },true);
 })();
 
