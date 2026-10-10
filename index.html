@@ -1249,6 +1249,49 @@ try {
    state.people=Array.from(byId.values());
  }
 } catch(e){console.warn('[LOVE RECORD] contact recovery read failed',e)}
+// Independent IndexedDB store for contacts. It does not depend on localStorage quota.
+const CONTACT_DB_NAME='love-record-contact-db-v1', CONTACT_DB_STORE='people';
+let contactDBPromise=null;
+function openContactDB(){
+ if(contactDBPromise)return contactDBPromise;
+ contactDBPromise=new Promise((resolve,reject)=>{
+  const req=indexedDB.open(CONTACT_DB_NAME,1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(CONTACT_DB_STORE))db.createObjectStore(CONTACT_DB_STORE,{keyPath:'id'})};
+  req.onsuccess=()=>resolve(req.result);
+  req.onerror=()=>reject(req.error||new Error('联系人数据库打开失败'));
+ });
+ return contactDBPromise;
+}
+async function savePeopleToIndexedDB(people){
+ const db=await openContactDB();
+ await new Promise((resolve,reject)=>{
+  const tx=db.transaction(CONTACT_DB_STORE,'readwrite'),store=tx.objectStore(CONTACT_DB_STORE);
+  store.clear();(Array.isArray(people)?people:[]).forEach(person=>{if(person&&person.id)store.put(person)});
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('联系人数据库写入失败'));tx.onabort=()=>reject(tx.error||new Error('联系人数据库写入中断'));
+ });
+}
+async function loadPeopleFromIndexedDB(){
+ const db=await openContactDB();
+ return await new Promise((resolve,reject)=>{
+  const req=db.transaction(CONTACT_DB_STORE,'readonly').objectStore(CONTACT_DB_STORE).getAll();
+  req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error||new Error('联系人数据库读取失败'));
+ });
+}
+async function removePersonFromIndexedDB(id){
+ const db=await openContactDB();
+ await new Promise((resolve,reject)=>{const tx=db.transaction(CONTACT_DB_STORE,'readwrite');tx.objectStore(CONTACT_DB_STORE).delete(String(id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('联系人删除失败'))});
+}
+// Restore contact profiles independently at startup; do not overwrite current profile edits.
+(async()=>{
+ try{
+  const stored=await loadPeopleFromIndexedDB();
+  if(stored.length){
+   const map=new Map((Array.isArray(state.people)?state.people:[]).map(x=>[String(x.id),x]));
+   stored.forEach(x=>{if(x&&x.id)map.set(String(x.id),x)});
+   state.people=Array.from(map.values());
+  }
+ }catch(e){console.warn('[LOVE RECORD] IndexedDB contacts unavailable',e)}
+})();
 function persistPeopleRecovery(){
  try { localStorage.setItem(CONTACT_RECOVERY_KEY,JSON.stringify(Array.isArray(state.people)?state.people:[])); return true; }
  catch(e){ console.error('[LOVE RECORD] contact recovery save failed',e); return false; }
@@ -1616,19 +1659,21 @@ function closeForumDetail(){$('forumDetailModal').classList.remove('show');docum
 function openPersonEditor(id=''){localizeEditors();editingPersonId=id;const p=state.people.find(x=>x.id===id)||{};$('personEditTitle').textContent=id?'EDIT PERSON':'NEW PERSON';$('personName').value=p.name||'';$('personRole').value=p.role||'';$('personPersonality').value=p.personality||'';$('personAppearance').value=p.appearance||'';$('personSpeech').value=p.speech||'';$('personBackground').value=p.background||'';$('personInstructions').value=p.instructions||'';$('personEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closePersonEditor(){ $('personEditModal').classList.remove('show');document.body.style.overflow=''}
 
-function savePerson(){
+async function savePerson(){
  const name=$('personName').value.trim();
  if(!name){toast('请先填写人物名字');$('personName').focus();return}
  try{
   if(!Array.isArray(state.people))state.people=[];
   const obj={id:editingPersonId||'p-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};
   if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj;else state.people.push(obj)}else state.people.push(obj);
-  let mainSaved=true;
-  try{save()}catch(err){mainSaved=false;console.error('[LOVE RECORD] main settings save failed while saving person',err)}
+  // IndexedDB is the primary recovery path and is separate from the full localStorage settings blob.
+  try{await savePeopleToIndexedDB(state.people)}catch(dbErr){console.error('[LOVE RECORD] IndexedDB contact save failed',dbErr)}
+  let mainSaved=true;try{save()}catch(err){mainSaved=false;console.error('[LOVE RECORD] main settings save failed while saving person',err)}
   const recoverySaved=persistPeopleRecovery();
-  if(!mainSaved&&!recoverySaved){toast('保存失败：浏览器储存空间不足。请先导出备份或清理储存空间');return}
+  let dbHasContacts=false;try{dbHasContacts=(await loadPeopleFromIndexedDB()).some(x=>String(x.id)===String(obj.id))}catch{}
+  if(!mainSaved&&!recoverySaved&&!dbHasContacts){toast('保存失败：浏览器储存空间不足，且独立联系人储存也失败。请检查浏览器权限/储存空间');return}
   closePersonEditor();renderModule('people');
-  toast(mainSaved?'人物已保存 ♡':'人物已保存到联系人恢复区；建议立即导出备份');
+  toast(mainSaved?'人物已保存 ♡':'人物已保存到独立联系人储存；建议导出备份');
  }catch(err){console.error('[LOVE RECORD] person save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}
 }
 function openWorldEditor(id=''){localizeEditors();editingWorldId=id;const w=state.worlds.find(x=>x.id===id)||{};$('worldEditTitle').textContent=id?'EDIT WORLD':'NEW WORLD';$('worldName').value=w.name||'';$('worldDescription').value=w.description||'';$('worldLocations').value=w.locations||'';$('worldRules').value=w.rules||'';$('worldEditModal').classList.add('show');document.body.style.overflow='hidden'}
@@ -1800,7 +1845,7 @@ if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound
  const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
  const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;
  if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return}
- if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();renderModule('people');toast('人物已删除')}return}
+ if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();removePersonFromIndexedDB(id).catch(e=>console.warn(e));persistPeopleRecovery();renderModule('people');toast('人物已删除')}return}
  if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
  if(a==='delete-world'){if(confirm('删除这个世界？')){state.worlds=state.worlds.filter(x=>x.id!==id);save();renderModule('world');toast('世界已删除')}return}
  if(a==='new-journal'){openJournalEditor();return}
