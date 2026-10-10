@@ -409,6 +409,13 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .chat-page.is-conversation .chat-compose{position:sticky;bottom:88px}
 .system-appbar-mark[hidden]{display:none!important}
 
+
+/* Launcher overlap guard: legacy free-pixel offsets must never cover the date card. */
+#launcher .launcher-info{position:relative;z-index:1;transform:none!important;inset:auto!important}
+#launcher .launcher-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+#launcher .launcher-grid .launcher-app{position:relative;left:auto!important;top:auto!important}
+#launcher .launcher-grid .launcher-app:not(.is-dragging){transform:none!important}
+
 /* LOVE RECORD — smartphone launcher redesign */
 :root{
   --bg:#f1eef5;--card:#fff;--ink:#302b35;--muted:#89818f;
@@ -1757,107 +1764,111 @@ $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;
 applyAppearance();
 
 // LOVE RECORD launcher grid order persistence: save logical grid order, never raw pixel offsets.
+  const ORDER_KEY='love-record-launcher-grid-order-v2';
 (function(){
-  const ORDER_KEY='love-record-launcher-grid-order-v1';
-  const LEGACY_KEYS=['love-record-launcher-positions-v2','love-record-launcher-positions-v1','love-record-launcher-layout-v1','love-record-home-positions-v1'];
   const grid=document.querySelector('#launcher .launcher-grid');
   if(!grid)return;
-  const getId=el=>el&&el.dataset&&el.dataset.dragId;
+  const getId=el=>el?.dataset?.dragId;
   const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
-  const safeRead=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
-  let savedOrder=safeRead(ORDER_KEY);
-  let legacy=null;
-  for(const key of LEGACY_KEYS){const v=safeRead(key);if(v&&typeof v==='object'&&Object.keys(v).length){legacy=v;break}}
-  function normalizeOrder(order){
-    const apps=getApps(),ids=apps.map(getId),seen=new Set(),out=[];
-    if(Array.isArray(order))order.forEach(id=>{if(ids.includes(id)&&!seen.has(id)){seen.add(id);out.push(id)}});
+  const defaults=['app-space','app-chat','app-music','app-orange-market','app-memories','app-journal','app-community','app-foodie'];
+  const readOrder=()=>{
+    try {
+      const current=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');
+      if(Array.isArray(current))return current;
+      // Migrate only a previously saved logical order; never replay old pixel offsets.
+      for(const key of ['love-record-launcher-grid-order-v1','love-record-launcher-order-v1']){
+        const v=JSON.parse(localStorage.getItem(key)||'null');
+        if(Array.isArray(v))return v;
+      }
+    } catch(e) {}
+    return defaults;
+  };
+  function normalize(order){
+    const ids=getApps().map(getId),seen=new Set(),out=[];
+    (Array.isArray(order)?order:[]).forEach(id=>{if(ids.includes(id)&&!seen.has(id)){seen.add(id);out.push(id)}});
     ids.forEach(id=>{if(!seen.has(id)){seen.add(id);out.push(id)}});
     return out;
   }
-  function applyOrder(order){
-    const normalized=normalizeOrder(order);
-    getApps().forEach(el=>{el.style.removeProperty('transform');el.style.order=String(normalized.indexOf(getId(el)))});
+  function save(order){
+    const normalized=normalize(order);
+    try {
+      localStorage.setItem(ORDER_KEY,JSON.stringify(normalized));
+      // Keep a second copy so a later script update cannot silently lose the layout.
+      localStorage.setItem('love-record-launcher-grid-order-backup-v1',JSON.stringify(normalized));
+    } catch(e) { console.warn('[LOVE RECORD] Could not save launcher order',e); }
     return normalized;
   }
-  function saveOrder(order){
-    try{localStorage.setItem(ORDER_KEY,JSON.stringify(normalizeOrder(order)))}catch(e){console.warn('[LOVE RECORD] launcher order save failed',e)}
-  }
-  function applyLegacyOffsets(){
-    if(!legacy)return false;
+  function apply(order){
+    const normalized=normalize(order);
     getApps().forEach(el=>{
-      const p=legacy[getId(el)];
-      if(p&&Number.isFinite(Number(p.x))&&Number.isFinite(Number(p.y)))
-        el.style.setProperty('transform',`translate3d(${Number(p.x)}px,${Number(p.y)}px,0)`,'important');
+      el.style.removeProperty('transform');
+      el.style.order=String(normalized.indexOf(getId(el)));
+      el.classList.remove('is-dragging');
     });
-    return true;
+    return normalized;
   }
-  // Preserve the old user's visual arrangement once, then convert it to stable grid cells.
-  if(Array.isArray(savedOrder)){
-    applyOrder(savedOrder);
-  }else if(applyLegacyOffsets()){
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      const visual=getApps().slice().sort((a,b)=>{
-        const ra=a.getBoundingClientRect(),rb=b.getBoundingClientRect();
-        const rowDiff=ra.top-rb.top;
-        return Math.abs(rowDiff)>Math.min(ra.height,rb.height)*.45?rowDiff:ra.left-rb.left;
-      });
-      const order=visual.map(getId);
-      applyOrder(order);saveOrder(order);
-      // Retain the separate day/photo widget's legacy position, if one existed.
-      const widget=document.querySelector('#launcher [data-drag-id="days-widget"]');
-      const wp=legacy['days-widget'];
-      if(widget&&wp&&Number.isFinite(Number(wp.x))&&Number.isFinite(Number(wp.y)))
-        widget.style.setProperty('transform',`translate3d(${Number(wp.x)}px,${Number(wp.y)}px,0)`,'important');
-    }));
-  }else{
-    // First-run layout matches the compact four-column home screen.
-    const preferred=['app-space','app-chat','app-music','app-orange-market','app-memories','app-journal','app-community','app-foodie'];
-    const order=normalizeOrder(preferred);applyOrder(order);saveOrder(order);
+  let order=readOrder();
+  if(!Array.isArray(order)){
+    try { const backup=JSON.parse(localStorage.getItem('love-record-launcher-grid-order-backup-v1')||'null'); if(Array.isArray(backup))order=backup; } catch(e){}
   }
-  // Keep the photo/date card's old free-position behavior independent from app-grid ordering.
-  const widget=document.querySelector('#launcher [data-drag-id="days-widget"]');
-  if(widget&&legacy&&legacy['days-widget']&&(!Array.isArray(savedOrder))){
-    const wp=legacy['days-widget'];
-    if(Number.isFinite(Number(wp.x))&&Number.isFinite(Number(wp.y)))widget.style.setProperty('transform',`translate3d(${Number(wp.x)}px,${Number(wp.y)}px,0)`,'important');
-  }
-  let active=null,timer=null,dragged=false;
+  order=apply(order); save(order);
+  let active=null,timer=null,dragged=false,startPoint=null;
   document.addEventListener('pointerdown',e=>{
     const el=e.target.closest('#launcher .launcher-app[data-drag-id]');
-    if(!el||e.button!==0||e.target.closest('input,textarea'))return;
-    active={el,id:getId(el),startX:e.clientX,startY:e.clientY,pointerId:e.pointerId};dragged=false;
+    if(!el||e.button!==0||e.target.closest('input,textarea,button:not(.launcher-app)'))return;
+    active={el,id:getId(el),startX:e.clientX,startY:e.clientY,pointerId:e.pointerId};
+    dragged=false; startPoint={x:e.clientX,y:e.clientY};
     timer=setTimeout(()=>{
-      if(!active)return;dragged=true;active.el.classList.add('is-dragging');
-      try{active.el.setPointerCapture(active.pointerId)}catch{}
-      if(navigator.vibrate)navigator.vibrate(22);
-      if(typeof toast==='function')toast('拖动图标，松开后固定在网格位置');
-    },430);
-  },{passive:true});
+      if(!active)return;
+      dragged=true; active.el.classList.add('is-dragging');
+      try{active.el.setPointerCapture(active.pointerId)}catch(e){}
+      if(navigator.vibrate)navigator.vibrate(18);
+      if(typeof toast==='function')toast('松开后保存图标位置');
+    },420);
+  });
   document.addEventListener('pointermove',e=>{
     if(!active||e.pointerId!==active.pointerId)return;
-    if(!dragged){if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>10){clearTimeout(timer);timer=null;active=null}return}
+    if(!dragged){
+      if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>12){clearTimeout(timer);timer=null;active=null}
+      return;
+    }
+    if(e.cancelable)e.preventDefault();
     active.el.style.setProperty('transform',`translate3d(${e.clientX-active.startX}px,${e.clientY-active.startY}px,0)`,'important');
-  });
+  },{passive:false});
   function finish(e){
     clearTimeout(timer);timer=null;
     if(active&&dragged){
-      const draggedEl=active.el,apps=getApps().filter(el=>el!==draggedEl);
-      const x=e&&Number.isFinite(e.clientX)?e.clientX:active.startX,y=e&&Number.isFinite(e.clientY)?e.clientY:active.startY;
+      const moved=active.el, x=Number.isFinite(e?.clientX)?e.clientX:startPoint.x, y=Number.isFinite(e?.clientY)?e.clientY:startPoint.y;
+      const others=getApps().filter(el=>el!==moved);
       let target=null,best=Infinity;
-      apps.forEach(el=>{const r=el.getBoundingClientRect(),d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;target=el}});
-      draggedEl.classList.remove('is-dragging');draggedEl.style.removeProperty('transform');
-      const ordered=getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0));
-      const oldIndex=ordered.indexOf(draggedEl);if(oldIndex>=0)ordered.splice(oldIndex,1);
-      if(target){let index=ordered.indexOf(target);if(index<0)index=ordered.length;ordered.splice(index,0,draggedEl)}else ordered.push(draggedEl);
-      const order=ordered.map(getId);applyOrder(order);saveOrder(order);
-      if(e&&e.cancelable)e.preventDefault();window.__launcherJustDragged=Date.now();
+      for(const el of others){
+        const r=el.getBoundingClientRect();
+        const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));
+        if(d<best){best=d;target=el}
+      }
+      const ordered=getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).filter(el=>el!==moved);
+      let idx=target?ordered.indexOf(target):ordered.length;
+      if(idx<0)idx=ordered.length;
+      ordered.splice(idx,0,moved);
+      order=save(ordered.map(getId));
+      apply(order);
+      window.__launcherJustDragged=Date.now();
+      if(e?.cancelable)e.preventDefault();
+    } else if(active?.el) {
+      active.el.classList.remove('is-dragging');
+      active.el.style.removeProperty('transform');
     }
-    if(active)active.el.classList.remove('is-dragging');active=null;dragged=false;
+    active=null;dragged=false;startPoint=null;
   }
-  document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
-  window.addEventListener('pagehide',()=>saveOrder(getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(getId)));
-  document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<650&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+  document.addEventListener('pointerup',finish);
+  document.addEventListener('pointercancel',finish);
+  window.addEventListener('pagehide',()=>save(getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(getId)));
+  document.addEventListener('click',e=>{
+    if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<700&&e.target.closest('#launcher .launcher-app[data-drag-id]')){
+      e.preventDefault();e.stopImmediatePropagation();
+    }
+  },true);
 })();
-
 document.addEventListener('click',e=>{
 const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
 const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
