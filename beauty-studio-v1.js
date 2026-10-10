@@ -34,8 +34,13 @@
     beautyEditing=true;
   }
   function mountSaveCancel(){
-    const sheet=document.querySelector('#appearanceModal .appearance-sheet');if(!sheet||document.getElementById('lrBeautyActions'))return;
-    const bar=document.createElement('div');bar.id='lrBeautyActions';bar.className='lr-beauty-actions';bar.innerHTML='<button type="button" class="lr-cancel" id="lrBeautyCancel">取消</button><button type="button" class="lr-save" id="lrBeautySave">保存</button>';sheet.appendChild(bar);
+    const modal=document.getElementById('appearanceModal');if(!modal||document.getElementById('lrBeautyActions'))return;
+    // Mount the action bar directly under body, not inside the modal sheet. A transformed/scrolling
+    // sheet can otherwise become the containing block for position:fixed and push the bar off-screen.
+    const bar=document.createElement('div');bar.id='lrBeautyActions';bar.className='lr-beauty-actions';bar.hidden=true;bar.setAttribute('role','group');bar.setAttribute('aria-label','美化设置操作');
+    bar.innerHTML='<button type="button" class="lr-cancel" id="lrBeautyCancel">取消</button><button type="button" class="lr-save" id="lrBeautySave">保存</button>';document.body.appendChild(bar);
+    const syncVisibility=()=>{bar.hidden=!modal.classList.contains('show');};
+    syncVisibility();new MutationObserver(syncVisibility).observe(modal,{attributes:true,attributeFilter:['class']});
     document.getElementById('lrBeautySave').addEventListener('click',()=>{
       if(!persistCompactAppearance())return;
       const selected=document.querySelector('[data-lr-glass-theme].active')?.dataset.lrGlassTheme;const current=safeRead();if(selected)current.glassTheme=selected;if(current.glassTheme)safeWrite(current);
