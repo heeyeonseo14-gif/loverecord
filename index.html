@@ -893,7 +893,9 @@ body.music-listening-modal-open{overflow:hidden!important}
 <style>
 
 /* CONTACT EDITOR SAVE FIX: keep the editor above the fixed navigation and make action buttons reachable on mobile. */
-#personEditModal, #selfPersonaEditModal { z-index: 120 !important; }
+#personEditModal, #selfPersonaEditModal { z-index: 2147483000 !important; position: fixed !important; inset: 0 !important; }
+#personEditModal.show, #selfPersonaEditModal.show { display: flex !important; align-items: flex-start !important; justify-content: center !important; overflow-y: auto !important; padding: 12px 10px calc(24px + env(safe-area-inset-bottom)) !important; }
+#personEditModal .module-sheet, #selfPersonaEditModal .module-sheet { position: relative !important; z-index: 2147483001 !important; width: min(100%, 680px) !important; margin: auto !important; }
 #personEditModal .module-sheet, #selfPersonaEditModal .module-sheet {
   max-height: calc(100dvh - 24px) !important;
   overflow-y: auto !important;
@@ -1236,6 +1238,22 @@ body.music-listening-modal-open{overflow:hidden!important}
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
 const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
 let state=Object.assign({},defaults,JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}'));
+// Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
+const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
+try {
+ const recovered=JSON.parse(localStorage.getItem(CONTACT_RECOVERY_KEY)||'[]');
+ if(Array.isArray(recovered)&&recovered.length){
+   const current=Array.isArray(state.people)?state.people:[];
+   const byId=new Map(current.map(p=>[String(p.id),p]));
+   recovered.forEach(p=>{if(p&&p.id)byId.set(String(p.id),p)});
+   state.people=Array.from(byId.values());
+ }
+} catch(e){console.warn('[LOVE RECORD] contact recovery read failed',e)}
+function persistPeopleRecovery(){
+ try { localStorage.setItem(CONTACT_RECOVERY_KEY,JSON.stringify(Array.isArray(state.people)?state.people:[])); return true; }
+ catch(e){ console.error('[LOVE RECORD] contact recovery save failed',e); return false; }
+}
+
 let db=null, deferredPrompt=null, aiBusy=false;
 const $=id=>document.getElementById(id);
 function save(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}
@@ -1603,16 +1621,15 @@ function savePerson(){
  if(!name){toast('请先填写人物名字');$('personName').focus();return}
  try{
   if(!Array.isArray(state.people))state.people=[];
-  const obj={id:editingPersonId||'p-'+Date.now(),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};
+  const obj={id:editingPersonId||'p-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name,role:$('personRole').value.trim(),personality:$('personPersonality').value.trim(),appearance:$('personAppearance').value.trim(),speech:$('personSpeech').value.trim(),background:$('personBackground').value.trim(),instructions:$('personInstructions').value.trim()};
   if(editingPersonId){const i=state.people.findIndex(x=>x.id===editingPersonId);if(i>=0)state.people[i]=obj;else state.people.push(obj)}else state.people.push(obj);
-  save();
-  closePersonEditor();
-  renderModule('people');
-  toast('人物已保存 ♡');
- }catch(err){
-  console.error('[LOVE RECORD] person save failed',err);
-  toast('保存失败：浏览器储存空间可能已满，请先导出备份');
- }
+  let mainSaved=true;
+  try{save()}catch(err){mainSaved=false;console.error('[LOVE RECORD] main settings save failed while saving person',err)}
+  const recoverySaved=persistPeopleRecovery();
+  if(!mainSaved&&!recoverySaved){toast('保存失败：浏览器储存空间不足。请先导出备份或清理储存空间');return}
+  closePersonEditor();renderModule('people');
+  toast(mainSaved?'人物已保存 ♡':'人物已保存到联系人恢复区；建议立即导出备份');
+ }catch(err){console.error('[LOVE RECORD] person save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}
 }
 function openWorldEditor(id=''){localizeEditors();editingWorldId=id;const w=state.worlds.find(x=>x.id===id)||{};$('worldEditTitle').textContent=id?'EDIT WORLD':'NEW WORLD';$('worldName').value=w.name||'';$('worldDescription').value=w.description||'';$('worldLocations').value=w.locations||'';$('worldRules').value=w.rules||'';$('worldEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closeWorldEditor(){$('worldEditModal').classList.remove('show');document.body.style.overflow=''}
