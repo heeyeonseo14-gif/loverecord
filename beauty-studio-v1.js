@@ -34,13 +34,8 @@
     beautyEditing=true;
   }
   function mountSaveCancel(){
-    const modal=document.getElementById('appearanceModal');if(!modal||document.getElementById('lrBeautyActions'))return;
-    // Mount the action bar directly under body, not inside the modal sheet. A transformed/scrolling
-    // sheet can otherwise become the containing block for position:fixed and push the bar off-screen.
-    const bar=document.createElement('div');bar.id='lrBeautyActions';bar.className='lr-beauty-actions';bar.hidden=true;bar.setAttribute('role','group');bar.setAttribute('aria-label','美化设置操作');
-    bar.innerHTML='<button type="button" class="lr-cancel" id="lrBeautyCancel">取消</button><button type="button" class="lr-save" id="lrBeautySave">保存</button>';document.body.appendChild(bar);
-    const syncVisibility=()=>{bar.hidden=!modal.classList.contains('show');};
-    syncVisibility();new MutationObserver(syncVisibility).observe(modal,{attributes:true,attributeFilter:['class']});
+    const sheet=document.querySelector('#appearanceModal .appearance-sheet');if(!sheet||document.getElementById('lrBeautyActions'))return;
+    const bar=document.createElement('div');bar.id='lrBeautyActions';bar.className='lr-beauty-actions';bar.innerHTML='<button type="button" class="lr-cancel" id="lrBeautyCancel">取消</button><button type="button" class="lr-save" id="lrBeautySave">保存</button>';sheet.appendChild(bar);
     document.getElementById('lrBeautySave').addEventListener('click',()=>{
       if(!persistCompactAppearance())return;
       const selected=document.querySelector('[data-lr-glass-theme].active')?.dataset.lrGlassTheme;const current=safeRead();if(selected)current.glassTheme=selected;if(current.glassTheme)safeWrite(current);
@@ -140,7 +135,7 @@
   }
   function init(){
     installQuotaSafeAppearanceSave();
-    if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});document.body.classList.toggle('lr-custom-text-enabled',!!appearance.textColor);}
+    if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
     mountThemePicker();mountFontControls();mountSaveCancel();
     const appearanceModal=document.getElementById('appearanceModal');
     document.getElementById('openAppearance')?.addEventListener('click',()=>{beautySnapshot=null;takeBeautySnapshot()},{capture:true});
@@ -158,14 +153,11 @@
         if(prior.customFontName&&!appearance.customFontName)appearance.customFontName=prior.customFontName;
         if(prior.customFontUrl&&!appearance.customFontUrl)appearance.customFontUrl=prior.customFontUrl;
         originalApplyAppearance();
-        document.body.classList.toggle('lr-custom-text-enabled',!!(appearance&&appearance.textColor));
         const now=safeRead();
         if(now.customFontName&&now.customFontUrl)applySavedCustomFont(now);
         if(themeMap[now.glassTheme])applyTheme(now.glassTheme,false);
       };
     }
-    document.getElementById('useCustomTextColor')?.addEventListener('click',()=>document.body.classList.toggle('lr-custom-text-enabled',!!(typeof appearance!=='undefined'&&appearance.textColor)),true);
-    document.getElementById('resetTextColor')?.addEventListener('click',()=>document.body.classList.remove('lr-custom-text-enabled'),true);
     // Keep the chosen glass theme when the legacy appearance controls are changed or re-rendered.
     const presetGrid=document.getElementById('presetGrid');presetGrid?.addEventListener('click',e=>{
       const b=e.target.closest('[data-preset]');if(!b)return;const key=b.dataset.preset;
