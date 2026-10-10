@@ -135,7 +135,7 @@
   }
   function init(){
     installQuotaSafeAppearanceSave();
-    if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});}
+    if(typeof appearance!=='undefined'){const fallback=parseStored(APPEARANCE_FALLBACK_KEY);Object.keys(fallback).forEach(k=>{if(k!=='bgData')appearance[k]=fallback[k]});document.body.classList.toggle('lr-custom-text-enabled',!!appearance.textColor);}
     mountThemePicker();mountFontControls();mountSaveCancel();
     const appearanceModal=document.getElementById('appearanceModal');
     document.getElementById('openAppearance')?.addEventListener('click',()=>{beautySnapshot=null;takeBeautySnapshot()},{capture:true});
@@ -153,11 +153,14 @@
         if(prior.customFontName&&!appearance.customFontName)appearance.customFontName=prior.customFontName;
         if(prior.customFontUrl&&!appearance.customFontUrl)appearance.customFontUrl=prior.customFontUrl;
         originalApplyAppearance();
+        document.body.classList.toggle('lr-custom-text-enabled',!!(appearance&&appearance.textColor));
         const now=safeRead();
         if(now.customFontName&&now.customFontUrl)applySavedCustomFont(now);
         if(themeMap[now.glassTheme])applyTheme(now.glassTheme,false);
       };
     }
+    document.getElementById('useCustomTextColor')?.addEventListener('click',()=>document.body.classList.toggle('lr-custom-text-enabled',!!(typeof appearance!=='undefined'&&appearance.textColor)),true);
+    document.getElementById('resetTextColor')?.addEventListener('click',()=>document.body.classList.remove('lr-custom-text-enabled'),true);
     // Keep the chosen glass theme when the legacy appearance controls are changed or re-rendered.
     const presetGrid=document.getElementById('presetGrid');presetGrid?.addEventListener('click',e=>{
       const b=e.target.closest('[data-preset]');if(!b)return;const key=b.dataset.preset;

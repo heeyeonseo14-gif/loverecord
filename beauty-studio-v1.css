@@ -143,3 +143,13 @@ body.lr-glass-obsidian .lr-beauty-actions .lr-cancel{background:rgba(45,43,52,.9
 /* V3: theme selection is a surface treatment only; preserve the user-selected text color. */
 body.lr-glass-amethyst,body.lr-glass-pearl,body.lr-glass-obsidian{color:var(--ink)!important}
 body.lr-glass-amethyst .card,body.lr-glass-amethyst .sheet,body.lr-glass-amethyst .module-sheet,body.lr-glass-amethyst .preview-card,body.lr-glass-pearl .card,body.lr-glass-pearl .sheet,body.lr-glass-pearl .module-sheet,body.lr-glass-pearl .preview-card{color:var(--ink)}
+
+
+/* V4: keep Save/Cancel visible above the app's fixed bottom navigation on mobile. */
+#lrBeautyActions{position:fixed!important;left:18px;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:10050!important;margin:0!important;padding:10px!important;border:1px solid rgba(255,255,255,.72);border-radius:20px;background:rgba(248,246,250,.92)!important;box-shadow:0 10px 32px rgba(36,24,45,.14);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#lrBeautyActions button{min-height:48px!important;font-size:15px!important}
+body.lr-glass-obsidian #lrBeautyActions{background:rgba(35,32,40,.94)!important;border-color:rgba(255,255,255,.16)}
+body.lr-glass-obsidian #lrBeautyActions .lr-cancel{background:rgba(60,56,66,.96);color:#f7f4fa}
+/* V4: make the selected custom text color win over older hard-coded text colors, without recoloring button surfaces. */
+body.lr-custom-text-enabled :is(h1,h2,h3,h4,h5,p,small,label,li,strong,em,blockquote,.sub,.eyebrow,.appearance-section,.appearance-preview,.preview-card,.card-title,.section-title,.module-head,.space-title-row,.space-intro,.scene-quote,.workspace-title,.contact-name,.contact-role,.chat-title,.message-text,.feed-title,.feed-content,.music-title,.music-artist,.setting-label){color:var(--ink)!important}
+body.lr-custom-text-enabled :is(.card,.sheet,.module-sheet,.appearance-sheet,.appearance-preview .preview-card) :is(h1,h2,h3,h4,p,small,label,li,strong,em,.sub,.eyebrow){color:var(--ink)!important}
