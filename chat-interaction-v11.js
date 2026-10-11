@@ -177,13 +177,27 @@
   }
   function ensureMenu() {
     const compose = document.querySelector('#chatConversation .chat-compose');
-    if (!compose || $('lrChatPlus')) return;
+    if (!compose) return;
+    // Legacy UI injections could leave a second plus/menu beside the canonical v11 control.
+    compose.querySelectorAll('.chat-compose-plus,.chat-plus-menu').forEach(node=>node.remove());
+    const existing=$('lrChatPlus');
+    if(existing){const oldMenu=$('lrChatPlusMenu');if(oldMenu&&oldMenu.parentElement!==compose)oldMenu.remove();return;}
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
     menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="foodie">♨　点外卖 · Foodie</button><button type="button" data-lr-action="market">🛍　去购物 · Orange Market</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
+    const dedupeComposeControls=()=>{
+      compose.querySelectorAll('.chat-compose-plus,.chat-plus-menu').forEach(node=>node.remove());
+      compose.querySelectorAll('button').forEach(btn=>{
+        if(btn===plus)return;
+        const label=(btn.getAttribute('aria-label')||'').toLowerCase();
+        if(/^[＋+×]$/.test((btn.textContent||'').trim())||label.includes('更多聊天功能'))btn.remove();
+      });
+    };
+    dedupeComposeControls();
+    if(!compose.__lrPlusObserver&&window.MutationObserver){compose.__lrPlusObserver=new MutationObserver(dedupeComposeControls);compose.__lrPlusObserver.observe(compose,{childList:true,subtree:true});}
     plus.addEventListener('click', () => { menuOpen=!menuOpen; menu.hidden=!menuOpen; plus.textContent=menuOpen?'×':'＋'; });
     menu.addEventListener('click', event => {
       const button = event.target.closest('[data-lr-action]'); if (!button) return;
