@@ -453,6 +453,8 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 /* Launcher overlap guard: legacy free-pixel offsets must never cover the date card. */
 #launcher .launcher-info{position:relative;z-index:1;transform:none!important;inset:auto!important}
 #launcher .launcher-grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+#launcher .launcher-pages button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:rgba(151,132,163,.32)}#launcher .launcher-pages button.active{width:20px;border-radius:8px;background:var(--purple,#b99bc8)}
+#launcher .launcher-grid{touch-action:pan-y}#launcher .launcher-app[hidden]{display:none!important}
 #launcher .launcher-grid .launcher-app{position:relative;left:auto!important;top:auto!important}
 #launcher .launcher-grid .launcher-app:not(.is-dragging){transform:none!important}
 
@@ -1047,6 +1049,7 @@ body.music-listening-modal-open{overflow:hidden!important}
     <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>外卖</span></button>
     <button class="launcher-app" data-launch-life="shop" type="button" data-drag-id="app-orange-market"><span class="app-icon icon-orange-market">🛍</span><span>购物</span></button>
   </section>
+  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-page="0" aria-label="第一页"></button><button type="button" data-launcher-page="1" aria-label="第二页"></button></div>
 </main>
 
 
@@ -1250,14 +1253,13 @@ body.music-listening-modal-open{overflow:hidden!important}
 <main id="settings" class="page">
   <div class="eyebrow">SETTINGS</div><h1>OUR SPACE</h1>
   <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
-  <div class="card" id="usCard"><h3>US</h3><label>YOUR NAME</label><input id="setName"><label>PARTNER NAME</label><input id="setPartner"><label>START DATE</label><input id="setDate" type="date"><label>TODAY TEXT</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">SAVE CHANGES</button></div>
-  <div class="card" id="languageCard"><h3 id="languageTitle">LANGUAGE</h3><div class="sub" id="languageSub">Choose the language for the app interface. AI-generated content will keep its original language.</div><select id="languageSelect" style="margin-top:12px"><option value="en">English</option><option value="zh">中文</option></select></div>
+  <div class="card" id="usCard"><h3>我们</h3><label>开始日期</label><input id="setDate" type="date"><label>今天的文字</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">保存修改</button></div>
   <div class="card" id="selfPersonaCard"><h3 id="selfPersonaTitle">MY PERSONAS</h3><div class="sub" id="selfPersonaSub">Create different versions of yourself. You can keep more than one.</div><div id="selfPersonaList" style="margin-top:13px"></div><button class="btn primary" id="addSelfPersona" type="button" style="margin-top:15px">+ ADD PERSONA</button></div>
   <div class="card" id="appearanceCard"><h3 id="appearanceTitle">✦ APPEARANCE</h3><div class="sub" id="appearanceSub">字体、字号、主题色、卡片圆角、毛玻璃和背景，都可以在这里实时调整。</div><button class="btn primary" id="openAppearance" type="button" style="margin-top:15px">CUSTOMIZE LOOK</button></div>
-  <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">未连接 API。Space 会使用内置角色互动。</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1"><label>API KEY</label><input id="apiKey" type="password" placeholder="sk-..."><label>MODEL</label>
-<div id="modelPicker" class="model-picker" aria-label="Available models"></div>
-<div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
-<button class="btn primary" id="connectApi" type="button" style="margin-top:17px">CONNECT API</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">REFRESH MODELS</button><div class="sub" style="margin-top:10px">优先读取中转站的 /models；如果不支持，可以使用备用模型输入。</div><input id="manualModel" placeholder="备用：模型名" style="margin-top:10px"><button class="btn" id="testApi" type="button" style="margin-top:10px">TEST AI</button><div id="apiDebug" class="sub" style="margin-top:12px;word-break:break-word">还没有进行 API 测试。</div></div>
+  <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
+<div id="modelPicker" class="model-picker" aria-label="可用模型"></div><div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
+<div class="api-preset-editor" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.45)"><label for="apiPresetName" style="margin-top:0">预设名称</label><input id="apiPresetName" placeholder="例如：主力中转站 / 备用站"><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="saveApiPreset" type="button">保存预设</button><button class="btn" id="addApiPreset" type="button">添加预设</button></div><div id="apiPresetStatus" class="sub" role="status" aria-live="polite" style="margin-top:9px">预设会保存在当前浏览器。</div><div id="apiPresetList" style="display:grid;gap:9px;margin-top:12px"></div></div>
+<button class="btn primary" id="connectApi" type="button" style="margin-top:17px">连接 API / 读取模型</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">刷新模型</button><button class="btn" id="testApi" type="button" style="margin-top:9px">测试 AI</button><div id="apiDebug" class="sub" style="margin-top:12px;word-break:break-word">还没有进行 API 测试。</div></div>
   <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
 </main>
 </div>
@@ -1326,7 +1328,7 @@ body.music-listening-modal-open{overflow:hidden!important}
 <div id="toast" class="toast"></div>
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
-const defaults={language:'en',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
+const defaults={language:'zh',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
 let state=Object.assign({},defaults,(()=>{let saved={};try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}}catch(e){console.warn('[LOVE RECORD] settings JSON unreadable',e)}try{const api=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}');saved={...saved,...Object.fromEntries(Object.entries(api).filter(([k,v])=>v!==undefined&&v!==null&&v!==''))}}catch{}return saved})());
 // Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
 const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
@@ -1635,7 +1637,7 @@ const UI_LANG={
  en:{home:'HOME',memories:'MEMORIES',space:'SPACE',settings:'SETTINGS',littleUniverse:'OUR LITTLE UNIVERSE',daysTogether:'DAYS TOGETHER',today:'TODAY',moment:'A MOMENT',private:'PRIVATE',yourPhoto:'YOUR PHOTO',addPhoto:'ADD PHOTO',clear:'CLEAR',yourWorld:'YOUR WORLD',worldSub:'People, forum, worlds and journals, all in one place.',archive:'OUR LITTLE ARCHIVE',addMemory:'Add a memory',photo:'PHOTO',note:'NOTE',saveMemory:'SAVE MEMORY',rightNow:'RIGHT NOW',homeAlive:'HOME IS ALIVE',whatWill:'WHAT WILL YOU DO?',send:'SEND',ourDay:'OUR LITTLE DAY',newMoment:'A NEW MOMENT',surpriseSub:'Want something unexpected to happen today?',surprise:'SURPRISE US',ourSpace:'OUR SPACE',installTitle:'Add our space to your home screen',installSub:'Open it like a real little app',add:'ADD',us:'US',yourName:'YOUR NAME',partnerName:'PARTNER NAME',startDate:'START DATE',todayText:'TODAY TEXT',saveChanges:'SAVE CHANGES',appearance:'APPEARANCE',appearanceSub:'Fonts, type scale, colors, cards, glass and background.',customize:'CUSTOMIZE LOOK',api:'AI / API',selfPersona:'MY PERSONAS',selfPersonaSub:'Create different versions of yourself. You can keep more than one.',addSelfPersona:'+ ADD PERSONA',homeScreen:'HOME SCREEN',howToAdd:'HOW TO ADD',language:'LANGUAGE',languageSub:'Choose the language for the app interface. AI-generated content will keep its original language.',newPerson:'NEW PERSON',role:'ROLE / IDENTITY',personality:'PERSONALITY',appearanceField:'APPEARANCE',speaking:'SPEAKING STYLE',background:'BACKGROUND',instructions:'AI INSTRUCTIONS',savePerson:'SAVE PERSON',cancel:'CANCEL',newWorld:'NEW WORLD',description:'DESCRIPTION',locations:'LOCATIONS',rules:'RULES',saveWorld:'SAVE WORLD',newEntry:'NEW ENTRY',title:'TITLE',mood:'MOOD',saveEntry:'SAVE ENTRY',discussion:'DISCUSSION',comments:'COMMENTS',generateComments:'GENERATE AI COMMENTS',languageSaved:'Language changed.',selectPerson:'SELECT PERSON',selectPersonSub:'Choose who you want to spend this space with.'},
  zh:{home:'首页',memories:'回忆',space:'空间',settings:'设置',littleUniverse:'我们的小宇宙',daysTogether:'在一起的日子',today:'今天',moment:'此刻',private:'私密',yourPhoto:'你的照片',addPhoto:'添加照片',clear:'清除',yourWorld:'你的世界',worldSub:'人物、论坛、世界和日记，都留在这里。',archive:'我们的小档案',addMemory:'添加一段回忆',photo:'照片',note:'备注',saveMemory:'保存回忆',rightNow:'此刻',homeAlive:'空间正在运行',whatWill:'你想做什么？',send:'发送',ourDay:'我们的一天',newMoment:'新的瞬间',surpriseSub:'想让今天发生一点意外？',surprise:'给我们一个惊喜',ourSpace:'空间',installTitle:'把我们的空间放到主屏幕',installSub:'像一个真正的小 App 一样打开',add:'添加',us:'我们',yourName:'你的名字',partnerName:'恋人名字',startDate:'开始日期',todayText:'今天的文字',saveChanges:'保存修改',appearance:'外观',appearanceSub:'字体、字号、主题色、卡片圆角、毛玻璃和背景，都可以在这里实时调整。',customize:'自定义外观',api:'AI / API',selfPersona:'我的自设',selfPersonaSub:'建立不同版本的自己。可以保存多个自设。',addSelfPersona:'+ 添加自设',homeScreen:'主屏幕',howToAdd:'如何添加',language:'语言',languageSub:'选择 App 界面的显示语言。AI 生成的内容会保持原本的语言。',newPerson:'新建人物',role:'身份 / 职业',personality:'性格',appearanceField:'外貌',speaking:'说话方式',background:'背景故事',instructions:'AI 指令',savePerson:'保存人物',cancel:'取消',newWorld:'新建世界',description:'简介',locations:'地点',rules:'世界规则',saveWorld:'保存世界',newEntry:'新建日记',title:'标题',mood:'心情',saveEntry:'保存日记',discussion:'讨论',comments:'评论',generateComments:'生成 AI 评论',languageSaved:'语言已切换。',selectPerson:'选择对象',selectPersonSub:'选择你想和谁一起进入这个空间。'}
 };
-function currentLang(){return state.language==='zh'?'zh':'en'}
+function currentLang(){return 'zh'}
 function t(k){return UI_LANG[currentLang()][k]||UI_LANG.en[k]||k}
 function setText(id,key){const el=$(id);if(el)el.textContent=t(key)}
 function localizeEditors(){
@@ -1663,13 +1665,13 @@ function localizeModule(){
  const labels=body.querySelectorAll('label');labels.forEach(l=>{const x=l.textContent.trim();const m=zh?{'TOPIC':'主题','AI PARTICIPANTS':'AI 参与者','HOW MANY POSTS':'生成帖子数量'}:{'主题':'TOPIC','AI 参与者':'AI PARTICIPANTS','生成帖子数量':'HOW MANY POSTS'};if(m[x])l.textContent=m[x]});
 }
 function applyLanguage(){
- setText('languageTitle','language');setText('languageSub','languageSub');
+ 
  document.querySelectorAll('.nav-btn').forEach(b=>{const sp=b.querySelector('span');if(sp)sp.textContent=t(b.dataset.page)});
  const home=$('home');if(home){const h=home.querySelector('h1');if(h)h.textContent=t('littleUniverse');const es=home.querySelectorAll('.eyebrow');if(es[0])es[0].textContent='LOVE RECORD';if(es[1])es[1].textContent=t('today');if(es[2])es[2].textContent=t('moment');if(es[3])es[3].textContent=t('yourWorld');const st=home.querySelector('.status');if(st)st.textContent=t('private');const hp=$('homePhoto');if(hp&&!hp.querySelector('img'))hp.textContent=t('yourPhoto');const bs=home.querySelectorAll('.btn');if(bs[0])bs[0].textContent=t('addPhoto');if(bs[1])bs[1].textContent=t('clear');const sub=home.querySelector('.world-grid')?.parentElement?.querySelector('.sub');if(sub)sub.textContent=t('worldSub')}
  const mem=$('memories');if(mem){const es=mem.querySelectorAll('.eyebrow');if(es[0])es[0].textContent=t('memories');const h=mem.querySelector('h1');if(h)h.textContent=t('archive');const h3=mem.querySelector('h3');if(h3)h3.textContent=t('addMemory');const labs=mem.querySelectorAll('label');if(labs[0])labs[0].textContent=t('photo');if(labs[1])labs[1].textContent=t('note');const b=$('addMemory');if(b)b.textContent=t('saveMemory')}
  const sp=$('space');if(sp){const spe=$('spacePeopleEyebrow');if(spe)spe.textContent=currentLang()==='zh'?'角色 CHARACTER':'THE CHARACTERS';const sps=$('spacePeopleSub');if(sps&&!activeSpaceId)sps.textContent=t('selectPersonSub');const title=$('spaceTitleEyebrow');if(title)title.textContent=currentLang()==='zh'?'我们的私人宇宙':'OUR PRIVATE UNIVERSE';const what=$('spaceWhatWill');if(what)what.textContent=currentLang()==='zh'?'此刻 · 03':'THE PRESENT · 03';const nm=$('newMomentEyebrow');if(nm)nm.textContent=currentLang()==='zh'?'新的瞬间 · 05':'A NEW MOMENT · 05';const h=sp.querySelector('h1');if(h)h.textContent='OUR SPACE';const ai=$('aiState');if(ai)ai.textContent=t('homeAlive');const send=$('sendFree');if(send)send.textContent=t('send');const sur=$('surprise');if(sur)sur.setAttribute('aria-label',t('surprise'));const sub=$('surprise')?.closest('.surprise-feature')?.querySelector('.sub');if(sub)sub.textContent=t('surpriseSub')}
- const st=$('settings');if(st){const es=st.querySelectorAll('.eyebrow');if(es[0])es[0].textContent=t('settings');const h=st.querySelector('h1');if(h)h.textContent=t('ourSpace');const install=st.querySelector('#installBox');if(install){const b=install.querySelector('b');if(b)b.textContent=t('installTitle');const sub=install.querySelector('.sub');if(sub)sub.textContent=t('installSub');if($('installBtn'))$('installBtn').textContent=t('add')}const us=$('settings').querySelector('#usCard h3');if(us)us.textContent=t('us');const labels=$('settings').querySelectorAll('#usCard label');const vals=[t('yourName'),t('partnerName'),t('startDate'),t('todayText')];for(let i=0;i<4&&labels[i];i++)labels[i].textContent=vals[i];if($('saveSettings'))$('saveSettings').textContent=t('saveChanges');setText('languageTitle','language');setText('languageSub','languageSub');setText('selfPersonaTitle','selfPersona');setText('selfPersonaSub','selfPersonaSub');setText('addSelfPersona','addSelfPersona');setText('appearanceTitle','appearance');setText('appearanceSub','appearanceSub');if($('openAppearance'))$('openAppearance').textContent=t('customize');setText('apiTitle','api');if($('installHelp'))$('installHelp').textContent=t('howToAdd');renderSelfPersonas()}
- const lang=$('languageSelect');if(lang)lang.value=currentLang();
+ const st=$('settings');if(st){const es=st.querySelectorAll('.eyebrow');if(es[0])es[0].textContent=t('settings');const h=st.querySelector('h1');if(h)h.textContent=t('ourSpace');const install=st.querySelector('#installBox');if(install){const b=install.querySelector('b');if(b)b.textContent=t('installTitle');const sub=install.querySelector('.sub');if(sub)sub.textContent=t('installSub');if($('installBtn'))$('installBtn').textContent=t('add')}const us=$('settings').querySelector('#usCard h3');if(us)us.textContent=t('us');const labels=$('settings').querySelectorAll('#usCard label');if(labels[0])labels[0].textContent='开始日期';if(labels[1])labels[1].textContent='今天的文字';if($('saveSettings'))$('saveSettings').textContent=t('saveChanges');setText('selfPersonaTitle','selfPersona');setText('selfPersonaSub','selfPersonaSub');setText('addSelfPersona','addSelfPersona');setText('appearanceTitle','appearance');setText('appearanceSub','appearanceSub');if($('openAppearance'))$('openAppearance').textContent=t('customize');setText('apiTitle','api');if($('installHelp'))$('installHelp').textContent=t('howToAdd');renderSelfPersonas()}
+ state.language='zh';
  localizeModule();localizeEditors();renderSpacePeople();
 }
 
@@ -1696,9 +1698,8 @@ function nav(page){
   if(page==='settings')renderSettings();
 }
 function renderSettings(){
-$('setName').value=state.name;$('setPartner').value=state.partner;$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
-renderModelPicker();
-$('manualModel').value='';renderSelfPersonas();updateAIState();
+$('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
+renderModelPicker();renderApiPresets();renderSelfPersonas();updateAIState();
 const on=!!(state.apiBase&&state.apiKey&&state.apiModel);$('apiStatus').textContent=on?'API 已连接 · '+state.apiModel:'未连接 API。Space 会使用内置角色互动.';$('apiStatus').classList.toggle('on',on)
 }
 function renderModelPicker(){
@@ -1717,7 +1718,7 @@ async function loadModels(){const base=$('apiBase').value.trim().replace(/\/+$/,
 
 function extractAIText(j){const c=j?.choices?.[0]?.message?.content;if(typeof c==='string')return c.trim();if(Array.isArray(c))return c.map(x=>typeof x==='string'?x:(x?.text||'')).join('').trim();if(typeof j?.choices?.[0]?.text==='string')return j.choices[0].text.trim();return''}
 async function askAI(userText,mode){const selectedModel=(state.apiModel||'').trim();const base=(state.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,'');const key=(state.apiKey||$('apiKey')?.value||'').trim();const model=(selectedModel||state.apiModel||'').trim();if(!base||!key||!model)return null;if(aiBusy)return null;aiBusy=true;try{const recent=historyContext(activeSpace())||'无';const s=activeSpace()?.scene||hourScene();const person=activeSpacePerson();const world=activeSpaceWorld();const persona=activeSpacePersona();const system='你正在 LOVE RECORD 的 SPACE 中扮演 '+(person?.name||state.partner)+'。用户是 '+(persona?.name||state.name)+'。你不是任务系统，也不要把互动写成游戏菜单。请保持角色一致，自然回应。人物身份：'+(person?.role||'')+'；性格：'+(person?.personality||'')+'；外貌：'+(person?.appearance||'')+'；说话方式：'+(person?.speech||'')+'；背景：'+(person?.background||'')+'；人物规则：'+(person?.instructions||'')+'。世界观：'+(world?world.name+'；'+world.description+'；地点：'+world.locations+'；规则：'+world.rules:'无')+'。用户自设完整资料：名字='+(persona?.name||state.name)+'；身份='+(persona?.role||'')+'；性格='+(persona?.personality||'')+'；外貌='+(persona?.appearance||'')+'；说话方式='+(persona?.speech||'')+'；背景='+(persona?.background||'')+'。不要替用户决定行动、想法、台词或情绪；只回应用户已经明确做出的事情。当前场景：'+s.place+'；时间：'+new Date().toLocaleString('zh-CN')+'。近期共同记忆：'+recent+'。只返回一段适合直接显示给用户的角色回应，不要JSON，不要解释AI。';const user='YANYAN刚刚说/做了：'+userText+'。请继续这一刻。';setApiDebug('正在请求模型：'+model+' …');const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:system},{role:'user',content:user}],stream:false})},60000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,220):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('返回内容不是有效 JSON：'+raw.slice(0,160))}const answer=extractAIText(j);if(!answer)throw new Error('API 返回成功，但没有找到 choices[0].message.content');setApiDebug('AI 测试/调用成功。返回正常。',true);return answer}catch(e){setApiDebug('AI 请求失败：'+apiErrorText(e));return null}finally{aiBusy=false}}
-async function testAI(){const base=(state.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,'');const key=(state.apiKey||$('apiKey')?.value||'').trim();const model=(state.apiModel||'').trim();if(!base||!key||!model){toast('先 CONNECT API 或填写备用模型');setApiDebug('当前没有完整的 API Base URL / Key / Model。');return}if(aiBusy){toast('AI 正在处理上一条请求，请稍等 ♡');return}aiBusy=true;setApiDebug('正在测试连接…\n模型：'+model);toast('正在测试 AI…');try{const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:'You are a connection test endpoint. Reply with exactly: OK'},{role:'user',content:'Reply with exactly: OK'}],stream:false,max_tokens:8})},60000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,180):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('服务器返回的内容不是有效 JSON。')}const answer=extractAIText(j);if(!answer)throw new Error('请求已返回，但没有读取到模型回复。');setApiDebug('API 连接成功 ♡\n模型：'+model+'\n测试通过。角色对话不会显示在这里。',true);toast('AI 连接成功 ♡')}catch(e){setApiDebug('API 连接失败：'+apiErrorText(e));toast('AI 测试失败，请查看错误详情')}finally{aiBusy=false}}
+async function testAI(){const base=(state.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,'');const key=(state.apiKey||$('apiKey')?.value||'').trim();const model=(state.apiModel||'').trim();if(!base||!key||!model){toast('请先连接 API 并选择模型');setApiDebug('当前没有完整的 API Base URL / Key / Model。');return}if(aiBusy){toast('AI 正在处理上一条请求，请稍等 ♡');return}aiBusy=true;setApiDebug('正在测试连接…\n模型：'+model);toast('正在测试 AI…');try{const r=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model:model,messages:[{role:'system',content:'You are a connection test endpoint. Reply with exactly: OK'},{role:'user',content:'Reply with exactly: OK'}],stream:false,max_tokens:8})},60000);const raw=await r.text();if(!r.ok){let detail=raw;try{const j=JSON.parse(raw);detail=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+(detail?' · '+detail.slice(0,180):''))}let j;try{j=JSON.parse(raw)}catch{throw new Error('服务器返回的内容不是有效 JSON。')}const answer=extractAIText(j);if(!answer)throw new Error('请求已返回，但没有读取到模型回复。');setApiDebug('API 连接成功 ♡\n模型：'+model+'\n测试通过。角色对话不会显示在这里。',true);toast('AI 连接成功 ♡')}catch(e){setApiDebug('API 连接失败：'+apiErrorText(e));toast('AI 测试失败，请查看错误详情')}finally{aiBusy=false}}
 function setSceneResponse(text){$('sceneText').textContent='这一刻，他看着你。';$('sceneQuote').textContent='“'+text.replace(/^["“]|["”]$/g,'')+'”';const sp=activeSpace();if(sp){sp.scene=sp.scene||baseScene();sp.scene.text='这一刻，他看着你。';sp.scene.quote='“'+text.replace(/^["“]|["”]$/g,'')+'”';sp.scene.hour=new Date().getHours();save()}}
 function fallbackChoices(trigger){const pools=[['继续追问他刚才那句话','靠近一点看看他的反应','把话题转到今天发生的事','笑着装作什么都没发生'],['问他接下来想做什么','把刚才的话说得更直白一点','换一个轻松的话题','安静陪他一会儿'],['问他为什么会这么想','顺着这个话题继续聊','故意逗他一下','把自己的想法告诉他'],['陪他一起做刚才的事','提出一个新的小计划','问他有没有想和你说的事','什么也不说，只看着他']];const idx=Math.abs(String(trigger||'').length)%pools.length;return pools[idx].slice(0,4)}
 async function generateDynamicChoices(context){const sp=activeSpace();if(!sp)return;if(!(state.apiBase&&state.apiKey&&state.apiModel)){sp.scene=sp.scene||baseScene();sp.scene.choices=fallbackChoices(context);save();renderScene();return}const person=activeSpacePerson(),world=activeSpaceWorld(),persona=activeSpacePersona();const recent=historyContext(sp)||'无';const prompt=`为 LOVE RECORD 的 SPACE 生成下一轮恰好4个“用户可以选择的行动”。这些选项必须紧接当前剧情，不要重复上一轮，不要替用户决定结果，也不要替用户写已经发生的行动。当前对象：${person?.name||''}；人物身份：${person?.role||''}；人物性格：${person?.personality||''}；人物外貌：${person?.appearance||''}；人物说话方式：${person?.speech||''}；人物背景：${person?.background||''}；人物规则：${person?.instructions||''}；世界观：${world?world.name+'；'+world.description+'；'+world.locations+'；'+world.rules:'无'}；我的自设完整资料：名字=${persona?.name||'默认自己'}；身份=${persona?.role||''}；性格=${persona?.personality||''}；外貌=${persona?.appearance||''}；说话方式=${persona?.speech||''}；背景=${persona?.background||''}；当前时间：${new Date().toLocaleString('zh-CN')}；刚刚发生：${context}；近期记录：${recent}。选项应该符合“我的自设”可以自然做出的行动，但不要替我决定结果。只返回合法 JSON 数组，例如 ["选项1","选项2","选项3","选项4"]，不要 Markdown，不要解释。`;try{const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:'你是剧情互动选项生成器，只输出4条自然的下一步行动。'},{role:'user',content:prompt}],stream:false})},15000);const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status);const j=JSON.parse(raw),txt=extractAIText(j),arr=extractJSONArray(txt);if(!arr||arr.length<4)throw new Error('choices parse failed');sp.scene=sp.scene||baseScene();sp.scene.choices=arr.slice(0,4).map(x=>String(x).trim()).filter(Boolean);if(sp.scene.choices.length<4)throw new Error('not enough choices');save();renderScene()}catch(e){sp.scene=sp.scene||baseScene();sp.scene.choices=fallbackChoices(context);save();renderScene()}}
@@ -1885,111 +1886,26 @@ $('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
 
-// LOVE RECORD launcher grid order persistence: save logical grid order, never raw pixel offsets.
-  const ORDER_KEY='love-record-launcher-grid-order-v2';
+// Persistent multi-page phone launcher. Long-press to drag; swipe horizontally to switch pages.
 (function(){
-  const grid=document.querySelector('#launcher .launcher-grid');
-  if(!grid)return;
-  const getId=el=>el?.dataset?.dragId;
-  const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
-  const defaults=['app-space','app-chat','app-music','app-orange-market','app-memories','app-journal','app-community','app-foodie'];
-  const readOrder=()=>{
-    try {
-      const current=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');
-      if(Array.isArray(current))return current;
-      // Migrate only a previously saved logical order; never replay old pixel offsets.
-      for(const key of ['love-record-launcher-grid-order-v1','love-record-launcher-order-v1']){
-        const v=JSON.parse(localStorage.getItem(key)||'null');
-        if(Array.isArray(v))return v;
-      }
-    } catch(e) {}
-    return defaults;
-  };
-  function normalize(order){
-    const ids=getApps().map(getId),seen=new Set(),out=[];
-    (Array.isArray(order)?order:[]).forEach(id=>{if(ids.includes(id)&&!seen.has(id)){seen.add(id);out.push(id)}});
-    ids.forEach(id=>{if(!seen.has(id)){seen.add(id);out.push(id)}});
-    return out;
-  }
-  function save(order){
-    const normalized=normalize(order);
-    try {
-      localStorage.setItem(ORDER_KEY,JSON.stringify(normalized));
-      // Keep a second copy so a later script update cannot silently lose the layout.
-      localStorage.setItem('love-record-launcher-grid-order-backup-v1',JSON.stringify(normalized));
-    } catch(e) { console.warn('[LOVE RECORD] Could not save launcher order',e); }
-    return normalized;
-  }
-  function apply(order){
-    const normalized=normalize(order);
-    getApps().forEach(el=>{
-      el.style.removeProperty('transform');
-      el.style.order=String(normalized.indexOf(getId(el)));
-      el.classList.remove('is-dragging');
-    });
-    return normalized;
-  }
-  let order=readOrder();
-  if(!Array.isArray(order)){
-    try { const backup=JSON.parse(localStorage.getItem('love-record-launcher-grid-order-backup-v1')||'null'); if(Array.isArray(backup))order=backup; } catch(e){}
-  }
-  order=apply(order); save(order);
-  let active=null,timer=null,dragged=false,startPoint=null;
-  document.addEventListener('pointerdown',e=>{
-    const el=e.target.closest('#launcher .launcher-app[data-drag-id]');
-    if(!el||e.button!==0||e.target.closest('input,textarea,button:not(.launcher-app)'))return;
-    active={el,id:getId(el),startX:e.clientX,startY:e.clientY,pointerId:e.pointerId};
-    dragged=false; startPoint={x:e.clientX,y:e.clientY};
-    timer=setTimeout(()=>{
-      if(!active)return;
-      dragged=true; active.el.classList.add('is-dragging');
-      try{active.el.setPointerCapture(active.pointerId)}catch(e){}
-      if(navigator.vibrate)navigator.vibrate(18);
-      if(typeof toast==='function')toast('松开后保存图标位置');
-    },420);
-  });
-  document.addEventListener('pointermove',e=>{
-    if(!active||e.pointerId!==active.pointerId)return;
-    if(!dragged){
-      if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>12){clearTimeout(timer);timer=null;active=null}
-      return;
-    }
-    if(e.cancelable)e.preventDefault();
-    active.el.style.setProperty('transform',`translate3d(${e.clientX-active.startX}px,${e.clientY-active.startY}px,0)`,'important');
-  },{passive:false});
-  function finish(e){
-    clearTimeout(timer);timer=null;
-    if(active&&dragged){
-      const moved=active.el, x=Number.isFinite(e?.clientX)?e.clientX:startPoint.x, y=Number.isFinite(e?.clientY)?e.clientY:startPoint.y;
-      const others=getApps().filter(el=>el!==moved);
-      let target=null,best=Infinity;
-      for(const el of others){
-        const r=el.getBoundingClientRect();
-        const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));
-        if(d<best){best=d;target=el}
-      }
-      const ordered=getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).filter(el=>el!==moved);
-      let idx=target?ordered.indexOf(target):ordered.length;
-      if(idx<0)idx=ordered.length;
-      ordered.splice(idx,0,moved);
-      order=save(ordered.map(getId));
-      apply(order);
-      window.__launcherJustDragged=Date.now();
-      if(e?.cancelable)e.preventDefault();
-    } else if(active?.el) {
-      active.el.classList.remove('is-dragging');
-      active.el.style.removeProperty('transform');
-    }
-    active=null;dragged=false;startPoint=null;
-  }
-  document.addEventListener('pointerup',finish);
-  document.addEventListener('pointercancel',finish);
-  window.addEventListener('pagehide',()=>save(getApps().slice().sort((a,b)=>Number(a.style.order||0)-Number(b.style.order||0)).map(getId)));
-  document.addEventListener('click',e=>{
-    if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<700&&e.target.closest('#launcher .launcher-app[data-drag-id]')){
-      e.preventDefault();e.stopImmediatePropagation();
-    }
-  },true);
+ const grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');if(!grid||!pages)return;
+ const getId=el=>el?.dataset?.dragId;const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
+ const ORDER_KEY='love-record-launcher-grid-order-v3',PAGE_KEY='love-record-launcher-pages-v1';const defaultOrder=['app-space','app-chat','app-music','app-orange-market','app-memories','app-journal','app-community','app-foodie'];
+ let order=defaultOrder.slice(),pageMap={},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null;
+ try{const x=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(x))order=x}catch{}try{pageMap=JSON.parse(localStorage.getItem(PAGE_KEY)||'{}')||{}}catch{}
+ const normalize=()=>{const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});getApps().forEach(el=>{if(pageMap[getId(el)]!==1)pageMap[getId(el)]=0})};
+ const persist=()=>{try{localStorage.setItem(ORDER_KEY,JSON.stringify(order));localStorage.setItem(PAGE_KEY,JSON.stringify(pageMap));localStorage.setItem('love-record-launcher-grid-order-backup-v1',JSON.stringify(order))}catch(e){if(typeof toast==='function')toast('布局保存失败：浏览器储存空间不足')}};
+ function render(){normalize();getApps().forEach(el=>{const id=getId(el);el.hidden=(pageMap[id]||0)!==currentPage;el.style.order=String(order.indexOf(id));el.style.removeProperty('transform');el.classList.remove('is-dragging')});pages.querySelectorAll('button').forEach(b=>b.classList.toggle('active',Number(b.dataset.launcherPage)===currentPage));pages.querySelectorAll('button').forEach(b=>b.style.display='block');persist()}
+ function setPage(n){currentPage=Math.max(0,Math.min(1,n));render()}
+ pages.addEventListener('click',e=>{const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
+ grid.addEventListener('touchstart',e=>{if(e.target.closest('.launcher-app'))return;const t=e.touches[0];swipe={x:t.clientX,y:t.clientY}}, {passive:true});
+ grid.addEventListener('touchend',e=>{if(!swipe)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(currentPage+(dx<0?1:-1));swipe=null},{passive:true});
+ document.addEventListener('pointerdown',e=>{const el=e.target.closest('#launcher .launcher-app[data-drag-id]');if(!el||el.hidden||e.button!==0||e.target.closest('input,textarea,button:not(.launcher-app)'))return;active={el,id:getId(el),startX:e.clientX,startY:e.clientY,pointerId:e.pointerId};dragged=false;startPoint={x:e.clientX,y:e.clientY};timer=setTimeout(()=>{if(!active)return;dragged=true;active.el.classList.add('is-dragging');try{active.el.setPointerCapture(active.pointerId)}catch{}if(navigator.vibrate)navigator.vibrate(18);if(typeof toast==='function')toast('拖动图标整理位置；拖到右侧页面点可移到第二页')},420)});
+ document.addEventListener('pointermove',e=>{if(!active||e.pointerId!==active.pointerId)return;if(!dragged){if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>12){clearTimeout(timer);timer=null;active=null}return}if(e.cancelable)e.preventDefault();active.el.style.setProperty('transform',`translate3d(${e.clientX-active.startX}px,${e.clientY-active.startY}px,0)`,'important')},{passive:false});
+ function finish(e){clearTimeout(timer);timer=null;if(active&&dragged){const moved=active.el,x=Number.isFinite(e?.clientX)?e.clientX:startPoint.x,y=Number.isFinite(e?.clientY)?e.clientY:startPoint.y;const dot2=pages.querySelector('[data-launcher-page="1"]')?.getBoundingClientRect();if(dot2&&x>=dot2.left-22&&x<=dot2.right+22&&y>=dot2.top-30&&y<=dot2.bottom+30){pageMap[getId(moved)]=1;currentPage=1}else{const others=getApps().filter(el=>el!==moved&&!el.hidden);let target=null,best=Infinity;for(const el of others){const r=el.getBoundingClientRect(),d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;target=el}}const visibleOrder=order.filter(id=>(pageMap[id]||0)===currentPage&&id!==getId(moved));let idx=target?visibleOrder.indexOf(getId(target)):visibleOrder.length;if(idx<0)idx=visibleOrder.length;visibleOrder.splice(idx,0,getId(moved));order=order.filter(id=>!visibleOrder.includes(id));const pageIds=order.filter(id=>(pageMap[id]||0)===currentPage);order=[...order.filter(id=>(pageMap[id]||0)!==currentPage),...visibleOrder];if(!visibleOrder.length)order.push(getId(moved));pageMap[getId(moved)]=currentPage}persist();render();window.__launcherJustDragged=Date.now();if(e?.cancelable)e.preventDefault()}else if(active?.el){active.el.classList.remove('is-dragging');active.el.style.removeProperty('transform')}active=null;dragged=false;startPoint=null}
+ document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);window.addEventListener('pagehide',persist);
+ document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<700&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+ render();window.__loveRecordLauncherSetPage=setPage;
 })();
 document.addEventListener('click',e=>{
 const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
@@ -1997,6 +1913,15 @@ const launchModule=e.target.closest('[data-launch-module]');if(launchModule){ope
 const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){openAppearance();return}
 const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('launcher');return}
 const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
+
+// API preset profiles: stored independently so switching relay providers is reliable.
+const API_PRESETS_KEY='love-record-api-presets-v1';
+function readApiPresets(){try{const a=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&x.id):[]}catch{return []}}
+function writeApiPresets(list){try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(list));return true}catch(e){console.warn('[LOVE RECORD] API presets save failed',e);return false}}
+function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=()=>{state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));$('apiPresetStatus').textContent=ok?'已切换到「'+(p.name||'未命名预设')+'」并保存当前配置。':'预设已切换，但主设置保存失败；预设本身仍保留。';toast(ok?'已切换 API 预设 ♡':'已切换预设，请检查储存空间')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除。':'删除失败：浏览器储存空间不足。'};row.append(info,use,del);box.append(row)})}
+function saveCurrentApiPreset(addNew){const name=($('apiPresetName')?.value||'').trim();const apiBase=$('apiBase')?.value.trim().replace(/\/+$/,'')||'';const apiKey=$('apiKey')?.value.trim()||'';const apiModel=state.apiModel||'';if(!name){$('apiPresetStatus').textContent='请先填写预设名称。';toast('请填写预设名称');return}if(!apiBase||!apiKey){$('apiPresetStatus').textContent='请先填写 API Base URL 和 API Key。';toast('请先填写站点和 Key');return}const list=readApiPresets();const existing=!addNew?list.find(x=>x.name===name):null;const profile={id:existing?.id||('api-preset-'+Date.now()),name,apiBase,apiKey,apiModel,modelList:Array.isArray(state.modelList)?state.modelList:[],updatedAt:Date.now()};const next=existing?list.map(x=>x.id===existing.id?profile:x):[...list,profile];if(!writeApiPresets(next)){$('apiPresetStatus').textContent='保存失败：浏览器储存空间不足，请清理空间后重试。';toast('API 预设保存失败');return}state.apiBase=apiBase;state.apiKey=apiKey;state.language='zh';const stateSaved=save();$('apiBase').value=apiBase;$('apiKey').value=apiKey;renderApiPresets();$('apiPresetStatus').textContent=(existing?'已更新':'已新增')+'预设「'+name+'」'+(stateSaved?'，保存成功 ♡':'；预设已保存，但当前配置主存储失败。');toast((existing?'预设已更新':'预设已添加')+' ♡')}
+$('saveApiPreset').onclick=()=>saveCurrentApiPreset(false);$('addApiPreset').onclick=()=>saveCurrentApiPreset(true);
+$('apiPresetName').addEventListener('change',()=>{const p=readApiPresets().find(x=>x.name===$('apiPresetName').value.trim());if(p){$('apiBase').value=p.apiBase||'';$('apiKey').value=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=p.modelList||[];renderModelPicker()}});
 
 $('chatSend').onclick=sendChatMessage;
 const chatPicker=$('chatPeoplePicker');
@@ -2014,13 +1939,13 @@ $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
 $('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await addImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};
-$('saveSettings').onclick=()=>{state.name=$('setName').value.trim()||'YANYAN';state.partner=$('setPartner').value.trim()||'YAN HUAN';state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;save();renderHome();renderScene();if(typeof window.refreshLoveRecordListeningRoom==='function')window.refreshLoveRecordListeningRoom();toast('Saved')};
-$('languageSelect').onchange=()=>{state.language=$('languageSelect').value==='zh'?'zh':'en';save();applyLanguage();toast(t('languageSaved'))};
-$('connectApi').onclick=async()=>{const ok=await loadModels();if(!ok&&$('manualModel').value.trim()){state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();state.apiModel=$('manualModel').value.trim();save();renderSettings();toast('已保存备用模型')}}
+$('saveSettings').onclick=()=>{state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;state.language='zh';const ok=save();renderHome();renderScene();if(typeof window.refreshLoveRecordListeningRoom==='function')window.refreshLoveRecordListeningRoom();toast(ok?'已保存修改 ♡':'保存失败：浏览器储存空间不足')};
+
+$('connectApi').onclick=async()=>{state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();save();await loadModels()}
 $('refreshModels').onclick=loadModels;
 $('testApi').onclick=testAI;
 $('modelPicker').addEventListener('click',e=>{const b=e.target.closest('[data-model]');if(!b)return;const m=b.dataset.model;if(!m)return;state.apiModel=m;save();renderModelPicker();updateAIState();$('apiStatus').textContent='API 已连接 · '+state.apiModel;$('apiStatus').classList.add('on');setApiDebug('已切换模型：'+m+'。TEST AI 将使用这个模型。',true);toast('已切换到 '+m)});
-$('manualModel').onchange=()=>{const m=$('manualModel').value.trim();if(m){state.apiModel=m;save();renderSettings();toast('模型已保存')}};
+
 $('sendFree').onclick=handleFree;
 $('freeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleFree()}});
 $('surprise').onclick=surprise;
@@ -2064,7 +1989,7 @@ function updateSystemTime(){
 }
 updateSystemTime();setInterval(updateSystemTime,30000);
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-(async()=>{ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
+(async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
 if(loveIntro){
