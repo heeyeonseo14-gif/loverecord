@@ -1750,8 +1750,8 @@ function ensureWorldData(){
   if(changed)save();
 }
 let editingPersonId='',editingWorldId='',editingForumPostId='';
-function openModule(name){$('moduleModal').classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
-function closeModule(){ $('moduleModal').classList.remove('show');document.body.style.overflow=''}
+function openModule(name){const modal=$('moduleModal');modal.classList.toggle('journal-fullscreen',name==='journal');modal.dataset.module=name;modal.classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
+function closeModule(){ const modal=$('moduleModal');modal.classList.remove('show','journal-fullscreen');delete modal.dataset.module;document.body.style.overflow=''}
 function renderModule(name){
  const titles={people:['CONTACTS','MY CONTACTS'],forum:['COMMUNITY','AI COMMUNITY'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
  $('moduleEyebrow').textContent=titles[name][0];$('moduleTitle').textContent=titles[name][1];
@@ -2146,7 +2146,7 @@ if(loveIntro){
 })();
 </script>
 
-<script src="./diary-v1.js?v=1"></script>
+<script src="./diary-v1.js?v=2"></script>
 <script src="./space-v2.js?v=39"></script>
 <script src="./life-apps.js?v=20261011-v34"></script>
 </body>
