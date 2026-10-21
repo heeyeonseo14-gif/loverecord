@@ -5,9 +5,11 @@
 const KEY='love-record-diary-v1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let generationBusy=false, syncBusy=false, reviewBusy=false, filter='all', query='';
-function read(){try{const raw=localStorage.getItem(KEY);if(raw){const x=JSON.parse(raw)||{};return {entries:Array.isArray(x.entries)?x.entries:[],autoImportant:x.autoImportant!==false,processed:Array.isArray(x.processed)?x.processed:[]}}const legacy=(typeof state!=='undefined'&&Array.isArray(state.journal))?state.journal:[];const migrated=legacy.map((j,i)=>({id:String(j.id||('legacy-diary-'+i)),createdAt:Number(j.createdAt)||Date.now(),updatedAt:Number(j.updatedAt)||Date.now(),authorType:'user',authorName:personaName(),contactId:'',contactName:'',title:String(j.title||'今天的日记'),mood:String(j.mood||''),content:String(j.note||j.content||''),source:'legacy'}));const fresh={entries:migrated,autoImportant:true,processed:[]};if(migrated.length)try{localStorage.setItem(KEY,JSON.stringify(fresh))}catch{}return fresh}catch{return {entries:[],autoImportant:true,processed:[]}}}
-function write(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true}catch(e){console.error('[LR diary] save failed',e);return false}}
+let generationBusy=false, syncBusy=false, reviewBusy=false, filter='all', query='', diaryCache=null, diaryInitPromise=null;
+function normalizeDiary(x){x=x&&typeof x==='object'?x:{};return {entries:Array.isArray(x.entries)?x.entries:[],autoImportant:x.autoImportant!==false,processed:Array.isArray(x.processed)?x.processed:[]}}
+function read(){if(diaryCache)return diaryCache;try{const raw=localStorage.getItem(KEY);if(raw)return normalizeDiary(JSON.parse(raw));const legacy=(typeof state!=='undefined'&&Array.isArray(state.journal))?state.journal:[];const migrated=legacy.map((j,i)=>({id:String(j.id||('legacy-diary-'+i)),createdAt:Number(j.createdAt)||Date.now(),updatedAt:Number(j.updatedAt)||Date.now(),authorType:'user',authorName:personaName(),contactId:'',contactName:'',title:String(j.title||'今天的日记'),mood:String(j.mood||''),content:String(j.note||j.content||''),source:'legacy'}));return normalizeDiary({entries:migrated,autoImportant:true,processed:[]})}catch{return normalizeDiary({})}}
+async function initDiaryStore(){if(diaryInitPromise)return diaryInitPromise;diaryInitPromise=(async()=>{let stored=null;try{if(typeof lrKVGet==='function')stored=await lrKVGet(KEY)}catch(e){console.warn('[LR diary] IndexedDB read failed; attempting legacy migration',e)}if(stored&&typeof stored==='object'){diaryCache=normalizeDiary(stored);return diaryCache}let legacy=null;try{legacy=localStorage.getItem(KEY)}catch{}if(legacy){try{diaryCache=normalizeDiary(JSON.parse(legacy))}catch{diaryCache=normalizeDiary({})}}else diaryCache=read();try{if(typeof lrKVSet==='function')await lrKVSet(KEY,diaryCache);else throw new Error('IndexedDB helper unavailable');}catch(e){console.warn('[LR diary] IndexedDB migration/write failed',e)}return diaryCache})();return diaryInitPromise}
+async function write(d){const next=normalizeDiary(d);try{if(typeof lrKVSet==='function'){await lrKVSet(KEY,next);diaryCache=next;try{localStorage.setItem(KEY,JSON.stringify(next))}catch(e){/* IndexedDB is the primary copy; localStorage may be full. */}return true}}catch(e){console.error('[LR diary] IndexedDB save failed',e)}try{localStorage.setItem(KEY,JSON.stringify(next));diaryCache=next;return true}catch(e){console.error('[LR diary] save failed',e);return false}}
 function cfg(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch{};return {base:String((typeof state!=='undefined'&&state.apiBase)||s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String((typeof state!=='undefined'&&state.apiKey)||s.apiKey||$('apiKey')?.value||'').trim(),model:String((typeof state!=='undefined'&&state.apiModel)||s.apiModel||$('apiModel')?.value||'').trim()}}
 function people(){const ps=(typeof state!=='undefined'&&Array.isArray(state.people))?state.people:[];const ids=typeof readChatContacts==='function'?readChatContacts():ps.map(p=>p.id);return ps.filter(p=>ids.map(String).includes(String(p.id)))}
 function getThreads(){try{return typeof readChatThreads==='function'?readChatThreads():JSON.parse(localStorage.getItem('love-record-chat-threads-v1')||'{}')}catch{return {}}}
@@ -27,7 +29,7 @@ async function ask(prompt,system){
  const ch=j?.choices?.[0]?.message?.content;let out=typeof ch==='string'?ch:Array.isArray(ch)?ch.map(x=>x.text||'').join(''):'';if(!out)throw new Error('模型没有返回内容');return out.trim()
 }
 function parseJSON(s){const clean=String(s).replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();try{return JSON.parse(clean)}catch{}const a=clean.indexOf('{'),b=clean.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(clean.slice(a,b+1))}catch{}}const c=clean.indexOf('['),d=clean.lastIndexOf(']');if(c>=0&&d>c){try{return JSON.parse(clean.slice(c,d+1))}catch{}}throw new Error('AI 返回格式无法解析，请重试')}
-function addEntry(entry){const d=read();const x={id:'diary-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),createdAt:Date.now(),updatedAt:Date.now(),visibility:'shared',...entry};d.entries.unshift(x);if(!write(d))throw new Error('浏览器储存空间不足，日记未能保存。');return x}
+async function addEntry(entry){const d=read();const x={id:'diary-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),createdAt:Date.now(),updatedAt:Date.now(),visibility:'shared',...entry};d.entries.unshift(x);if(!await write(d))throw new Error('日记保存失败：浏览器独立储存不可用，请检查浏览器权限后重试。');return x}
 function render(){
  const body=$('moduleBody');if(!body)return;
  const d=read(),ps=people();
@@ -48,7 +50,7 @@ function render(){
  const sel=$('lrDiaryContact');if(sel)sel.value=filter;
  const search=$('lrDiarySearch');if(search)search.addEventListener('input',()=>{query=search.value;const pos=search.selectionStart;render();const s=$('lrDiarySearch');s.focus();s.setSelectionRange(pos,pos)});
  const selector=$('lrDiaryContact');if(selector)selector.addEventListener('change',()=>{filter=selector.value;render()});
- const auto=$('lrDiaryAuto');if(auto)auto.addEventListener('change',()=>{const x=read();x.autoImportant=auto.checked;if(!write(x)){status('设置保存失败：浏览器储存空间不足');return}status(auto.checked?'已开启：整理重要事件时会优先检查未处理的聊天内容。':'已关闭自动重要事件同步。',true)});
+ const auto=$('lrDiaryAuto');if(auto)auto.addEventListener('change',async()=>{const x=read();x.autoImportant=auto.checked;if(!await write(x)){status('设置保存失败：浏览器独立储存不可用');return}status(auto.checked?'已开启：整理重要事件时会优先检查未处理的聊天内容。':'已关闭自动重要事件同步。',true)});
 }
 function openEditor(entry=null){
  const old=$('lrDiaryEditor');if(old)old.remove();
@@ -66,7 +68,7 @@ async function generate(type){
   const isAI=type==='ai',system=isAI?'你是角色日记写作者。严格依据聊天记录和角色设定，以该 AI 联系人的第一人称写日记。可以写角色有根据的感受和观察，但不得伪造聊天中没有发生的重大事实，不要替用户编造内心、台词或行动。输出严格 JSON 对象：{"title":"标题","mood":"心情短语","content":"日记正文"}。只输出 JSON。':'你是私人日记助手。根据聊天记录，以用户第一人称写一篇用户自己的日记，温柔自然，像真实的人在回顾一天。只记录聊天中有依据的重要经历；不要替用户捏造感受、行动或事实。不必面面俱到，重点是值得留存的片段。输出严格 JSON 对象：{"title":"标题","mood":"心情短语","content":"日记正文"}。只输出 JSON。';
   const prompt=`作者：${isAI?person.name:personaName()}。\nAI联系人资料：名字=${person.name};身份=${person.role||''};性格=${person.personality||''};说话方式=${person.speech||''};背景=${person.background||''};外貌=${person.appearance||''};规则=${person.instructions||''}。\n以下是最近聊天，时间顺序排列：\n${JSON.stringify(recent)}\n请生成一篇 180-450 字左右的日记，避免把聊天逐条复述；有标题和自然的正文。`;
   const obj=parseJSON(await ask(prompt,system));if(!obj.content)throw new Error('AI 没有生成日记正文。');
-  addEntry({authorType:isAI?'ai':'user',authorName:isAI?person.name:personaName(),contactId:String(person.id),contactName:person.name,title:String(obj.title||'今天的日记'),mood:String(obj.mood||''),content:String(obj.content),source:'ai-generated',threadLastAt:thread[thread.length-1]?.at||0});
+  await addEntry({authorType:isAI?'ai':'user',authorName:isAI?person.name:personaName(),contactId:String(person.id),contactName:person.name,title:String(obj.title||'今天的日记'),mood:String(obj.mood||''),content:String(obj.content),source:'ai-generated',threadLastAt:thread[thread.length-1]?.at||0});
   status((isAI?person.name:'你的')+'的日记已生成并保存。',true);render();toast((isAI?person.name:'你的')+'的日记生成成功 ♡');
  }catch(e){status('生成失败：'+e.message);toast('日记生成失败：'+e.message)}finally{generationBusy=false;actionButtons.forEach(b=>{b.disabled=false;if(b.dataset.oldText)b.textContent=b.dataset.oldText;delete b.dataset.oldText})}
 }
@@ -80,22 +82,22 @@ async function syncEvents(){
   const batch=pending.slice(-100);
   const out=parseJSON(await ask(`请从以下聊天中筛选真正重要、值得长期留存的事件，例如关系进展、承诺、重要决定、共同经历、特殊纪念日或明显影响后续的事情。普通寒暄、重复内容、纯订单提示、无意义短句不要记录。不能推测事实。对每个事件给出 sourceKeys 数组（只能使用输入里的 key），title、content（简短客观概括）、contactId、contactName、at。若没有重要事件，返回空数组。输入：${JSON.stringify(batch.map(x=>({...x, text:x.text.slice(0,500)})))}\n只输出 JSON 数组。`,'你是重要事件筛选器，只能输出合法 JSON 数组，不要编造事件。'));
   const arr=Array.isArray(out)?out:(out.events||[]);let count=0;
-  for(const ev of arr){const keys=Array.isArray(ev.sourceKeys)?ev.sourceKeys:[];const source=batch.find(x=>keys.includes(x.key));if(!source||!String(ev.content||'').trim())continue;addEntry({authorType:'event',authorName:source.contactName+' · 共同记忆',contactId:source.contactId,contactName:source.contactName,title:String(ev.title||'一件值得记住的事'),mood:'',content:String(ev.content),source:'chat-event',createdAt:Number(ev.at)||source.at||Date.now(),sourceKeys:keys});count++}
-  const latest=read();latest.processed=[...new Set([...latest.processed,...batch.map(x=>x.key)])].slice(-5000);write(latest);status(count?`已从聊天中整理并保存 ${count} 条重要事件。`:'整理完成：这批聊天里没有发现需要单独记录的重要事件。',true);render();toast(count?'重要事件已同步到日记 ♡':'整理完成，没有新增重要事件');
+  for(const ev of arr){const keys=Array.isArray(ev.sourceKeys)?ev.sourceKeys:[];const source=batch.find(x=>keys.includes(x.key));if(!source||!String(ev.content||'').trim())continue;await addEntry({authorType:'event',authorName:source.contactName+' · 共同记忆',contactId:source.contactId,contactName:source.contactName,title:String(ev.title||'一件值得记住的事'),mood:'',content:String(ev.content),source:'chat-event',createdAt:Number(ev.at)||source.at||Date.now(),sourceKeys:keys});count++}
+  const latest=read();latest.processed=[...new Set([...latest.processed,...batch.map(x=>x.key)])].slice(-5000);if(!await write(latest))throw new Error('重要事件已整理，但处理记录保存失败；请检查浏览器储存权限后重试。');status(count?`已从聊天中整理并保存 ${count} 条重要事件。`:'整理完成：这批聊天里没有发现需要单独记录的重要事件。',true);render();toast(count?'重要事件已同步到日记 ♡':'整理完成，没有新增重要事件');
  }catch(e){status('同步失败：'+e.message);toast('重要事件同步失败：'+e.message)}finally{syncBusy=false}
 }
 async function review(){
  if(reviewBusy){toast('周期回顾正在生成，请稍等 ♡');return}reviewBusy=true;try{const d=read(),recent=d.entries.filter(e=>e.source!=='review').slice(0,40);if(!recent.length)throw new Error('还没有日记或重要事件，先积累一些记录再生成回顾。');
  status('正在生成周期回顾……');const obj=parseJSON(await ask(`请根据这些日记与重要事件，生成一份温柔、准确的周期回顾。总结反复出现的主题、值得珍惜的瞬间、关系变化和仍未完成的约定；只根据材料，不作诊断、不凭空添加。输出 JSON 对象 {"title":"回顾标题","content":"回顾正文"}。材料：${JSON.stringify(recent.map(e=>({date:dateLabel(e.createdAt),author:e.authorName,title:e.title,content:e.content,source:e.source})))}`,'你是私人日记回顾助手，只输出合法 JSON 对象。'));
- addEntry({authorType:'review',authorName:'我们的周期回顾',contactId:'',contactName:'',title:String(obj.title||'最近的日子'),mood:'回顾',content:String(obj.content||''),source:'review'});status('周期回顾已生成并保存。',true);render();toast('周期回顾生成成功 ♡');
+ await addEntry({authorType:'review',authorName:'我们的周期回顾',contactId:'',contactName:'',title:String(obj.title||'最近的日子'),mood:'回顾',content:String(obj.content||''),source:'review'});status('周期回顾已生成并保存。',true);render();toast('周期回顾生成成功 ♡');
  }catch(e){status('回顾生成失败：'+e.message);toast('周期回顾生成失败：'+e.message)}finally{reviewBusy=false}
 }
-function saveEditor(id){
+async function saveEditor(id){
  const title=$('lrDiaryEditTitle').value.trim(),content=$('lrDiaryEditContent').value.trim();if(!content){toast('先写一点日记内容吧');return}
  const d=read(),old=d.entries.find(e=>e.id===id),authorType=$('lrDiaryAuthor').value,contactId=$('lrDiaryEditorContact').value,person=people().find(p=>String(p.id)===String(contactId));
  const patch={authorType,authorName:authorType==='ai'?(person?.name||'AI 联系人'):personaName(),contactId:String(contactId||''),contactName:person?.name||'',title:title||'今天的日记',mood:$('lrDiaryEditMood').value.trim(),content,source:'manual',updatedAt:Date.now()};
  if(old)Object.assign(old,patch,{updatedAt:Date.now()});else d.entries.unshift({id:'diary-'+Date.now(),createdAt:Date.now(),...patch});
- if(!write(d)){toast('保存失败：浏览器储存空间不足');return}render();toast('日记已保存 ♡')
+ if(!await write(d)){toast('保存失败：浏览器独立储存不可用');return false}render();toast('日记已保存 ♡');return true
 }
 function bind(){
  const body=$('moduleBody');if(!body||body.dataset.diaryBound)return;body.dataset.diaryBound='1';
@@ -103,7 +105,7 @@ function bind(){
   const btn=e.target.closest('[data-diary-action],[data-diary-save],[data-diary-close]');if(!btn)return;
   e.preventDefault();e.stopPropagation();
   if(btn.hasAttribute('data-diary-close')){$('lrDiaryEditor')?.remove();return}
-  if(btn.hasAttribute('data-diary-save')){saveEditor(btn.dataset.diarySave);$('lrDiaryEditor')?.remove();return}
+  if(btn.hasAttribute('data-diary-save')){const saved=await saveEditor(btn.dataset.diarySave);if(saved)$('lrDiaryEditor')?.remove();return}
   const a=btn.dataset.diaryAction,id=btn.dataset.id,d=read(),entry=d.entries.find(x=>x.id===id);
   if(a==='write'){openEditor();return}
   if(a==='generate-me'||a==='generate-ai'){
@@ -116,7 +118,7 @@ function bind(){
   if(a==='sync'){if(window.__lrDiaryAutoScanTimer){clearTimeout(window.__lrDiaryAutoScanTimer);window.__lrDiaryAutoScanTimer=null}if(!apiReady()){status('请先连接 API，并选择模型。');return}syncEvents();return}
   if(a==='review'){if(!apiReady()){status('请先连接 API，并选择模型。');return}review();return}
   if(a==='edit'&&entry){openEditor(entry);return}
-  if(a==='delete'&&entry&&confirm('确定删除这篇日记吗？')){d.entries=d.entries.filter(x=>x.id!==id);if(write(d)){render();toast('日记已删除')}else toast('删除失败：浏览器储存空间不足');return}
+  if(a==='delete'&&entry&&confirm('确定删除这篇日记吗？')){d.entries=d.entries.filter(x=>x.id!==id);if(await write(d)){render();toast('日记已删除')}else toast('删除失败：浏览器独立储存不可用');return}
  });
  body.addEventListener('change',e=>{if(e.target.id==='lrDiaryContact'){filter=e.target.value;render()}});
 }
@@ -138,6 +140,6 @@ const style=document.createElement('style');style.textContent=`
 @media(prefers-reduced-transparency:reduce){.module-modal.journal-fullscreen .module-sheet,.lr-diary-hero,.lr-diary-settings,.lr-diary-filter,.lr-diary-entry{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(249,245,251,.96)}}`
 document.head.appendChild(style);
 const oldRender=window.renderModule;
-if(typeof oldRender==='function'){window.renderModule=function(name){oldRender(name);if(name==='journal'){render();bind();const d=read();if(d.autoImportant&&apiReady()&&!window.__lrDiaryAutoScanRunning&&!window.__lrDiaryAutoScanTimer){window.__lrDiaryAutoScanTimer=setTimeout(()=>{window.__lrDiaryAutoScanTimer=null;window.__lrDiaryAutoScanRunning=true;syncEvents().finally(()=>{window.__lrDiaryAutoScanRunning=false})},1500)}}}}
+if(typeof oldRender==='function'){window.renderModule=function(name){oldRender(name);if(name==='journal'){initDiaryStore().then(()=>{if(document.querySelector('#moduleModal')?.dataset.module!=='journal')return;render();bind();const d=read();if(d.autoImportant&&apiReady()&&!window.__lrDiaryAutoScanRunning&&!window.__lrDiaryAutoScanTimer){window.__lrDiaryAutoScanTimer=setTimeout(()=>{window.__lrDiaryAutoScanTimer=null;window.__lrDiaryAutoScanRunning=true;syncEvents().finally(()=>{window.__lrDiaryAutoScanRunning=false})},1500)}}).catch(e=>{console.error('[LR diary] init failed',e);status('日记储存初始化失败，请刷新页面后重试。')})}}}
 document.addEventListener('DOMContentLoaded',()=>{bind()});
 })();
