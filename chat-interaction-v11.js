@@ -48,10 +48,14 @@
   async function saveAttachment(file) {
     const database = await db();
     return new Promise((resolve, reject) => {
+      let savedId = null;
       const tx = database.transaction(STORE, 'readwrite');
       const req = tx.objectStore(STORE).add({blob:file, name:file.name || 'image', type:file.type || 'image/*', createdAt:Date.now()});
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error || new Error('图片保存失败'));
+      req.onsuccess = () => { savedId = req.result; };
+      req.onerror = () => { try { tx.abort(); } catch (_) {} reject(req.error || new Error('图片保存失败')); };
+      tx.oncomplete = () => savedId == null ? reject(new Error('图片保存未完成，请重试')) : resolve(savedId);
+      tx.onerror = () => reject(tx.error || new Error('图片保存失败，浏览器可能没有可用储存空间'));
+      tx.onabort = () => reject(tx.error || new Error('图片保存被中断，请检查浏览器储存空间'));
     });
   }
   async function loadAttachment(id) {
@@ -258,8 +262,29 @@
       let category=prompt('这些表情包属于哪个分类？\n'+STICKER_CATEGORIES.join(' / '),STICKER_CATEGORIES[0]);
       if(!category){e.target.value='';return}category=STICKER_CATEGORIES.includes(category.trim())?category.trim():'自定义';
       const items=readStickers();
-      for(const file of files){if(!file.type.startsWith('image/'))continue;try{const attachmentId=await saveAttachment(file);items.push({id:String(attachmentId),attachmentId,category,name:file.name.replace(/\.[^.]+$/,'').slice(0,50),createdAt:Date.now()})}catch(err){console.warn('[LOVE RECORD] sticker upload failed',err)}}
-      if(writeStickers(items)){stickerCategory=category;renderStickerPicker();toast('表情包已加入收藏 ♡')}e.target.value='';
+      let savedCount=0; let lastError=null;
+      for(const file of files){
+        if(!file.type.startsWith('image/')) continue;
+        try{
+          const attachmentId=await saveAttachment(file);
+          const saved=await loadAttachment(attachmentId);
+          if(!saved || !saved.blob) throw new Error('图片写入后无法读取');
+          items.push({id:String(attachmentId),attachmentId,category,name:file.name.replace(/\.[^.]+$/,'').slice(0,50),createdAt:Date.now()});
+          savedCount++;
+        }catch(err){lastError=err;console.error('[LOVE RECORD] sticker upload failed',err);}
+      }
+      if(savedCount>0){
+        if(writeStickers(items)){
+          stickerCategory=category;
+          await renderStickerPicker();
+          toast('已保存 '+savedCount+' 张表情包 ♡');
+        }else{
+          toast('图片已上传，但收藏清单保存失败。请检查浏览器储存空间后重试。');
+        }
+      }else{
+        toast('表情包没有保存成功：'+(lastError?.message||'请确认选择的是图片，并允许网站使用储存空间'));
+      }
+      e.target.value='';
     });
   }
   async function renderStickerPicker(){
