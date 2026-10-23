@@ -279,7 +279,7 @@
   function openTransferDecision(msg) {
     if(!msg||msg.kind!=='transfer'||!['assistant','ai'].includes(msg.role)||msg.transferStatus==='accepted'||msg.transferStatus==='refunded')return;
     ensureTransferDecision();pendingTransferMessage=msg;
-    $('lrDecisionAmount').textContent=(msg.currency||'￥')+' '+(msg.amount||'0.00');
+    $('lrDecisionAmount').textContent='￥'+(msg.amount||'0.00');
     $('lrDecisionNote').textContent=msg.note||'给你的小心意';
     $('lrTransferDecision').hidden=false;
   }
@@ -301,11 +301,13 @@
         attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-chat-image" src="'+url+'" alt="聊天图片">';else if(bubble.isConnected)bubble.textContent='图片无法读取';}).catch(()=>{bubble.textContent='图片无法读取';});
       } else if(msg.kind==='transfer'){
         bubble.classList.add('lr-transfer-bubble');
+        // All transfer cards in LOVE RECORD use the unified ￥ display, including old saved RM/MYR cards.
+        if(msg.currency!=='￥'){msg.currency='￥';normalizedTransfer=true;}
         const resolved=msg.transferStatus==='accepted'?'已接受':msg.transferStatus==='refunded'?'已退还':'';
         const isIncoming=['assistant','ai'].includes(msg.role);
         const cardClass=isIncoming&&!resolved?' lr-transfer-pending':'';
         const state=resolved?'<em class="lr-transfer-state">'+resolved+'</em>':(isIncoming?'<span class="lr-transfer-hint">点击查看 · 接收或退还</span>':'');
-        bubble.innerHTML='<div class="lr-transfer-card'+cardClass+'"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'￥')+' '+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span>'+state+'</div>';
+        bubble.innerHTML='<div class="lr-transfer-card'+cardClass+'"><small>LOVE RECORD · A LITTLE GIFT</small><strong>'+escapeHtml(msg.currency||'￥')+escapeHtml(msg.amount||'0.00')+'</strong><span>'+escapeHtml(msg.note||'给你的小心意')+'</span>'+state+'</div>';
         const card=bubble.querySelector('.lr-transfer-card');
         if(isIncoming&&!resolved){card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','处理收到的转账');card.onclick=()=>openTransferDecision(msg);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTransferDecision(msg);}};}
       } else if(msg.kind==='location'){

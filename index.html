@@ -1467,16 +1467,16 @@ function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringif
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
 function renderChatMessageContent(value, role){
  const raw=String(value==null?'':value);
- const orderMatch=raw.match(/^\[\[LR_ORDER\|(food|shop)\|([^\]]*)\]\]$/);
+ const orderMatch=raw.match(/^\[\[\s*LR_ORDER\s*\|\s*(food|shop)\s*\|([^\]]*)\]\]$/i);
  if(orderMatch){
-  const food=orderMatch[1]==='food',kind=food?'外卖订单':'购物订单',parts=orderMatch[2].split('|');
-  let sender='',recipient='',title='订单已创建',detail='',total='RMB 0.00';
-  // Current format: sender|recipient|orderNo|items|total. Legacy format: sender|orderNo|items|total.
+  const food=orderMatch[1].toLowerCase()==='food',kind=food?'外卖订单':'购物订单',parts=orderMatch[2].split('|').map(x=>x.trim());
+  let sender='',recipient='',title='订单已创建',detail='',total='￥0.00';
+  // 支持新版 sender|recipient|orderNo|items|total 与旧版 sender|orderNo|items|total。
   if(parts.length>=5){[sender,recipient,title,detail,total]=parts;}
   else if(parts.length===4){[sender,title,detail,total]=parts;recipient=(role==='user'&&typeof activeChatContactId!=='undefined'&&typeof contactById==='function'?(contactById(activeChatContactId)?.name||''):'');}
-  else {sender=parts[0]||'';title=parts[1]||'订单已创建';detail=parts[2]||'';total=parts[3]||'RMB 0.00';}
+  else {sender=parts[0]||'';title=parts[1]||'订单已创建';detail=parts[2]||'';total=parts[3]||'￥0.00';}
   const headline=role==='user'?'你给'+(recipient||'TA')+(food?'点了外卖':'买了物品'):(sender&&sender!=='你'?sender:'TA')+(food?'给你点了外卖':'给你买了物品');
-  total=String(total||'￥0.00').replace(/^RMB\s*/i,'￥').replace(/^CNY\s*/i,'￥');
+  total=String(total||'￥0.00').trim().replace(/^(?:RMB|CNY|CN¥|RM|MYR)\s*/i,'￥').replace(/^[¥￥]\s*/,'￥');
   return '<article class="chat-order-card glass-order-card"><div class="order-kicker"><span>LOVE RECORD</span><span>✦ '+kind+'</span></div><div class="order-main"><div class="order-title">'+esc(headline)+'</div><div class="order-number">'+esc(title)+'</div><div class="order-meta">'+esc(detail)+'</div><div class="order-total"><span>订单金额</span><strong>'+esc(total)+'</strong></div><div class="order-footnote">订单已同步至 '+(food?'Foodie':'Orange Market')+'</div></div></article>';
  }
  if(role!=='assistant')return esc(raw);
@@ -1579,68 +1579,10 @@ async function sendChatMessage(){
  const send=$('chatSend');send.disabled=true;send.textContent='…';aiBusy=true;
  try{
   const recent=items.slice(-16).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.text}));
-  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。若用户明确要求你替 TA 点外卖或买东西，且你愿意主动安排，请在回复末尾另起一行输出机器指令 [[LR_AI_ORDER:food|菜品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词必须是你建议的具体商品名称。若用户明确要求你给 TA 转账，且你愿意转，请在回复末尾另起一行输出 [[LR_AI_TRANSFER:金额|备注]]，例如 [[LR_AI_TRANSFER:200.00|给你的小心意]]；金额只填数字，备注不要包含竖线或方括号。只有明确提出转账/发红包/给钱时才生成转账指令，不要把普通提到金额的聊天当成转账。不要在未被要求或未明确表达行动意愿时输出指令。外卖、购物和转账都只是本地模拟：订单需用户确认地址，转账只生成聊天纪念卡，不会发生真实付款或配送。';
-  const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},90000);
-  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));
-  const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');
-  const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);
-  if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){
-   reply=reply.replace(orderMatch[0],'').trim();
-   const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);
-   if(!made.ok)reply+=(reply?'\n\n':'')+'（我想给你准备一份小惊喜，不过当前目录里没找到「'+orderMatch[2].trim()+'」；我们一起挑选吧。）';
-   else reply+=(reply?'\n\n':'')+'（我把这份小惊喜放进 LOVE RECORD 的模拟订单啦。收货地址还需要你确认，暂时不会真实付款或配送。）';
-  }else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){
-   const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';
-   const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);
-   if(made.ok)reply+=(reply?'\n\n':'')+'（测试订单已建立并同步到'+(testKind==='food'?'Foodie':'Orange Market')+'。这是本地模拟订单，收货地址和付款都需要你确认。）';
-   else reply+=(reply?'\n\n':'')+'（测试请求已收到，但'+(testKind==='food'?'Foodie':'Orange Market')+'目录暂时没有可用商品：'+(made.reason||'请先检查商品目录')+'。）';
-  }
-  const transferMatch=reply.match(/\[\[LR_AI_TRANSFER:([\d,]+(?:\.\d{1,2})?)\|([^\]\r\n]*)\]\]/i);
-  let aiTransfer=null;
-  if(transferMatch){
-   const amount=Number(transferMatch[1].replace(/,/g,''));
-   reply=reply.replace(transferMatch[0],'').trim();
-   if(Number.isFinite(amount)&&amount>0&&amount<=100000000){
-    aiTransfer={role:'assistant',kind:'transfer',amount:amount.toFixed(2),currency:'￥',note:(transferMatch[2]||'给你的小心意').trim().slice(0,60)||'给你的小心意',text:'转账 ￥'+amount.toFixed(2),at:Date.now(),transferStatus:'pending',mode:'local-simulation'};
-   }
-  }
-  const latest=readChatThreads(),thread=latest[activeChatContactId]||[];
-  if(reply)thread.push({role:'assistant',text:reply,at:Date.now()});
-  if(aiTransfer)thread.push(aiTransfer);
-  latest[activeChatContactId]=thread;writeChatThreads(latest);
- }catch(err){
-  const em=String(err?.message||'');const aborted=err?.name==='AbortError'||/signal is aborted|aborted without reason/i.test(em);
-  const isTestOrder=/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue);
-  const isTestTransfer=/(?:测试|试一下|测试一下).*(?:转账|红包|给钱)|(?:转账|红包|给钱).*(?:测试|试一下)/i.test(textValue);
-  const actionNotes=[];const localTransfers=[];
-  if(isTestOrder&&window.LoveRecordLifeApps?.createAITestOrder){
-   try{
-    const kinds=[];
-    if(/外卖|点餐|奶茶|吃的/i.test(textValue))kinds.push('food');
-    if(/购物|买东西|商品|买个/i.test(textValue))kinds.push('shop');
-    if(!kinds.length)kinds.push('food');
-    for(const testKind of [...new Set(kinds)]){
-     const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);
-     if(made.ok)actionNotes.push((testKind==='food'?'Foodie 外卖':'Orange Market 购物')+'测试订单已建立');
-     else actionNotes.push((testKind==='food'?'Foodie':'Orange Market')+'订单未建立：'+(made.reason||'目录暂无可用商品'));
-    }
-   }catch(localErr){console.warn('[LOVE RECORD] local test order fallback failed',localErr)}
-  }
-  if(isTestTransfer){
-   const amountMatch=textValue.match(/(?:￥|¥|RMB\s*)?([\d,]+(?:\.\d{1,2})?)\s*(?:元|块)?/i);
-   const amount=amountMatch?Number(amountMatch[1].replace(/,/g,'')):NaN;
-   if(Number.isFinite(amount)&&amount>0&&amount<=100000000){
-    localTransfers.push({role:'assistant',kind:'transfer',amount:amount.toFixed(2),currency:'￥',note:'给你的小心意',text:'转账 ￥'+amount.toFixed(2),at:Date.now(),transferStatus:'pending',mode:'local-simulation'});
-    actionNotes.push('模拟转账卡片已建立（不会真实付款）');
-   }else actionNotes.push('转账测试需要明确金额，例如“测试转账 20 元”');
-  }
-  if(actionNotes.length){
-   const latest=readChatThreads(),thread=latest[activeChatContactId]||[];
-   thread.push({role:'assistant',text:'聊天接口这次没有及时回复，我先在本地处理测试操作：'+actionNotes.join('；')+'。这些都是模拟记录，不会真实付款或配送。',at:Date.now()});
-   thread.push(...localTransfers);latest[activeChatContactId]=thread;writeChatThreads(latest);
-   toast('AI 接口暂时未响应，已尽可能建立本地测试记录');
-  }else toast(aborted?'发送失败：请求等待超过 90 秒，已超时中止。请检查中转站响应速度或模型状态。':'发送失败：'+(em||'API 错误'))
-}
+  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。若用户明确要求你替 TA 点外卖或买东西，且你愿意主动安排，请在回复末尾另起一行输出机器指令 [[LR_AI_ORDER:food|菜品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词必须是你建议的具体商品名称。不要在未被要求或未明确表达下单意愿时输出指令。订单只是本地模拟、需用户确认地址，不要声称已真实付款或配送。';
+  const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},60000);
+  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(!made.ok)reply+='\n\n（我想给你准备一份小惊喜，不过当前目录里没找到合适的商品；我们一起挑选吧。）';else reply+='\n\n（我先把这份小惊喜放进 LOVE RECORD 的模拟订单里啦。收货地址还需要你确认，暂时不会真实付款或配送。）';}else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);if(made.ok)reply+='\n\n（测试订单已建立并同步到'+(testKind==='food'?'Foodie':'Orange Market')+'。这是本地模拟订单，收货地址和付款都需要你确认。）';else reply+='\n\n（我收到测试请求了，但'+(testKind==='food'?'Foodie':'Orange Market')+'目录暂时没有可用商品：'+(made.reason||'请先检查商品目录')+'。）';}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];thread.push({role:'assistant',text:reply,at:Date.now()});latest[activeChatContactId]=thread;writeChatThreads(latest);
+ }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
  finally{aiBusy=false;send.disabled=false;send.textContent='发送';renderChat()}
 }
 
