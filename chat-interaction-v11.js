@@ -113,6 +113,14 @@
       .chat-message-row.ai .chat-bubble{order:2}
       .chat-message-row.ai .lr-message-time{order:3}
       .lr-chat-image{display:block;max-width:min(62vw,260px);max-height:360px;border-radius:13px;object-fit:cover}
+      .lr-sticker-image{display:block;width:auto;max-width:min(48vw,190px);max-height:190px;object-fit:contain;border-radius:12px}
+      #lrStickerModal{position:fixed;inset:0;z-index:10050;background:rgba(40,30,46,.36);display:grid;place-items:center;padding:18px;backdrop-filter:blur(8px)}
+      #lrStickerModal[hidden]{display:none!important}
+      #lrStickerModal .lr-sticker-sheet{width:100%;max-width:440px;max-height:82vh;overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.85);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(239,225,246,.9));box-shadow:0 22px 70px rgba(66,44,76,.2);color:#51445a}
+      .lr-sticker-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.lr-sticker-title{font:24px Georgia,serif}.lr-sticker-upload{border:1px solid #e5d8eb;border-radius:14px;background:#fff;padding:10px 13px;color:#8c6d9b;font:inherit}
+      .lr-sticker-cats{display:flex;gap:7px;overflow:auto;padding:14px 0}.lr-sticker-cats button{white-space:nowrap;border:1px solid #e6d9eb;border-radius:99px;background:rgba(255,255,255,.75);padding:8px 12px;color:#85728e;font:inherit;font-size:12px}.lr-sticker-cats button.active{background:#b99bc8;color:white;border-color:#b99bc8}
+      .lr-sticker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.lr-sticker-item{position:relative;min-height:100px;border:1px solid #eee4f1;border-radius:17px;background:rgba(255,255,255,.7);padding:9px;display:grid;place-items:center;gap:6px}.lr-sticker-item img{max-width:100%;height:76px;object-fit:contain}.lr-sticker-item small{font-size:10px;color:#8d7b96}.lr-sticker-item .lr-sticker-send{border:0;border-radius:99px;padding:5px 10px;background:#b99bc8;color:white;font:inherit;font-size:11px}.lr-sticker-empty{padding:28px 8px;text-align:center;color:#a294aa;font-size:13px;line-height:1.8}
+
       .lr-transfer-card{min-width:220px;max-width:260px;padding:19px 20px;border-radius:20px;background:linear-gradient(145deg,#c5a7d0,#9877a8);color:#fff;box-shadow:0 9px 22px rgba(126,93,143,.17)}
       .lr-transfer-card small{display:block;opacity:.72;font-size:9px;letter-spacing:2px;margin-bottom:10px}
       .lr-transfer-card strong{display:block;font:29px Georgia,serif;font-weight:400;margin-bottom:9px}
@@ -184,7 +192,7 @@
     if(existing){const oldMenu=$('lrChatPlusMenu');if(oldMenu&&oldMenu.parentElement!==compose)oldMenu.remove();return;}
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
-    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
+    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="sticker">♡　发送表情包</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
@@ -204,6 +212,7 @@
       menu.hidden=true;menuOpen=false;plus.textContent='＋';
       const action=button.dataset.lrAction;
       if(action==='image') $('lrChatImageInput').click();
+      if(action==='sticker') openStickerPicker();
       if(action==='transfer') sendTransfer();
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
@@ -231,6 +240,40 @@
     });
     ensureActionModals();
   }
+  const STICKER_META_KEY='love-record-stickers-v1';
+  const STICKER_CATEGORIES=['开心','伤心','生气','平静','可爱','撒娇','害羞','亲亲','疑惑','无奈','晚安','自定义'];
+  let stickerCategory='全部';
+  function readStickers(){try{const x=JSON.parse(localStorage.getItem(STICKER_META_KEY)||'[]');return Array.isArray(x)?x.filter(v=>v&&v.id&&v.category):[]}catch{return []}}
+  function writeStickers(items){try{localStorage.setItem(STICKER_META_KEY,JSON.stringify(items));return true}catch(e){toast('表情包资料保存失败，请清理浏览器储存空间');return false}}
+  window.lrGetStickerPrompt=()=>readStickers().map(x=>`${x.id}（${x.category}${x.name?'，'+x.name:''}）`).join('；');
+  function ensureStickerModal(){
+    if($('lrStickerModal'))return;
+    const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
+    modal.innerHTML='<section class="lr-sticker-sheet"><div class="lr-sticker-head"><div><div class="lr-action-kicker">LOVE RECORD · STICKERS</div><div class="lr-sticker-title">表情包收藏</div></div><button type="button" id="lrStickerClose" class="lr-sticker-upload">完成</button></div><p class="lr-action-desc">上传并分类；AI 会根据角色心情和聊天语境自主选择合适的表情包。</p><div class="lr-sticker-head"><span style="font-size:12px;color:#9b8ba3">我的表情包</span><button type="button" id="lrStickerUpload" class="lr-sticker-upload">＋ 上传图片</button></div><div class="lr-sticker-cats" id="lrStickerCats"></div><div class="lr-sticker-grid" id="lrStickerGrid"></div><input id="lrStickerFiles" type="file" accept="image/*" multiple hidden></section>';
+    document.body.appendChild(modal);
+    $('lrStickerClose').onclick=()=>modal.hidden=true;modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+    $('lrStickerUpload').onclick=()=>$('lrStickerFiles').click();
+    $('lrStickerFiles').addEventListener('change',async e=>{
+      const files=[...(e.target.files||[])];if(!files.length)return;
+      let category=prompt('这些表情包属于哪个分类？\n'+STICKER_CATEGORIES.join(' / '),STICKER_CATEGORIES[0]);
+      if(!category){e.target.value='';return}category=STICKER_CATEGORIES.includes(category.trim())?category.trim():'自定义';
+      const items=readStickers();
+      for(const file of files){if(!file.type.startsWith('image/'))continue;try{const attachmentId=await saveAttachment(file);items.push({id:String(attachmentId),attachmentId,category,name:file.name.replace(/\.[^.]+$/,'').slice(0,50),createdAt:Date.now()})}catch(err){console.warn('[LOVE RECORD] sticker upload failed',err)}}
+      if(writeStickers(items)){stickerCategory=category;renderStickerPicker();toast('表情包已加入收藏 ♡')}e.target.value='';
+    });
+  }
+  async function renderStickerPicker(){
+    const cats=$('lrStickerCats'),grid=$('lrStickerGrid');if(!cats||!grid)return;const items=readStickers();
+    const choices=['全部',...new Set([...STICKER_CATEGORIES,...items.map(x=>x.category)])];
+    cats.innerHTML=choices.map(c=>'<button type="button" data-sticker-cat="'+escapeHtml(c)+'" class="'+(c===stickerCategory?'active':'')+'">'+escapeHtml(c)+'</button>').join('');
+    cats.querySelectorAll('button').forEach(b=>b.onclick=()=>{stickerCategory=b.dataset.stickerCat;renderStickerPicker()});
+    const shown=items.filter(x=>stickerCategory==='全部'||x.category===stickerCategory);
+    if(!shown.length){grid.innerHTML='<div class="lr-sticker-empty" style="grid-column:1/-1">这里还没有表情包。<br>点「上传图片」添加，再选择分类 ♡</div>';return}
+    grid.innerHTML='';
+    for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{pushMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;writeStickers(readStickers().filter(x=>x.id!==item.id));renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
+  }
+  function openStickerPicker(){ensureStickerModal();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
+
   function ensureActionModals(){
     if(!$('lrThoughtModal')){
       const modal=document.createElement('div');modal.id='lrThoughtModal';modal.className='lr-action-overlay';modal.hidden=true;
@@ -296,7 +339,10 @@
         if(marker){const amount=Number((marker[1]||marker[2]).replace(/,/g,''));if(Number.isFinite(amount)&&amount>0){msg.kind='transfer';msg.amount=amount.toFixed(2);msg.currency='￥';msg.note=msg.note||'给你的小心意';msg.text='转账 ￥'+msg.amount;normalizedTransfer=true;}}
       }
       const bubble=row.querySelector('.chat-bubble');if(!bubble)return;
-      if(msg.kind==='image'&&msg.attachmentId){
+      if(msg.kind==='sticker'&&msg.attachmentId){
+        bubble.textContent='表情包加载中…';
+        attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-sticker-image" src="'+url+'" alt="表情包">';else if(bubble.isConnected)bubble.textContent='表情包无法读取';}).catch(()=>{bubble.textContent='表情包无法读取';});
+      } else if(msg.kind==='image'&&msg.attachmentId){
         bubble.textContent='图片加载中…';
         attachmentUrl(msg.attachmentId).then(url=>{if(url&&bubble.isConnected)bubble.innerHTML='<img class="lr-chat-image" src="'+url+'" alt="聊天图片">';else if(bubble.isConnected)bubble.textContent='图片无法读取';}).catch(()=>{bubble.textContent='图片无法读取';});
       } else if(msg.kind==='transfer'){
