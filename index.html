@@ -1002,39 +1002,20 @@ body.music-listening-modal-open{overflow:hidden!important}
 </style>
 
 
-<style id="lr-order-landscape-fix-v1">
-.chat-order-card.glass-order-card{
- box-sizing:border-box!important;display:block!important;
- width:min(440px,calc(100vw - 100px))!important;max-width:100%!important;min-width:0!important;
- padding:9px!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.68)!important;border-radius:25px!important;
- background:linear-gradient(125deg,rgba(205,177,222,.76),rgba(168,132,193,.70))!important;
- box-shadow:0 10px 28px rgba(69,43,84,.14),inset 0 1px 0 rgba(255,255,255,.45)!important;
- backdrop-filter:blur(25px) saturate(155%)!important;-webkit-backdrop-filter:blur(25px) saturate(155%)!important;
- color:#554360!important;
-}
-.chat-order-card.glass-order-card .order-kicker{
- display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;
- gap:8px!important;padding:9px 12px!important;margin:0!important;border-radius:17px!important;
- background:rgba(255,255,255,.22)!important;border:1px solid rgba(255,255,255,.42)!important;
- color:#fff!important;font-size:10px!important;letter-spacing:.10em!important;text-align:left!important;white-space:nowrap!important;
-}
-.chat-order-card.glass-order-card .order-kicker span:first-child{letter-spacing:.12em!important;white-space:nowrap!important}
-.chat-order-card.glass-order-card .order-main{
- box-sizing:border-box!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
- grid-template-areas:"title total" "number total" "meta total" "foot foot"!important;
- align-items:center!important;column-gap:14px!important;row-gap:3px!important;
- margin-top:7px!important;padding:12px 14px 10px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:18px!important;
- background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(255,249,255,.56))!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.86)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
-}
-.chat-order-card.glass-order-card .order-title{grid-area:title!important;margin:0!important;font-size:13px!important;line-height:1.4!important;font-weight:600!important;color:#4f3e59!important;overflow-wrap:anywhere!important}
-.chat-order-card.glass-order-card .order-number{grid-area:number!important;margin:0!important;font-size:10px!important;line-height:1.35!important;color:#8d7898!important;overflow-wrap:anywhere!important}
-.chat-order-card.glass-order-card .order-meta{grid-area:meta!important;font-size:11px!important;line-height:1.45!important;color:#76677f!important;overflow-wrap:anywhere!important}
-.chat-order-card.glass-order-card .order-total{grid-area:total!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:center!important;gap:4px!important;margin:0!important;padding:0 0 0 10px!important;border:0!important;border-left:1px solid rgba(143,113,158,.20)!important;font-size:10px!important;white-space:nowrap!important;color:#786781!important}
+<style id="lr-order-landscape-restore-v2">
+.chat-order-card.glass-order-card{box-sizing:border-box!important;width:min(520px,calc(100vw - 48px))!important;max-width:100%!important;min-width:0!important;padding:9px!important;border:1px solid rgba(255,255,255,.7)!important;border-radius:24px!important;background:linear-gradient(125deg,rgba(205,177,222,.76),rgba(168,132,193,.70))!important;box-shadow:0 10px 28px rgba(69,43,84,.14),inset 0 1px 0 rgba(255,255,255,.45)!important;backdrop-filter:blur(25px) saturate(155%)!important;-webkit-backdrop-filter:blur(25px) saturate(155%)!important;color:#554360!important}
+.chat-order-card.glass-order-card .order-kicker{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;gap:8px!important;padding:8px 12px!important;margin:0!important;border-radius:16px!important;background:rgba(255,255,255,.22)!important;border:1px solid rgba(255,255,255,.42)!important;color:#fff!important;font-size:10px!important;letter-spacing:.08em!important;white-space:nowrap!important}
+.chat-order-card.glass-order-card .order-kicker span:first-child{white-space:nowrap!important;letter-spacing:.1em!important}
+.chat-order-card.glass-order-card .order-main{box-sizing:border-box!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"title total" "number total" "meta total" "foot foot"!important;align-items:center!important;column-gap:14px!important;row-gap:3px!important;margin-top:7px!important;padding:11px 13px 9px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:18px!important;background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(255,249,255,.56))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.86)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}
+.chat-order-card.glass-order-card .order-title{grid-area:title!important;margin:0!important;font-size:13px!important;line-height:1.35!important;font-weight:600!important;color:#4f3e59!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-number{grid-area:number!important;margin:0!important;font-size:10px!important;line-height:1.3!important;color:#8d7898!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-meta{grid-area:meta!important;font-size:11px!important;line-height:1.4!important;color:#76677f!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-total{grid-area:total!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:center!important;gap:4px!important;margin:0!important;padding:0 0 0 12px!important;border:0!important;border-left:1px solid rgba(143,113,158,.2)!important;font-size:10px!important;white-space:nowrap!important;color:#786781!important}
 .chat-order-card.glass-order-card .order-total strong{font-size:17px!important;line-height:1.2!important;color:#554060!important;white-space:nowrap!important}
-.chat-order-card.glass-order-card .order-footnote{grid-area:foot!important;margin-top:7px!important;padding-top:7px!important;border-top:1px solid rgba(143,113,158,.16)!important;font-size:9px!important;line-height:1.3!important;letter-spacing:.03em!important;color:#a08eaa!important;overflow-wrap:anywhere!important}
-@media(max-width:390px){.chat-order-card.glass-order-card{width:min(410px,calc(100vw - 84px))!important}.chat-order-card.glass-order-card .order-main{column-gap:9px!important;padding:10px 10px 9px!important}.chat-order-card.glass-order-card .order-total{padding-left:8px!important}.chat-order-card.glass-order-card .order-total strong{font-size:15px!important}}
+.chat-order-card.glass-order-card .order-footnote{grid-area:foot!important;margin-top:7px!important;padding-top:7px!important;border-top:1px solid rgba(143,113,158,.16)!important;font-size:9px!important;line-height:1.3!important;letter-spacing:.02em!important;color:#a08eaa!important;overflow-wrap:anywhere!important}
+@media(max-width:390px){.chat-order-card.glass-order-card{width:calc(100vw - 40px)!important}.chat-order-card.glass-order-card .order-main{column-gap:8px!important;padding:10px!important}.chat-order-card.glass-order-card .order-total{padding-left:8px!important}.chat-order-card.glass-order-card .order-total strong{font-size:15px!important}}
 </style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1080,8 +1061,7 @@ body.music-listening-modal-open{overflow:hidden!important}
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
-    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>外卖</span></button>
-    <button class="launcher-app" data-launch-life="shop" type="button" data-drag-id="app-orange-market"><span class="app-icon icon-orange-market">🛍</span><span>购物</span></button>
+    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
     <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-page="0" aria-label="第一页"></button><button type="button" data-launcher-page="1" aria-label="第二页"></button></div>
@@ -1933,8 +1913,8 @@ async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((r
  const getId=el=>el?.dataset?.dragId;const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
  const ORDER_KEY='love-record-launcher-grid-order-v4',PAGE_KEY='love-record-launcher-pages-v2',LAYOUT_KV='launcher-layout-v2';
  // Initial arrangement mirrors the user's confirmed layout: community on page 1; shopping, food, memories and journal on page 2.
- const defaultOrder=['app-space','app-chat','app-music','app-community','app-orange-market','app-foodie','app-memories','app-journal'];
- let order=defaultOrder.slice(),pageMap={'app-orange-market':1,'app-foodie':1,'app-memories':1,'app-journal':1},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null,layoutWriteSeq=0,layoutReady=false;
+ const defaultOrder=['app-space','app-chat','app-music','app-community','app-foodie','app-memories','app-journal'];
+ let order=defaultOrder.slice(),pageMap={'app-foodie':1,'app-memories':1,'app-journal':1},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null,layoutWriteSeq=0,layoutReady=false;
  try{const x=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(x))order=x}catch{}try{const savedPages=JSON.parse(localStorage.getItem(PAGE_KEY)||'null');if(savedPages&&typeof savedPages==='object')pageMap={...pageMap,...savedPages}}catch{}
  const normalize=()=>{const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});getApps().forEach(el=>{if(pageMap[getId(el)]!==1)pageMap[getId(el)]=0})};
  const persist=()=>{const snap={order:order.slice(),pageMap:{...pageMap}};const seq=++layoutWriteSeq;lrKVSet(LAYOUT_KV,snap).then(()=>{if(seq===layoutWriteSeq){try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap))}catch(e){/* IndexedDB is the primary durable copy; localStorage may be full. */}}}).catch(e=>{console.warn('[LOVE RECORD] IndexedDB launcher layout save failed',e);try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap));localStorage.removeItem('love-record-launcher-grid-order-backup-v1')}catch(err){if(typeof toast==='function')toast('布局保存失败：独立储存不可用，请导出备份并检查浏览器权限')}})};
