@@ -184,7 +184,7 @@
     if(existing){const oldMenu=$('lrChatPlusMenu');if(oldMenu&&oldMenu.parentElement!==compose)oldMenu.remove();return;}
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
-    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="foodie">♨　点外卖 · Foodie</button><button type="button" data-lr-action="market">🛍　去购物 · Orange Market</button>`;
+    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
@@ -213,9 +213,9 @@
         const person=(window.state&&Array.isArray(window.state.people)?window.state.people:[]).find(p=>String(p.id)===String(cid));
         // Context is a convenience only: a full localStorage quota must never block opening the app.
         try{if(cid)sessionStorage.setItem('lr-life-active-contact',String(cid));}catch(e){console.warn('[LOVE RECORD] session context unavailable',e)}
-        try{if(cid)localStorage.setItem('lr-life-chat-context-v1',JSON.stringify({contactId:String(cid),contactName:person?.name||'',kind:action==='foodie'?'food':'shop',at:Date.now()}));}catch(e){console.warn('[LOVE RECORD] local context unavailable; opening app without persisted context',e)}
+        try{if(cid)localStorage.setItem('lr-life-chat-context-v1',JSON.stringify({contactId:String(cid),contactName:person?.name||'',kind:'food',at:Date.now()}));}catch(e){console.warn('[LOVE RECORD] local context unavailable; opening app without persisted context',e)}
         if(window.LoveRecordLifeApps&&typeof window.LoveRecordLifeApps.open==='function'){
-          try{Promise.resolve(window.LoveRecordLifeApps.open(action==='foodie'?'food':'shop')).catch(error=>{console.error('[LOVE RECORD] app open failed',error);toast('应用打开失败：'+(error?.message||'请检查应用数据'))});}
+          try{Promise.resolve(window.LoveRecordLifeApps.open('food')).catch(error=>{console.error('[LOVE RECORD] app open failed',error);toast('应用打开失败：'+(error?.message||'请检查应用数据'))});}
           catch(error){console.error('[LOVE RECORD] app open failed',error);toast('应用打开失败：'+(error?.message||'请稍后重试'))}
         }else toast('生活应用模块尚未加载，请刷新页面后再试');
       }
