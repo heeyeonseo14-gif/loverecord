@@ -417,7 +417,6 @@
       let rawReply = extractAIText(JSON.parse(raw));
       // Convert model order markers into actual local simulated orders, and never show
       // the machine protocol as a visible chat bubble.
-      let orderNotice = '';
       const aiOrderMatch = rawReply.match(/\[\[\s*LR_AI_ORDER\s*:\s*(food|shop)\s*\|\s*([^\]]+?)\s*\]\]/i);
       const legacyOrderMatch = !aiOrderMatch && rawReply.match(/\[\[\s*LR_ORDER\s*\|\s*(food|shop)\s*\|([^\]]+)\]\]/i);
       if (aiOrderMatch || legacyOrderMatch) {
@@ -435,15 +434,15 @@
         try {
           const maker = window.LoveRecordLifeApps?.createAIOrder;
           const made = maker ? await maker(kind, id, [keyword]) : {ok:false, reason:'生活集市模块未加载'};
-          if (made?.ok) orderNotice = '我把这份小惊喜放进生活集市的模拟订单啦，地址和付款还要你确认。';
-          else orderNotice = '我想帮你准备这份小惊喜，不过商品目录里暂时没找到「' + keyword + '」，我们一起挑选吧。';
+          if (made?.ok) window.toast?.('请确认订单地址');
+          else window.toast?.('暂未找到对应商品，请换个商品名称再试');
         } catch (orderError) {
           console.warn('[LOVE RECORD] AI order command failed', orderError);
-          orderNotice = '我收到你的点单啦，但生活集市暂时没能创建模拟订单，我们稍后再试。';
+          window.toast?.('订单暂时没能创建，请稍后再试');
         }
       }
       const normalizedReply = normalizeNarrationReply(rawReply, meta.narrationEnabled !== false);
-      const reply = [normalizedReply, orderNotice].filter(Boolean).join(normalizedReply ? '\n\n' : '');
+      const reply = normalizedReply;
       if (!reply) throw new Error('没有收到有效回复');
       const bubbles = splitAIReply(reply);
       const latest = readChatThreads();
