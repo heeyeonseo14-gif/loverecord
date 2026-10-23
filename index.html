@@ -1046,8 +1046,7 @@ body.music-listening-modal-open{overflow:hidden!important}
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
-    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>外卖</span></button>
-    <button class="launcher-app" data-launch-life="shop" type="button" data-drag-id="app-orange-market"><span class="app-icon icon-orange-market">🛍</span><span>购物</span></button>
+    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
     <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-page="0" aria-label="第一页"></button><button type="button" data-launcher-page="1" aria-label="第二页"></button></div>
@@ -1898,8 +1897,8 @@ async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((r
  const getId=el=>el?.dataset?.dragId;const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
  const ORDER_KEY='love-record-launcher-grid-order-v4',PAGE_KEY='love-record-launcher-pages-v2',LAYOUT_KV='launcher-layout-v2';
  // Initial arrangement mirrors the user's confirmed layout: community on page 1; shopping, food, memories and journal on page 2.
- const defaultOrder=['app-space','app-chat','app-music','app-community','app-orange-market','app-foodie','app-memories','app-journal'];
- let order=defaultOrder.slice(),pageMap={'app-orange-market':1,'app-foodie':1,'app-memories':1,'app-journal':1},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null,layoutWriteSeq=0,layoutReady=false;
+ const defaultOrder=['app-space','app-chat','app-music','app-community','app-foodie','app-memories','app-journal'];
+ let order=defaultOrder.slice(),pageMap={'app-foodie':1,'app-memories':1,'app-journal':1},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null,layoutWriteSeq=0,layoutReady=false;
  try{const x=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(x))order=x}catch{}try{const savedPages=JSON.parse(localStorage.getItem(PAGE_KEY)||'null');if(savedPages&&typeof savedPages==='object')pageMap={...pageMap,...savedPages}}catch{}
  const normalize=()=>{const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});getApps().forEach(el=>{if(pageMap[getId(el)]!==1)pageMap[getId(el)]=0})};
  const persist=()=>{const snap={order:order.slice(),pageMap:{...pageMap}};const seq=++layoutWriteSeq;lrKVSet(LAYOUT_KV,snap).then(()=>{if(seq===layoutWriteSeq){try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap))}catch(e){/* IndexedDB is the primary durable copy; localStorage may be full. */}}}).catch(e=>{console.warn('[LOVE RECORD] IndexedDB launcher layout save failed',e);try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap));localStorage.removeItem('love-record-launcher-grid-order-backup-v1')}catch(err){if(typeof toast==='function')toast('布局保存失败：独立储存不可用，请导出备份并检查浏览器权限')}})};
