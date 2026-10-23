@@ -224,19 +224,12 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .chat-plus-menu[hidden]{display:none!important}
 .chat-plus-menu button{border:0;background:transparent;text-align:left;padding:13px 14px;border-radius:13px;color:#5c4d63;font:inherit}
 .chat-plus-menu button:active{background:#f2eaf6}
-/* Compact horizontal liquid-glass order card */
-.chat-order-card,.chat-order-card.glass-order-card{display:block!important;width:min(390px,calc(100% - 24px))!important;max-width:390px!important;min-width:0!important;box-sizing:border-box!important;overflow:hidden;border:1px solid rgba(255,255,255,.58)!important;border-radius:27px!important;background:linear-gradient(135deg,rgba(232,211,245,.72),rgba(193,157,214,.58))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.62),0 12px 30px rgba(65,39,78,.13)!important;backdrop-filter:blur(24px) saturate(145%);-webkit-backdrop-filter:blur(24px) saturate(145%);color:#514257}
-.chat-order-card .order-kicker{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 9px 0;padding:9px 12px;border:1px solid rgba(255,255,255,.58);border-radius:17px;background:rgba(255,255,255,.23);font-size:10px;letter-spacing:.13em;color:#fff}
-.chat-order-card .order-kicker span:last-child{white-space:nowrap;letter-spacing:.04em}
-.chat-order-card .order-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:12px;row-gap:4px;margin:8px 9px 9px;padding:12px 13px;border:1px solid rgba(255,255,255,.72);border-radius:20px;background:linear-gradient(135deg,rgba(255,255,255,.68),rgba(255,255,255,.34));box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}
-.chat-order-card .order-title{grid-column:1/-1;font-size:13px;font-weight:600;line-height:1.4;margin:0 0 2px;color:#5a4563}
-.chat-order-card .order-number{font-size:11px;color:#8d7f92;line-height:1.35;overflow-wrap:anywhere}
-.chat-order-card .order-meta{grid-column:1;font-size:11px;color:#796a81;line-height:1.4;overflow-wrap:anywhere}
-.chat-order-card .order-total{grid-column:2;grid-row:2/4;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:3px;padding:0;margin:0;border:0;font-weight:600;white-space:nowrap}
-.chat-order-card .order-total span{font-size:10px;font-weight:400;color:#8d7f92}
-.chat-order-card .order-total strong{font-size:17px;color:#5a4563}
-.chat-order-card .order-footnote{grid-column:1/-1;padding-top:6px;margin-top:3px;border-top:1px solid rgba(145,116,158,.18);font-size:10px;line-height:1.3;color:#a08fa7}
-@media(max-width:380px){.chat-order-card,.chat-order-card.glass-order-card{width:calc(100% - 16px)!important}.chat-order-card .order-main{column-gap:7px;padding:10px}.chat-order-card .order-total strong{font-size:15px}}
+.chat-order-card{display:block;width:min(300px,100%);overflow:hidden;border:1px solid rgba(183,157,198,.3);border-radius:20px;background:linear-gradient(145deg,#fff,#f8f2fb);box-shadow:0 8px 24px rgba(76,52,90,.08);color:#514257}
+.chat-order-card .order-kicker{padding:12px 15px;background:linear-gradient(100deg,#eee2f4,#f8edf5);font-size:10px;letter-spacing:.18em}
+.chat-order-card .order-main{padding:14px 15px}
+.chat-order-card .order-title{font-size:15px;font-weight:600;margin-bottom:6px}
+.chat-order-card .order-meta{font-size:12px;color:#8d7f92;line-height:1.6}
+.chat-order-card .order-total{display:flex;justify-content:space-between;align-items:center;padding-top:12px;margin-top:10px;border-top:1px solid #eee4f1;font-weight:600}
 
 </style>
 <style>
@@ -1008,6 +1001,40 @@ body.music-listening-modal-open{overflow:hidden!important}
 @media(prefers-reduced-transparency:reduce){.chat-order-card.glass-order-card,.chat-order-card.glass-order-card .order-main,#chat .chat-compose{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;background:rgba(245,237,249,.96)!important}}
 </style>
 
+
+<style id="lr-order-landscape-fix-v1">
+.chat-order-card.glass-order-card{
+ box-sizing:border-box!important;display:block!important;
+ width:min(440px,calc(100vw - 100px))!important;max-width:100%!important;min-width:0!important;
+ padding:9px!important;overflow:hidden!important;border:1px solid rgba(255,255,255,.68)!important;border-radius:25px!important;
+ background:linear-gradient(125deg,rgba(205,177,222,.76),rgba(168,132,193,.70))!important;
+ box-shadow:0 10px 28px rgba(69,43,84,.14),inset 0 1px 0 rgba(255,255,255,.45)!important;
+ backdrop-filter:blur(25px) saturate(155%)!important;-webkit-backdrop-filter:blur(25px) saturate(155%)!important;
+ color:#554360!important;
+}
+.chat-order-card.glass-order-card .order-kicker{
+ display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;
+ gap:8px!important;padding:9px 12px!important;margin:0!important;border-radius:17px!important;
+ background:rgba(255,255,255,.22)!important;border:1px solid rgba(255,255,255,.42)!important;
+ color:#fff!important;font-size:10px!important;letter-spacing:.10em!important;text-align:left!important;white-space:nowrap!important;
+}
+.chat-order-card.glass-order-card .order-kicker span:first-child{letter-spacing:.12em!important;white-space:nowrap!important}
+.chat-order-card.glass-order-card .order-main{
+ box-sizing:border-box!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ grid-template-areas:"title total" "number total" "meta total" "foot foot"!important;
+ align-items:center!important;column-gap:14px!important;row-gap:3px!important;
+ margin-top:7px!important;padding:12px 14px 10px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:18px!important;
+ background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(255,249,255,.56))!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.86)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important;
+}
+.chat-order-card.glass-order-card .order-title{grid-area:title!important;margin:0!important;font-size:13px!important;line-height:1.4!important;font-weight:600!important;color:#4f3e59!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-number{grid-area:number!important;margin:0!important;font-size:10px!important;line-height:1.35!important;color:#8d7898!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-meta{grid-area:meta!important;font-size:11px!important;line-height:1.45!important;color:#76677f!important;overflow-wrap:anywhere!important}
+.chat-order-card.glass-order-card .order-total{grid-area:total!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:center!important;gap:4px!important;margin:0!important;padding:0 0 0 10px!important;border:0!important;border-left:1px solid rgba(143,113,158,.20)!important;font-size:10px!important;white-space:nowrap!important;color:#786781!important}
+.chat-order-card.glass-order-card .order-total strong{font-size:17px!important;line-height:1.2!important;color:#554060!important;white-space:nowrap!important}
+.chat-order-card.glass-order-card .order-footnote{grid-area:foot!important;margin-top:7px!important;padding-top:7px!important;border-top:1px solid rgba(143,113,158,.16)!important;font-size:9px!important;line-height:1.3!important;letter-spacing:.03em!important;color:#a08eaa!important;overflow-wrap:anywhere!important}
+@media(max-width:390px){.chat-order-card.glass-order-card{width:min(410px,calc(100vw - 84px))!important}.chat-order-card.glass-order-card .order-main{column-gap:9px!important;padding:10px 10px 9px!important}.chat-order-card.glass-order-card .order-total{padding-left:8px!important}.chat-order-card.glass-order-card .order-total strong{font-size:15px!important}}
+</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1469,7 +1496,8 @@ function renderChatMessageContent(value, role){
   else if(parts.length===4){[sender,title,detail,total]=parts;recipient=(role==='user'&&typeof activeChatContactId!=='undefined'&&typeof contactById==='function'?(contactById(activeChatContactId)?.name||''):'');}
   else {sender=parts[0]||'';title=parts[1]||'订单已创建';detail=parts[2]||'';total=parts[3]||'RMB 0.00';}
   const headline=role==='user'?'你给'+(recipient||'TA')+(food?'点了外卖':'买了物品'):(sender&&sender!=='你'?sender:'TA')+(food?'给你点了外卖':'给你买了物品');
-  return '<article class="chat-order-card glass-order-card"><div class="order-kicker"><span>LOVE RECORD</span><span>✦ '+kind+'</span></div><div class="order-main"><div class="order-title">'+esc(headline)+'</div><div class="order-number">'+esc(title)+'</div><div class="order-meta">'+esc(detail)+'</div><div class="order-total"><span>订单金额</span><strong>'+esc(String(total||'￥0.00').replace(/RMB\s*/ig,'￥').replace(/^¥/,'￥'))+'</strong></div><div class="order-footnote">订单已同步至 '+(food?'Foodie':'Orange Market')+'</div></div></article>';
+  total=String(total||'￥0.00').replace(/^RMB\s*/i,'￥').replace(/^CNY\s*/i,'￥');
+  return '<article class="chat-order-card glass-order-card"><div class="order-kicker"><span>LOVE RECORD</span><span>✦ '+kind+'</span></div><div class="order-main"><div class="order-title">'+esc(headline)+'</div><div class="order-number">'+esc(title)+'</div><div class="order-meta">'+esc(detail)+'</div><div class="order-total"><span>订单金额</span><strong>'+esc(total)+'</strong></div><div class="order-footnote">订单已同步至 '+(food?'Foodie':'Orange Market')+'</div></div></article>';
  }
  if(role!=='assistant')return esc(raw);
  const token=/\[\[NARRATION\]\]([\s\S]*?)\[\[\/NARRATION\]\]/gi;
