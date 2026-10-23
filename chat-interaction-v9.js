@@ -42,6 +42,10 @@
     const n = parseInt(value, 10);
     return Math.min(100, Math.max(1, Number.isFinite(n) ? n : fallback));
   }
+  function clampReplyCount(value) {
+    const n = parseInt(value, 10);
+    return Math.min(10, Math.max(1, Number.isFinite(n) ? n : 4));
+  }
 
   function cleanupLegacySelfContact() {
     try {
@@ -226,27 +230,27 @@
     }
   }
 
-  function splitAIReply(value) {
+  function splitAIReply(value, maxBubbles) {
     const text = safe(value).replace(/\r\n?/g, '\n').replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '').trim();
     if (!text) return [];
-    // Explicit ||| and paragraph breaks always take priority.
     let parts = text.split(/\s*(?:\|\|\||\n\s*\n+)\s*/g).map(x => x.trim()).filter(Boolean);
     if (parts.length === 1 && /\n/.test(text)) parts = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
-    // If the model ignored bubble formatting, naturally group whole sentences into
-    // short mobile-chat bubbles. Do not split narration protocol markers.
-    if (parts.length === 1 && text.length > 62 && !/\[\[NARRATION\]\]|\[\[\/NARRATION\]\]/i.test(text)) {
-      const sentences = text.match(/[^。！？!?；;，,]+[。！？!?；;，,]?/g)?.map(x => x.trim()).filter(Boolean) || [text];
+    // If the model ignored the bubble marker, group complete sentences naturally;
+    // avoid chopping at commas or splitting narration protocol blocks.
+    if (parts.length === 1 && text.length > 58 && !/\[\[NARRATION\]\]|\[\[\/NARRATION\]\]/i.test(text)) {
+      const sentences = text.match(/[^。！？!?]+[。！？!?]?/g)?.map(x => x.trim()).filter(Boolean) || [text];
       if (sentences.length > 1) {
         const grouped = []; let chunk = '';
         for (const sentence of sentences) {
-          if (chunk && (chunk.length + sentence.length > 58 || chunk.length >= 34)) { grouped.push(chunk.trim()); chunk = ''; }
+          if (chunk && (chunk.length + sentence.length > 64 || chunk.length >= 42)) { grouped.push(chunk.trim()); chunk = ''; }
           chunk += sentence;
         }
         if (chunk.trim()) grouped.push(chunk.trim());
         if (grouped.length > 1) parts = grouped;
       }
     }
-    if (parts.length > 6) parts = [...parts.slice(0,5), parts.slice(5).join(' ')];
+    const limit = clampReplyCount(maxBubbles || 4);
+    if (parts.length > limit) parts = [...parts.slice(0, limit - 1), parts.slice(limit - 1).join(' ')];
     return parts.length ? parts : [text];
   }
 
@@ -402,7 +406,7 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。回复条数上限：本次最多生成 ${clampReplyCount(meta.replyCount || 4)} 条独立消息；请按自然聊天节奏使用 ||| 分隔，绝不可超过该数量，也不要为了凑数拆句。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -444,7 +448,7 @@
       const normalizedReply = normalizeNarrationReply(rawReply, meta.narrationEnabled !== false);
       const reply = normalizedReply;
       if (!reply) throw new Error('没有收到有效回复');
-      const bubbles = splitAIReply(reply);
+      const bubbles = splitAIReply(reply, clampReplyCount(meta.replyCount || 4));
       const latest = readChatThreads();
       const current = Array.isArray(latest[id]) ? latest[id] : [];
       const now = Date.now();
@@ -694,6 +698,8 @@
           lastContactId = id;
           lastDeleted = null;
           clearTimeout(undoTimer);
+          const undoBox = $('lrUndoToast');
+          if (undoBox) undoBox.hidden = true;
         }
         const result = originalRender.apply(this, arguments);
         ensureControls();

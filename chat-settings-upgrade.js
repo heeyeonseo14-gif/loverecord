@@ -6,6 +6,20 @@
   const STYLE_ID = 'lr-chat-settings-upgrade-style';
   const EXTRA_ID = 'lr-chat-settings-extra';
   const clampMemory = value => Math.min(100, Math.max(1, parseInt(value, 10) || 16));
+  const clampReplyCount = value => Math.min(10, Math.max(1, parseInt(value, 10) || 4));
+  function splitReplyBubbles(value, limit) {
+    const text = String(value || '').replace(/\r\n?/g, '\n').trim();
+    if (!text) return [];
+    let parts = text.split(/\s*(?:\|\|\||\n\s*\n+)\s*/g).map(x => x.trim()).filter(Boolean);
+    if (parts.length === 1 && /\n/.test(text)) parts = text.split(/\n+/).map(x => x.trim()).filter(Boolean);
+    if (parts.length === 1 && text.length > 55 && !/\[\[NARRATION\]\]|\[\[\/NARRATION\]\]/i.test(text)) {
+      const sentences = text.match(/[^。！？!?；;]+[。！？!?；;]?/g)?.map(x => x.trim()).filter(Boolean) || [text];
+      if (sentences.length > 1) { const grouped=[]; let chunk=''; for (const sentence of sentences) { if (chunk && chunk.length + sentence.length > 58) { grouped.push(chunk.trim()); chunk=''; } chunk += sentence; } if (chunk.trim()) grouped.push(chunk.trim()); if (grouped.length > 1) parts=grouped; }
+    }
+    const max = clampReplyCount(limit);
+    if (parts.length > max) parts = [...parts.slice(0, max - 1), parts.slice(max - 1).join(' ')];
+    return parts.length ? parts : [text];
+  }
   const currentMeta = () => (typeof activeChatContactId !== 'undefined' && activeChatContactId) ? chatMeta(activeChatContactId) : {};
   const safeText = value => String(value == null ? '' : value);
 
@@ -78,6 +92,12 @@
           <span class="lr-switch-track"></span>
         </label>
       </section>
+      <section class="lr-setting-card" id="lrReplyCountCard">
+        <h3>回复条数</h3>
+        <label for="lrReplyCount">单次回复最多几条（1–10）</label>
+        <input id="lrReplyCount" type="number" inputmode="numeric" min="1" max="10" step="1" value="4">
+        <div class="sub" style="margin-top:7px">每次只调用一次 API。AI 会按自然聊天节奏分成多条消息，最多不超过设定条数。</div>
+      </section>
       <section class="lr-setting-card">
         <h3>AI 阅读设置</h3>
         <label for="lrWorldSelect">世界书</label><select id="lrWorldSelect"></select>
@@ -144,6 +164,7 @@
       world.value = meta.worldId || '';
     }
     const count = document.getElementById('lrMemoryCount'); if (count) count.value = clampMemory(meta.memoryCount || 16);
+    const replyCount = document.getElementById('lrReplyCount'); if (replyCount) { replyCount.value = clampReplyCount(meta.replyCount || 4); if (!replyCount.dataset.lrBound) { replyCount.dataset.lrBound = '1'; replyCount.addEventListener('change', () => { const id = activeChatContactId; if (!id) return; const value = clampReplyCount(replyCount.value); replyCount.value = value; const latest = chatMeta(id); latest.replyCount = value; writeChatMeta(id, latest); editingChatMeta = {...editingChatMeta, replyCount:value}; }); } }
     const blocked = document.getElementById('lrToggleBlock'); if (blocked) { blocked.textContent = meta.blocked ? '取消拉黑' : '拉黑联系人'; blocked.classList.toggle('lr-danger', !meta.blocked); }
     const results = document.getElementById('lrSearchResults'); if (results) results.innerHTML = '';
   }
@@ -217,7 +238,8 @@
       const personaText = persona ? `用户当前人设：${persona.name || ''}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。请尊重该人设，但不要替用户决定行动、台词或情绪。` : '用户以本人身份参与聊天，不要替用户决定行动、台词或情绪。';
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
       const narrationRule = narrationOn ? '旁白模式【开启】：可少量穿插动作、神态、语气或环境描写，必须用 [[NARRATION]]...[[/NARRATION]] 包裹，旁白会在同一聊天气泡内以斜体显示；角色台词放在标记外，不要每条都加旁白。' : '旁白模式【关闭，最高优先级】：只输出角色直接说出口的台词；禁止动作、神态、心理、环境、舞台指示、括号内容、第三人称叙述，禁止输出任何 [[NARRATION]] 标记；不要模仿历史消息中的旁白。';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${narrationRule}${personaText}${worldText}像熟悉的人一样自然聊天，优先回应重点，不复述、不客服式总结、不强迫反问；允许短句、停顿、玩笑和自然转移话题。不要输出 JSON。按对话节奏自然分成几条消息，不为凑数拆句。`;
+      const replyLimit = clampReplyCount(meta.replyCount || 4);
+      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${narrationRule}${personaText}${worldText}像熟悉的人一样自然聊天，优先回应重点，不复述、不客服式总结、不强迫反问；允许短句、停顿、玩笑和自然转移话题。不要输出 JSON。回复最多 ${replyLimit} 条独立消息；如需分段，用 ||| 分隔，绝不可超过上限，也不要为了凑数拆句。`;
       const response = await fetchTimeout(state.apiBase.replace(/\/+$/,'') + '/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
         body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
@@ -230,8 +252,7 @@
       if (!narrationOn) safeReply = safeReply.replace(/\[\[NARRATION\]\][\s\S]*?\[\[\/NARRATION\]\]/gi,'').replace(/[（(][^）)]{1,120}[）)]/g,'').trim();
       const latest = readChatThreads(), thread = latest[id] || [];
       const receivedAt = Date.now();
-      const paragraphs = safeReply.replace(/\r\n?/g, '\n').trim().split(/\n\s*\n+/).map(part => part.trim()).filter(Boolean);
-      const replyParts = paragraphs.length > 1 ? paragraphs : safeReply.replace(/\r\n?/g, '\n').split('\n').map(part => part.trim()).filter(Boolean);
+      const replyParts = splitReplyBubbles(safeReply, replyLimit);
       const transferPattern = /(?:【\s*)?(?:向你转账|给你转账|转账给你|给你转了|转给你)\s*(RM|MYR|RMB|CNY|人民币|¥|￥)?\s*([\d,]+(?:\.\d{1,2})?)\s*(RM|MYR|RMB|CNY|人民币|元|¥|￥)?\s*(?:】)?/i;
       replyParts.forEach(part => {
         const match = part.match(transferPattern);
@@ -262,6 +283,7 @@
     editingChatMeta.personaId = $('lrPersonaSelect').value;
     editingChatMeta.worldId = $('lrWorldSelect').value;
     editingChatMeta.memoryCount = clampMemory($('lrMemoryCount').value);
+    editingChatMeta.replyCount = clampReplyCount($('lrReplyCount')?.value || editingChatMeta.replyCount || 4);
     editingChatMeta.narrationEnabled = $('lrChatNarration').checked;
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(activeChatContactId, editingChatMeta);
