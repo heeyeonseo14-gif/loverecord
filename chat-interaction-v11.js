@@ -245,11 +245,41 @@
     ensureActionModals();
   }
   const STICKER_META_KEY='love-record-stickers-v1';
+  const STICKER_META_ID='__love_record_sticker_meta__';
   const STICKER_CATEGORIES=['开心','伤心','生气','平静','可爱','撒娇','害羞','亲亲','疑惑','无奈','晚安','自定义'];
   let stickerCategory='全部';
-  function readStickers(){try{const x=JSON.parse(localStorage.getItem(STICKER_META_KEY)||'[]');return Array.isArray(x)?x.filter(v=>v&&v.id&&v.category):[]}catch{return []}}
-  function writeStickers(items){try{localStorage.setItem(STICKER_META_KEY,JSON.stringify(items));return true}catch(e){toast('表情包资料保存失败，请清理浏览器储存空间');return false}}
+  let stickerCache=[];
+  function validStickerItems(x){return Array.isArray(x)?x.filter(v=>v&&v.id&&v.category):[]}
+  function readStickers(){try{const x=JSON.parse(localStorage.getItem(STICKER_META_KEY)||'[]');if(Array.isArray(x)&&(x.length||!stickerCache.length))stickerCache=validStickerItems(x)}catch(_){}return stickerCache}
+  async function loadStickerMeta(){
+    // IndexedDB is the durable fallback when localStorage is full or unavailable.
+    try{
+      const database=await db();
+      const record=await new Promise((resolve,reject)=>{const req=database.transaction(STORE,'readonly').objectStore(STORE).get(STICKER_META_ID);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)});
+      if(record&&Array.isArray(record.items)){stickerCache=validStickerItems(record.items);return stickerCache}
+    }catch(err){console.warn('[LOVE RECORD] sticker metadata read failed',err)}
+    const localItems=readStickers();
+    if(localItems.length){try{await saveStickerMeta(localItems)}catch(err){console.warn('[LOVE RECORD] sticker metadata backup failed',err)}}
+    return localItems;
+  }
+  async function saveStickerMeta(items){
+    const database=await db();
+    return new Promise((resolve,reject)=>{
+      const tx=database.transaction(STORE,'readwrite');
+      tx.objectStore(STORE).put({id:STICKER_META_ID,kind:'sticker-meta',items,updatedAt:Date.now()});
+      tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('浏览器 IndexedDB 保存失败'));tx.onabort=()=>reject(tx.error||new Error('浏览器 IndexedDB 保存中断'));
+    });
+  }
+  async function writeStickers(items){
+    stickerCache=validStickerItems(items);
+    try{localStorage.setItem(STICKER_META_KEY,JSON.stringify(stickerCache));return true}
+    catch(localError){
+      try{await saveStickerMeta(stickerCache);return true}
+      catch(dbError){console.error('[LOVE RECORD] sticker metadata save failed',localError,dbError);return false}
+    }
+  }
   window.lrGetStickerPrompt=()=>readStickers().map(x=>`${x.id}（${x.category}${x.name?'，'+x.name:''}）`).join('；');
+  loadStickerMeta().catch(err=>console.warn('[LOVE RECORD] sticker metadata init failed',err));
   function ensureStickerModal(){
     if($('lrStickerModal'))return;
     const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
@@ -274,7 +304,7 @@
         }catch(err){lastError=err;console.error('[LOVE RECORD] sticker upload failed',err);}
       }
       if(savedCount>0){
-        if(writeStickers(items)){
+        if(await writeStickers(items)){
           stickerCategory=category;
           await renderStickerPicker();
           toast('已保存 '+savedCount+' 张表情包 ♡');
@@ -288,14 +318,14 @@
     });
   }
   async function renderStickerPicker(){
-    const cats=$('lrStickerCats'),grid=$('lrStickerGrid');if(!cats||!grid)return;const items=readStickers();
+    const cats=$('lrStickerCats'),grid=$('lrStickerGrid');if(!cats||!grid)return;const items=await loadStickerMeta();
     const choices=['全部',...new Set([...STICKER_CATEGORIES,...items.map(x=>x.category)])];
     cats.innerHTML=choices.map(c=>'<button type="button" data-sticker-cat="'+escapeHtml(c)+'" class="'+(c===stickerCategory?'active':'')+'">'+escapeHtml(c)+'</button>').join('');
     cats.querySelectorAll('button').forEach(b=>b.onclick=()=>{stickerCategory=b.dataset.stickerCat;renderStickerPicker()});
     const shown=items.filter(x=>stickerCategory==='全部'||x.category===stickerCategory);
     if(!shown.length){grid.innerHTML='<div class="lr-sticker-empty" style="grid-column:1/-1">这里还没有表情包。<br>点「上传图片」添加，再选择分类 ♡</div>';return}
     grid.innerHTML='';
-    for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{pushMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;writeStickers(readStickers().filter(x=>x.id!==item.id));renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
+    for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{pushMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=async()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;const ok=await writeStickers(readStickers().filter(x=>x.id!==item.id));if(!ok){toast('移除失败：浏览器储存空间不可用');return}await renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
   }
   function openStickerPicker(){ensureStickerModal();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
 
