@@ -278,8 +278,10 @@
       catch(dbError){console.error('[LOVE RECORD] sticker metadata save failed',localError,dbError);return false}
     }
   }
-  window.lrGetStickerPrompt=()=>readStickers().map(x=>`${x.id}（${x.category}${x.name?'，'+x.name:''}）`).join('；');
-  loadStickerMeta().catch(err=>console.warn('[LOVE RECORD] sticker metadata init failed',err));
+  // Expose the same saved collection to the chat AI, including IndexedDB fallback metadata.
+  window.lrGetStickerItems=async()=>{const items=await loadStickerMeta();return items.map(x=>({...x}));};
+  window.lrGetStickerPrompt=()=>{const items=stickerCache.length?stickerCache:readStickers();return items.map(x=>`${x.id}（分类：${x.category}${x.name?'；名称：'+x.name:''}）`).join('；');};
+  loadStickerMeta().then(()=>{window.dispatchEvent(new CustomEvent('lr-stickers-ready'));}).catch(err=>console.warn('[LOVE RECORD] sticker metadata init failed',err));
   function ensureStickerModal(){
     if($('lrStickerModal'))return;
     const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
