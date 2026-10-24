@@ -406,7 +406,25 @@
       const longMemoryText = safe(meta.longTermMemory).trim()
         ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。回复条数上限：本次最多生成 ${clampReplyCount(meta.replyCount || 4)} 条独立消息；请按自然聊天节奏使用 ||| 分隔，绝不可超过该数量，也不要为了凑数拆句。`;
+      // Read stickers in the real AI reply handler. The older sendChatMessage path is not used by the ✦ reply button.
+      let stickerSyncOn = true;
+      try { const pref = localStorage.getItem('love-record-ai-sticker-sync-v1'); stickerSyncOn = pref === null || pref === '1'; } catch (_) {}
+      let savedStickers = [];
+      if (stickerSyncOn) {
+        try {
+          if (typeof window.lrGetStickerItems === 'function') savedStickers = await window.lrGetStickerItems();
+          if (!Array.isArray(savedStickers) || !savedStickers.length) {
+            const localItems = JSON.parse(localStorage.getItem('love-record-stickers-v1') || '[]');
+            if (Array.isArray(localItems)) savedStickers = localItems;
+          }
+        } catch (stickerError) { console.warn('[LOVE RECORD] sticker library read failed in actual reply path', stickerError); }
+      }
+      savedStickers = Array.isArray(savedStickers) ? savedStickers.filter(x => x && x.id != null && x.attachmentId != null) : [];
+      const stickerListText = savedStickers.map(x => `${x.id}（分类：${x.category || '自定义'}${x.name ? '；名称：' + x.name : ''}）`).join('；');
+      const stickerPrompt = !stickerSyncOn ? '用户已关闭 AI 表情包同步，不要发送表情包。' : savedStickers.length
+        ? `用户真实收藏的表情包如下：${stickerListText}。你可以根据角色当下情绪和聊天语境自然、自主地发送一张。若决定发送，必须输出机器标记 [[LR_STICKER:收藏ID]]，ID 必须逐字取自清单。绝不能把文件名或表情包描述当成图片发送。用户明确要求测试或发送表情包时，必须选择一张。`
+        : '当前没有可用的已收藏表情包，不要编造图片或文件名。';
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}${stickerPrompt}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。回复条数上限：本次最多生成 ${clampReplyCount(meta.replyCount || 4)} 条独立消息；请按自然聊天节奏使用 ||| 分隔，绝不可超过该数量，也不要为了凑数拆句。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -419,6 +437,34 @@
       const raw = await response.text();
       if (!response.ok) throw new Error('HTTP ' + response.status + ' · ' + raw.slice(0,180));
       let rawReply = extractAIText(JSON.parse(raw));
+      if (!rawReply) throw new Error('AI 没有返回内容');
+      let chosenSticker = null;
+      if (stickerSyncOn && savedStickers.length) {
+        const marker = rawReply.match(/\[\[\s*LR_STICKER\s*:\s*([^\]]+?)\s*\]\]/i);
+        if (marker) chosenSticker = savedStickers.find(x => String(x.id) === marker[1].trim()) || null;
+        rawReply = rawReply.replace(/\[\[\s*LR_STICKER\s*:[^\]]+\]\]/gi, '').trim();
+        const pendingUserText = thread.slice(lastAssistant + 1).filter(m => m.role === 'user').map(m => safe(m.text)).join('\n');
+        const explicitStickerRequest = /(?:表情包|贴图|贴纸)/i.test(pendingUserText) && /(?:发|给我|来一张|来个|发送|用|测试)/i.test(pendingUserText);
+        const categoryWords = {
+          '开心':['开心','高兴','快乐','兴奋','欢呼','喜悦','happy','joy'], '伤心':['伤心','难过','哭','委屈','眼泪','sad','cry'],
+          '生气':['生气','愤怒','恼火','angry','mad'], '平静':['平静','淡定','无表情','冷静','祥和','心如止水','波澜不惊','安详','无聊','bored','calm','neutral'],
+          '可爱':['可爱','萌','猫','小猫','狗','小狗','cute'], '撒娇':['撒娇','求抱抱','贴贴'], '害羞':['害羞','脸红','不好意思'],
+          '亲亲':['亲亲','亲吻','kiss'], '疑惑':['疑惑','问号','困惑'], '无奈':['无奈','无语','叹气'], '晚安':['晚安','睡觉','困了']
+        };
+        const searchText = (pendingUserText + '\n' + rawReply).toLowerCase();
+        const wantedCategory = Object.keys(categoryWords).find(cat => searchText.includes(cat.toLowerCase()) || categoryWords[cat].some(w => searchText.includes(w.toLowerCase())));
+        const filename = rawReply.match(/[【\[]([^】\]\n]+?\.(?:png|jpe?g|gif|webp|bmp))[】\]]/i);
+        if (!chosenSticker && filename) {
+          const stem = filename[1].replace(/\.(?:png|jpe?g|gif|webp|bmp)$/i, '').toLowerCase();
+          chosenSticker = savedStickers.find(x => String(x.name || '').toLowerCase() === stem || String(x.name || '').toLowerCase().includes(stem)) || null;
+        }
+        if (!chosenSticker && (explicitStickerRequest || /(?:表情包|贴图|贴纸)/i.test(rawReply))) {
+          chosenSticker = savedStickers.find(x => String(x.category || '') === wantedCategory) || savedStickers[0] || null;
+        }
+        if (chosenSticker) {
+          rawReply = rawReply.replace(/[【\[][^】\]\n]+?\.(?:png|jpe?g|gif|webp|bmp)[】\]]/gi, '').replace(/[^。！？\n]*(?:发来一张|发送了一张|发了一个|表情包图片|表情包|贴图|贴纸|配字|图片是)[^。！？\n]*[。！？]?/gi, '').trim();
+        }
+      }
       // Convert model order markers into actual local simulated orders, and never show
       // the machine protocol as a visible chat bubble.
       const aiOrderMatch = rawReply.match(/\[\[\s*LR_AI_ORDER\s*:\s*(food|shop)\s*\|\s*([^\]]+?)\s*\]\]/i);
@@ -447,7 +493,7 @@
       }
       const normalizedReply = normalizeNarrationReply(rawReply, meta.narrationEnabled !== false);
       const reply = normalizedReply;
-      if (!reply) throw new Error('没有收到有效回复');
+      if (!reply && !chosenSticker) throw new Error('没有收到有效回复');
       const bubbles = splitAIReply(reply, clampReplyCount(meta.replyCount || 4));
       const latest = readChatThreads();
       const current = Array.isArray(latest[id]) ? latest[id] : [];
@@ -464,6 +510,13 @@
         return {role:'assistant', text:part, at:now + index, turnId:'ai-' + now};
       });
       current.splice(Math.min(requestBoundary, current.length), 0, ...newMessages);
+      if (chosenSticker && chosenSticker.attachmentId != null) {
+        current.splice(Math.min(requestBoundary + newMessages.length, current.length), 0, {
+          role:'assistant', kind:'sticker', attachmentId:chosenSticker.attachmentId,
+          stickerId:String(chosenSticker.id), stickerCategory:String(chosenSticker.category || '自定义'),
+          text:'[表情包：'+String(chosenSticker.category || '自定义')+']', at:now + newMessages.length, turnId:'ai-'+now
+        });
+      }
       latest[id] = current;
       writeChatThreads(latest);
       renderChat();
