@@ -287,6 +287,16 @@
     const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
     modal.innerHTML='<section class="lr-sticker-sheet"><div class="lr-sticker-head"><div><div class="lr-action-kicker">LOVE RECORD · STICKERS</div><div class="lr-sticker-title">表情包收藏</div></div><button type="button" id="lrStickerClose" class="lr-sticker-upload">完成</button></div><p class="lr-action-desc">上传并分类；AI 会根据角色心情和聊天语境自主选择合适的表情包。</p><div class="lr-sticker-head"><span style="font-size:12px;color:#9b8ba3">我的表情包</span><button type="button" id="lrStickerUpload" class="lr-sticker-upload">＋ 上传图片</button></div><div class="lr-sticker-cats" id="lrStickerCats"></div><div class="lr-sticker-grid" id="lrStickerGrid"></div><input id="lrStickerFiles" type="file" accept="image/*" multiple hidden></section>';
     document.body.appendChild(modal);
+    // AI sticker sync toggle: enabled by default; this only controls automatic AI use, not manual sending.
+    const aiStickerToggle=document.createElement('button');
+    aiStickerToggle.type='button';aiStickerToggle.id='lrAIStickerSyncToggle';
+    aiStickerToggle.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;margin:12px 0 18px;padding:13px 15px;border:1px solid #e6d9eb;border-radius:18px;background:#ffffffa8;color:#76667f;font:inherit;text-align:left;cursor:pointer';
+    aiStickerToggle.innerHTML='<span><strong style="display:block;font-size:14px;font-weight:500">AI 同步使用表情包图片</strong><small id="lrAIStickerSyncHint" style="display:block;margin-top:4px;font-size:12px;opacity:.75">开启后，AI 可根据聊天语境自动发送收藏图片</small></span><span id="lrAIStickerSyncState" style="flex-shrink:0;padding:6px 12px;border-radius:999px;background:#b997c7;color:white;font-size:12px">已开启</span>';
+    modal.querySelector('.lr-sticker-head').after(aiStickerToggle);
+    const getAIStickerSync=()=>{try{return localStorage.getItem('love-record-ai-stickers-enabled-v1')!=='false'}catch(_){return true}};
+    const paintAIStickerToggle=()=>{const on=getAIStickerSync();const state=modal.querySelector('#lrAIStickerSyncState');const hint=modal.querySelector('#lrAIStickerSyncHint');if(state){state.textContent=on?'已开启':'已关闭';state.style.background=on?'#b997c7':'#aaa2ad'}if(hint)hint.textContent=on?'开启后，AI 可根据聊天语境自动发送收藏图片':'关闭后，AI 不会自动发送收藏图片；你仍可手动发送'};
+    aiStickerToggle.onclick=()=>{const next=!getAIStickerSync();try{localStorage.setItem('love-record-ai-stickers-enabled-v1',String(next))}catch(_){}paintAIStickerToggle();if(typeof toast==='function')toast(next?'已开启 AI 表情包同步':'已关闭 AI 表情包同步')};
+    paintAIStickerToggle();
     $('lrStickerClose').onclick=()=>modal.hidden=true;modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
     $('lrStickerUpload').onclick=()=>$('lrStickerFiles').click();
     $('lrStickerFiles').addEventListener('change',async e=>{
