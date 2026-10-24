@@ -1579,22 +1579,22 @@ async function sendChatMessage(){
  const send=$('chatSend');send.disabled=true;send.textContent='…';aiBusy=true;
  try{
   const recent=items.slice(-16).map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.text}));
+  // Respect the user-controlled sticker sync switch. Default is enabled for existing users.
+  let aiStickerSyncEnabled=true;try{const syncPref=localStorage.getItem('love-record-ai-sticker-sync-v1');aiStickerSyncEnabled=syncPref===null||syncPref==='1'}catch(_){}
   // Always load the actual saved sticker collection before the one and only API call.
   let savedStickers=[];
   try{
-    if(typeof window.lrGetStickerItems==='function') savedStickers=await window.lrGetStickerItems();
-    if(!Array.isArray(savedStickers)||!savedStickers.length){
+    if(aiStickerSyncEnabled&&typeof window.lrGetStickerItems==='function') savedStickers=await window.lrGetStickerItems();
+    if(aiStickerSyncEnabled&&(!Array.isArray(savedStickers)||!savedStickers.length)){
       const local=JSON.parse(localStorage.getItem('love-record-stickers-v1')||'[]');
       if(Array.isArray(local)&&local.length) savedStickers=local;
     }
   }catch(stickerReadError){console.warn('[LOVE RECORD] AI sticker library read failed',stickerReadError);}
   if(!Array.isArray(savedStickers)) savedStickers=[];
-  let aiStickerSyncEnabled=true;try{aiStickerSyncEnabled=localStorage.getItem('love-record-ai-stickers-enabled-v1')!=='false'}catch(_){}
-  if(!aiStickerSyncEnabled)savedStickers=[];
-  const stickerPrompt=savedStickers.map(x=>`${x.id}（分类：${x.category}${x.name?'；名称：'+x.name:''}）`).join('；');
-  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。若用户明确要求你替 TA 点外卖或买东西，且你愿意主动安排，请在回复末尾另起一行输出机器指令 [[LR_AI_ORDER:food|菜品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词必须是你建议的具体商品名称。不要在未被要求或未明确表达下单意愿时输出指令。订单只是本地模拟、需用户确认地址，不要声称已真实付款或配送。\n用户上传的真实表情包库（只能使用以下 ID）：'+(stickerPrompt||'目前没有可用表情包')+'。你可以在合适时机自主发送表情包，不需要用户每次提醒；必须按当下情绪和语境选择。绝不要用文字描述假装已经发送图片；如要发送，必须在回复中输出独立机器标记 [[LR_STICKER:准确ID]]，ID 必须逐字来自上述清单。一次最多发一张。绝对不要输出「[表情包：…]」「发了一个表情包」等文字来代替标记，也不要编造清单外的表情包；若没有合适的，就不发。前端会把有效标记转换成用户上传的原图消息。';
+  const stickerPrompt=aiStickerSyncEnabled?savedStickers.map(x=>`${x.id}（分类：${x.category}${x.name?'；名称：'+x.name:''}）`).join('；'):'';
+  const system='你正在 LOVE RECORD 中扮演联系人「'+p.name+'」。身份：'+(p.role||'')+'。性格：'+(p.personality||'')+'。外貌：'+(p.appearance||'')+'。说话方式：'+(p.speech||'')+'。背景：'+(p.background||'')+'。角色规则：'+(p.instructions||'保持人物一致，自然聊天，不要替用户决定行动或情绪。')+'。请像真实聊天对象一样自然回复，不要输出 JSON。若用户明确要求你替 TA 点外卖或买东西，且你愿意主动安排，请在回复末尾另起一行输出机器指令 [[LR_AI_ORDER:food|菜品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词必须是你建议的具体商品名称。不要在未被要求或未明确表达下单意愿时输出指令。订单只是本地模拟、需用户确认地址，不要声称已真实付款或配送。\n用户上传的真实表情包库（只能使用以下 ID）：'+(aiStickerSyncEnabled?(stickerPrompt||'目前没有可用表情包'):'当前用户已关闭 AI 表情包同步')+'。'+(aiStickerSyncEnabled?'你可以像真实聊天一样自主决定是否发送表情包，但必须按当下情绪和语境选择；如要发送，必须在回复中输出独立机器标记 [[LR_STICKER:准确ID]]，ID 必须逐字来自上述清单。一次最多发一张。绝对不要输出「[表情包：…]」「发了一个表情包」等文字来代替标记，也不要编造清单外的表情包；若没有合适的，就不发。前端会把有效标记转换成用户上传的原图消息。':'不要发送或引用表情包。');
   const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},60000);
-  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');  const stickerMatches=[...reply.matchAll(/\[\[LR_STICKER:([^\]]+)\]\]/gi)].map(m=>String(m[1]).trim()).slice(0,1);
+  const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');  const stickerMatches=aiStickerSyncEnabled?[...reply.matchAll(/\[\[LR_STICKER:([^\]]+)\]\]/gi)].map(m=>String(m[1]).trim()).slice(0,1):[];
   reply=reply.replace(/\[\[LR_STICKER:[^\]]+\]\]/gi,'').trim();
   // Robust fallback: models sometimes describe a sticker instead of returning the required ID marker.
   const stickerCategories={
@@ -1626,12 +1626,10 @@ async function sendChatMessage(){
   const idFromMarker=stickerMatches.length?savedStickers.find(x=>String(x.id)===stickerMatches[0]):null;
   if(stickerMatches.length&&!idFromMarker)stickerMatches.length=0;
   const filenameMatch=reply.match(/[【\[]([^】\]]+\.(?:png|jpe?g|gif|webp|bmp))】?\]/i)||reply.match(/【([^】]+\.(?:png|jpe?g|gif|webp|bmp))】/i);
-  const naturalStickerMention=/(?:表情包|贴图|贴纸|动图|发送图片)/i.test(reply);
+  const naturalStickerMention=/(?:表情包|贴图|贴纸)/i.test(reply);
   const cueText=[textValue,reply,filenameMatch?filenameMatch[1]:''].join('\n');
-  if(!stickerMatches.length&&savedStickers.length&&(userAskedSticker||naturalStickerMention||/\[表情包[：:]/i.test(reply))){
+  if(aiStickerSyncEnabled&&!stickerMatches.length&&savedStickers.length&&(userAskedSticker||naturalStickerMention||/\[表情包[：:]/i.test(reply))){
     let category=findCategory(textValue);
-    // If the current request is generic, use recent user context to infer the requested mood.
-    if(!category){const recentUserContext=items.slice(-12).filter(m=>m.role==='user').map(m=>m.text||'').join('\n');category=findCategory(recentUserContext);}
     if(!category)category=findCategory(reply);
     if(!category&&filenameMatch){
       const fn=filenameMatch[1].toLowerCase();
@@ -1640,17 +1638,24 @@ async function sendChatMessage(){
     }
     if(!stickerMatches.length){
       const matched=category?savedStickers.find(x=>String(x.category||'')===category):null;
-      // A generic "send me a sticker" request must still resolve to a real saved image.
-      const fallback=matched||((userAskedSticker||naturalStickerMention)?savedStickers[0]:null);
-      if(fallback)stickerMatches.push(String(fallback.id));
+      if(matched)stickerMatches.push(String(matched.id));
+    }
+    // If the user explicitly asks to test/send a sticker but the model invents a description or an unavailable category,
+    // always send one real saved image rather than leaving a fake textual description. Prefer the detected category when present.
+    if(!stickerMatches.length&&userAskedSticker){
+      const available=savedStickers.filter(x=>x&&x.id&&x.attachmentId!=null);
+      const preferred=available.find(x=>String(x.category||'')===category);
+      const chosen=preferred||available[0];
+      if(chosen)stickerMatches.push(String(chosen.id));
     }
   }
-  // Remove model-only sticker notation and fabricated descriptions once a real image was selected.
+  // Remove model-only sticker notation. If a real image was matched, also remove the textual fake-sticker narration.
   reply=reply.replace(/\[\[LR_STICKER:[^\]]+\]\]/gi,'')
              .replace(/\[表情包[：:][^\n]*/gi,'')
              .replace(/【[^】]+\.(?:png|jpe?g|gif|webp|bmp)】/gi,'').trim();
   if(stickerMatches.length){
-    reply=reply.split(/(?<=[。！？\n])/).filter(part=>!/(?:表情包|表情库|贴图|贴纸|动图|配字|翻开收藏夹|私藏表情|独家表情库|立刻向你敞开|发来一张|甩来一张|砸过来一张|再来一张)/i.test(part)).join('').trim();
+    reply=reply.replace(/[^。！？\n]*(?:表情包|贴图|贴纸|发来一张|发送了一张|发来一幅|配字|图片是|图片里)[^。！？\n]*[。！？]?/gi,'').trim();
+    reply=reply.replace(/(?:配字|文字|字幕)\s*[：:]\s*[^。！？\n]+[。！？]?/gi,'').trim();
   }
   if(!stickerMatches.length&&naturalStickerMention&&!savedStickers.length)console.warn('[LOVE RECORD] AI referenced a sticker but the saved sticker library is empty.');
   const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到对应商品，请换个商品名称再试');}}else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到可用商品，请检查生活集市商品目录');}}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];if(reply)thread.push({role:'assistant',text:reply,at:Date.now()});if(stickerMatches.length){for(const sid of stickerMatches){const sticker=savedStickers.find(x=>String(x.id)===sid);if(sticker&&sticker.attachmentId!=null)thread.push({role:'assistant',kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:sticker.category,text:'[表情包：'+sticker.category+']',at:Date.now()});}}latest[activeChatContactId]=thread;writeChatThreads(latest);

@@ -121,6 +121,7 @@
       #lrStickerModal{position:fixed;inset:0;z-index:10050;background:rgba(40,30,46,.36);display:grid;place-items:center;padding:18px;backdrop-filter:blur(8px)}
       #lrStickerModal[hidden]{display:none!important}
       #lrStickerModal .lr-sticker-sheet{width:100%;max-width:440px;max-height:82vh;overflow:auto;padding:22px;border:1px solid rgba(255,255,255,.85);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(239,225,246,.9));box-shadow:0 22px 70px rgba(66,44,76,.2);color:#51445a}
+      .lr-sticker-sync-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 18px;padding:13px 14px;border:1px solid rgba(185,155,200,.4);border-radius:18px;background:rgba(255,255,255,.56)}.lr-sticker-sync-row strong{display:block;font-size:14px;font-weight:500}.lr-sticker-sync-row small{display:block;margin-top:5px;color:#998aa1;font-size:11px;line-height:1.5}.lr-sticker-sync-toggle{flex:0 0 auto;border:0;border-radius:99px;padding:9px 15px;background:#b99bc8;color:white;font:inherit;font-size:12px;min-width:78px;cursor:pointer;touch-action:manipulation;pointer-events:auto}.lr-sticker-sync-toggle:not(.is-on){background:#eee7f1;color:#8c7a94}
       .lr-sticker-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.lr-sticker-title{font:24px Georgia,serif}.lr-sticker-upload{border:1px solid #e5d8eb;border-radius:14px;background:#fff;padding:10px 13px;color:#8c6d9b;font:inherit}
       .lr-sticker-cats{display:flex;gap:7px;overflow:auto;padding:14px 0}.lr-sticker-cats button{white-space:nowrap;border:1px solid #e6d9eb;border-radius:99px;background:rgba(255,255,255,.75);padding:8px 12px;color:#85728e;font:inherit;font-size:12px}.lr-sticker-cats button.active{background:#b99bc8;color:white;border-color:#b99bc8}
       .lr-sticker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.lr-sticker-item{position:relative;min-height:100px;border:1px solid #eee4f1;border-radius:17px;background:rgba(255,255,255,.7);padding:9px;display:grid;place-items:center;gap:6px}.lr-sticker-item img{max-width:100%;height:76px;object-fit:contain}.lr-sticker-item small{font-size:10px;color:#8d7b96}.lr-sticker-item .lr-sticker-send{border:0;border-radius:99px;padding:5px 10px;background:#b99bc8;color:white;font:inherit;font-size:11px}.lr-sticker-empty{padding:28px 8px;text-align:center;color:#a294aa;font-size:13px;line-height:1.8}
@@ -245,6 +246,10 @@
     ensureActionModals();
   }
   const STICKER_META_KEY='love-record-stickers-v1';
+  const STICKER_SYNC_KEY='love-record-ai-sticker-sync-v1';
+  function stickerSyncEnabled(){try{const v=localStorage.getItem(STICKER_SYNC_KEY);return v===null||v==='1'}catch(_){return true}}
+  function setStickerSyncEnabled(on){try{localStorage.setItem(STICKER_SYNC_KEY,on?'1':'0')}catch(e){console.warn('[LOVE RECORD] sticker sync preference save failed',e)} updateStickerSyncControl(); window.dispatchEvent(new CustomEvent('lr-sticker-sync-changed',{detail:{enabled:!!on}}));}
+  function updateStickerSyncControl(){const b=$('lrStickerSyncToggle'),hint=$('lrStickerSyncHint');if(!b)return;const on=stickerSyncEnabled();b.textContent=on?'已开启':'已关闭';b.setAttribute('aria-pressed',on?'true':'false');b.classList.toggle('is-on',on);if(hint)hint.textContent=on?'开启后，AI 可根据聊天语境自动发送收藏图片':'已关闭自动同步；你仍可在收藏库手动发送图片';}
   const STICKER_META_ID='__love_record_sticker_meta__';
   const STICKER_CATEGORIES=['开心','伤心','生气','平静','可爱','撒娇','害羞','亲亲','疑惑','无奈','晚安','自定义'];
   let stickerCategory='全部';
@@ -285,19 +290,10 @@
   function ensureStickerModal(){
     if($('lrStickerModal'))return;
     const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
-    modal.innerHTML='<section class="lr-sticker-sheet"><div class="lr-sticker-head"><div><div class="lr-action-kicker">LOVE RECORD · STICKERS</div><div class="lr-sticker-title">表情包收藏</div></div><button type="button" id="lrStickerClose" class="lr-sticker-upload">完成</button></div><p class="lr-action-desc">上传并分类；AI 会根据角色心情和聊天语境自主选择合适的表情包。</p><div class="lr-sticker-head"><span style="font-size:12px;color:#9b8ba3">我的表情包</span><button type="button" id="lrStickerUpload" class="lr-sticker-upload">＋ 上传图片</button></div><div class="lr-sticker-cats" id="lrStickerCats"></div><div class="lr-sticker-grid" id="lrStickerGrid"></div><input id="lrStickerFiles" type="file" accept="image/*" multiple hidden></section>';
+    modal.innerHTML='<section class="lr-sticker-sheet"><div class="lr-sticker-head"><div><div class="lr-action-kicker">LOVE RECORD · STICKERS</div><div class="lr-sticker-title">表情包收藏</div></div><button type="button" id="lrStickerClose" class="lr-sticker-upload">完成</button></div><div class="lr-sticker-sync-row"><div><strong>AI 同步使用表情包图片</strong><small id="lrStickerSyncHint">开启后，AI 可根据聊天语境自动发送收藏图片</small></div><button type="button" id="lrStickerSyncToggle" class="lr-sticker-sync-toggle" aria-pressed="true">已开启</button></div><p class="lr-action-desc">上传并分类；AI 会根据角色心情和聊天语境自主选择合适的表情包。</p><div class="lr-sticker-head"><span style="font-size:12px;color:#9b8ba3">我的表情包</span><button type="button" id="lrStickerUpload" class="lr-sticker-upload">＋ 上传图片</button></div><div class="lr-sticker-cats" id="lrStickerCats"></div><div class="lr-sticker-grid" id="lrStickerGrid"></div><input id="lrStickerFiles" type="file" accept="image/*" multiple hidden></section>';
     document.body.appendChild(modal);
-    // AI sticker sync toggle: enabled by default; this only controls automatic AI use, not manual sending.
-    const aiStickerToggle=document.createElement('button');
-    aiStickerToggle.type='button';aiStickerToggle.id='lrAIStickerSyncToggle';
-    aiStickerToggle.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;margin:12px 0 18px;padding:13px 15px;border:1px solid #e6d9eb;border-radius:18px;background:#ffffffa8;color:#76667f;font:inherit;text-align:left;cursor:pointer';
-    aiStickerToggle.innerHTML='<span><strong style="display:block;font-size:14px;font-weight:500">AI 同步使用表情包图片</strong><small id="lrAIStickerSyncHint" style="display:block;margin-top:4px;font-size:12px;opacity:.75">开启后，AI 可根据聊天语境自动发送收藏图片</small></span><span id="lrAIStickerSyncState" style="flex-shrink:0;padding:6px 12px;border-radius:999px;background:#b997c7;color:white;font-size:12px">已开启</span>';
-    modal.querySelector('.lr-sticker-head').after(aiStickerToggle);
-    const getAIStickerSync=()=>{try{return localStorage.getItem('love-record-ai-stickers-enabled-v1')!=='false'}catch(_){return true}};
-    const paintAIStickerToggle=()=>{const on=getAIStickerSync();const state=modal.querySelector('#lrAIStickerSyncState');const hint=modal.querySelector('#lrAIStickerSyncHint');if(state){state.textContent=on?'已开启':'已关闭';state.style.background=on?'#b997c7':'#aaa2ad'}if(hint)hint.textContent=on?'开启后，AI 可根据聊天语境自动发送收藏图片':'关闭后，AI 不会自动发送收藏图片；你仍可手动发送'};
-    aiStickerToggle.onclick=()=>{const next=!getAIStickerSync();try{localStorage.setItem('love-record-ai-stickers-enabled-v1',String(next))}catch(_){}paintAIStickerToggle();if(typeof toast==='function')toast(next?'已开启 AI 表情包同步':'已关闭 AI 表情包同步')};
-    paintAIStickerToggle();
     $('lrStickerClose').onclick=()=>modal.hidden=true;modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+    const syncButton=$('lrStickerSyncToggle');syncButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setStickerSyncEnabled(!stickerSyncEnabled())});updateStickerSyncControl();
     $('lrStickerUpload').onclick=()=>$('lrStickerFiles').click();
     $('lrStickerFiles').addEventListener('change',async e=>{
       const files=[...(e.target.files||[])];if(!files.length)return;
@@ -339,7 +335,7 @@
     grid.innerHTML='';
     for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{pushMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=async()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;const ok=await writeStickers(readStickers().filter(x=>x.id!==item.id));if(!ok){toast('移除失败：浏览器储存空间不可用');return}await renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
   }
-  function openStickerPicker(){ensureStickerModal();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
+  function openStickerPicker(){ensureStickerModal();updateStickerSyncControl();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
 
   function ensureActionModals(){
     if(!$('lrThoughtModal')){
