@@ -1345,9 +1345,6 @@ body.music-listening-modal-open{overflow:hidden!important}
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
 const defaults={language:'zh',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
 let state=Object.assign({},defaults,(()=>{let saved={};try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}}catch(e){console.warn('[LOVE RECORD] settings JSON unreadable',e)}try{const api=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}');saved={...saved,...Object.fromEntries(Object.entries(api).filter(([k,v])=>v!==undefined&&v!==null&&v!==''))}}catch{}return saved})());
-// Shared read-only bridge for the Moments module: always use the live homepage API/contact state.
-window.__LOVE_RECORD_GET_API_CONFIG=()=>({apiBase:state.apiBase||'',apiKey:state.apiKey||'',apiModel:state.apiModel||''});
-window.__LOVE_RECORD_GET_PEOPLE=()=>Array.isArray(state.people)?state.people:[];
 // Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
 const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
 try {
@@ -2281,6 +2278,6 @@ if(loveIntro){
 <script>
 (()=>{const shell=document.getElementById('lrLiveShell');const frame=document.getElementById('lrLiveFrame');function openLive(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_LIVE_OPEN'},location.origin)}catch(e){}}function closeLive(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-live]').forEach(b=>b.addEventListener('click',openLive));document.getElementById('lrLiveBack').addEventListener('click',closeLive);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeLive()});})();
 </script>
-<script src="./moments-v1.js?v=3"></script>
+<script src="./moments-v1.js?v=2"></script>
 </body>
 </html>
