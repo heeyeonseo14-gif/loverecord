@@ -1450,6 +1450,8 @@ const CHAT_CONTACTS_KEY='love-record-chat-contacts-v2';
 const CHAT_THREADS_KEY='love-record-chat-threads-v2';
 const CHAT_META_KEY='love-record-chat-meta-v1';
 let activeChatContactId='';
+// Expose a safe getter because external scripts run outside this IIFE's lexical scope.
+window.__lrGetActiveChatContactId=()=>String(activeChatContactId||'');
 let editingChatMeta={remark:'',avatar:'',background:'#f7f3f9',backgroundImage:''};
 function readChatMeta(){try{if(window.readChatMeta&&typeof window.readChatMeta==='function')return window.readChatMeta();return JSON.parse(localStorage.getItem(CHAT_META_KEY)||'{}')}catch{return {}}}
 function chatMeta(id){try{if(window.chatMeta&&typeof window.chatMeta==='function')return window.chatMeta(id)}catch(e){}const all=readChatMeta();return {...(all[id]||{})}}
@@ -2209,11 +2211,11 @@ if(loveIntro){
 
   <script src="./chat-storage-v6.js?v=16"></script>
   <script src="./chat-settings-upgrade.js?v=18"></script>
-  <script src="./chat-save-fix.js?v=16"></script>
+  <script src="./chat-save-fix.js?v=17"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=24"></script>
   <script src="./chat-interaction-v11.js?v=41"></script>
-  <script src="./chat-ux-v13.js?v=4"></script>
+  <script src="./chat-ux-v13.js?v=5"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
   <script src="./music.js?v=11"></script>
