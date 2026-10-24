@@ -251,28 +251,60 @@ async function sendChatMessage(){
   const r=await fetchTimeout(state.apiBase.replace(/\/+$/,'')+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})},60000);
   const raw=await r.text();if(!r.ok)throw new Error('HTTP '+r.status+' · '+raw.slice(0,180));const data=JSON.parse(raw);let reply=extractAIText(data);if(!reply)throw new Error('没有收到有效回复');  const stickerMatches=[...reply.matchAll(/\[\[LR_STICKER:([^\]]+)\]\]/gi)].map(m=>String(m[1]).trim()).slice(0,1);
   reply=reply.replace(/\[\[LR_STICKER:[^\]]+\]\]/gi,'').trim();
-  // Convert either the explicit marker or a natural-language category marker into a real saved image.
-  const markerMatch=reply.match(/\[表情包[：:]\s*([^\]】)）\n]+)(?:[\]】)）]|$)/i);
-  const proseMatch=reply.match(/(?:发了|发送|附上|配上)(?:一个|一张)?[^。！!\n]{0,20}表情包[^。！!\n]{0,16}/i);
-  const describedSticker=markerMatch?markerMatch[1].trim():(proseMatch?proseMatch[0].trim():'');
-  if(!stickerMatches.length&&describedSticker&&savedStickers.length){
-    const desc=describedSticker.toLowerCase();
-    const categoryAliases={
-      '开心':['开心','高兴','快乐','兴奋','happy','joy'], '伤心':['伤心','难过','哭','委屈','sad','cry'],
-      '生气':['生气','愤怒','恼火','angry'], '平静':['平静','淡定','无表情','冷静','calm','neutral'],
-      '可爱':['可爱','萌','猫','狗','cute'], '撒娇':['撒娇','求抱抱','贴贴','乖','clingy'],
-      '害羞':['害羞','脸红','不好意思','shy'], '亲亲':['亲亲','亲吻','kiss'],
-      '疑惑':['疑惑','不解','问号','confused'], '无奈':['无奈','无语','叹气','无聊','helpless'],
-      '晚安':['晚安','睡觉','goodnight']
-    };
-    let matched=savedStickers.find(x=>desc.includes(String(x.category||'').toLowerCase())||(x.name&&desc.includes(String(x.name).toLowerCase())));
-    if(!matched){const alias=Object.entries(categoryAliases).find(([cat,words])=>cat===desc||words.some(w=>desc.includes(w.toLowerCase())));if(alias)matched=savedStickers.find(x=>String(x.category||'')===alias[0]);}
-    if(matched)stickerMatches.push(String(matched.id));
+  // Robust fallback: models sometimes describe a sticker instead of returning the required ID marker.
+  const stickerCategories={
+    '开心':['开心','高兴','快乐','兴奋','欢呼','喜悦','happy','joy','excited'],
+    '伤心':['伤心','难过','哭','哭哭','委屈','眼泪','sad','cry','teary'],
+    '生气':['生气','愤怒','恼火','气死','angry','mad'],
+    '平静':['平静','淡定','无表情','冷静','祥和','心如止水','波澜不惊','毫无波澜','神态安详','安详','平和','无波澜','calm','neutral','serene'],
+    '可爱':['可爱','萌','猫','小猫','狗','小狗','卡皮巴拉','cute','kawaii'],
+    '撒娇':['撒娇','求抱抱','贴贴','乖','clingy'],
+    '害羞':['害羞','脸红','不好意思','shy','blush'],
+    '亲亲':['亲亲','亲吻','kiss'],
+    '疑惑':['疑惑','不解','问号','困惑','confused'],
+    '无奈':['无奈','无语','叹气','无聊','helpless','bored'],
+    '晚安':['晚安','睡觉','困了','goodnight','sleepy']
+  };
+  const categoryNames=[...new Set([...Object.keys(stickerCategories),...savedStickers.map(x=>String(x.category||''))])].filter(Boolean);
+  const findCategory=(text)=>{
+    const s=String(text||'').toLowerCase();
+    // Explicit user category, e.g. 【平静】表情包, takes priority over a model's embellished description.
+    const bracket=s.match(/[【\[（(]\s*([^】\]）)]+)\s*[】\]）)]/);
+    if(bracket){const b=bracket[1].trim();if(categoryNames.includes(b))return b;}
+    for(const cat of categoryNames){if(s.includes(cat.toLowerCase()))return cat;}
+    for(const [cat,words] of Object.entries(stickerCategories)){
+      if(words.some(w=>s.includes(w.toLowerCase())) && categoryNames.includes(cat))return cat;
+    }
+    return '';
+  };
+  const userAskedSticker=/(?:表情包|贴图|贴纸)/i.test(textValue)&&/(?:发|给我|来一张|来个|发送|用)/i.test(textValue);
+  const idFromMarker=stickerMatches.length?savedStickers.find(x=>String(x.id)===stickerMatches[0]):null;
+  if(stickerMatches.length&&!idFromMarker)stickerMatches.length=0;
+  const filenameMatch=reply.match(/[【\[]([^】\]]+\.(?:png|jpe?g|gif|webp|bmp))】?\]/i)||reply.match(/【([^】]+\.(?:png|jpe?g|gif|webp|bmp))】/i);
+  const naturalStickerMention=/(?:表情包|贴图|贴纸)/i.test(reply);
+  const cueText=[textValue,reply,filenameMatch?filenameMatch[1]:''].join('\n');
+  if(!stickerMatches.length&&savedStickers.length&&(userAskedSticker||naturalStickerMention||/\[表情包[：:]/i.test(reply))){
+    let category=findCategory(textValue);
+    if(!category)category=findCategory(reply);
+    if(!category&&filenameMatch){
+      const fn=filenameMatch[1].toLowerCase();
+      const byName=savedStickers.find(x=>String(x.name||'').toLowerCase()===fn||String(x.name||'').toLowerCase().includes(fn.replace(/\.(png|jpe?g|gif|webp|bmp)$/i,'')));
+      if(byName)stickerMatches.push(String(byName.id));
+    }
+    if(!stickerMatches.length){
+      const matched=category?savedStickers.find(x=>String(x.category||'')===category):null;
+      if(matched)stickerMatches.push(String(matched.id));
+    }
   }
-  // Never show internal sticker markers as ordinary chat text, even if the library is empty.
-  reply=reply.replace(/\[表情包[：:]\s*[^\]】)）\n]*(?:[\]】)）]|$)/gi,'')
-             .replace(/(?:发了|发送|附上|配上)(?:一个|一张)?[^。！!\n]{0,20}表情包[^。！!\n]{0,16}[。！!]?/gi,'').trim();
-  if(!stickerMatches.length&&describedSticker&&!savedStickers.length)console.warn('[LOVE RECORD] AI referenced a sticker but the saved sticker library is empty.');
+  // Remove model-only sticker notation. If a real image was matched, also remove the textual fake-sticker narration.
+  reply=reply.replace(/\[\[LR_STICKER:[^\]]+\]\]/gi,'')
+             .replace(/\[表情包[：:][^\n]*/gi,'')
+             .replace(/【[^】]+\.(?:png|jpe?g|gif|webp|bmp)】/gi,'').trim();
+  if(stickerMatches.length){
+    reply=reply.replace(/[^。！？\n]*表情包[^。！？\n]*[。！？]?/gi,'').trim();
+    reply=reply.replace(/(?:配字|文字|字幕)\s*[：:]\s*[^。！？\n]+[。！？]?/gi,'').trim();
+  }
+  if(!stickerMatches.length&&naturalStickerMention&&!savedStickers.length)console.warn('[LOVE RECORD] AI referenced a sticker but the saved sticker library is empty.');
   const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到对应商品，请换个商品名称再试');}}else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到可用商品，请检查生活集市商品目录');}}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];if(reply)thread.push({role:'assistant',text:reply,at:Date.now()});if(stickerMatches.length){for(const sid of stickerMatches){const sticker=savedStickers.find(x=>String(x.id)===sid);if(sticker&&sticker.attachmentId!=null)thread.push({role:'assistant',kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:sticker.category,text:'[表情包：'+sticker.category+']',at:Date.now()});}}latest[activeChatContactId]=thread;writeChatThreads(latest);
  }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
  finally{aiBusy=false;send.disabled=false;send.textContent='发送';renderChat()}
