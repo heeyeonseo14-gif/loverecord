@@ -14,7 +14,7 @@ async function del(key){const d=await db();return new Promise((res,rej)=>{const 
 const cssKey=id=>'css:'+id,refKey=id=>'ref:'+id,promptKey=id=>'prompt:'+id,localPromptKey=id=>'lr-chat-image-prompt-v1:'+id;
 async function readSavedPrompt(id){if(!id)return null;try{const v=localStorage.getItem(localPromptKey(id));if(v!==null)return v}catch{}try{const v=await get(promptKey(id));if(typeof v==='string')return v}catch{}return null}
 async function writeSavedPrompt(id,value){if(!id)throw new Error('没有选择联系人');const text=String(value??'');try{localStorage.setItem(localPromptKey(id),text)}catch(e){console.warn('[LOVE RECORD] local prompt fallback unavailable',e)}await put(promptKey(id),text);return text}
-function active(){return window.activeChatContactId||''}
+function active(){try{if(typeof activeChatContactId!=='undefined'&&activeChatContactId)return String(activeChatContactId)}catch(e){}return String(window.activeChatContactId||window.currentChatContactId||window.__lrActiveChatContactId||'')}
 function meta(){return active()&&typeof window.chatMeta==='function'?window.chatMeta(active()):{}}
 function saveMeta(v){if(typeof window.saveChatMetaSafely==='function')return window.saveChatMetaSafely(active(),v);window.writeChatMeta(active(),v);return Promise.resolve()}
 function escape(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
