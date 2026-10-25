@@ -137,6 +137,14 @@
     s.textContent += `
 /* V31 · API story moments and persona picker */
 .lr-space-mini-story-modal{z-index:6400}.lr-space-mini-story-sheet{max-height:88dvh;overflow:auto}.lr-space-mini-story-sheet #lrSpaceMiniStoryBody{white-space:pre-wrap;line-height:1.95;padding:14px 2px 20px}.lr-space-mini-story-sheet .lr-space-life-actions{display:flex;gap:9px;flex-wrap:wrap}.lr-space-mini-story-sheet .lr-space-life-actions button{flex:1;min-width:120px}
+/* V32 · cleaner world-book selector cards; override global full-width input rules */
+#lrSpaceBookList .lr-space-setting-check{display:grid!important;grid-template-columns:22px minmax(0,1fr)!important;align-items:center!important;gap:12px!important;width:100%;box-sizing:border-box;min-height:66px;padding:14px 15px!important;border:1px solid #e7dce9;border-radius:17px;background:linear-gradient(135deg,#fff 0%,#fcf8fd 100%);box-shadow:0 3px 12px rgba(92,65,102,.045);cursor:pointer}
+#lrSpaceBookList .lr-space-setting-check input[type=checkbox]{appearance:auto!important;-webkit-appearance:checkbox!important;display:block!important;position:static!important;opacity:1!important;width:18px!important;min-width:18px!important;max-width:18px!important;height:18px!important;min-height:18px!important;margin:0!important;padding:0!important;transform:none!important;flex:none!important;accent-color:#b58ab8;cursor:pointer}
+#lrSpaceBookList .lr-space-setting-check span{display:block!important;min-width:0!important;width:auto!important;overflow-wrap:anywhere}
+#lrSpaceBookList .lr-space-setting-check b{display:block!important;font-size:14px!important;line-height:1.45!important;font-weight:600!important;color:#57475f!important;white-space:normal!important}
+#lrSpaceBookList .lr-space-setting-check small{display:block!important;margin-top:4px!important;font-size:12px!important;line-height:1.55!important;color:#98879d!important;white-space:normal!important;overflow-wrap:anywhere}
+#lrSpaceBookList .lr-space-setting-check:has(input:checked){border-color:#c7a4cc;background:linear-gradient(135deg,#fbf5fc 0%,#f4eaf7 100%);box-shadow:0 0 0 2px rgba(181,138,184,.12)}
+#lrSpaceBookList .lr-space-setting-empty{padding:18px;border:1px dashed #decfe1;border-radius:16px;background:#fcf8fd;color:#98879d;line-height:1.7;font-size:13px}
 /* V30 · scrollable pixel home + draggable furniture */
 .lr-space-home-viewport{width:100%;overflow-x:auto;overflow-y:hidden;border:2px solid #d9c2e2;border-radius:8px;background:#f7eafa;margin:12px 0;overscroll-behavior-x:contain;scrollbar-color:#c6a5d2 #f5e9f7;scrollbar-width:thin}
 .lr-space-home-preview{width:1200px;max-width:none!important;height:560px;min-height:560px!important;padding:0!important;margin:0!important;overflow:hidden!important;border-radius:0!important;position:relative;background:#f4e7f7!important}

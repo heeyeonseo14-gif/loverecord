@@ -2020,7 +2020,7 @@ function worldEntriesFor(w){
 }
 function renderWorldBookEntries(entries){
  const box=$('worldBookEntries');if(!box)return;
- box.innerHTML=(entries||[]).map((e,i)=>`<section class="worldbook-entry" data-world-entry><div class="worldbook-entry-head"><strong>条目 ${i+1}</strong><button class="worldbook-entry-remove" type="button" aria-label="删除条目">删除条目 ×</button></div><label>备注</label><input type="text" data-world-note value="${esc(e.note||'')}" placeholder="例如：角色关系、时间线、重要设定"><label>内容（供聊天与 SPACE 的 AI 读取）</label><textarea data-world-content placeholder="在这里粘贴或填写设定内容……">${esc(e.content||'')}</textarea></section>`).join('');
+ box.innerHTML=(entries||[]).map((e,i)=>`<section class="worldbook-entry" data-world-entry><div class="worldbook-entry-head"><strong>条目 ${i+1}</strong><button class="worldbook-entry-remove" type="button" data-action="remove-world-entry" aria-label="删除条目">删除条目 ×</button></div><label>备注</label><input type="text" data-world-note value="${esc(e.note||'')}" placeholder="例如：角色关系、时间线、重要设定"><label>内容（供聊天与 SPACE 的 AI 读取）</label><textarea data-world-content placeholder="在这里粘贴或填写设定内容……">${esc(e.content||'')}</textarea></section>`).join('');
 }
 function openWorldEditor(id=''){
  localizeEditors();editingWorldId=id;const w=state.worlds.find(x=>String(x.id)===String(id))||{};
@@ -2438,7 +2438,7 @@ if(loveIntro){
 </script>
 
 <script src="./diary-v1.js?v=3"></script>
-<script src="./space-v2.js?v=worldbook2-39"></script>
+<script src="./space-v2.js?v=worldbook2-40"></script>
 <script src="./life-apps.js?v=20261011-v34"></script>
 <script src="./scrapbook-v1.js?v=9"></script>
 <style>
