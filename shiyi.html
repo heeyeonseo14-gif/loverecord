@@ -60,12 +60,12 @@ $('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.
 async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
 
 function getApiConfig(){
- // 主设置 yanyan-love-settings-v5 与主页 index.html 使用同一份配置。
- // 不再优先读取可能遗留旧令牌的 love-record-api-settings-v1。
- let primary={},legacy={},live={};
+ // Re-read the latest homepage settings each time Generate Memory is clicked.
+ // The homepage bridge reflects its current state; canonical storage is next.
+ let live={},primary={},legacy={};
+ try{if(typeof window.__LOVE_RECORD_GET_API_CONFIG==='function')live=window.__LOVE_RECORD_GET_API_CONFIG()||{}}catch{}
  try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch{}
  try{legacy=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}')||{}}catch{}
- try{if(typeof window.__LOVE_RECORD_GET_API_CONFIG==='function')live=window.__LOVE_RECORD_GET_API_CONFIG()||{}}catch{}
  const pick=(...values)=>{for(const v of values){if(v!==undefined&&v!==null&&String(v).trim()!=='')return String(v).trim()}return ''};
  const apiBase=pick(live.apiBase,live.base,primary.apiBase,primary.base,legacy.apiBase,legacy.base);
  const apiKey=pick(live.apiKey,live.key,primary.apiKey,primary.key,legacy.apiKey,legacy.key);

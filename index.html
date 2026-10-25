@@ -1345,9 +1345,30 @@ body.music-listening-modal-open{overflow:hidden!important}
 <script>
 const DB_NAME='yanyan-love-v5', STORE='images', SETTINGS_KEY='yanyan-love-settings-v5';
 const defaults={language:'zh',name:'YANYAN',partner:'YAN HUAN',startDate:'',today:'把今天也留在这里。',apiBase:'',apiKey:'',apiModel:'',modelList:[],memoryOn:true,events:[],selfPersonas:[],people:[],worlds:[],forumPosts:[],journal:[],spaces:[]};
-let state=Object.assign({},defaults,(()=>{let saved={};try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}}catch(e){console.warn('[LOVE RECORD] settings JSON unreadable',e)}try{const api=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}');saved={...saved,...Object.fromEntries(Object.entries(api).filter(([k,v])=>v!==undefined&&v!==null&&v!==''))}}catch{}return saved})());
+let state=Object.assign({},defaults,(()=>{
+ let saved={};
+ try{saved=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')||{}}catch(e){console.warn('[LOVE RECORD] settings JSON unreadable',e)}
+ let legacy={};try{legacy=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}')||{}}catch{}
+ // Canonical homepage settings always win. Legacy API storage is only a migration fallback
+ // for fields that have never been saved in the canonical settings; it must never overwrite
+ // a newer token/model selected on the homepage.
+ for(const k of ['apiBase','apiKey','apiModel']){
+   const current=saved[k];
+   if((current===undefined||current===null||String(current).trim()==='')&&legacy[k]!==undefined&&legacy[k]!==null&&String(legacy[k]).trim()!=='')saved[k]=legacy[k];
+ }
+ // Refresh the compatibility record from the chosen canonical settings at every startup.
+ try{
+   const synced={apiBase:saved.apiBase||'',apiKey:saved.apiKey||'',apiModel:saved.apiModel||''};
+   localStorage.setItem('love-record-api-settings-v1',JSON.stringify(synced));
+ }catch(e){console.warn('[LOVE RECORD] API compatibility sync failed',e)}
+ return saved;
+})());
 // Shared read-only bridge for the Moments module: always use the live homepage API/contact state.
-window.__LOVE_RECORD_GET_API_CONFIG=()=>({apiBase:state.apiBase||'',apiKey:state.apiKey||'',apiModel:state.apiModel||''});
+window.__LOVE_RECORD_GET_API_CONFIG=()=>{
+ const cfg={apiBase:String(state.apiBase||'').trim(),apiKey:String(state.apiKey||'').trim(),apiModel:String(state.apiModel||'').trim()};
+ try{localStorage.setItem('love-record-api-settings-v1',JSON.stringify(cfg))}catch(e){}
+ return cfg;
+};
 window.__LOVE_RECORD_GET_PEOPLE=()=>Array.isArray(state.people)?state.people:[];
 // Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
 const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
