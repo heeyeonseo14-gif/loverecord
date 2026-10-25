@@ -72,18 +72,51 @@ function dateInputValue(d){const x=new Date(d);return new Date(x.getTime()-x.get
 function fmtDate(d){const x=new Date(d);if(Number.isNaN(+x))return '时间未记录';return x.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
 function displayName(p){const m=meta(p.id);return m.remark||p.name||'未命名联系人'}
 function personAvatar(p){const m=meta(p.id);return m.avatar||p.avatar||p.photo||''}
-function getEntries(id){const m=meta(id);let arr=Array.isArray(m.memoryEntries)?m.memoryEntries.slice():[];const text=String(m.longTermMemory||'').trim();const alreadyRepresented=arr.some(e=>e.content&&text.includes(e.content));if(text&&!arr.some(e=>e.source==='longTermMemory'&&e.content===text)&&!arr.some(e=>e.content===text)&&!alreadyRepresented){arr.unshift({id:'legacy-'+(m.lastMemorySummaryAt||'memory'),title:'长期记忆',content:text,at:Number(m.lastMemorySummaryAt)||Date.now(),source:'longTermMemory'});}return arr.sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0))}
-async function syncEntries(id,entries){const sorted=entries.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));const merged=sorted.map(e=>(e.title?`【${e.title}】\n`:'')+`[${fmtDate(e.at)}]\n${e.content}`).join('\n\n');await writeMeta(id,{memoryEntries:entries,longTermMemory:merged,lastMemorySummaryAt:Date.now()})}
+function getEntries(id){
+ const m=meta(id);let arr=Array.isArray(m.memoryEntries)?m.memoryEntries.slice():[];
+ const text=String(m.longTermMemory||'').trim();
+ const snapshot=String(m.memoryEntriesSyncedText||'').trim();
+ // Chat can edit/summarize longTermMemory independently. If it differs from the last
+ // text written by 拾忆, expose that newer chat memory as its own editable timeline item.
+ const generated=arr.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0)).map(e=>(e.title?`【${e.title}】\n`:'')+`[${fmtDate(e.at)}]\n${e.content}`).join('\n\n').trim();
+ const isExternalEdit=text&&((snapshot&&text!==snapshot)||(!snapshot&&text!==generated&&!arr.some(e=>String(e.content||'').trim()===text)));
+ if(isExternalEdit){arr=arr.filter(e=>e.source!=='longTermMemory');arr.unshift({id:'chat-memory-'+(m.lastMemorySummaryAt||'current'),title:'聊天长期记忆',content:text,at:Number(m.lastMemorySummaryAt)||Date.now(),source:'longTermMemory'});}
+ else if(text&&text!==generated&&!arr.some(e=>String(e.content||'').trim()===text)&&!arr.some(e=>e.source==='longTermMemory')){
+  arr.unshift({id:'legacy-'+(m.lastMemorySummaryAt||'memory'),title:'长期记忆',content:text,at:Number(m.lastMemorySummaryAt)||Date.now(),source:'longTermMemory'});
+ }
+ return arr.sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0));
+}
+async function syncEntries(id,entries){
+ const sorted=entries.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));
+ const merged=sorted.map(e=>(e.title?`【${e.title}】\n`:'')+`[${fmtDate(e.at)}]\n${e.content}`).join('\n\n');
+ await writeMeta(id,{memoryEntries:entries,longTermMemory:merged,memoryEntriesSyncedText:merged,lastMemorySummaryAt:Date.now()});
+}
 function render(){const p=people.find(x=>String(x.id)===String(selected));$('contactName').textContent=p?displayName(p):'还没有选择联系人';$('contactDesc').textContent=p?'这段记忆只属于你和 '+displayName(p):'每个人，都有独属于你们的记忆';const av=p&&personAvatar(p);$('avatar').innerHTML=av?`<img src="${esc(av)}" alt="">`:esc(p?(displayName(p).slice(0,1)||'✧'):'✧');const entries=p?getEntries(selected):[];$('count').textContent=entries.length;$('timeline').innerHTML=!p?'<div class="empty"><span class="star">✧</span>选择一位联系人，看看你们共同留下的记忆。</div>':!entries.length?'<div class="empty"><span class="star">✧</span>这里还很安静。<br>写下第一段记忆，让时间有迹可循。</div>':entries.map(e=>`<article class="entry"><div class="entrydate">${esc(fmtDate(e.at))}</div><div class="entrytitle">${esc(e.title||'未命名的记忆')}</div><div class="entrytext">${esc(e.content||'')}</div><div class="entryfoot"><span class="tag">${e.source==='longTermMemory'?'LONG-TERM MEMORY':'KEPT IN TIME'}</span><div class="toolbar" style="margin:0"><button class="btn" data-edit="${esc(e.id)}">编辑</button><button class="btn danger" data-delete="${esc(e.id)}">删除</button></div></div></article>`).join('')}
 function resetForm(){editing='';$('memoryForm').reset();$('entryDate').value=dateInputValue(Date.now());$('editorHeading').textContent='收藏一个瞬间';$('saveBtn').textContent='将此刻收入拾忆';$('cancelEdit').hidden=true}
 function startEdit(id){const e=getEntries(selected).find(x=>String(x.id)===String(id));if(!e)return;editing=String(id);$('entryTitle').value=e.title||'';$('entryDate').value=dateInputValue(e.at||Date.now());$('entryText').value=e.content||'';$('editorHeading').textContent='重新安放这段记忆';$('saveBtn').textContent='保存修改';$('cancelEdit').hidden=false;$('editorPanel').scrollIntoView({behavior:'smooth',block:'start'})}
-async function loadPeople(){return new Promise(resolve=>{try{const req=indexedDB.open(PEOPLE_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(PEOPLE_STORE))req.result.createObjectStore(PEOPLE_STORE,{keyPath:'id'})};req.onsuccess=()=>{const db=req.result, r=db.transaction(PEOPLE_STORE,'readonly').objectStore(PEOPLE_STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>resolve([])};req.onerror=()=>resolve([])}catch{resolve([])}})}
+async function readPeopleFromDB(){return new Promise((resolve,reject)=>{try{const req=indexedDB.open(PEOPLE_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(PEOPLE_STORE))req.result.createObjectStore(PEOPLE_STORE,{keyPath:'id'})};req.onsuccess=()=>{const db=req.result;let r;try{r=db.transaction(PEOPLE_STORE,'readonly').objectStore(PEOPLE_STORE).getAll()}catch(e){db.close();reject(e);return}r.onsuccess=()=>{const rows=r.result||[];db.close();resolve(rows)};r.onerror=()=>{db.close();reject(r.error||new Error('读取联系人失败'))}};req.onerror=()=>reject(req.error||new Error('打开联系人数据库失败'))}catch(e){reject(e)}})}
+async function readFullStateFromDB(){return new Promise((resolve,reject)=>{try{const req=indexedDB.open('love-record-kv-v1',1);req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('settings')){db.close();resolve(null);return}const r=db.transaction('settings','readonly').objectStore('settings').get('love-record-full-state-v1');r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error||new Error('读取备用联系人数据失败'))}};req.onerror=()=>reject(req.error||new Error('打开备用数据失败'))}catch(e){reject(e)}})}
+async function loadPeople(){
+ // The homepage's saved roster is authoritative. Do not resurrect deleted contacts
+ // from stale IndexedDB rows or from metadata-only IDs.
+ try{const raw=localStorage.getItem('yanyan-love-settings-v5');if(raw){const state=JSON.parse(raw);if(state&&Array.isArray(state.people))return state.people.filter(p=>p&&p.id&&String(p.id).trim()&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan')}}catch(e){console.warn('[拾忆] homepage roster local read skipped',e)}
+ try{const full=await readFullStateFromDB();if(full&&Array.isArray(full.people))return full.people.filter(p=>p&&p.id&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan')}catch(e){console.warn('[拾忆] homepage roster IndexedDB recovery skipped',e)}
+ try{return (await readPeopleFromDB()).filter(p=>p&&p.id&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan')}catch(e){console.warn('[拾忆] contact DB fallback skipped',e);return []}
+}
 $('back').onclick=()=>{if(history.length>1)history.back();else location.href='./index.html'};
 $('contactSelect').onchange=e=>{selected=e.target.value;resetForm();render()};
 $('memoryForm').onsubmit=async e=>{e.preventDefault();if(!selected){toast('请先选择联系人');return}const title=$('entryTitle').value.trim(),content=$('entryText').value.trim(),at=new Date($('entryDate').value).getTime();if(!content||!Number.isFinite(at)){toast('请填写记忆内容和有效日期');return}let entries=getEntries(selected);if(editing){entries=entries.map(x=>String(x.id)===editing?{...x,title,content,at,source:'manual'}:x)}else entries.push({id:'mem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,content,at,source:'manual'});try{await syncEntries(selected,entries);resetForm();render();toast('这段记忆已被好好收藏 ♡')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}};
 $('cancelEdit').onclick=resetForm;
 $('timeline').onclick=async e=>{const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(ed)startEdit(ed.dataset.edit);if(del){if(!confirm('确定要从这位联系人的拾忆中删除这段内容吗？'))return;const entries=getEntries(selected).filter(x=>String(x.id)!==String(del.dataset.delete));try{await syncEntries(selected,entries);render();toast('已移除这段记忆')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}}}
-async function init(){try{await loadMeta()}catch(err){console.error('[拾忆] metadata load failed',err);$('generateStatus').textContent='读取本地记忆失败：'+(err.message||'未知错误');toast('读取记忆失败，请勿清除浏览器数据')}people=await loadPeople();const metas=metaCache;const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
+async function init(){
+ try{await loadMeta()}catch(err){console.error('[拾忆] metadata load failed',err);$('generateStatus').textContent='读取本地记忆失败：'+(err.message||'未知错误');toast('读取记忆失败，请勿清除浏览器数据')}
+ people=await loadPeople();
+ // Only contacts present in the authoritative homepage roster are selectable.
+ const ids=new Set(people.map(p=>String(p.id)));
+ $('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');
+ const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}
+ resetForm();render();
+}
 
 async function getApiConfig(){
  const dbName='love-record-kv-v1',storeName='settings';let pointer=null,idbList=[],localList=[];
