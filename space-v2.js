@@ -8,6 +8,7 @@
   const KEY='love-record-space-v2';
   let data={selectedPeople:[],locations:[],currentLocation:null,history:[],activityLog:[],memories:[],invites:[],characterSchedule:{},lastWorldTick:0,worldNote:'',worldTitle:'',worldDescription:'',worldBookIds:[],timeSense:{enabled:false,zone:'Asia/Kuala_Lumpur'},season:'none',seasonFx:true,seasonAi:true,atmosphere:'default',home:{wall:'lavender',floor:'cream',furniture:'sofa',decor:'flowers',notes:[]},missions:[],selfPersonaId:'',lastMiniStory:null,memoryEngine:null,updatedAt:0};
   let busy=false;
+  let worldBookDraft=[];
   let memorySummaryRunning=false;
   let historyStorageReady=false;
   let historyDbPromise=null;
@@ -198,6 +199,29 @@
 .lr-space-creator-section .lr-space-review-item,.lr-space-creator-section .lr-space-memory-card{border:1px solid #e1d4e8;border-radius:3px;padding:10px;margin:8px 0;background:#fbf7fd}
 .lr-space-creator-section [data-story-line],.lr-space-creator-section [data-relation-delete],.lr-space-creator-section [data-echo-delete]{font:inherit;font-size:11px;border:1px solid #d2c1dc;background:#fff;padding:7px 9px;border-radius:3px;margin:4px 4px 0 0}
 .lr-space-creator-sheet{max-height:88vh;overflow-y:auto}
+`;
+    s.textContent += `
+/* V33 · compact world-book picker like a native select sheet */
+#lrSpaceBookList .lr-space-book-picker-trigger{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:58px;padding:14px 16px;border:1px solid #e4d8e7;border-radius:17px;background:linear-gradient(135deg,#fff,#fcf8fd);color:#5b4a61;text-align:left;box-shadow:0 3px 12px rgba(92,65,102,.04);font:inherit;cursor:pointer;touch-action:manipulation}
+#lrSpaceBookList .lr-space-book-picker-trigger small{display:block;color:#9b8ba0;font-size:11px;margin-top:4px;line-height:1.45}
+#lrSpaceBookList .lr-space-book-picker-trigger .lr-book-chevron{font-size:20px;color:#9c819f;flex:none}
+#lrSpaceBookPicker{z-index:6900;align-items:center;justify-content:center;padding:16px}
+#lrSpaceBookPicker.show{display:flex}
+#lrSpaceBookPicker .lr-space-book-picker-sheet{width:100%;max-width:520px;max-height:82dvh;border-radius:28px;background:#fffaff;border:1px solid #f2e7f2;padding:20px 16px 16px;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(55,38,60,.22)}
+#lrSpaceBookPicker .lr-space-book-picker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 3px 14px;border-bottom:1px solid #eee4ef}
+#lrSpaceBookPicker .lr-space-book-picker-head h3{margin:0;color:#59485f;font:400 22px/1.3 Georgia,'Noto Serif SC',serif}
+#lrSpaceBookPicker .lr-space-book-picker-head p{margin:4px 0 0;color:#9b8ba0;font-size:12px}
+#lrSpaceBookPicker .lr-space-book-picker-list{overflow:auto;min-height:0;padding:8px 0;overscroll-behavior:contain}
+#lrSpaceBookPicker .lr-space-book-option{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:12px;padding:14px 10px;border-bottom:1px solid #f0e8f1;cursor:pointer;touch-action:manipulation}
+#lrSpaceBookPicker .lr-space-book-option:last-child{border-bottom:0}
+#lrSpaceBookPicker .lr-space-book-option input{width:19px;height:19px;margin:0;accent-color:#b58ab8}
+#lrSpaceBookPicker .lr-space-book-option b{display:block;color:#514258;font-size:15px;font-weight:500;line-height:1.45;overflow-wrap:anywhere}
+#lrSpaceBookPicker .lr-space-book-option small{display:block;margin-top:3px;color:#a092a4;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+#lrSpaceBookPicker .lr-space-book-picker-empty{padding:26px 12px;text-align:center;color:#9b8ba0;font-size:13px;line-height:1.8}
+#lrSpaceBookPicker .lr-space-book-picker-actions{display:flex;gap:10px;padding-top:12px;border-top:1px solid #eee4ef}
+#lrSpaceBookPicker .lr-space-book-picker-actions button{flex:1;min-height:46px;border-radius:999px;font:inherit;touch-action:manipulation}
+#lrSpaceBookPicker .lr-space-book-picker-cancel{border:1px solid #e5dbe7;background:#fff;color:#87758d}
+#lrSpaceBookPicker .lr-space-book-picker-done{border:1px solid #b993c2;background:#b993c2;color:#fff}
 `;
     document.head.appendChild(s);
   }
@@ -397,14 +421,40 @@
   function renderSelfPersonaPicker(){const box=$('lrSpacePersonaPicker');if(!box)return;const list=selfPersonas();if(!data.selfPersonaId&&list.length)data.selfPersonaId=list[0].id||'';box.innerHTML=list.length?`<select id="lrSpacePersonaSelect" class="lr-space-select"><option value="">默认的我</option>${list.map(x=>`<option value="${esc(x.id)}" ${x.id===data.selfPersonaId?'selected':''}>${esc(x.name||'未命名自设')}</option>`).join('')}</select><div class="lr-space-setting-hint" style="margin-top:8px">${esc((list.find(x=>x.id===data.selfPersonaId)||{}).role||'选择首页已保存的自设，AI 小剧情会参考其资料。')}</div>`:'<div class="lr-space-setting-empty">首页「我的自设」还没有保存人设。创建后重新打开这里即可选择。</div>';const sel=$('lrSpacePersonaSelect');if(sel)sel.onchange=()=>{data.selfPersonaId=sel.value;save()}}
   function selectedPersona(){const list=selfPersonas();return list.find(x=>x.id===data.selfPersonaId)||list[0]||null}
   function personaContext(){const p=selectedPersona();return p?{name:p.name||'',role:p.role||'',personality:p.personality||'',appearance:p.appearance||'',speech:p.speech||'',background:p.background||''}:{name:'默认的我'}}
+  function renderWorldBookPickerTrigger(){
+    const box=$('lrSpaceBookList');if(!box)return;
+    const books=worldBooks();
+    const selected=books.filter(w=>data.worldBookIds.includes(w.id));
+    const summary=selected.length?selected.map(w=>w.name||'未命名世界').join('、'):'暂未选择世界书';
+    box.innerHTML=books.length?`<button type="button" id="lrSpaceBookPickerOpen" class="lr-space-book-picker-trigger"><span><b>选择世界书</b><small>${esc(selected.length?`已选择 ${selected.length} 本 · ${summary}`:'点击选择这个空间要读取的世界书')}</small></span><span class="lr-book-chevron">⌄</span></button>`:'<div class="lr-space-setting-empty">还没有世界书。你可以先在 LOVE RECORD 的「世界书」里创建。</div>';
+    const trigger=$('lrSpaceBookPickerOpen');if(trigger)trigger.onclick=e=>{e.preventDefault();e.stopPropagation();openWorldBookPicker()};
+  }
+  function ensureWorldBookPicker(){
+    let modal=$('lrSpaceBookPicker');if(modal)return modal;
+    modal=document.createElement('div');modal.id='lrSpaceBookPicker';modal.className='lr-space-modal';modal.setAttribute('aria-hidden','true');
+    modal.innerHTML=`<section class="lr-space-book-picker-sheet" role="dialog" aria-modal="true" aria-labelledby="lrSpaceBookPickerTitle"><div class="lr-space-book-picker-head"><div><h3 id="lrSpaceBookPickerTitle">选择世界书</h3><p>勾选要让这个 SPACE 读取的设定</p></div><button type="button" id="lrSpaceBookPickerClose" class="lr-space-close" aria-label="关闭">×</button></div><div id="lrSpaceBookPickerList" class="lr-space-book-picker-list"></div><div class="lr-space-book-picker-actions"><button type="button" id="lrSpaceBookPickerCancel" class="lr-space-book-picker-cancel">取消</button><button type="button" id="lrSpaceBookPickerDone" class="lr-space-book-picker-done">完成选择</button></div></section>`;
+    document.getElementById('space')?.appendChild(modal);
+    const close=()=>{modal.classList.remove('show');modal.setAttribute('aria-hidden','true')};
+    $('lrSpaceBookPickerClose').onclick=close;$('lrSpaceBookPickerCancel').onclick=close;
+    $('lrSpaceBookPickerDone').onclick=()=>{data.worldBookIds=[...worldBookDraft];save();renderWorldBookPickerTrigger();close();toast(data.worldBookIds.length?`已选择 ${data.worldBookIds.length} 本世界书。`:'已清空世界书选择。')};
+    modal.addEventListener('click',e=>{if(e.target===modal)close()});
+    return modal;
+  }
+  function openWorldBookPicker(){
+    const modal=ensureWorldBookPicker(),list=$('lrSpaceBookPickerList'),books=worldBooks();
+    worldBookDraft=[...data.worldBookIds];
+    list.innerHTML=books.length?books.map(w=>`<label class="lr-space-book-option"><input type="checkbox" value="${esc(w.id)}" ${worldBookDraft.includes(w.id)?'checked':''}><span><b>${esc(w.name||'未命名世界')}</b>${w.description?`<small>${esc(w.description)}</small>`:''}</span></label>`).join(''):'<div class="lr-space-book-picker-empty">还没有世界书。请先在 LOVE RECORD 的「世界书」中创建。</div>';
+    list.querySelectorAll('input[type="checkbox"]').forEach(input=>input.addEventListener('change',()=>{const id=input.value;worldBookDraft=input.checked?[...new Set([...worldBookDraft,id])]:worldBookDraft.filter(x=>x!==id)}));
+    modal.classList.add('show');modal.setAttribute('aria-hidden','false');
+  }
   function openWorldSettings(){
     const modal=$('lrSpaceSettings');if(!modal)return;const books=worldBooks();
-    $('lrSpaceBookList').innerHTML=books.length?books.map(w=>`<label class="lr-space-setting-check"><input type="checkbox" value="${esc(w.id)}" ${data.worldBookIds.includes(w.id)?'checked':''}><span><b>${esc(w.name||'未命名世界')}</b><small>${esc(w.description||'')}</small></span></label>`).join(''):'<div class="lr-space-setting-empty">还没有世界书。你可以先在 LOVE RECORD 的「世界书」里创建。</div>';
+    renderWorldBookPickerTrigger();
     renderSelfPersonaPicker();$('lrSpaceTimeEnabled').checked=!!data.timeSense.enabled;$('lrSpaceTimeZone').value=data.timeSense.zone||'Asia/Kuala_Lumpur';$('lrSpaceSeason').value=data.season||'none';$('lrSpaceSeasonFx').checked=!!data.seasonFx;$('lrSpaceSeasonAi').checked=!!data.seasonAi;$('lrSpaceAtmosphere').value=data.atmosphere||'default';renderMemoryProgress();modal.classList.add('show');document.body.style.overflow='hidden';
   }
   function closeWorldSettings(){const m=$('lrSpaceSettings');if(m)m.classList.remove('show');document.body.style.overflow=''}
   function saveWorldSettings(){
-    data.worldBookIds=[...document.querySelectorAll('#lrSpaceBookList input:checked')].map(x=>x.value);data.selfPersonaId=String($('lrSpacePersonaSelect')?.value||'');data.timeSense={enabled:!!$('lrSpaceTimeEnabled').checked,zone:$('lrSpaceTimeZone').value};data.season=$('lrSpaceSeason').value;data.seasonFx=!!$('lrSpaceSeasonFx').checked;data.seasonAi=!!$('lrSpaceSeasonAi').checked;data.atmosphere=$('lrSpaceAtmosphere').value;save();applySeasonFX();closeWorldSettings();toast('世界设置已保存');
+    data.selfPersonaId=String($('lrSpacePersonaSelect')?.value||'');data.timeSense={enabled:!!$('lrSpaceTimeEnabled').checked,zone:$('lrSpaceTimeZone').value};data.season=$('lrSpaceSeason').value;data.seasonFx=!!$('lrSpaceSeasonFx').checked;data.seasonAi=!!$('lrSpaceSeasonAi').checked;data.atmosphere=$('lrSpaceAtmosphere').value;save();renderWorldBookPickerTrigger();applySeasonFX();closeWorldSettings();toast('世界设置已保存');
   }
   function openWorldEditor(){const m=$('lrSpaceWorldEdit');if(!m)return;$('lrSpaceWorldName').value=data.worldTitle||data.worldNote||'我们的世界';$('lrSpaceWorldDescription').value=data.worldDescription||'';m.classList.add('show');document.body.style.overflow='hidden'}
   function closeWorldEditor(){const m=$('lrSpaceWorldEdit');if(m)m.classList.remove('show');document.body.style.overflow=''}
