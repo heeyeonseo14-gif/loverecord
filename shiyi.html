@@ -59,25 +59,31 @@ $('cancelEdit').onclick=resetForm;
 $('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(ed)startEdit(ed.dataset.edit);if(del){if(!confirm('确定要从这位联系人的拾忆中删除这段内容吗？'))return;const entries=getEntries(selected).filter(x=>String(x.id)!==String(del.dataset.delete));syncEntries(selected,entries);render();toast('已移除这段记忆')}}
 async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
 
-function getApiConfig(){
- // 拾忆优先直接读取 API 预设，而不是可能残留旧令牌的主页输入缓存。
- // 保存预设/点击切换会写入 active-preset；若旧版本没有该标记，则选最近更新的预设。
- let activePreset={},presets=[],primary={},legacy={};
- try{activePreset=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch{}
- try{presets=JSON.parse(localStorage.getItem('love-record-api-presets-v1')||'[]')||[]}catch{}
- try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch{}
- try{legacy=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}')||{}}catch{}
- if(!activePreset.apiKey && Array.isArray(presets)&&presets.length){
-   activePreset=presets.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||{};
+async function getApiConfig(){
+ // Re-read the real IndexedDB preset list every time Generate Memory is clicked.
+ let pointer={},presets=[];
+ try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
+ try{
+  const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('love-record-kv-v1',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法打开 API 预设数据库'))});
+  presets=await new Promise((resolve,reject)=>{const req=db.transaction('settings','readonly').objectStore('settings').get('api-presets-v1');req.onsuccess=()=>resolve(Array.isArray(req.result)?req.result:[]);req.onerror=()=>reject(req.error||new Error('无法读取 API 预设'))});
+ }catch(e){console.error('[拾忆] IndexedDB preset read failed',e)}
+ let chosen=pointer.id?presets.find(p=>p&&p.id===pointer.id):null;
+ if(!chosen&&pointer.name)chosen=presets.find(p=>p&&p.name===pointer.name);
+ if(pointer.id&&!chosen)throw new Error('找不到当前选中的 API 预设。请回主页重新点击新令牌所在预设的「切换」按钮。');
+ if(chosen){
+  const apiBase=String(chosen.apiBase||'').trim().replace(/\\/+$/,'');
+  const apiKey=String(chosen.apiKey||'').trim();
+  const apiModel=String(chosen.apiModel||'').trim();
+  if(!apiBase||!apiKey||!apiModel)throw new Error('当前预设「'+(chosen.name||'未命名')+'」缺少 API 地址、令牌或模型，请重新保存预设。');
+  return {apiBase,apiKey,apiModel,presetName:chosen.name||'当前预设',presetId:chosen.id||''};
  }
- const chosen=activePreset.apiKey?activePreset:null;
- const pick=(...values)=>{for(const v of values){if(v!==undefined&&v!==null&&String(v).trim()!=='')return String(v).trim()}return ''};
- // If a saved preset exists, it is the source of truth for 拾忆.
- const apiBase=chosen?pick(chosen.apiBase):pick(primary.apiBase,legacy.apiBase);
- const apiKey=chosen?pick(chosen.apiKey):pick(primary.apiKey,legacy.apiKey);
- const apiModel=chosen?pick(chosen.apiModel):pick(primary.apiModel,legacy.apiModel);
+ // No active preset pointer exists: fallback to current homepage settings only.
+ let primary={};try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}
+ const apiBase=String(primary.apiBase||'').trim().replace(/\\/+$/,'');
+ const apiKey=String(primary.apiKey||'').trim();
+ const apiModel=String(primary.apiModel||'').trim();
  if(!apiBase||!apiKey||!apiModel)return null;
- return {apiBase:apiBase.replace(/\/+$/,''),apiKey,apiModel,presetName:chosen?(chosen.name||'已保存预设'):'主页当前配置'};
+ return {apiBase,apiKey,apiModel,presetName:'主页当前设置',presetId:''};
 }
 function parseJsonArray(raw){
  let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -91,10 +97,11 @@ async function generateMemories(){
  const raw=$('importMemoryText').value.trim();
  if(!selected){toast('请先选择联系人');return}
  if(!raw){toast('先粘贴需要整理的记忆噢');return}
- const cfg=getApiConfig();
+ let cfg;
+ try{cfg=await getApiConfig()}catch(configError){$('generateStatus').textContent='读取 API 预设失败：'+(configError.message||'未知错误');toast('无法读取当前 API 预设');return}
  if(!cfg){toast('请先在主页设置 API 地址、Key 和模型');$('generateStatus').textContent='未找到可用 API 配置。请返回主页检查 API 设置后重试。';return}
  const btn=$('generateMemoryBtn'),status=$('generateStatus');
- btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='本次读取：'+(cfg.presetName||'API 设置')+' · '+cfg.apiModel+' · 令牌末四位 '+String(cfg.apiKey).slice(-4)+'。正在整理记忆…';
+ btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='已重新读取最新预设：'+(cfg.presetName||'API 设置')+' · '+cfg.apiModel+' · 令牌末四位 '+String(cfg.apiKey).slice(-4)+'。正在整理记忆…';
  const system=`你是 LOVE RECORD 的记忆编年整理器。用户会提供从其他地方复制来的旧记忆、聊天摘要或剧情记录。请只依据输入整理，不要编造，不要把推测写成事实。尽可能识别每个事件实际发生的日期和时间；相对日期只有在上下文明确时才换算。日期不明确时 date 留空字符串，不要猜。将内容拆成独立、可供未来聊天参考的记忆片段，保留人物、关系、约定、重要经历、情绪变化和未完成事项。按发生时间从早到晚输出。严格只输出 JSON 数组，不要 Markdown。每项格式：{"date":"YYYY-MM-DDTHH:mm 或 YYYY-MM-DD 或空字符串","title":"简短标题","content":"准确完整的记忆正文"}。不要将当前导入时间当作事件发生时间。`;
  try{
   const response=await fetch(String(cfg.apiBase).replace(/\/+$/,'')+'/chat/completions',{
