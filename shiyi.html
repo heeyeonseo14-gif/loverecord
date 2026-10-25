@@ -60,17 +60,21 @@ $('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.
 async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
 
 function getApiConfig(){
- // Re-read the latest homepage settings each time Generate Memory is clicked.
- // The homepage bridge reflects its current state; canonical storage is next.
- let live={},primary={},legacy={};
- try{if(typeof window.__LOVE_RECORD_GET_API_CONFIG==='function')live=window.__LOVE_RECORD_GET_API_CONFIG()||{}}catch{}
+ // Read the current persisted API config on every attempt. If the main settings
+ // snapshot could not be saved due to quota, use the newer timestamped fallback.
+ let primary={},legacy={},live={};
  try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch{}
  try{legacy=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}')||{}}catch{}
+ try{if(typeof window.__LOVE_RECORD_GET_API_CONFIG==='function')live=window.__LOVE_RECORD_GET_API_CONFIG()||{}}catch{}
+ const mainTime=Number(primary.apiConfigUpdatedAt)||0, legacyTime=Number(legacy.updatedAt)||0;
  const pick=(...values)=>{for(const v of values){if(v!==undefined&&v!==null&&String(v).trim()!=='')return String(v).trim()}return ''};
- const apiBase=pick(live.apiBase,live.base,primary.apiBase,primary.base,legacy.apiBase,legacy.base);
- const apiKey=pick(live.apiKey,live.key,primary.apiKey,primary.key,legacy.apiKey,legacy.key);
- const apiModel=pick(live.apiModel,live.model,primary.apiModel,primary.model,legacy.apiModel,legacy.model);
- return apiBase&&apiKey&&apiModel?{apiBase,apiKey,apiModel}:null;
+ let chosen=(legacyTime>mainTime)?legacy:primary;
+ if(live&&live.apiBase&&live.apiKey&&live.apiModel&&Number(live.updatedAt)>=Math.max(mainTime,legacyTime))chosen=live;
+ let apiBase=pick(chosen.apiBase,chosen.base),apiKey=pick(chosen.apiKey,chosen.key),apiModel=pick(chosen.apiModel,chosen.model);
+ if(!apiBase||!apiKey||!apiModel){
+  apiBase=pick(primary.apiBase,legacy.apiBase,live.apiBase);apiKey=pick(primary.apiKey,legacy.apiKey,live.apiKey);apiModel=pick(primary.apiModel,legacy.apiModel,live.apiModel);
+ }
+ return apiBase&&apiKey&&apiModel?{apiBase,apiKey,apiModel,updatedAt:Math.max(mainTime,legacyTime,Number(live.updatedAt)||0)}:null;
 }
 function parseJsonArray(raw){
  let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
@@ -87,7 +91,7 @@ async function generateMemories(){
  const cfg=getApiConfig();
  if(!cfg){toast('请先在主页设置 API 地址、Key 和模型');$('generateStatus').textContent='未找到可用 API 配置。请返回主页检查 API 设置后重试。';return}
  const btn=$('generateMemoryBtn'),status=$('generateStatus');
- btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='AI 正在提取事件、辨认日期并整理时间线，请稍候。';
+ btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='正在读取最新 API 设置并整理记忆… 模型：'+cfg.apiModel+'；令牌尾号：'+String(cfg.apiKey).slice(-4);
  const system=`你是 LOVE RECORD 的记忆编年整理器。用户会提供从其他地方复制来的旧记忆、聊天摘要或剧情记录。请只依据输入整理，不要编造，不要把推测写成事实。尽可能识别每个事件实际发生的日期和时间；相对日期只有在上下文明确时才换算。日期不明确时 date 留空字符串，不要猜。将内容拆成独立、可供未来聊天参考的记忆片段，保留人物、关系、约定、重要经历、情绪变化和未完成事项。按发生时间从早到晚输出。严格只输出 JSON 数组，不要 Markdown。每项格式：{"date":"YYYY-MM-DDTHH:mm 或 YYYY-MM-DD 或空字符串","title":"简短标题","content":"准确完整的记忆正文"}。不要将当前导入时间当作事件发生时间。`;
  try{
   const response=await fetch(String(cfg.apiBase).replace(/\/+$/,'')+'/chat/completions',{
@@ -120,5 +124,7 @@ async function generateMemories(){
 $('generateMemoryBtn').addEventListener('click',generateMemories);
 $('clearImportBtn').addEventListener('click',()=>{$('importMemoryText').value='';$('generateStatus').textContent='';});
 init();
+ // Re-read config when the page returns to foreground; never keep a key in page-level memory.
+ window.addEventListener('pageshow',()=>{try{getApiConfig()}catch{}});
 })();
 </script></body></html>
