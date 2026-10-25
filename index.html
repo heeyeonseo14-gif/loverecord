@@ -1055,6 +1055,7 @@ body.music-listening-modal-open{overflow:hidden!important}
     </div>
   </section>
   <section class="launcher-grid" aria-label="应用">
+    <button class="launcher-app" type="button" data-shiyi-launch data-drag-id="app-shiyi"><span class="app-icon" style="background:linear-gradient(145deg,rgba(250,246,255,.96),rgba(218,202,239,.86));color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.14)">✧</span><span>拾忆</span></button>
     <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
     <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
     <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
@@ -2284,5 +2285,13 @@ if(loveIntro){
 (()=>{const shell=document.getElementById('lrLiveShell');const frame=document.getElementById('lrLiveFrame');function openLive(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_LIVE_OPEN'},location.origin)}catch(e){}}function closeLive(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-live]').forEach(b=>b.addEventListener('click',openLive));document.getElementById('lrLiveBack').addEventListener('click',closeLive);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeLive()});})();
 </script>
 <script src="./moments-v1.js?v=5"></script>
+
+<script>
+/* 拾忆：独立管理界面入口 */
+document.addEventListener('click',function(e){
+  const b=e.target.closest('[data-shiyi-launch]');
+  if(b){e.preventDefault();location.href='./shiyi.html';}
+});
+</script>
 </body>
 </html>
