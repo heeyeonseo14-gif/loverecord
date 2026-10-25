@@ -35,29 +35,55 @@ select,input,textarea{font:inherit;color:var(--ink);width:100%;border:1px solid 
 <div class="foot">SOME MOMENTS NEVER FADE · ✧</div></div><div class="toast" id="toast"></div>
 <script>
 (()=>{'use strict';
-const META_KEY='love-record-chat-meta-v2', PEOPLE_DB='love-record-contact-db-v1', PEOPLE_STORE='people';
+const META_KEY='love-record-chat-meta-v2', META_DB='love-record-chat-meta-db-v1', META_STORE='contactMeta', PEOPLE_DB='love-record-contact-db-v1', PEOPLE_STORE='people';
 const $=id=>document.getElementById(id);let people=[], selected='', editing='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const readMeta=()=>{try{return JSON.parse(localStorage.getItem(META_KEY)||'{}')}catch{return {}}};
-function writeMeta(id,patch){const all=readMeta();all[id]={...(all[id]||{}),...patch};localStorage.setItem(META_KEY,JSON.stringify(all));return all[id]}
-function meta(id){return readMeta()[id]||{}}
+let metaCache={};
+function openMetaDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(META_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(META_STORE))req.result.createObjectStore(META_STORE,{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法打开记忆数据库'))})}
+async function loadMeta(){
+ let legacy={};try{legacy=JSON.parse(localStorage.getItem(META_KEY)||'{}')||{}}catch(e){console.warn('[拾忆] legacy metadata parse failed',e)}
+ const db=await openMetaDB();
+ try{
+  const rows=await new Promise((resolve,reject)=>{const req=db.transaction(META_STORE,'readonly').objectStore(META_STORE).getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error||new Error('无法读取联系人记忆'))});
+  metaCache={...legacy};
+  for(const row of rows){if(row&&row.id!==undefined)metaCache[String(row.id)]={...(legacy[String(row.id)]||{}),...(row.data||{})}}
+  // Migrate legacy metadata into IndexedDB; only remove the oversized localStorage key after all records save successfully.
+  const tx=db.transaction(META_STORE,'readwrite'),store=tx.objectStore(META_STORE);
+  for(const id of Object.keys(legacy)){
+   const existing=rows.find(r=>String(r.id)===String(id));
+   const data={...(legacy[id]||{}),...(existing?.data||{})};
+   store.put({id:String(id),data,updatedAt:Date.now()});
+   metaCache[id]=data;
+  }
+  await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('迁移联系人记忆失败'));tx.onabort=()=>reject(tx.error||new Error('迁移联系人记忆中断'))});
+  try{localStorage.removeItem(META_KEY);localStorage.removeItem('love-record-chat-meta-v1')}catch(e){console.warn('[拾忆] old localStorage cleanup skipped',e)}
+ } finally {db.close()}
+ return metaCache;
+}
+async function writeMeta(id,patch){
+ const key=String(id),next={...(metaCache[key]||{}),...patch};
+ const db=await openMetaDB();
+ try{await new Promise((resolve,reject)=>{const tx=db.transaction(META_STORE,'readwrite');tx.objectStore(META_STORE).put({id:key,data:next,updatedAt:Date.now()});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('记忆保存失败'));tx.onabort=()=>reject(tx.error||new Error('记忆保存中断'))})}finally{db.close()}
+ metaCache[key]=next;return next;
+}
+function meta(id){return metaCache[String(id)]||{}}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function dateInputValue(d){const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,16)}
 function fmtDate(d){const x=new Date(d);if(Number.isNaN(+x))return '时间未记录';return x.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
 function displayName(p){const m=meta(p.id);return m.remark||p.name||'未命名联系人'}
 function personAvatar(p){const m=meta(p.id);return m.avatar||p.avatar||p.photo||''}
 function getEntries(id){const m=meta(id);let arr=Array.isArray(m.memoryEntries)?m.memoryEntries.slice():[];const text=String(m.longTermMemory||'').trim();const alreadyRepresented=arr.some(e=>e.content&&text.includes(e.content));if(text&&!arr.some(e=>e.source==='longTermMemory'&&e.content===text)&&!arr.some(e=>e.content===text)&&!alreadyRepresented){arr.unshift({id:'legacy-'+(m.lastMemorySummaryAt||'memory'),title:'长期记忆',content:text,at:Number(m.lastMemorySummaryAt)||Date.now(),source:'longTermMemory'});}return arr.sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0))}
-function syncEntries(id,entries){const sorted=entries.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));const merged=sorted.map(e=>(e.title?`【${e.title}】\n`:'')+`[${fmtDate(e.at)}]\n${e.content}`).join('\n\n');writeMeta(id,{memoryEntries:entries,longTermMemory:merged,lastMemorySummaryAt:Date.now()})}
+async function syncEntries(id,entries){const sorted=entries.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));const merged=sorted.map(e=>(e.title?`【${e.title}】\n`:'')+`[${fmtDate(e.at)}]\n${e.content}`).join('\n\n');await writeMeta(id,{memoryEntries:entries,longTermMemory:merged,lastMemorySummaryAt:Date.now()})}
 function render(){const p=people.find(x=>String(x.id)===String(selected));$('contactName').textContent=p?displayName(p):'还没有选择联系人';$('contactDesc').textContent=p?'这段记忆只属于你和 '+displayName(p):'每个人，都有独属于你们的记忆';const av=p&&personAvatar(p);$('avatar').innerHTML=av?`<img src="${esc(av)}" alt="">`:esc(p?(displayName(p).slice(0,1)||'✧'):'✧');const entries=p?getEntries(selected):[];$('count').textContent=entries.length;$('timeline').innerHTML=!p?'<div class="empty"><span class="star">✧</span>选择一位联系人，看看你们共同留下的记忆。</div>':!entries.length?'<div class="empty"><span class="star">✧</span>这里还很安静。<br>写下第一段记忆，让时间有迹可循。</div>':entries.map(e=>`<article class="entry"><div class="entrydate">${esc(fmtDate(e.at))}</div><div class="entrytitle">${esc(e.title||'未命名的记忆')}</div><div class="entrytext">${esc(e.content||'')}</div><div class="entryfoot"><span class="tag">${e.source==='longTermMemory'?'LONG-TERM MEMORY':'KEPT IN TIME'}</span><div class="toolbar" style="margin:0"><button class="btn" data-edit="${esc(e.id)}">编辑</button><button class="btn danger" data-delete="${esc(e.id)}">删除</button></div></div></article>`).join('')}
 function resetForm(){editing='';$('memoryForm').reset();$('entryDate').value=dateInputValue(Date.now());$('editorHeading').textContent='收藏一个瞬间';$('saveBtn').textContent='将此刻收入拾忆';$('cancelEdit').hidden=true}
 function startEdit(id){const e=getEntries(selected).find(x=>String(x.id)===String(id));if(!e)return;editing=String(id);$('entryTitle').value=e.title||'';$('entryDate').value=dateInputValue(e.at||Date.now());$('entryText').value=e.content||'';$('editorHeading').textContent='重新安放这段记忆';$('saveBtn').textContent='保存修改';$('cancelEdit').hidden=false;$('editorPanel').scrollIntoView({behavior:'smooth',block:'start'})}
 async function loadPeople(){return new Promise(resolve=>{try{const req=indexedDB.open(PEOPLE_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(PEOPLE_STORE))req.result.createObjectStore(PEOPLE_STORE,{keyPath:'id'})};req.onsuccess=()=>{const db=req.result, r=db.transaction(PEOPLE_STORE,'readonly').objectStore(PEOPLE_STORE).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>resolve([])};req.onerror=()=>resolve([])}catch{resolve([])}})}
 $('back').onclick=()=>{if(history.length>1)history.back();else location.href='./index.html'};
 $('contactSelect').onchange=e=>{selected=e.target.value;resetForm();render()};
-$('memoryForm').onsubmit=e=>{e.preventDefault();if(!selected){toast('请先选择联系人');return}const title=$('entryTitle').value.trim(),content=$('entryText').value.trim(),at=new Date($('entryDate').value).getTime();if(!content||!Number.isFinite(at)){toast('请填写记忆内容和有效日期');return}let entries=getEntries(selected);if(editing){entries=entries.map(x=>String(x.id)===editing?{...x,title,content,at,source:'manual'}:x)}else entries.push({id:'mem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,content,at,source:'manual'});syncEntries(selected,entries);resetForm();render();toast('这段记忆已被好好收藏 ♡')};
+$('memoryForm').onsubmit=async e=>{e.preventDefault();if(!selected){toast('请先选择联系人');return}const title=$('entryTitle').value.trim(),content=$('entryText').value.trim(),at=new Date($('entryDate').value).getTime();if(!content||!Number.isFinite(at)){toast('请填写记忆内容和有效日期');return}let entries=getEntries(selected);if(editing){entries=entries.map(x=>String(x.id)===editing?{...x,title,content,at,source:'manual'}:x)}else entries.push({id:'mem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,content,at,source:'manual'});try{await syncEntries(selected,entries);resetForm();render();toast('这段记忆已被好好收藏 ♡')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}};
 $('cancelEdit').onclick=resetForm;
-$('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(ed)startEdit(ed.dataset.edit);if(del){if(!confirm('确定要从这位联系人的拾忆中删除这段内容吗？'))return;const entries=getEntries(selected).filter(x=>String(x.id)!==String(del.dataset.delete));syncEntries(selected,entries);render();toast('已移除这段记忆')}}
-async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
+$('timeline').onclick=async e=>{const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(ed)startEdit(ed.dataset.edit);if(del){if(!confirm('确定要从这位联系人的拾忆中删除这段内容吗？'))return;const entries=getEntries(selected).filter(x=>String(x.id)!==String(del.dataset.delete));try{await syncEntries(selected,entries);render();toast('已移除这段记忆')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}}}
+async function init(){try{await loadMeta()}catch(err){console.error('[拾忆] metadata load failed',err);$('generateStatus').textContent='读取本地记忆失败：'+(err.message||'未知错误');toast('读取记忆失败，请勿清除浏览器数据')}people=await loadPeople();const metas=metaCache;const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
 
 async function getApiConfig(){
  const dbName='love-record-kv-v1',storeName='settings';let pointer=null,idbList=[],localList=[];
@@ -119,7 +145,7 @@ async function generateMemories(){
   if(!imported.length)throw new Error('没有提取到有效记忆，请检查粘贴内容后重试');
   const existing=getEntries(selected).filter(e=>e.source!=='longTermMemory');
   const merged=[...existing,...imported].sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));
-  syncEntries(selected,merged);
+  await syncEntries(selected,merged);
   status.textContent='整理完成：新增 '+imported.length+' 段记忆，已按日期排序并同步到该联系人的长期记忆。日期不明确的条目会排在时间轴较早位置，请手动编辑日期。';
   $('importMemoryText').value='';
   resetForm();render();toast('记忆已生成并同步 ♡');
