@@ -31,7 +31,7 @@ select,input,textarea{font:inherit;color:var(--ink);width:100%;border:1px solid 
 <header class="hero"><div class="eyebrow">A QUIET PLACE FOR US</div><h1>拾忆</h1><div class="subtitle">那些没有消失的瞬间，<br>只是安静地住进了时间里。</div><div class="orb"></div></header>
 <section class="panel"><div class="panel-head"><h2>选择一段关系</h2><span class="micro">PRIVATE UNIVERSE</span></div><select id="contactSelect"><option value="">正在寻找联系人……</option></select><div class="contactline" style="margin-top:15px"><div class="avatar" id="avatar">✧</div><div style="min-width:0"><div class="contactname" id="contactName">还没有选择联系人</div><div class="contactsub" id="contactDesc">每个人，都有独属于你们的记忆</div></div><div class="count" id="count">0</div></div></section>
 <section class="panel"><div class="panel-head"><h2>记忆的回声</h2><span class="micro">CHRONOLOGY</span></div><div class="sub" style="font-size:12px;color:#9c90ad;line-height:1.8;margin-bottom:12px">按照日期，重新看见那些值得留下的片段。这里与聊天中的「长期记忆」共用内容。</div><div class="timeline" id="timeline"><div class="empty"><span class="star">✧</span>选择一位联系人，看看你们共同留下的记忆。</div></div></section>
-<section class="panel" id="editorPanel"><div class="panel-head"><h2 id="editorHeading">收藏一个瞬间</h2><span class="micro">SAVE A MEMORY</span></div><form id="memoryForm" class="formgrid"><div class="formlabel">记忆标题</div><input id="entryTitle" maxlength="100" placeholder="例如：第一次一起看海"><div class="formlabel">发生的日期与时间</div><input id="entryDate" type="datetime-local" required><div class="formlabel">记忆内容</div><textarea id="entryText" maxlength="6000" placeholder="把想留下的话，慢慢写在这里……" required></textarea><div class="toolbar"><button class="btn primary" type="submit" id="saveBtn">将此刻收入拾忆</button><button class="btn" type="button" id="cancelEdit" hidden>取消编辑</button></div></form><p style="font-size:10px;color:#a69ab6;line-height:1.8;margin:14px 0 0">提示：保存后会同步更新该联系人的「长期记忆」文本；自动整理的长期记忆也会显示在这里。所有内容保存在当前浏览器设备。</p></section>
+<section class="panel" id="importPanel"><div class="panel-head"><h2>添加记忆</h2><span class="micro">MEMORY ALCHEMY</span></div><p style="font-size:12px;line-height:1.8;color:#9689a8;margin:0 0 12px">把从其他地方整理好的聊天记忆、剧情摘要或旧记录粘贴在这里。让 AI 辨认其中的日期与事件，再按时间顺序收进「记忆的回声」。</p><textarea id="importMemoryText" style="min-height:155px" placeholder="粘贴你总结好的记忆……\n例如：2025年3月12日，我们第一次见面。\n2025年4月2日，我们约定每年一起庆祝。"></textarea><div class="toolbar"><button class="btn primary" type="button" id="generateMemoryBtn">✧ 生成记忆</button><button class="btn" type="button" id="clearImportBtn">清空文本</button></div><div id="generateStatus" style="font-size:11px;line-height:1.8;color:#9b8aad;margin-top:10px"></div><p style="font-size:10px;line-height:1.8;color:#a69ab6;margin:10px 0 0">生成前请先选择联系人，并在主页设置好 API。AI 只会根据粘贴内容提取，不确定的日期会标记为未明确日期；确认后才会写入该联系人的长期记忆。</p></section><section class="panel" id="editorPanel"><div class="panel-head"><h2 id="editorHeading">收藏一个瞬间</h2><span class="micro">SAVE A MEMORY</span></div><form id="memoryForm" class="formgrid"><div class="formlabel">记忆标题</div><input id="entryTitle" maxlength="100" placeholder="例如：第一次一起看海"><div class="formlabel">发生的日期与时间</div><input id="entryDate" type="datetime-local" required><div class="formlabel">记忆内容</div><textarea id="entryText" maxlength="6000" placeholder="把想留下的话，慢慢写在这里……" required></textarea><div class="toolbar"><button class="btn primary" type="submit" id="saveBtn">将此刻收入拾忆</button><button class="btn" type="button" id="cancelEdit" hidden>取消编辑</button></div></form><p style="font-size:10px;color:#a69ab6;line-height:1.8;margin:14px 0 0">提示：保存后会同步更新该联系人的「长期记忆」文本；自动整理的长期记忆也会显示在这里。所有内容保存在当前浏览器设备。</p></section>
 <div class="foot">SOME MOMENTS NEVER FADE · ✧</div></div><div class="toast" id="toast"></div>
 <script>
 (()=>{'use strict';
@@ -58,6 +58,70 @@ $('memoryForm').onsubmit=e=>{e.preventDefault();if(!selected){toast('请先选�
 $('cancelEdit').onclick=resetForm;
 $('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(ed)startEdit(ed.dataset.edit);if(del){if(!confirm('确定要从这位联系人的拾忆中删除这段内容吗？'))return;const entries=getEntries(selected).filter(x=>String(x.id)!==String(del.dataset.delete));syncEntries(selected,entries);render();toast('已移除这段记忆')}}
 async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
+
+function getApiConfig(){
+ try{
+  if(typeof window.__LOVE_RECORD_GET_API_CONFIG==='function'){
+   const c=window.__LOVE_RECORD_GET_API_CONFIG();if(c&&c.apiBase&&c.apiKey&&c.apiModel)return c;
+  }
+ }catch{}
+ try{
+  const c=JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}');
+  if(c.apiBase&&c.apiKey&&c.apiModel)return c;
+ }catch{}
+ try{
+  const c=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');
+  if(c.apiBase&&c.apiKey&&c.apiModel)return c;
+ }catch{}
+ return null;
+}
+function parseJsonArray(raw){
+ let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+ const a=t.indexOf('['),b=t.lastIndexOf(']');
+ if(a>=0&&b>a)t=t.slice(a,b+1);
+ const v=JSON.parse(t);
+ if(!Array.isArray(v))throw new Error('AI 返回格式不是记忆列表');
+ return v;
+}
+async function generateMemories(){
+ const raw=$('importMemoryText').value.trim();
+ if(!selected){toast('请先选择联系人');return}
+ if(!raw){toast('先粘贴需要整理的记忆噢');return}
+ const cfg=getApiConfig();
+ if(!cfg){toast('请先在主页设置 API 地址、Key 和模型');$('generateStatus').textContent='未找到可用 API 配置。请返回主页检查 API 设置后重试。';return}
+ const btn=$('generateMemoryBtn'),status=$('generateStatus');
+ btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='AI 正在提取事件、辨认日期并整理时间线，请稍候。';
+ const system=`你是 LOVE RECORD 的记忆编年整理器。用户会提供从其他地方复制来的旧记忆、聊天摘要或剧情记录。请只依据输入整理，不要编造，不要把推测写成事实。尽可能识别每个事件实际发生的日期和时间；相对日期只有在上下文明确时才换算。日期不明确时 date 留空字符串，不要猜。将内容拆成独立、可供未来聊天参考的记忆片段，保留人物、关系、约定、重要经历、情绪变化和未完成事项。按发生时间从早到晚输出。严格只输出 JSON 数组，不要 Markdown。每项格式：{"date":"YYYY-MM-DDTHH:mm 或 YYYY-MM-DD 或空字符串","title":"简短标题","content":"准确完整的记忆正文"}。不要将当前导入时间当作事件发生时间。`;
+ try{
+  const response=await fetch(String(cfg.apiBase).replace(/\/+$/,'')+'/chat/completions',{
+   method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},
+   body:JSON.stringify({model:cfg.apiModel,stream:false,temperature:0.2,messages:[{role:'system',content:system},{role:'user',content:'请整理以下记忆：\\n\\n'+raw}]})
+  });
+  const body=await response.text();
+  if(!response.ok)throw new Error('API 请求失败 HTTP '+response.status+'：'+body.slice(0,240));
+  const result=JSON.parse(body),content=result.choices?.[0]?.message?.content;
+  if(!content)throw new Error('API 没有返回可用内容');
+  const parsed=parseJsonArray(content);
+  const imported=parsed.map((x,i)=>{
+   let at=Date.parse(String(x.date||''));
+   if(!Number.isFinite(at))at=0;
+   return {id:'imp-'+Date.now().toString(36)+'-'+i+'-'+Math.random().toString(36).slice(2,6),title:String(x.title||'未命名的记忆').slice(0,100),content:String(x.content||'').trim(),at,source:'imported',dateUnclear:!String(x.date||'').trim()};
+  }).filter(x=>x.content);
+  if(!imported.length)throw new Error('没有提取到有效记忆，请检查粘贴内容后重试');
+  const existing=getEntries(selected).filter(e=>e.source!=='longTermMemory');
+  const merged=[...existing,...imported].sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));
+  syncEntries(selected,merged);
+  status.textContent='整理完成：新增 '+imported.length+' 段记忆，已按日期排序并同步到该联系人的长期记忆。日期不明确的条目会排在时间轴较早位置，请手动编辑日期。';
+  $('importMemoryText').value='';
+  resetForm();render();toast('记忆已生成并同步 ♡');
+ }catch(err){
+  console.error('[拾忆] generate memory failed',err);
+  status.textContent='这次没有完成：'+(err.message||'未知错误')+'。请检查 API 配置或重试。';
+  toast('记忆生成失败，请查看提示');
+ }finally{btn.disabled=false;btn.textContent='✧ 生成记忆'}
+}
+$('generateMemoryBtn').addEventListener('click',generateMemories);
+$('clearImportBtn').addEventListener('click',()=>{$('importMemoryText').value='';$('generateStatus').textContent='';});
 init();
 })();
 </script></body></html>
