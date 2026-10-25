@@ -2081,45 +2081,45 @@ const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.
 const API_PRESETS_KEY='love-record-api-presets-v1',API_PRESETS_KV='api-presets-v1';let apiPresetCache=[];
 function readApiPresets(){return apiPresetCache.slice()}
 async function loadApiPresets(){
- try{
-  const v=await lrKVGet(API_PRESETS_KV);
-  if(Array.isArray(v))apiPresetCache=v.filter(x=>x&&x.id);
-  else{
-   try{const old=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');if(Array.isArray(old))apiPresetCache=old.filter(x=>x&&x.id);if(apiPresetCache.length)await lrKVSet(API_PRESETS_KV,apiPresetCache)}catch(e){}
-  }
- }catch(e){
-  console.warn('[LOVE RECORD] API preset IndexedDB read failed',e);
-  try{const a=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');if(Array.isArray(a))apiPresetCache=a.filter(x=>x&&x.id)}catch(e2){}
+ let idbList=[],localList=[];
+ try{const v=await lrKVGet(API_PRESETS_KV);if(Array.isArray(v))idbList=v.filter(x=>x&&x.id)}catch(e){console.warn('[LOVE RECORD] IndexedDB presets read failed',e)}
+ try{const v=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');if(Array.isArray(v))localList=v.filter(x=>x&&x.id)}catch(e){}
+ // Reconcile both stores by ID, keeping the most recently saved complete record.
+ const merged=new Map();
+ [...idbList,...localList].forEach(p=>{
+  const old=merged.get(String(p.id));
+  if(!old||(Number(p.updatedAt)||0)>=(Number(old.updatedAt)||0))merged.set(String(p.id),p);
+ });
+ apiPresetCache=[...merged.values()];
+ if(apiPresetCache.length){
+  try{await lrKVSet(API_PRESETS_KV,apiPresetCache)}catch(e){console.warn('[LOVE RECORD] preset reconciliation to IndexedDB failed',e)}
+  try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){}
  }
- // Migrate old pointer (which embedded a stale copy of the token) to an ID-only pointer.
- let pointer={};
- try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
- let active=pointer.id?apiPresetCache.find(p=>p.id===pointer.id):null;
- if(!active&&pointer.name)active=apiPresetCache.find(p=>p.name===pointer.name);
- // Older releases stored the whole preset in this pointer; match by ID/name, never use its embedded key.
+ // On every homepage load, refresh current API config from the latest persisted active preset.
+ let pointer={};try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
+ let active=pointer.id?apiPresetCache.find(p=>String(p.id)===String(pointer.id)):null;
+ if(!active&&pointer.name)active=apiPresetCache.filter(p=>p.name===pointer.name).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
+ // Legacy pointer may contain a copied key. Never trust that copy; resolve it to a persisted preset.
  if(!active&&pointer.apiKey){
-   active=apiPresetCache.find(p=>p.id===pointer.id) ||
-          apiPresetCache.find(p=>p.name===pointer.name) ||
-          apiPresetCache.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
+  active=apiPresetCache.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||null;
  }
  if(active&&active.apiBase&&active.apiKey&&active.apiModel){
-   state.apiBase=String(active.apiBase).trim().replace(/\/+$/,'');
-   state.apiKey=String(active.apiKey).trim();
-   state.apiModel=String(active.apiModel).trim();
-   state.modelList=Array.isArray(active.modelList)?active.modelList:[];
-   state.apiConfigUpdatedAt=Number(active.updatedAt)||Date.now();
-   // Store only the selected preset ID, never a cached copy of the secret.
-   try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:active.id,name:active.name,updatedAt:active.updatedAt}))}catch(e){}
-   save();
-   if($('apiBase'))$('apiBase').value=state.apiBase;
-   if($('apiKey'))$('apiKey').value=state.apiKey;
-   if(typeof renderModelPicker==='function')renderModelPicker();
-   if(typeof updateAIState==='function')updateAIState();
-   if($('apiPresetName'))$('apiPresetName').value=active.name||'';
-   if($('apiPresetStatus'))$('apiPresetStatus').textContent='已自动同步当前预设「'+(active.name||'未命名预设')+'」的最新配置。';
- }else if(pointer.id){
-   // Do not revive the old token from localStorage settings when the selected preset disappeared.
-   if($('apiPresetStatus'))$('apiPresetStatus').textContent='当前选中的预设不存在，请重新切换到保存了新令牌的预设。';
+  state.apiBase=String(active.apiBase).trim().replace(/\/+$/,'');
+  state.apiKey=String(active.apiKey).trim();
+  state.apiModel=String(active.apiModel).trim();
+  state.modelList=Array.isArray(active.modelList)?active.modelList:[];
+  state.apiConfigUpdatedAt=Number(active.updatedAt)||Date.now();
+  // Remove the old secret snapshot from the active pointer; store only a stable preset reference.
+  try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:active.id,name:active.name,updatedAt:active.updatedAt}))}catch(e){}
+  save();
+  if($('apiBase'))$('apiBase').value=state.apiBase;
+  if($('apiKey'))$('apiKey').value=state.apiKey;
+  if(typeof renderModelPicker==='function')renderModelPicker();
+  if(typeof updateAIState==='function')updateAIState();
+  if($('apiPresetName'))$('apiPresetName').value=active.name||'';
+  if($('apiPresetStatus'))$('apiPresetStatus').textContent='已自动刷新当前预设「'+(active.name||'未命名预设')+'」的最新保存配置。';
+ }else if(pointer.id&&$('apiPresetStatus')){
+  $('apiPresetStatus').textContent='当前预设未找到或配置不完整，请重新保存新令牌所在的预设。';
  }
  renderApiPresets();
 }
