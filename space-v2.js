@@ -375,7 +375,7 @@
     try{if(typeof state!=='undefined'&&Array.isArray(state.worlds))return state.worlds}catch(e){}
     try{const raw=localStorage.getItem('yanyan-love-settings-v5');const s=raw?JSON.parse(raw):{};return Array.isArray(s.worlds)?s.worlds:[]}catch(e){return []}
   }
-  function worldBookContext(){return worldBooks().filter(w=>data.worldBookIds.includes(w.id)).map(w=>({name:w.name,description:w.description,locations:w.locations,rules:w.rules}))}
+  function worldBookContext(){return worldBooks().filter(w=>data.worldBookIds.includes(w.id)).map(w=>({name:w.name,description:w.description,locations:w.locations,rules:w.rules,entries:Array.isArray(w.entries)?w.entries.map(e=>({note:e.note||'',content:e.content||''})):[]}))}
   function timeContext(){
     if(!data.timeSense?.enabled)return '时间感知：关闭。';
     try{const zone=data.timeSense.zone||'Asia/Kuala_Lumpur';const now=new Date();const parts=new Intl.DateTimeFormat('zh-CN',{timeZone:zone,dateStyle:'full',timeStyle:'medium'}).formatToParts(now);const obj=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `时间感知：开启；地区：${zone}；当地时间：${obj.year||''}-${obj.month||''}-${obj.day||''} ${obj.hour||''}:${obj.minute||''}:${obj.second||''}；星期：${obj.weekday||''}`;}catch(e){return '时间感知：开启；地区：'+String(data.timeSense?.zone||'Asia/Kuala_Lumpur')}}
