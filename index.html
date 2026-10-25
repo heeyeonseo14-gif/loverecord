@@ -2013,6 +2013,24 @@ async function savePerson(){
   toast(mainSaved?'人物已保存 ♡':'人物已保存到独立联系人储存；建议导出备份');
  }catch(err){console.error('[LOVE RECORD] person save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}
 }
+let worldBooksReady=Promise.resolve();
+const WORLD_BOOKS_KV='love-record-worldbooks-v1';
+async function persistWorldBooks(worlds){
+ const snapshot=JSON.parse(JSON.stringify(Array.isArray(worlds)?worlds:[]));
+ return lrKVSet(WORLD_BOOKS_KV,snapshot);
+}
+async function restoreWorldBooks(){
+ try{
+  const saved=await lrKVGet(WORLD_BOOKS_KV);
+  if(Array.isArray(saved)){
+   state.worlds=saved;
+   try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(state))}catch(e){console.warn('[LOVE RECORD] worldbook local mirror skipped',e)}
+  }else{
+   await persistWorldBooks(Array.isArray(state.worlds)?state.worlds:[]);
+  }
+ }catch(e){console.warn('[LOVE RECORD] durable worldbook restore unavailable',e)}
+ try{window.dispatchEvent(new CustomEvent('lr-worldbooks-updated'))}catch(e){}
+}
 function worldEntriesFor(w){
  if(Array.isArray(w?.entries)&&w.entries.length)return w.entries.map((e,i)=>({id:String(e.id||'entry-'+i),note:String(e.note||''),content:String(e.content||'')}));
  const legacy=[];if(String(w?.description||'').trim())legacy.push({id:'legacy-desc',note:'简介',content:String(w.description).trim()});if(String(w?.locations||'').trim())legacy.push({id:'legacy-locations',note:'地点',content:String(w.locations).trim()});if(String(w?.rules||'').trim())legacy.push({id:'legacy-rules',note:'世界规则',content:String(w.rules).trim()});
@@ -2022,7 +2040,8 @@ function renderWorldBookEntries(entries){
  const box=$('worldBookEntries');if(!box)return;
  box.innerHTML=(entries||[]).map((e,i)=>`<section class="worldbook-entry" data-world-entry><div class="worldbook-entry-head"><strong>条目 ${i+1}</strong><button class="worldbook-entry-remove" type="button" data-action="remove-world-entry" aria-label="删除条目">删除条目 ×</button></div><label>备注</label><input type="text" data-world-note value="${esc(e.note||'')}" placeholder="例如：角色关系、时间线、重要设定"><label>内容（供聊天与 SPACE 的 AI 读取）</label><textarea data-world-content placeholder="在这里粘贴或填写设定内容……">${esc(e.content||'')}</textarea></section>`).join('');
 }
-function openWorldEditor(id=''){
+async function openWorldEditor(id=''){
+ try{await worldBooksReady}catch(e){}
  localizeEditors();editingWorldId=id;const w=state.worlds.find(x=>String(x.id)===String(id))||{};
  $('worldEditTitle').textContent=id?'编辑世界书':'新建世界书';$('worldName').value=w.name||'';
  const entries=worldEntriesFor(w);renderWorldBookEntries(entries);
@@ -2032,7 +2051,8 @@ function openWorldEditor(id=''){
 function closeWorldEditor(){$('worldEditModal').classList.remove('show');document.body.style.overflow=''}
 function addWorldBookEntry(){const entries=[...document.querySelectorAll('#worldBookEntries [data-world-entry]')].map(el=>({note:el.querySelector('[data-world-note]')?.value||'',content:el.querySelector('[data-world-content]')?.value||''}));entries.push({note:'',content:''});renderWorldBookEntries(entries);const all=$('worldBookEntries')?.querySelectorAll('[data-world-content]');all?.[all.length-1]?.focus()}
 function removeWorldBookEntry(btn){const el=btn.closest('[data-world-entry]');if(!el)return;const entries=[...document.querySelectorAll('#worldBookEntries [data-world-entry]')].filter(x=>x!==el).map(x=>({note:x.querySelector('[data-world-note]')?.value||'',content:x.querySelector('[data-world-content]')?.value||''}));if(!entries.length)entries.push({note:'',content:''});renderWorldBookEntries(entries)}
-function saveWorld(){
+async function saveWorld(){
+ try{await worldBooksReady}catch(e){}
  const status=$('worldBookSaveStatus'),name=$('worldName').value.trim();
  const setStatus=(msg,kind)=>{if(status){status.textContent=msg;status.className='worldbook-save-status '+kind}};
  if(!name){setStatus('保存失败：请先填写世界书名称。','error');toast('保存失败：请先填写世界书名称');$('worldName').focus();return}
@@ -2044,8 +2064,13 @@ function saveWorld(){
   const obj={...previous,id:editingWorldId||'w-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name,entries,description:flattened,locations:'',rules:'',updatedAt:Date.now()};
   if(!Array.isArray(state.worlds))state.worlds=[];
   if(editingWorldId){const i=state.worlds.findIndex(x=>String(x.id)===String(editingWorldId));if(i>=0)state.worlds[i]=obj;else state.worlds.push(obj)}else state.worlds.push(obj);
-  const ok=save();if(!ok){setStatus('保存失败：浏览器储存不可用，请检查储存空间后重试。','error');toast('世界书保存失败');return}
-  setStatus('保存成功！聊天与 SPACE 将共用这份世界书。','success');closeWorldEditor();renderModule('world');toast('世界书已保存，聊天与 SPACE 已同步 ♡');
+  // Persist the world books in their own IndexedDB key before updating the main state blob.
+  // This prevents a large localStorage payload from silently losing world-book edits on refresh.
+  try{await persistWorldBooks(state.worlds)}catch(storageErr){console.error('[LOVE RECORD] durable worldbook save failed',storageErr);setStatus('保存失败：独立储存写入失败，请检查浏览器储存权限后重试。','error');toast('世界书保存失败：储存写入失败');return}
+  const ok=save();if(!ok){setStatus('世界书已写入独立储存，但主设置保存失败；刷新后仍会尝试恢复。','error');toast('世界书已单独保存，主设置保存失败');return}
+  setStatus('保存成功！已写入独立储存，刷新后也会保留。','success');
+  try{window.dispatchEvent(new CustomEvent('lr-worldbooks-updated'))}catch(e){}
+  closeWorldEditor();renderModule('world');toast('世界书已保存，刷新后仍会保留 ♡');
  }catch(err){console.error('[LOVE RECORD] worldbook save failed',err);setStatus('保存失败：'+(err?.message||'请稍后重试'),'error');toast('世界书保存失败，请重试')}
 }
 function openJournalEditor(){$('journalTitle').value='';$('journalMood').value='';$('journalNote').value='';$('journalEditModal').classList.add('show');document.body.style.overflow='hidden'}
@@ -2126,6 +2151,8 @@ const LR_KV_DB='love-record-kv-v1',LR_KV_STORE='settings';
 function lrKVOpen(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open(LR_KV_DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(LR_KV_STORE))r.result.createObjectStore(LR_KV_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('IndexedDB open failed'))}catch(e){reject(e)}})}
 async function lrKVGet(key){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const r=d.transaction(LR_KV_STORE,'readonly').objectStore(LR_KV_STORE).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('IndexedDB read failed'))})}
 async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const tx=d.transaction(LR_KV_STORE,'readwrite');tx.objectStore(LR_KV_STORE).put(value,key);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('IndexedDB write failed'));tx.onabort=()=>reject(tx.error||new Error('IndexedDB write aborted'))})}
+// Restore/migrate the independent world-book store before the editor is used.
+worldBooksReady=restoreWorldBooks();
 // Persistent multi-page phone launcher. Long-press to drag; swipe horizontally to switch pages.
 (function(){
  const grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');if(!grid||!pages)return;
@@ -2265,7 +2292,7 @@ if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound
  if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return}
  if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();removePersonFromIndexedDB(id).catch(e=>console.warn(e));persistPeopleRecovery();renderModule('people');toast('人物已删除')}return}
  if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
- if(a==='delete-world'){if(confirm('删除这个世界？')){state.worlds=state.worlds.filter(x=>x.id!==id);save();renderModule('world');toast('世界已删除')}return}
+ if(a==='delete-world'){if(confirm('删除这个世界？')){(async()=>{try{await worldBooksReady;state.worlds=state.worlds.filter(x=>String(x.id)!==String(id));await persistWorldBooks(state.worlds);save();window.dispatchEvent(new CustomEvent('lr-worldbooks-updated'));renderModule('world');toast('世界书已删除')}catch(err){console.error('[LOVE RECORD] worldbook delete failed',err);toast('删除失败：储存写入失败')}})()}return}
  if(a==='new-journal'){openJournalEditor();return}
  if(a==='delete-journal'){if(confirm('删除这篇日记？')){state.journal=state.journal.filter(x=>x.id!==id);save();renderModule('journal');toast('日记已删除')}return}
  if(a==='delete-history-turn'){deleteHistoryTurn(id);return}
@@ -2438,7 +2465,7 @@ if(loveIntro){
 </script>
 
 <script src="./diary-v1.js?v=3"></script>
-<script src="./space-v2.js?v=43"></script>
+<script src="./space-v2.js?v=44"></script>
 <script src="./life-apps.js?v=20261011-v34"></script>
 <script src="./scrapbook-v1.js?v=9"></script>
 <style>

@@ -447,6 +447,9 @@
     list.querySelectorAll('input[type="checkbox"]').forEach(input=>input.addEventListener('change',()=>{const id=input.value;worldBookDraft=input.checked?[...new Set([...worldBookDraft,id])]:worldBookDraft.filter(x=>x!==id)}));
     modal.classList.add('show');modal.setAttribute('aria-hidden','false');
   }
+  window.addEventListener('lr-worldbooks-updated',()=>{
+    try{renderWorldBookPickerTrigger();const modal=$('lrSpaceBookPicker');if(modal?.classList.contains('show'))openWorldBookPicker()}catch(e){console.warn('[LOVE RECORD] worldbook picker refresh skipped',e)}
+  });
   function openWorldSettings(){
     const modal=$('lrSpaceSettings');if(!modal)return;const books=worldBooks();
     renderWorldBookPickerTrigger();
