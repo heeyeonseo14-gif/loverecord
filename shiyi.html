@@ -74,7 +74,7 @@ async function getApiConfig(){
  let chosen=pointer.id?presets.find(p=>String(p.id)===String(pointer.id)):null;
  if(!chosen&&pointer.name)chosen=presets.filter(p=>p.name===pointer.name).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
  if(!chosen&&pointer.apiKey)chosen=presets.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||null;
- if(pointer.id&&!chosen)throw new Error('找不到当前选中的预设，已阻止回退到旧令牌。请在主页重新切换新令牌所在的预设。');
+ if((pointer.id||pointer.name)&&!chosen)throw new Error('找不到当前选中的预设，已阻止回退到旧令牌。请在主页重新选择并保存新令牌所在的预设。');
  if(chosen){
   const apiBase=String(chosen.apiBase||'').trim().replace(/\/+$/,'');
   const apiKey=String(chosen.apiKey||'').trim();
