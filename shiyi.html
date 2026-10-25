@@ -60,35 +60,29 @@ $('timeline').onclick=e=>{const ed=e.target.closest('[data-edit]'),del=e.target.
 async function init(){people=await loadPeople();const metas=readMeta();const ids=new Set([...people.map(p=>String(p.id)),...Object.keys(metas).filter(id=>metas[id]&&metas[id].longTermMemory)]);const byId=new Map(people.map(p=>[String(p.id),p]));ids.forEach(id=>{if(!byId.has(id))byId.set(id,{id,name:metas[id]?.remark||'联系人 '+id})});people=[...byId.values()];$('contactSelect').innerHTML='<option value="">选择联系人……</option>'+people.map(p=>`<option value="${esc(p.id)}">${esc(displayName(p))}</option>`).join('');const params=new URLSearchParams(location.search);if(params.get('contact')&&ids.has(params.get('contact'))){selected=params.get('contact');$('contactSelect').value=selected}resetForm();render()}
 
 async function getApiConfig(){
- let pointer={},idbList=[],localList=[];
- try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
- try{
-  const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('love-record-kv-v1',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法打开 API 预设数据库'))});
-  idbList=await new Promise((resolve,reject)=>{const req=db.transaction('settings','readonly').objectStore('settings').get('api-presets-v1');req.onsuccess=()=>resolve(Array.isArray(req.result)?req.result.filter(x=>x&&x.id):[]);req.onerror=()=>reject(req.error||new Error('无法读取 IndexedDB 预设'))});
-  db.close();
- }catch(e){console.warn('[拾忆] IndexedDB preset read failed',e)}
+ const dbName='love-record-kv-v1',storeName='settings';let pointer=null,idbList=[],localList=[];
+ const readIDB=async key=>{const db=await new Promise((resolve,reject)=>{const req=indexedDB.open(dbName,1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法打开 API 预设数据库'))});try{return await new Promise((resolve,reject)=>{if(!db.objectStoreNames.contains(storeName)){resolve(undefined);return}const req=db.transaction(storeName,'readonly').objectStore(storeName).get(key);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法读取 API 预设'))})}finally{db.close()}};
+ try{pointer=await readIDB('api-active-preset-v1')}catch(e){console.warn('[拾忆] active pointer IDB read failed',e)}
+ if(!pointer?.id){try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'null')}catch(e){pointer=null}}
+ try{const v=await readIDB('api-presets-v1');if(Array.isArray(v))idbList=v.filter(x=>x&&x.id)}catch(e){console.warn('[拾忆] preset IDB read failed',e)}
  try{const v=JSON.parse(localStorage.getItem('love-record-api-presets-v1')||'[]');if(Array.isArray(v))localList=v.filter(x=>x&&x.id)}catch(e){}
- const merged=new Map();
- [...idbList,...localList].forEach(p=>{const k=String(p.id),old=merged.get(k);if(!old||(Number(p.updatedAt)||0)>=(Number(old.updatedAt)||0))merged.set(k,p)});
- const presets=[...merged.values()];
- let chosen=pointer.id?presets.find(p=>String(p.id)===String(pointer.id)):null;
- if(!chosen&&pointer.name)chosen=presets.filter(p=>p.name===pointer.name).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
- if(!chosen&&pointer.apiKey)chosen=presets.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||null;
- if((pointer.id||pointer.name)&&!chosen)throw new Error('找不到当前选中的预设，已阻止回退到旧令牌。请在主页重新选择并保存新令牌所在的预设。');
+ const merged=new Map();[...idbList,...localList].forEach(p=>{const id=String(p.id),old=merged.get(id);if(!old||(Number(p.updatedAt)||0)>=(Number(old.updatedAt)||0))merged.set(id,p)});const presets=[...merged.values()];
+ let chosen=pointer?.id?presets.find(p=>String(p.id)===String(pointer.id)):null;
+ // If localStorage could not store the active pointer, use the newest saved preset, not the stale main settings snapshot.
+ if(!chosen&&presets.length)chosen=presets.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
  if(chosen){
-  const apiBase=String(chosen.apiBase||'').trim().replace(/\/+$/,'');
-  const apiKey=String(chosen.apiKey||'').trim();
-  const apiModel=String(chosen.apiModel||'').trim();
-  if(!apiBase||!apiKey||!apiModel)throw new Error('当前预设「'+(chosen.name||'未命名')+'」缺少 API 地址、令牌或模型，请先在主页保存完整预设。');
-  try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:chosen.id,name:chosen.name,updatedAt:chosen.updatedAt}))}catch(e){}
+  const apiBase=String(chosen.apiBase||'').trim().replace(/\/+$/,'');const apiKey=String(chosen.apiKey||'').trim();const apiModel=String(chosen.apiModel||'').trim();
+  if(!apiBase||!apiKey||!apiModel)throw new Error('当前预设「'+(chosen.name||'未命名')+'」缺少 API 地址、令牌或模型，已阻止回退到旧令牌。');
+  const activePointer={id:String(chosen.id),name:String(chosen.name||''),updatedAt:Number(chosen.updatedAt)||Date.now()};
+  try{await new Promise((resolve,reject)=>{const req=indexedDB.open(dbName,1);req.onsuccess=()=>{const db=req.result;try{const tx=db.transaction(storeName,'readwrite');tx.objectStore(storeName).put(activePointer,'api-active-preset-v1');tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('无法保存活动预设'))}}catch(e){db.close();reject(e)}};req.onerror=()=>reject(req.error||new Error('无法打开预设数据库'))})}catch(e){console.warn('[拾忆] active pointer persist failed',e)}
+  try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify(activePointer))}catch(e){}
   return {apiBase,apiKey,apiModel,presetName:chosen.name||'当前预设'};
  }
+ // Only use main settings when there are no presets at all; if a preset exists but cannot be resolved, do not silently use an old token.
+ if(pointer?.id)throw new Error('活动预设 ID 无法匹配任何已保存预设，已阻止使用旧令牌。请返回主页重新点击目标预设的「切换」。');
  let primary={};try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}
- const apiBase=String(primary.apiBase||'').trim().replace(/\/+$/,'');
- const apiKey=String(primary.apiKey||'').trim();
- const apiModel=String(primary.apiModel||'').trim();
- if(!apiBase||!apiKey||!apiModel)return null;
- return {apiBase,apiKey,apiModel,presetName:'主页当前设置'};
+ const apiBase=String(primary.apiBase||'').trim().replace(/\/+$/,'');const apiKey=String(primary.apiKey||'').trim();const apiModel=String(primary.apiModel||'').trim();
+ if(!apiBase||!apiKey||!apiModel)return null;return {apiBase,apiKey,apiModel,presetName:'主页当前设置'};
 }
 function parseJsonArray(raw){
  let t=String(raw||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');

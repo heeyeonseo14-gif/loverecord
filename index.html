@@ -1899,7 +1899,7 @@ async function loadModels(silent=false){
    let j;try{j=JSON.parse(raw)}catch{throw new Error('模型列表不是有效 JSON')}
    const ids=Array.isArray(j.data)?j.data.map(x=>x?.id).filter(Boolean):Array.isArray(j.models)?j.models.map(x=>typeof x==='string'?x:x?.id||x?.name).filter(Boolean):[];
    if(!ids.length)throw new Error('NO_MODELS · /models 没有返回可用模型');
-   state.apiBase=base;state.apiKey=key;state.modelList=[...new Set(ids)];state.apiModel=state.modelList.includes(state.apiModel)?state.apiModel:state.modelList[0];save();
+   state.apiBase=base;state.apiKey=key;state.modelList=[...new Set(ids)];state.apiModel=state.modelList.includes(state.apiModel)?state.apiModel:state.modelList[0];save();try{const active=await readActiveApiPresetPointer();if(active?.id){const list=readApiPresets();const p=list.find(x=>String(x.id)===String(active.id));if(p){const updated={...p,apiBase:state.apiBase,apiKey:state.apiKey,apiModel:state.apiModel,modelList:state.modelList,updatedAt:Date.now()};await writeApiPresets(list.map(x=>String(x.id)===String(p.id)?updated:x));await writeActiveApiPresetPointer(updated)}}}catch(e){console.warn('[LOVE RECORD] active preset model sync failed',e)}
    try{renderSettings()}catch(uiError){console.warn('模型列表已读取，但设置界面刷新有问题：',uiError)}
    setApiDebug('模型读取成功：'+state.modelList.length+' 个。当前：'+state.apiModel,true);
    if(!silent)toast('找到 '+state.modelList.length+' 个模型');
@@ -2121,62 +2121,66 @@ const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.
 // API presets are stored in IndexedDB first, so full localStorage does not block saving.
 const API_PRESETS_KEY='love-record-api-presets-v1',API_PRESETS_KV='api-presets-v1';let apiPresetCache=[];
 function readApiPresets(){return apiPresetCache.slice()}
+const API_ACTIVE_PRESET_KV='api-active-preset-v1';
+async function readActiveApiPresetPointer(){
+ let p=null;try{p=await lrKVGet(API_ACTIVE_PRESET_KV)}catch(e){console.warn('[LOVE RECORD] active preset pointer IDB read failed',e)}
+ if(p&&p.id)return p;
+ try{p=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'null')}catch(e){p=null}
+ if(p&&p.id)return p;
+ return null;
+}
+async function writeActiveApiPresetPointer(p){
+ const pointer={id:String(p.id),name:String(p.name||''),updatedAt:Number(p.updatedAt)||Date.now()};
+ // IndexedDB is the durable canonical pointer; localStorage is only a compatibility mirror.
+ await lrKVSet(API_ACTIVE_PRESET_KV,pointer);
+ try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify(pointer))}catch(e){console.warn('[LOVE RECORD] active preset localStorage mirror unavailable',e)}
+ return pointer;
+}
 async function loadApiPresets(){
  let idbList=[],localList=[];
- try{const v=await lrKVGet(API_PRESETS_KV);if(Array.isArray(v))idbList=v.filter(x=>x&&x.id)}catch(e){console.warn('[LOVE RECORD] IndexedDB preset read failed',e)}
- try{const v=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');if(Array.isArray(v))localList=v.filter(x=>x&&x.id)}catch(e){console.warn('[LOVE RECORD] local preset read failed',e)}
- // Merge both stores per preset ID. The newest saved version wins, regardless of which store was read first.
+ try{const v=await lrKVGet(API_PRESETS_KV);if(Array.isArray(v))idbList=v.filter(x=>x&&x.id)}catch(e){console.warn('[LOVE RECORD] API preset IndexedDB read failed',e)}
+ try{const v=JSON.parse(localStorage.getItem(API_PRESETS_KEY)||'[]');if(Array.isArray(v))localList=v.filter(x=>x&&x.id)}catch(e){console.warn('[LOVE RECORD] API preset localStorage read failed',e)}
+ // Merge by ID; when timestamps tie, prefer localStorage because it may contain the just-saved form.
  const merged=new Map();
- [...idbList,...localList].forEach(p=>{
-  const k=String(p.id),old=merged.get(k);
-  if(!old||(Number(p.updatedAt)||0)>=(Number(old.updatedAt)||0))merged.set(k,p);
- });
+ [...idbList,...localList].forEach(p=>{const id=String(p.id),old=merged.get(id);if(!old||(Number(p.updatedAt)||0)>=(Number(old.updatedAt)||0))merged.set(id,p)});
  apiPresetCache=[...merged.values()];
- // Reconcile stores so a stale IndexedDB copy cannot reappear on the next refresh.
  if(apiPresetCache.length){
   try{await lrKVSet(API_PRESETS_KV,apiPresetCache)}catch(e){console.warn('[LOVE RECORD] preset IDB reconciliation failed',e)}
-  try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){console.warn('[LOVE RECORD] preset local reconciliation failed',e)}
+  try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){console.warn('[LOVE RECORD] preset localStorage mirror unavailable',e)}
  }
- let pointer={};try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
- let active=pointer.id?apiPresetCache.find(p=>String(p.id)===String(pointer.id)):null;
- if(!active&&pointer.name)active=apiPresetCache.filter(p=>p.name===pointer.name).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||null;
- if(active){
-  // The active pointer is only a reference. Always use the newest full preset record, never its copied token.
-  const apiBase=String(active.apiBase||'').trim().replace(/\/+$/,'');
-  const apiKey=String(active.apiKey||'').trim();
-  const apiModel=String(active.apiModel||'').trim();
-  if(apiBase&&apiKey&&apiModel){
-   state.apiBase=apiBase;state.apiKey=apiKey;state.apiModel=apiModel;
-   state.modelList=Array.isArray(active.modelList)?active.modelList:[];
-   state.apiConfigUpdatedAt=Number(active.updatedAt)||Date.now();
-   try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:active.id,name:active.name,updatedAt:active.updatedAt}))}catch(e){}
-   // Refresh the actual settings inputs and persist the latest selected preset into the canonical app state.
-   if($('apiBase'))$('apiBase').value=apiBase;
-   if($('apiKey'))$('apiKey').value=apiKey;
-   if($('apiPresetName'))$('apiPresetName').value=active.name||'';
-   try{renderModelPicker()}catch(e){}
-   try{updateAIState()}catch(e){}
-   try{save()}catch(e){}
-   if($('apiPresetStatus'))$('apiPresetStatus').textContent='已自动同步当前预设「'+(active.name||'未命名预设')+'」的最新保存配置。';
-  }else{
-   // A selected but incomplete preset must not silently fall back to an older token in the main state.
-   state.apiBase='';state.apiKey='';state.apiModel='';
-   if($('apiBase'))$('apiBase').value='';
-   if($('apiKey'))$('apiKey').value='';
-   if($('apiPresetStatus'))$('apiPresetStatus').textContent='当前预设配置不完整，已阻止使用旧令牌。请重新保存完整预设。';
-  }
- }else if(pointer.id||pointer.name){
-  // A stale pointer is an error state, not permission to use the previous API key.
-  state.apiBase='';state.apiKey='';state.apiModel='';
-  if($('apiBase'))$('apiBase').value='';
-  if($('apiKey'))$('apiKey').value='';
-  if($('apiPresetStatus'))$('apiPresetStatus').textContent='找不到当前选中的预设，已阻止回退到旧令牌。请重新选择并保存新令牌所在的预设。';
+ let pointer=await readActiveApiPresetPointer();
+ let active=pointer?.id?apiPresetCache.find(p=>String(p.id)===String(pointer.id)):null;
+ // If the pointer was lost because localStorage was full, use the newest saved preset instead of stale main settings.
+ if(!active&&apiPresetCache.length){active=apiPresetCache.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]}
+ if(active&&active.apiBase&&active.apiKey&&active.apiModel){
+  state.apiBase=String(active.apiBase).trim().replace(/\/+$/,'');state.apiKey=String(active.apiKey).trim();state.apiModel=String(active.apiModel).trim();state.modelList=Array.isArray(active.modelList)?active.modelList:[];state.apiConfigUpdatedAt=Number(active.updatedAt)||Date.now();
+  try{await writeActiveApiPresetPointer(active)}catch(e){console.error('[LOVE RECORD] unable to persist active preset pointer',e)}
+  // Update in-memory config and visible controls before any API action can use stale state.
+  try{if($('apiBase'))$('apiBase').value=state.apiBase;if($('apiKey'))$('apiKey').value=state.apiKey;if($('apiPresetName'))$('apiPresetName').value=active.name||'';renderModelPicker();updateAIState();if(typeof save==='function')save()}catch(e){console.warn('[LOVE RECORD] active preset UI hydration failed',e)}
+  if($('apiPresetStatus'))$('apiPresetStatus').textContent='已从当前预设「'+(active.name||'未命名预设')+'」同步最新保存配置。';
+ }else if(pointer?.id){
+  if($('apiPresetStatus'))$('apiPresetStatus').textContent='当前活动预设不存在或配置不完整；已阻止自动回退到旧令牌。请检查预设内容。';
  }
  renderApiPresets();
 }
 async function writeApiPresets(list){try{await lrKVSet(API_PRESETS_KV,list);apiPresetCache=list.filter(x=>x&&x.id);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){/* primary IndexedDB save succeeded */}return true}catch(e){console.warn('[LOVE RECORD] API presets IndexedDB save failed',e);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(list));apiPresetCache=list.filter(x=>x&&x.id);return true}catch(err){return false}}}
-function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=()=>{try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:p.id,name:p.name,updatedAt:p.updatedAt}))}catch{}state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));$('apiPresetStatus').textContent=ok?'已切换到「'+(p.name||'未命名预设')+'」并保存当前配置。':'已从独立储存载入预设；主设置保存失败，刷新后配置可能需要重新切换。';toast(ok?'已切换 API 预设 ♡':'已切换预设，但主设置保存失败')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=async()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=await writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除并保存。':'删除失败：独立储存和浏览器储存均不可用。'};row.append(info,use,del);box.append(row)})}
-async function saveCurrentApiPreset(addNew){const name=($('apiPresetName')?.value||'').trim();const apiBase=$('apiBase')?.value.trim().replace(/\/+$/,'')||'';const apiKey=$('apiKey')?.value.trim()||'';const apiModel=state.apiModel||'';if(!name){$('apiPresetStatus').textContent='请先填写预设名称。';toast('请填写预设名称');return}if(!apiBase||!apiKey){$('apiPresetStatus').textContent='请先填写 API Base URL 和 API Key。';toast('请先填写站点和 Key');return}const list=readApiPresets();const existing=!addNew?list.find(x=>x.name===name):null;const profile={id:existing?.id||('api-preset-'+Date.now()),name,apiBase,apiKey,apiModel,modelList:Array.isArray(state.modelList)?state.modelList:[],updatedAt:Date.now()};const next=existing?list.map(x=>x.id===existing.id?profile:x):[...list,profile];const saved=await writeApiPresets(next);if(saved){try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:profile.id,name:profile.name,updatedAt:profile.updatedAt}))}catch{}}if(!saved){$('apiPresetStatus').textContent='保存失败：独立储存和浏览器储存均不可用。请先导出备份并检查浏览器权限。';toast('API 预设保存失败');return}state.apiBase=apiBase;state.apiKey=apiKey;state.apiModel=apiModel;state.apiConfigUpdatedAt=Date.now();state.language='zh';const stateSaved=save();$('apiBase').value=apiBase;$('apiKey').value=apiKey;renderApiPresets();$('apiPresetStatus').textContent=(existing?'已更新':'已新增')+'预设「'+name+'」：预设已保存成功 ♡'+(stateSaved?'':'（当前主设置未能保存；预设本身已安全保存）');toast((existing?'预设已更新':'预设已添加')+' ♡')}
+function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=async()=>{try{await writeActiveApiPresetPointer(p)}catch(e){$('apiPresetStatus').textContent='活动预设指针写入失败：'+(e.message||e);toast('预设切换状态保存失败');return}state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];state.apiConfigUpdatedAt=Number(p.updatedAt)||Date.now();$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));$('apiPresetStatus').textContent='已切换到「'+(p.name||'未命名预设')+'」；主页运行配置已同步。'+(ok?'':'（主设置快照未保存，预设仍以独立存储为准）');toast('已切换 API 预设 ♡')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=async()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=await writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除并保存。':'删除失败：独立储存和浏览器储存均不可用。'};row.append(info,use,del);box.append(row)})}
+async function saveCurrentApiPreset(addNew){
+ const name=($('apiPresetName')?.value||'').trim();const apiBase=($('apiBase')?.value||'').trim().replace(/\/+$/,'');const apiKey=($('apiKey')?.value||'').trim();const apiModel=String(state.apiModel||'').trim();
+ if(!name){$('apiPresetStatus').textContent='请先填写预设名称。';toast('请填写预设名称');return}
+ if(!apiBase||!apiKey||!apiModel){$('apiPresetStatus').textContent='请先填写 API 地址、Key，并选择模型后再保存预设。';toast('API 配置不完整');return}
+ const list=readApiPresets();const existing=!addNew?list.find(x=>x.name===name):null;
+ const profile={id:existing?.id||('api-preset-'+Date.now()),name,apiBase,apiKey,apiModel,modelList:Array.isArray(state.modelList)?state.modelList:[],updatedAt:Date.now()};
+ const next=existing?list.map(x=>String(x.id)===String(existing.id)?profile:x):[...list,profile];
+ const saved=await writeApiPresets(next);
+ if(!saved){$('apiPresetStatus').textContent='保存失败：IndexedDB 与浏览器备用存储均不可用。';toast('API 预设保存失败');return}
+ try{await writeActiveApiPresetPointer(profile)}catch(e){$('apiPresetStatus').textContent='预设内容已保存，但活动预设指针保存失败：'+(e.message||e);toast('活动预设保存失败');return}
+ // The just-saved preset is immediately authoritative for this page, not the old settings snapshot.
+ state.apiBase=apiBase;state.apiKey=apiKey;state.apiModel=apiModel;state.modelList=profile.modelList;state.apiConfigUpdatedAt=profile.updatedAt;state.language='zh';
+ try{save()}catch(e){console.warn('[LOVE RECORD] main settings snapshot save failed; active preset remains canonical',e)}
+ $('apiBase').value=apiBase;$('apiKey').value=apiKey;renderModelPicker();updateAIState();renderApiPresets();
+ $('apiPresetStatus').textContent=(existing?'已更新':'已新增')+'预设「'+name+'」并设为当前活动预设；主页与拾忆将读取这份配置。';toast((existing?'预设已更新':'预设已添加')+' ♡');
+}
 $('saveApiPreset').onclick=()=>saveCurrentApiPreset(false);$('addApiPreset').onclick=()=>saveCurrentApiPreset(true);
 $('apiPresetName').addEventListener('change',()=>{const p=readApiPresets().find(x=>x.name===$('apiPresetName').value.trim());if(p){$('apiBase').value=p.apiBase||'';$('apiKey').value=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=p.modelList||[];renderModelPicker()}});
 loadApiPresets();
