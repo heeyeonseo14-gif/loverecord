@@ -62,10 +62,9 @@ async function init(){people=await loadPeople();const metas=readMeta();const ids
 async function getApiConfig(){
  let pointer={},idbList=[],localList=[];
  try{pointer=JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'{}')||{}}catch(e){}
- // Read both persisted stores; the newest record wins if one store still has an older copy.
  try{
   const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('love-record-kv-v1',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('无法打开 API 预设数据库'))});
-  idbList=await new Promise((resolve,reject)=>{if(!db.objectStoreNames.contains('settings')){resolve([]);return}const req=db.transaction('settings','readonly').objectStore('settings').get('api-presets-v1');req.onsuccess=()=>resolve(Array.isArray(req.result)?req.result.filter(x=>x&&x.id):[]);req.onerror=()=>reject(req.error||new Error('无法读取 IndexedDB 预设'))});
+  idbList=await new Promise((resolve,reject)=>{const req=db.transaction('settings','readonly').objectStore('settings').get('api-presets-v1');req.onsuccess=()=>resolve(Array.isArray(req.result)?req.result.filter(x=>x&&x.id):[]);req.onerror=()=>reject(req.error||new Error('无法读取 IndexedDB 预设'))});
   db.close();
  }catch(e){console.warn('[拾忆] IndexedDB preset read failed',e)}
  try{const v=JSON.parse(localStorage.getItem('love-record-api-presets-v1')||'[]');if(Array.isArray(v))localList=v.filter(x=>x&&x.id)}catch(e){}
@@ -74,7 +73,6 @@ async function getApiConfig(){
  const presets=[...merged.values()];
  let chosen=pointer.id?presets.find(p=>String(p.id)===String(pointer.id)):null;
  if(!chosen&&pointer.name)chosen=presets.filter(p=>p.name===pointer.name).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
- // Old pointer may contain a secret copy; resolve against stored preset records, never use that copy.
  if(!chosen&&pointer.apiKey)chosen=presets.filter(p=>p&&p.apiKey).sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0]||null;
  if(pointer.id&&!chosen)throw new Error('找不到当前选中的预设，已阻止回退到旧令牌。请在主页重新切换新令牌所在的预设。');
  if(chosen){
@@ -82,11 +80,9 @@ async function getApiConfig(){
   const apiKey=String(chosen.apiKey||'').trim();
   const apiModel=String(chosen.apiModel||'').trim();
   if(!apiBase||!apiKey||!apiModel)throw new Error('当前预设「'+(chosen.name||'未命名')+'」缺少 API 地址、令牌或模型，请先在主页保存完整预设。');
-  // Clear any legacy active-pointer token copy immediately.
   try{localStorage.setItem('love-record-api-active-preset-v1',JSON.stringify({id:chosen.id,name:chosen.name,updatedAt:chosen.updatedAt}))}catch(e){}
   return {apiBase,apiKey,apiModel,presetName:chosen.name||'当前预设'};
  }
- // Compatibility fallback only when no active preset has ever been selected.
  let primary={};try{primary=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}
  const apiBase=String(primary.apiBase||'').trim().replace(/\/+$/,'');
  const apiKey=String(primary.apiKey||'').trim();
@@ -106,11 +102,10 @@ async function generateMemories(){
  const raw=$('importMemoryText').value.trim();
  if(!selected){toast('请先选择联系人');return}
  if(!raw){toast('先粘贴需要整理的记忆噢');return}
- let cfg;
- try{cfg=await getApiConfig()}catch(configError){$('generateStatus').textContent='读取当前预设失败：'+(configError.message||'未知错误');toast('读取 API 预设失败');return}
+ let cfg; try{cfg=await getApiConfig()}catch(configError){$('generateStatus').textContent='读取当前预设失败：'+(configError.message||'未知错误');toast('读取 API 预设失败');return}
  if(!cfg){toast('请先在主页设置 API 地址、Key 和模型');$('generateStatus').textContent='未找到可用 API 配置。请返回主页检查 API 设置后重试。';return}
  const btn=$('generateMemoryBtn'),status=$('generateStatus');
- btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='已重新读取最新预设：'+(cfg.presetName||'API 设置')+' · '+cfg.apiModel+' · 令牌末四位 '+String(cfg.apiKey).slice(-4)+'。正在整理记忆…';
+ btn.disabled=true;btn.textContent='正在穿过记忆雾层…';status.textContent='已重新读取最新预设：'+(cfg.presetName||'API 设置')+' · '+cfg.apiModel+'。正在整理记忆…';
  const system=`你是 LOVE RECORD 的记忆编年整理器。用户会提供从其他地方复制来的旧记忆、聊天摘要或剧情记录。请只依据输入整理，不要编造，不要把推测写成事实。尽可能识别每个事件实际发生的日期和时间；相对日期只有在上下文明确时才换算。日期不明确时 date 留空字符串，不要猜。将内容拆成独立、可供未来聊天参考的记忆片段，保留人物、关系、约定、重要经历、情绪变化和未完成事项。按发生时间从早到晚输出。严格只输出 JSON 数组，不要 Markdown。每项格式：{"date":"YYYY-MM-DDTHH:mm 或 YYYY-MM-DD 或空字符串","title":"简短标题","content":"准确完整的记忆正文"}。不要将当前导入时间当作事件发生时间。`;
  try{
   const response=await fetch(String(cfg.apiBase).replace(/\/+$/,'')+'/chat/completions',{
