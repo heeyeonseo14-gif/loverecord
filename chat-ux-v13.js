@@ -12,8 +12,15 @@ async function put(key,value){const d=await db();return new Promise((res,rej)=>{
 async function get(key){const d=await db();return new Promise((res,rej)=>{const r=d.transaction(STORE).objectStore(STORE).get(key);r.onsuccess=()=>res(r.result?.value??null);r.onerror=()=>rej(r.error)})}
 async function del(key){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(STORE,'readwrite');t.objectStore(STORE).delete(key);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 const cssKey=id=>'css:'+id,refKey=id=>'ref:'+id,promptKey=id=>'prompt:'+id,localPromptKey=id=>'lr-chat-image-prompt-v1:'+id;
-async function readSavedPrompt(id){if(!id)return null;try{const v=localStorage.getItem(localPromptKey(id));if(v!==null)return v}catch{}try{const v=await get(promptKey(id));if(typeof v==='string')return v}catch{}return null}
-async function writeSavedPrompt(id,value){if(!id)throw new Error('没有选择联系人');const text=String(value??'');try{localStorage.setItem(localPromptKey(id),text)}catch(e){console.warn('[LOVE RECORD] local prompt fallback unavailable',e)}await put(promptKey(id),text);return text}
+async function readSavedPrompt(id){if(!id)return null;
+ // IndexedDB is the source of truth. localStorage may be full and retain an older prompt.
+ try{const v=await get(promptKey(id));if(typeof v==='string')return v}catch(e){console.warn('[LOVE RECORD] IndexedDB prompt read failed',e)}
+ try{const v=localStorage.getItem(localPromptKey(id));if(v!==null)return v}catch{}
+ try{const v=meta()?.imagePrompt;if(typeof v==='string')return v}catch{}return null}
+async function writeSavedPrompt(id,value){if(!id)throw new Error('没有选择联系人');const text=String(value??'');
+ // Persist to IndexedDB first, then update the optional localStorage mirror.
+ await put(promptKey(id),text);try{localStorage.setItem(localPromptKey(id),text)}catch(e){console.warn('[LOVE RECORD] local prompt mirror unavailable; IndexedDB saved',e)}
+ const check=await get(promptKey(id));if(check!==text)throw new Error('提示词写入后校验不一致，请重试');return text}
 function active(){try{const fromHost=typeof window.__lrGetActiveChatContactId==='function'?window.__lrGetActiveChatContactId():'';if(fromHost)return String(fromHost)}catch(e){}try{if(typeof activeChatContactId!=='undefined'&&activeChatContactId)return String(activeChatContactId)}catch(e){}return String(window.activeChatContactId||window.currentChatContactId||window.__lrActiveChatContactId||'')}
 function meta(){return active()&&typeof window.chatMeta==='function'?window.chatMeta(active()):{}}
 function saveMeta(v){if(typeof window.saveChatMetaSafely==='function')return window.saveChatMetaSafely(active(),v);window.writeChatMeta(active(),v);return Promise.resolve()}
