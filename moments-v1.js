@@ -69,9 +69,12 @@ async function generateAI(){
  try{
   const people=await getPeople();
   if(!people.length)throw Error('没有读取到聊天联系人。请确认联系人已保存；若刚添加过联系人，请刷新主页后再试。');
-  const shuffled=[...people].sort(()=>Math.random()-.5);
+  const canSocialize=person=>people.some(other=>areMutualCommonFriends(person,other));
+  const socialPeople=people.filter(canSocialize);
+  if(!socialPeople.length)throw Error('请先在联系人中互相设置共同好友，至少两位联系人互相选择后，才能生成他们的朋友圈互动。');
+  const shuffled=[...socialPeople].sort(()=>Math.random()-.5);
   const selected=shuffled.slice(0,Math.min(3,shuffled.length));
-  const roster=people.map(p=>({id:String(p.id),name:p.name||'未命名角色',personality:p.personality||'',background:p.background||'',speech:p.speech||'',role:p.role||'',instructions:p.instructions||''}));
+  const roster=people.map(p=>({id:String(p.id),name:p.name||'未命名角色',personality:p.personality||'',background:p.background||'',speech:p.speech||'',role:p.role||'',instructions:p.instructions||'',commonFriends:(p.commonFriends||[]).map(f=>{const id=typeof f==='string'?f:f.personId;const friend=people.find(q=>String(q.id)===String(id));return {name:friend?.name||'',relationship:typeof f==='string'?'':(f.relationship||'')}})}));
   const recent=posts.slice(0,12).map(p=>({author:p.author,text:p.text}));
   let success=0;const errors=[];
   for(let i=0;i<selected.length;i++){
@@ -98,18 +101,20 @@ async function generateAI(){
   if(errors.length)console.warn('[LOVE RECORD Moments] some AI posts failed',errors);
  }catch(e){const msg=e?.name==='AbortError'?'请求超时（60 秒），请检查主页 API 或中转站是否可用。':'生成失败：'+(e?.message||String(e));console.error('[LOVE RECORD Moments] generate AI failed',e);toast(msg);setGenerationStatus(msg)}finally{busy=false}
 }
+function areMutualCommonFriends(a,b){if(!a||!b||String(a.id)===String(b.id))return false;const has=(x,id)=>(Array.isArray(x?.commonFriends)?x.commonFriends:[]).some(v=>String(typeof v==='string'?v:(v?.personId||v?.id||''))===String(id));return has(a,b.id)&&has(b,a.id)}
+function contactByPostAuthor(people,post){return post?.authorId?people.find(p=>String(p.id)===String(post.authorId))||null:people.find(p=>String(p.name||'')===String(post?.author||''))||null}
 async function generateComment(postId,button){
  const post=posts.find(p=>String(p.id)===String(postId));if(!post){toast('找不到这条动态，请刷新后重试');return}
  const app=getAppSettings();const base=String(app.apiBase||app.base||'').trim().replace(/\/+$/,'');const key=String(app.apiKey||app.key||'').trim();const model=String(app.apiModel||app.model||'').trim();
  if(!base||!key||!model){const msg='未读取到主页文字 API，请先在主页设置并保存 API 地址、密钥和模型。';toast(msg);return}
  if(button){button.disabled=true;button.textContent='生成中…'}toast('正在调用主页 API 生成评论…');
  try{
-  const people=await getPeople();const all=Array.isArray(post.comments)?post.comments:[];const last=all[all.length-1];let commenter=null;
-  if(post.authorType==='ai'&&last&&String(last.author)!==String(post.author))commenter=people.find(p=>String(p.name||'')===String(post.author));
-  if(!commenter){const candidates=people.filter(p=>String(p.name||'')!==String(post.author||'')&&(!last||String(p.name||'')!==String(last.author||'')));const pool=candidates.length?candidates:people.filter(p=>String(p.name||'')!==String(post.author||''));commenter=pool[Math.floor(Math.random()*pool.length)]||people.find(p=>String(p.name||'')===String(post.author||''))||people[0]}
+  const people=await getPeople();const all=Array.isArray(post.comments)?post.comments:[];const last=all[all.length-1];let commenter=null;const authorPerson=contactByPostAuthor(people,post);
+  if(authorPerson){const eligible=people.filter(p=>areMutualCommonFriends(authorPerson,p)&&String(p.name||'')!==String(last?.author||''));if(!eligible.length){toast('这位联系人还没有设置互相认可的共同好友，暂时不能生成好友互动。');return}if(post.authorType==='ai'&&last&&String(last.author)!==String(post.author))commenter=eligible.find(p=>String(p.name||'')===String(post.author))||null;if(!commenter)commenter=eligible[Math.floor(Math.random()*eligible.length)]}
+  else{const candidates=people.filter(p=>String(p.name||'')!==String(post.author||'')&&(!last||String(p.name||'')!==String(last.author||'')));commenter=candidates[Math.floor(Math.random()*candidates.length)]||null}
+  if(!commenter){toast('没有符合共同好友关系的联系人可以互动。请到联系人设置共同好友，并在双方资料中互相选择。');return}
   const persona=commenter?{name:commenter.name||'AI 好友',personality:commenter.personality||'',background:commenter.background||'',speech:commenter.speech||'',instructions:commenter.instructions||{}}:{name:'AI 好友'};
   const commenterMemory=commenter?await getSharedContactMemory(commenter.id):'';
-  const authorPerson=post.authorId?((await getPeople()).find(p=>String(p.id)===String(post.authorId))):null;
   const authorMemory=authorPerson?await getSharedContactMemory(authorPerson.id):'';
   const replyTarget=last?String(last.author||''):'',isOwnerReply=post.authorType==='ai'&&!!last&&String(commenter?.name||'')===String(post.author||'');
   const prompt=`请生成一条自然的朋友圈评论，符合评论者的人物口吻。评论者资料：${JSON.stringify(persona)}。评论者与用户的共享长期记忆（聊天/拾忆）：${commenterMemory||'暂无'}。动态作者：${post.author}（作者类型：${post.authorType==='ai'?'AI角色':'用户'}）。动态作者与用户的共享长期记忆（聊天/拾忆）：${authorMemory||'暂无'}。动态正文：${post.text}。已有评论及回复顺序：${JSON.stringify(all.map(c=>({author:c.author,replyTo:c.replyTo||'',text:c.text})))}。${last?`最新一条评论来自「${replyTarget}」，内容是「${last.text}」。${isOwnerReply?'你现在是这条动态的主人公，请直接回应这条评论，像本人在朋友圈回复朋友一样。':`请自然地接续评论区对话；可以回应「${replyTarget}」刚才的话，避免重复已有内容。`}`:'这是第一条评论，请自然回应动态内容。'}不要提及 AI 或系统，只输出评论文字，不要加引号或解释。`;
