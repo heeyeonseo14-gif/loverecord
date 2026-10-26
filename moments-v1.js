@@ -69,10 +69,9 @@ async function generateAI(){
  try{
   const people=await getPeople();
   if(!people.length)throw Error('没有读取到聊天联系人。请确认联系人已保存；若刚添加过联系人，请刷新主页后再试。');
-  const canSocialize=person=>people.some(other=>areMutualCommonFriends(person,other));
-  const socialPeople=people.filter(canSocialize);
-  if(!socialPeople.length)throw Error('请先在联系人中互相设置共同好友，至少两位联系人互相选择后，才能生成他们的朋友圈互动。');
-  const shuffled=[...socialPeople].sort(()=>Math.random()-.5);
+  // 发动态与好友互动是两件事：没有共同好友关系时，联系人仍然可以独立发布动态。
+  // 只有评论/回复等互动才会在 generateComment() 中检查双方是否互相选择。
+  const shuffled=[...people].sort(()=>Math.random()-.5);
   const selected=shuffled.slice(0,Math.min(3,shuffled.length));
   const roster=people.map(p=>({id:String(p.id),name:p.name||'未命名角色',personality:p.personality||'',background:p.background||'',speech:p.speech||'',role:p.role||'',instructions:p.instructions||'',commonFriends:(p.commonFriends||[]).map(f=>{const id=typeof f==='string'?f:f.personId;const friend=people.find(q=>String(q.id)===String(id));return {name:friend?.name||'',relationship:typeof f==='string'?'':(f.relationship||'')}})}));
   const recent=posts.slice(0,12).map(p=>({author:p.author,text:p.text}));
@@ -80,7 +79,7 @@ async function generateAI(){
   for(let i=0;i<selected.length;i++){
    const target=selected[i];setGenerationStatus(`正在生成第 ${i+1}/${selected.length} 条 AI 朋友圈：${target.name||'AI 好友'}……`);
    const sharedMemory=await getSharedContactMemory(target.id);
-   const prompt=`请为 LOVE RECORD 的私人朋友圈生成一条自然真实的 AI 角色动态。当前发帖角色必须是以下角色，作者昵称必须严格使用该角色的准确昵称：${JSON.stringify({id:String(target.id),name:target.name||'未命名角色',personality:target.personality||'',background:target.background||'',speech:target.speech||'',role:target.role||'',instructions:target.instructions||''})}。该角色与用户在聊天中共同维护的长期记忆（来自聊天与拾忆的同一份资料，必须遵守，不要覆盖或编造其中事实）：${sharedMemory||'暂无已保存的长期记忆'}。其他 AI 联系人资料供理解社交关系：${JSON.stringify(roster)}。不要提及自己是 AI，不要像系统说明，不要编造用户的行为或替用户发言。像真实朋友圈一样简洁，有具体生活细节，避免过度抒情、广告语、互动式结尾。最近的动态（请避免重复）：${JSON.stringify(recent)}。可以只发文字；如果确实适合配图，imagePrompt 可以填写简短生图提示词，否则留空。只返回 JSON：{"author":"${String(target.name||'未命名角色').replace(/"/g,'\\"')}","text":"动态正文","imagePrompt":"可选配图提示词，无需配图时留空"}`;
+   const prompt=`请为 LOVE RECORD 的私人朋友圈生成一条自然真实的 AI 角色动态。当前发帖角色必须是以下角色，作者昵称必须严格使用该角色的准确昵称：${JSON.stringify({id:String(target.id),name:target.name||'未命名角色',personality:target.personality||'',background:target.background||'',speech:target.speech||'',role:target.role||'',instructions:target.instructions||''})}。该角色与用户在聊天中共同维护的长期记忆（来自聊天与拾忆的同一份资料，必须遵守，不要覆盖或编造其中事实）：${sharedMemory||'暂无已保存的长期记忆'}。其他 AI 联系人资料供理解社交关系：${JSON.stringify(roster)}。重要规则：无论是否有共同好友关系，本角色都可以独立发布自己的动态；但只有当双方的 commonFriends 互相包含对方时，才可以暗示与该联系人见面、对话、评论或发生互动。没有互相设置关系的联系人必须各自生活、各发各的，不要编造他们之间的互动。不要提及自己是 AI，不要像系统说明，不要编造用户的行为或替用户发言。像真实朋友圈一样简洁，有具体生活细节，避免过度抒情、广告语、互动式结尾。最近的动态（请避免重复）：${JSON.stringify(recent)}。可以只发文字；如果确实适合配图，imagePrompt 可以填写简短生图提示词，否则留空。只返回 JSON：{"author":"${String(target.name||'未命名角色').replace(/"/g,'\\"')}","text":"动态正文","imagePrompt":"可选配图提示词，无需配图时留空"}`;
    try{
     const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),60000);let r,raw;
     try{r=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:'你是自然的朋友圈内容生成器，只输出合法 JSON。允许只生成文字动态，不要强制配图。'},{role:'user',content:prompt}],temperature:.9,stream:false}),signal:controller.signal});raw=await r.text()}finally{clearTimeout(timer)}

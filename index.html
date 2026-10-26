@@ -1898,7 +1898,18 @@ function nav(page){
 function renderSettings(){
 $('setDate').value=state.startDate;$('setToday').value=state.today;$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
 renderModelPicker();renderApiPresets();renderSelfPersonas();updateAIState();
-const on=!!(state.apiBase&&state.apiKey&&state.apiModel);$('apiStatus').textContent=on?'API 已连接 · '+state.apiModel:'未连接 API。Space 会使用内置角色互动.';$('apiStatus').classList.toggle('on',on)
+syncApiStatus();
+}
+function syncApiStatus(){
+ const status=$('apiStatus');if(!status)return;
+ const activeButton=document.querySelector('#modelPicker .model-option.active');
+ const domModel=String(activeButton?.dataset?.model||'').trim();
+ if(domModel&&domModel!==String(state.apiModel||'')){state.apiModel=domModel;try{save()}catch(e){console.warn('当前模型状态同步失败',e)}}
+ const model=String(domModel||state.apiModel||'').trim();
+ const on=!!(String(state.apiBase||'').trim()&&String(state.apiKey||'').trim()&&model);
+ status.textContent=on?'API 已连接 · '+model:'未连接 API。Space 会使用内置角色互动.';
+ status.classList.toggle('on',on);
+ const label=$('selectedModelLabel');if(label)label.textContent='当前模型：'+(model||'未选择');
 }
 function renderModelPicker(){
  const box=$('modelPicker');
@@ -1909,10 +1920,12 @@ function renderModelPicker(){
  if(!models.length){
    box.innerHTML='<div class="model-empty">连接后会在这里显示中转站返回的全部模型。</div>';
    if(label)label.textContent=state.apiModel?'当前模型：'+state.apiModel:'当前模型：未选择';
+   syncApiStatus();
    return;
  }
  models.forEach(id=>{const b=document.createElement('button');b.type='button';b.className='model-option'+(id===state.apiModel?' active':'');b.dataset.model=id;b.innerHTML=esc(id)+(id===state.apiModel?'<span class="model-mark">✓ 已选择</span>':'');box.appendChild(b)});
  if(label)label.textContent='当前模型：'+(state.apiModel||models[0]);
+ syncApiStatus();
 }
 
 async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}finally{clearTimeout(t)}}
@@ -2276,7 +2289,7 @@ async function loadApiPresets(){
  renderApiPresets();
 }
 async function writeApiPresets(list){try{await lrKVSet(API_PRESETS_KV,list);apiPresetCache=list.filter(x=>x&&x.id);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){/* primary IndexedDB save succeeded */}return true}catch(e){console.warn('[LOVE RECORD] API presets IndexedDB save failed',e);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(list));apiPresetCache=list.filter(x=>x&&x.id);return true}catch(err){return false}}}
-function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=async()=>{try{await writeActiveApiPresetPointer(p)}catch(e){$('apiPresetStatus').textContent='活动预设指针写入失败：'+(e.message||e);toast('预设切换状态保存失败');return}state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];state.apiConfigUpdatedAt=Number(p.updatedAt)||Date.now();$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));$('apiPresetStatus').textContent='已切换到「'+(p.name||'未命名预设')+'」；主页运行配置已同步。'+(ok?'':'（主设置快照未保存，预设仍以独立存储为准）');toast('已切换 API 预设 ♡')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=async()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=await writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除并保存。':'删除失败：独立储存和浏览器储存均不可用。'};row.append(info,use,del);box.append(row)})}
+function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=async()=>{try{await writeActiveApiPresetPointer(p)}catch(e){$('apiPresetStatus').textContent='活动预设指针写入失败：'+(e.message||e);toast('预设切换状态保存失败');return}state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];state.apiConfigUpdatedAt=Number(p.updatedAt)||Date.now();$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();syncApiStatus();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));syncApiStatus();$('apiPresetStatus').textContent='已切换到「'+(p.name||'未命名预设')+'」；主页运行配置已同步。'+(ok?'':'（主设置快照未保存，预设仍以独立存储为准）');toast('已切换 API 预设 ♡')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=async()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=await writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除并保存。':'删除失败：独立储存和浏览器储存均不可用。'};row.append(info,use,del);box.append(row)})}
 async function saveCurrentApiPreset(addNew){
  const name=($('apiPresetName')?.value||'').trim();const apiBase=($('apiBase')?.value||'').trim().replace(/\/+$/,'');const apiKey=($('apiKey')?.value||'').trim();const apiModel=String(state.apiModel||'').trim();
  if(!name){$('apiPresetStatus').textContent='请先填写预设名称。';toast('请填写预设名称');return}
@@ -2318,7 +2331,9 @@ $('saveSettings').onclick=()=>{state.startDate=$('setDate').value;state.today=$(
 $('connectApi').onclick=async()=>{state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();save();await loadModels()}
 $('refreshModels').onclick=loadModels;
 $('testApi').onclick=testAI;
-$('modelPicker').addEventListener('click',e=>{const b=e.target.closest('[data-model]');if(!b)return;const m=b.dataset.model;if(!m)return;state.apiModel=m;save();renderModelPicker();updateAIState();$('apiStatus').textContent='API 已连接 · '+state.apiModel;$('apiStatus').classList.add('on');setApiDebug('已切换模型：'+m+'。TEST AI 将使用这个模型。',true);toast('已切换到 '+m)});
+$('modelPicker').addEventListener('click',e=>{const b=e.target.closest('[data-model]');if(!b)return;const m=b.dataset.model;if(!m)return;state.apiModel=m;save();renderModelPicker();updateAIState();syncApiStatus();setApiDebug('已切换模型：'+m+'。后续 AI 请求将使用这个模型。',true);toast('已切换到 '+m)});
+// Keep the connection badge aligned with the actually selected model, including when the picker is rebuilt.
+try{const picker=$('modelPicker');if(picker&&!picker.dataset.statusSyncObserver){new MutationObserver(()=>syncApiStatus()).observe(picker,{childList:true,subtree:true,attributes:true,attributeFilter:['class','data-model']});picker.dataset.statusSyncObserver='1'}}catch(e){}
 
 $('sendFree').onclick=handleFree;
 $('freeInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();handleFree()}});
@@ -2521,7 +2536,7 @@ if(loveIntro){
 <script>
 (()=>{const shell=document.getElementById('lrLiveShell');const frame=document.getElementById('lrLiveFrame');function openLive(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_LIVE_OPEN'},location.origin)}catch(e){}}function closeLive(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-live]').forEach(b=>b.addEventListener('click',openLive));document.getElementById('lrLiveBack').addEventListener('click',closeLive);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeLive()});})();
 </script>
-<script src="./moments-v1.js?v=7"></script>
+<script src="./moments-v1.js?v=8"></script>
 
 <script>
 /* 拾忆：独立管理界面入口 */
