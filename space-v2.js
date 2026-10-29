@@ -223,6 +223,33 @@
 #lrSpaceBookPicker .lr-space-book-picker-cancel{border:1px solid #e5dbe7;background:#fff;color:#87758d}
 #lrSpaceBookPicker .lr-space-book-picker-done{border:1px solid #b993c2;background:#b993c2;color:#fff}
 `;
+    s.textContent += `\n/* V34 · compact mobile space layout */
+#space.lr-space-v2{width:100%!important;max-width:none!important;box-sizing:border-box!important;padding-left:0!important;padding-right:0!important;overflow-x:hidden!important}
+#space.lr-space-v2 .lr-space-v2-screen{width:100%!important;max-width:none!important;box-sizing:border-box!important;padding:18px 16px 112px!important;overflow-x:hidden!important}
+#space.lr-space-v2 .lr-space-v2-head{gap:10px!important;align-items:flex-start!important;margin-bottom:16px!important}
+#space.lr-space-v2 .lr-space-v2-head h1{font-size:clamp(29px,7.5vw,36px)!important;line-height:1.15!important;margin:8px 0!important}
+#space.lr-space-v2 .lr-space-map-heading-row{gap:8px!important;flex-wrap:wrap!important}
+#space.lr-space-v2 .lr-space-v2-panel,#space.lr-space-v2 .lr-space-life-panel{padding:18px 16px!important;margin:0 0 16px!important}
+#space.lr-space-v2 .lr-space-v2-panel h2{font-size:23px!important;line-height:1.35!important}
+#space.lr-space-v2 .lr-space-map{width:100%!important;box-sizing:border-box!important;min-height:430px!important;height: min(62vh,520px)!important;margin:12px 0 18px!important;border-radius:8px!important}
+#space.lr-space-v2 .lr-space-map-title{left:12px!important;top:12px!important}
+#space.lr-space-v2 .lr-space-location-pin{width:44px!important;height:44px!important;border-radius:5px!important;font-size:19px!important}
+#space.lr-space-v2 .lr-space-location-pin img{border-radius:4px!important}
+#space.lr-space-v2 .lr-space-location b{font-size:10px!important;line-height:1.35!important;max-width:92px!important;overflow-wrap:anywhere!important}
+#space.lr-space-v2 .lr-space-location small{font-size:9px!important;max-width:90px!important;line-height:1.3!important}
+#space.lr-space-v2 .lr-space-map-add{right:10px!important;bottom:10px!important}
+#space.lr-space-v2 .lr-space-primary,#space.lr-space-v2 .lr-space-secondary{min-height:38px!important;padding:9px 12px!important;font-size:12px!important}
+#space.lr-space-v2 .lr-space-feature-grid{gap:9px!important}
+@media(max-width:560px){
+ #space.lr-space-v2 .lr-space-v2-screen{padding-left:16px!important;padding-right:16px!important}
+ #space.lr-space-v2 .lr-space-v2-head{display:flex!important;flex-direction:column!important}
+ #space.lr-space-v2 .lr-space-map{min-height:390px!important;height:54vh!important}
+ #space.lr-space-v2 .lr-space-location-pin{width:40px!important;height:40px!important}
+ #space.lr-space-v2 .lr-space-location b{max-width:80px!important;font-size:9px!important}
+ #space.lr-space-v2 .lr-space-location small{max-width:78px!important}
+}
+
+`;
     document.head.appendChild(s);
   }
   function replaceSpace(){
