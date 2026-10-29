@@ -1068,74 +1068,6 @@ body.launcher-open #launcher .launcher-welcome{ text-shadow:0 1px 12px rgba(255,
 </style>
 
 <script>try{if(sessionStorage.getItem('lr-skip-intro-once')==='1'){sessionStorage.removeItem('lr-skip-intro-once');document.documentElement.classList.add('lr-skip-intro-once');document.write('<style>.love-intro{display:none!important}</style>')}}catch(e){}</script>
-
-<style id="lr-global-theme-skins">
-/* Global theme skins: the selected preset changes the actual interface, not only the accent color. */
-body.lr-theme-ios{
- --bg:#f2f2f7!important;--card:rgba(255,255,255,.78)!important;--ink:#1c1c1e!important;
- --muted:#73737a!important;--line:rgba(60,60,67,.16)!important;--soft:#e5e5ea!important;
- --purple:#007aff!important;--accent:#007aff!important; color:#1c1c1e;
- background:#f2f2f7!important;
-}
-body.lr-theme-ios .app-icon{
- background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(232,232,238,.78))!important;
- border:1px solid rgba(255,255,255,.94)!important;border-radius:22px!important;
- box-shadow:0 8px 24px rgba(35,45,65,.10),inset 0 1px 0 rgba(255,255,255,.95)!important;
- -webkit-backdrop-filter:blur(24px) saturate(1.35)!important;backdrop-filter:blur(24px) saturate(1.35)!important;
-}
-body.lr-theme-ios .launcher-widget,body.lr-theme-ios .dock,body.lr-theme-ios .bottom-nav,
-body.lr-theme-ios .nav-bar,body.lr-theme-ios .card,body.lr-theme-ios .sheet,
-body.lr-theme-ios .module-sheet{
- background:rgba(250,250,252,.72)!important;border-color:rgba(255,255,255,.9)!important;
- box-shadow:0 12px 34px rgba(25,35,55,.08),inset 0 1px 0 rgba(255,255,255,.96)!important;
- -webkit-backdrop-filter:blur(28px) saturate(1.4)!important;backdrop-filter:blur(28px) saturate(1.4)!important;
-}
-body.lr-theme-ios .nav-btn.active{background:rgba(0,122,255,.11)!important;color:#007aff!important}
-body.lr-theme-ios .dock-icon,body.lr-theme-ios .icon-home,body.lr-theme-ios .icon-memory,
-body.lr-theme-ios .icon-space,body.lr-theme-ios .icon-people{color:#007aff!important}
-body.lr-theme-ios .launcher-pages button.active{background:#007aff!important}
-body.lr-theme-ios .btn.primary,body.lr-theme-ios button.primary{background:#007aff!important;border-color:#007aff!important}
-body.lr-theme-ios .launcher-app{color:#3a3a3c!important}
-body.lr-theme-liquid{
- --bg:#d7d8da!important;--card:rgba(239,240,242,.48)!important;--ink:#343538!important;
- --muted:#737579!important;--line:rgba(255,255,255,.68)!important;--soft:rgba(220,221,224,.62)!important;
- --purple:#85878b!important;--accent:#85878b!important;color:#343538;background:#d7d8da!important;
-}
-body.lr-theme-liquid #lr-home-background-fix-layer{
- filter:grayscale(1) saturate(.25) contrast(.92) brightness(1.08);
- background-color:#cfd0d2!important;
-}
-body.lr-theme-liquid #lr-home-background-fix-layer::after{
- content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(248,249,250,.34),rgba(132,135,140,.18));
- -webkit-backdrop-filter:blur(1px);backdrop-filter:blur(1px);pointer-events:none;
-}
-body.lr-theme-liquid .app-icon{
- color:#505155!important;background:linear-gradient(145deg,rgba(255,255,255,.70),rgba(205,207,211,.40))!important;
- border:1px solid rgba(255,255,255,.78)!important;border-radius:25px!important;
- box-shadow:0 10px 28px rgba(57,59,63,.10),inset 0 1px 0 rgba(255,255,255,.88),inset 0 -1px 0 rgba(112,114,119,.08)!important;
- -webkit-backdrop-filter:blur(30px) grayscale(.8) saturate(.5)!important;backdrop-filter:blur(30px) grayscale(.8) saturate(.5)!important;
-}
-body.lr-theme-liquid .launcher-widget,body.lr-theme-liquid .dock,body.lr-theme-liquid .bottom-nav,
-body.lr-theme-liquid .nav-bar,body.lr-theme-liquid .card,body.lr-theme-liquid .sheet,
-body.lr-theme-liquid .module-sheet,body.lr-theme-liquid .panel{
- background:linear-gradient(135deg,rgba(255,255,255,.64),rgba(218,219,222,.40))!important;
- border:1px solid rgba(255,255,255,.74)!important;
- box-shadow:0 18px 48px rgba(53,54,58,.10),inset 0 1px 0 rgba(255,255,255,.86),inset 0 -1px 0 rgba(90,92,97,.06)!important;
- -webkit-backdrop-filter:blur(32px) saturate(.45)!important;backdrop-filter:blur(32px) saturate(.45)!important;
-}
-body.lr-theme-liquid .nav-btn.active{background:rgba(115,117,122,.12)!important;color:#343538!important}
-body.lr-theme-liquid .dock-icon,body.lr-theme-liquid .icon-home,body.lr-theme-liquid .icon-memory,
-body.lr-theme-liquid .icon-space,body.lr-theme-liquid .icon-people{color:#686a6e!important}
-body.lr-theme-liquid .launcher-pages button.active{background:#77797d!important}
-body.lr-theme-liquid .launcher-app{color:#44464a!important}
-body.lr-theme-liquid .launcher-info,body.lr-theme-liquid .launcher-greeting,
-body.lr-theme-liquid .launcher-kicker,body.lr-theme-liquid .launcher-app-label{color:#343538!important}
-body.lr-theme-liquid .app{isolation:isolate}
-body.lr-theme-liquid .btn.primary,body.lr-theme-liquid button.primary{background:rgba(105,107,112,.78)!important;color:#fff!important;border-color:rgba(255,255,255,.6)!important}
-@media(prefers-reduced-transparency:reduce){
- body.lr-theme-ios .app-icon,body.lr-theme-ios .launcher-widget,body.lr-theme-liquid .app-icon,body.lr-theme-liquid .launcher-widget{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-}
-</style>
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -2280,11 +2212,12 @@ const bgChoices={soft:{name:'SOFT PURPLE',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'
 const presetChoices={purple:{name:'柔雾紫',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:8,opacity:.92,dark:false,motion:true},night:{name:'夜色紫',font:'serif',fontSize:15,titleScale:1.04,accent:'#9f83bd',bg:'soft',radius:26,blur:14,opacity:.78,dark:true,motion:true},cream:{name:'清晨奶油',font:'round',fontSize:16,titleScale:1.02,accent:'#b79bc7',bg:'cream',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
 function saveAppearance(){const cfg={...appearance};delete cfg.bgData;try{localStorage.removeItem(APPEARANCE_KEY);localStorage.setItem(APPEARANCE_KEY,JSON.stringify(cfg))}catch(e){}if(appearanceAssetsReady)putAppearanceAsset('settings',cfg).catch(()=>{})}
 function applyAppearance(){const root=document.documentElement;
-  const isIOS=appearance.preset==='ios'||!!appearance.ios, isLiquid=appearance.preset==='liquid'||!!appearance.liquid;
-  const palette=isIOS?{bg:'#f2f2f7',card:'rgba(255,255,255,.76)',ink:'#1c1c1e',muted:'#777780',line:'#d8d8df',soft:'#e5e5ea',purple:'#007aff'}:isLiquid?{bg:'#d8d8da',card:'rgba(238,239,241,.52)',ink:'#343538',muted:'#77797d',line:'rgba(255,255,255,.72)',soft:'#e7e7e9',purple:'#85878b'}:{bg:'#f7f3f9',card:'#fff',ink:'#302b33',muted:'#8f8792',line:'#e2dce4',soft:'#eee5f2',purple:appearance.accent||'#b79bc7'};
+  if(appearance.preset==='ios'||appearance.ios||appearance.bg==='ios'){appearance.preset='purple';appearance.ios=false;if(appearance.accent==='#007aff')appearance.accent='#b79bc7';if(appearance.bg==='ios')appearance.bg='soft';appearance.liquid=false;}
+  const isLiquid=appearance.preset==='liquid'||!!appearance.liquid;
+  const palette=isLiquid?{bg:'#faf8fd',card:'rgba(255,255,255,.58)',ink:'#51475a',muted:'#92879b',line:'rgba(255,255,255,.82)',soft:'#f4eff8',purple:'#c5a5d9'}:{bg:'#f7f3f9',card:'#fff',ink:'#302b33',muted:'#8f8792',line:'#e2dce4',soft:'#eee5f2',purple:appearance.accent||'#b79bc7'};
   Object.entries(palette).forEach(([k,v])=>root.style.setProperty('--'+k,v));
   root.style.setProperty('--purple',appearance.accent||palette.purple);
-  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.toggle('lr-theme-ios',isIOS);document.body.classList.toggle('lr-theme-liquid',isLiquid);document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
+  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
 function updateAppearanceControls(){$('fontSizeRange').value=appearance.fontSize;$('fontSizeValue').textContent=appearance.fontSize+'px';$('titleScaleRange').value=appearance.titleScale;$('titleScaleValue').textContent=Math.round(appearance.titleScale*100)+'%';$('radiusRange').value=appearance.radius;$('radiusValue').textContent=appearance.radius+'px';$('blurRange').value=appearance.blur;$('blurValue').textContent=appearance.blur+'px';$('opacityRange').value=appearance.opacity;$('opacityValue').textContent=Math.round(appearance.opacity*100)+'%';$('customAccent').value=appearance.accent;$('motionToggle').textContent=appearance.motion?'MOTION ON':'MOTION OFF';$('lightModeBtn').classList.toggle('active',!appearance.dark);$('darkModeBtn').classList.toggle('active',appearance.dark);document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===appearance.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===appearance.font));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===appearance.accent));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===appearance.bg));const pv=$('appearancePreview');if(pv){pv.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value}}
 function openAppearance(){localizeEditors();renderAppearanceControls();$('appearanceModal').classList.add('show');document.body.style.overflow='hidden'}
