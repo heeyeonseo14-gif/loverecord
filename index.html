@@ -1042,6 +1042,15 @@ body.music-listening-modal-open{overflow:hidden!important}
 .worldbook-editor-modal{z-index:10080}.worldbook-editor-modal.show{align-items:stretch;justify-content:center;padding:0}.worldbook-editor-sheet{width:100%;max-width:760px;height:100%;max-height:100dvh;overflow:auto;border-radius:0;padding:24px 20px calc(28px + env(safe-area-inset-bottom));box-sizing:border-box;background:var(--panel,#fffdf9)}.worldbook-editor-intro{font-size:13px;line-height:1.7;color:var(--muted,#8b8179);margin:0 0 20px}.worldbook-editor-sheet>label{display:block;margin:18px 0 8px;font-size:13px;color:var(--muted,#8b8179);letter-spacing:.08em}.worldbook-editor-sheet #worldName{width:100%;box-sizing:border-box}.worldbook-entry-list{display:grid;gap:14px;margin-top:18px}.worldbook-entry{border:1px solid var(--line,#e8dfd5);border-radius:18px;padding:14px;background:rgba(255,255,255,.58)}.worldbook-entry-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.worldbook-entry-head strong{font-size:14px;font-weight:600;color:var(--ink,#4e443e)}.worldbook-entry-remove{border:0;background:transparent;color:#b86b68;padding:6px 8px;border-radius:10px;font-size:13px}.worldbook-entry label{display:block;font-size:12px;color:var(--muted,#8b8179);margin:10px 0 6px}.worldbook-entry input,.worldbook-entry textarea{width:100%;box-sizing:border-box;border:1px solid var(--line,#e8dfd5);border-radius:12px;background:#fffdfa;padding:12px;font:inherit;color:var(--ink,#4e443e)}.worldbook-entry textarea{min-height:145px;resize:vertical;line-height:1.6}.worldbook-add-row{margin-top:14px}.worldbook-add-row .btn{width:100%;min-height:48px;border-style:dashed}.worldbook-save-status{min-height:20px;margin-top:12px;font-size:13px;line-height:1.5;color:var(--muted,#8b8179)}.worldbook-save-status.error{color:#b45353}.worldbook-save-status.success{color:#397a58}.worldbook-save-actions{position:sticky;bottom:calc(-1 * env(safe-area-inset-bottom));padding:12px 0 calc(4px + env(safe-area-inset-bottom));margin-top:10px;background:var(--panel,#fffdf9);z-index:2}.worldbook-card-summary{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(min-width:700px){.worldbook-editor-modal.show{align-items:center;padding:24px}.worldbook-editor-sheet{height:auto;max-height:90vh;border-radius:24px;padding:26px}}
 </style>
+
+<style id="lr-space-fullscreen-fix">
+/* SPACE: use the full phone viewport instead of leaving dark side gutters */
+.app:has(#space.active){max-width:none!important;width:100%!important;margin:0!important;padding-left:0!important;padding-right:0!important;box-sizing:border-box!important}
+#space.space-redesign{width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box!important;min-height:calc(100dvh - 150px)!important}
+#space.active{background:var(--space-page-bg,#f7f1f8)!important}
+@media(max-width:560px){#space.space-redesign{width:100%!important;max-width:none!important;margin:0!important;padding-left:16px!important;padding-right:16px!important}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
