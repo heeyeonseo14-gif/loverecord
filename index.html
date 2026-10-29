@@ -1070,15 +1070,19 @@ body.launcher-open #launcher .launcher-welcome{ text-shadow:0 1px 12px rgba(255,
 <script>try{if(sessionStorage.getItem('lr-skip-intro-once')==='1'){sessionStorage.removeItem('lr-skip-intro-once');document.documentElement.classList.add('lr-skip-intro-once');document.write('<style>.love-intro{display:none!important}</style>')}}catch(e){}</script>
 
 <style id="lr-liquid-glass-color-fix">
-/* White liquid glass: keep the smoky glass surface, but never desaturate user photos or icon artwork. */
-body.lr-theme-liquid { --lr-liquid-ink:#424248; --lr-liquid-muted:#777780; --lr-liquid-accent:#a98bc0; }
-body.lr-theme-liquid #lr-home-background-fix-layer { filter:none!important; -webkit-filter:none!important; background-color:#e9e9ed!important; }
-body.lr-theme-liquid #lr-home-background-fix-layer::after { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(135deg,rgba(247,247,250,.20),rgba(145,146,153,.09)); backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
-body.lr-theme-liquid .app-icon { color:var(--lr-liquid-accent)!important; background:linear-gradient(145deg,rgba(255,255,255,.76),rgba(235,234,240,.43))!important; border:1px solid rgba(255,255,255,.90)!important; border-radius:27px!important; box-shadow:0 12px 30px rgba(79,73,90,.09),inset 0 1px 0 rgba(255,255,255,.96),inset 0 -1px 0 rgba(112,106,123,.06)!important; backdrop-filter:blur(26px) saturate(1.22)!important; -webkit-backdrop-filter:blur(26px) saturate(1.22)!important; }
-body.lr-theme-liquid .app-icon img, body.lr-theme-liquid .app-icon svg, body.lr-theme-liquid .home-moment-mini img, body.lr-theme-liquid .polaroid-photo img, body.lr-theme-liquid #launcher img { filter:none!important; -webkit-filter:none!important; }
-body.lr-theme-liquid .launcher-widget,body.lr-theme-liquid .dock,body.lr-theme-liquid .bottom-nav,body.lr-theme-liquid .nav-bar,body.lr-theme-liquid .card,body.lr-theme-liquid .sheet,body.lr-theme-liquid .module-sheet,body.lr-theme-liquid .panel { background:linear-gradient(135deg,rgba(255,255,255,.70),rgba(226,226,233,.38))!important; border:1px solid rgba(255,255,255,.86)!important; box-shadow:0 18px 44px rgba(73,70,83,.09),inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(90,89,100,.045)!important; backdrop-filter:blur(28px) saturate(1.2)!important; -webkit-backdrop-filter:blur(28px) saturate(1.2)!important; }
-body.lr-theme-liquid .launcher-app,body.lr-theme-liquid .launcher-app-label { color:#5a5661!important; }
-body.lr-theme-liquid .dock-icon,body.lr-theme-liquid .icon-home,body.lr-theme-liquid .icon-memory,body.lr-theme-liquid .icon-space,body.lr-theme-liquid .icon-people { color:var(--lr-liquid-accent)!important; }
+/* Original purple theme: richer lavender liquid-glass app tiles, without desaturating photos or artwork. */
+body.lr-theme-purple .launcher-app .app-icon:not(.has-custom-icon) {
+  background-image:radial-gradient(ellipse at 28% 12%,rgba(255,255,255,.98) 0%,rgba(255,255,255,.48) 25%,transparent 56%),linear-gradient(145deg,rgba(255,255,255,.94),rgba(226,211,239,.70))!important;
+  border:1px solid rgba(255,255,255,.98)!important;
+  box-shadow:0 12px 28px rgba(118,87,145,.13),inset 0 1.5px 0 rgba(255,255,255,.98),inset 0 -1px 0 rgba(155,126,178,.12)!important;
+  backdrop-filter:blur(24px) saturate(1.16)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.16)!important;
+  position:relative;
+}
+body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-shadow:0 5px 13px rgba(118,87,145,.12),inset 0 1px 0 rgba(255,255,255,.94)!important}
+.app-icon.has-custom-icon{padding:0!important;overflow:hidden!important;position:relative!important;isolation:isolate}
+.app-icon.has-custom-icon>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;border-radius:inherit!important;filter:none!important;-webkit-filter:none!important}
+#lr-home-background-fix-layer,#lr-home-background-fix-layer::before,#lr-home-background-fix-layer::after{filter:none!important;-webkit-filter:none!important}
 </style>
 </head>
 <body class="launcher-open">
@@ -2224,17 +2228,43 @@ const bgChoices={soft:{name:'SOFT PURPLE',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'
 const presetChoices={purple:{name:'柔雾紫',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:8,opacity:.92,dark:false,motion:true},night:{name:'夜色紫',font:'serif',fontSize:15,titleScale:1.04,accent:'#9f83bd',bg:'soft',radius:26,blur:14,opacity:.78,dark:true,motion:true},cream:{name:'清晨奶油',font:'round',fontSize:16,titleScale:1.02,accent:'#b79bc7',bg:'cream',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
 function saveAppearance(){const cfg={...appearance};delete cfg.bgData;try{localStorage.removeItem(APPEARANCE_KEY);localStorage.setItem(APPEARANCE_KEY,JSON.stringify(cfg))}catch(e){}if(appearanceAssetsReady)putAppearanceAsset('settings',cfg).catch(()=>{})}
 function applyAppearance(){const root=document.documentElement;
-  if(appearance.preset==='ios'||appearance.ios||appearance.bg==='ios'){appearance.preset='purple';appearance.ios=false;if(appearance.accent==='#007aff')appearance.accent='#b79bc7';if(appearance.bg==='ios')appearance.bg='soft';appearance.liquid=false;}
-  const isLiquid=appearance.preset==='liquid'||!!appearance.liquid;
-  const palette=isLiquid?{bg:'#faf8fd',card:'rgba(255,255,255,.58)',ink:'#51475a',muted:'#92879b',line:'rgba(255,255,255,.82)',soft:'#f4eff8',purple:'#c5a5d9'}:{bg:'#f7f3f9',card:'#fff',ink:'#302b33',muted:'#8f8792',line:'#e2dce4',soft:'#eee5f2',purple:appearance.accent||'#b79bc7'};
+  if(appearance.preset==='ios'||appearance.ios||appearance.bg==='ios'){appearance.preset='purple';appearance.ios=false;if(appearance.accent==='#007aff')appearance.accent='#b79bc7';if(appearance.bg==='ios')appearance.bg='soft';}
+  if(appearance.preset==='liquid'||appearance.liquid||appearance.bg==='liquid'){appearance.preset='purple';appearance.liquid=false;if(appearance.bg==='liquid')appearance.bg='soft';if(appearance.accent==='#c5a5d9')appearance.accent='#b79bc7';}
+  const isLiquid=false;
+  const palette={bg:'#f7f3f9',card:'#fff',ink:'#302b33',muted:'#8f8792',line:'#e2dce4',soft:'#eee5f2',purple:appearance.accent||'#b79bc7'};
   Object.entries(palette).forEach(([k,v])=>root.style.setProperty('--'+k,v));
   root.style.setProperty('--purple',appearance.accent||palette.purple);
-  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.toggle('lr-theme-liquid',appearance.preset==='liquid'||!!appearance.liquid);document.body.classList.toggle('lr-theme-purple',!(appearance.preset==='liquid'||!!appearance.liquid));document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
+  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.classList.add('lr-theme-purple');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
 function updateAppearanceControls(){$('fontSizeRange').value=appearance.fontSize;$('fontSizeValue').textContent=appearance.fontSize+'px';$('titleScaleRange').value=appearance.titleScale;$('titleScaleValue').textContent=Math.round(appearance.titleScale*100)+'%';$('radiusRange').value=appearance.radius;$('radiusValue').textContent=appearance.radius+'px';$('blurRange').value=appearance.blur;$('blurValue').textContent=appearance.blur+'px';$('opacityRange').value=appearance.opacity;$('opacityValue').textContent=Math.round(appearance.opacity*100)+'%';$('customAccent').value=appearance.accent;$('motionToggle').textContent=appearance.motion?'MOTION ON':'MOTION OFF';$('lightModeBtn').classList.toggle('active',!appearance.dark);$('darkModeBtn').classList.toggle('active',appearance.dark);document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===appearance.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===appearance.font));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===appearance.accent));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===appearance.bg));const pv=$('appearancePreview');if(pv){pv.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value}}
 function openAppearance(){localizeEditors();renderAppearanceControls();$('appearanceModal').classList.add('show');document.body.style.overflow='hidden'}
 function closeAppearance(){ $('appearanceModal').classList.remove('show');document.body.style.overflow='';applyAppearance()}
 function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},appearanceDefaults,presetChoices[k]);appearance.preset=k;delete appearance.bgData;applyAppearance();renderAppearanceControls();toast('已切换：'+presetChoices[k].name)}
+
+const homeIconBindings=[
+ {id:'app-shiyi',symbol:'✧'},{id:'app-memories',symbol:'▧'},{id:'app-space',symbol:'♡'},
+ {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},{id:'app-journal',symbol:'▤'},
+ {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
+ {id:'app-scrapbook',symbol:'📎'},{id:'app-live',symbol:'✦'}
+];
+async function loadHomeCustomIcons(){
+ for(const item of homeIconBindings){
+  try{
+   const data=await getAppearanceAsset('home-icon:'+item.id);
+   const host=document.querySelector('[data-drag-id="'+item.id+'"] .app-icon');
+   if(!host)continue;
+   if(typeof data==='string'&&data){
+    host.classList.add('has-custom-icon');
+    host.replaceChildren();
+    const img=document.createElement('img');img.src=data;img.alt='';img.draggable=false;host.appendChild(img);
+   }else{
+    host.classList.remove('has-custom-icon');
+    host.textContent=item.symbol;
+   }
+  }catch(e){}
+ }
+}
+
 // 初始化时从同一份 IndexedDB 配置读取美化设置与主页背景；不能放在 applyPreset 内，否则只有点击预设才会同步。
 (async function loadSharedAppearanceOnHome(){
   try {
@@ -2247,6 +2277,7 @@ function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},
     }
     if (typeof photo === 'string' && photo) appearance.bgData = photo;
     appearanceAssetsReady = true;
+    await loadHomeCustomIcons();
     applyAppearance();
   } catch (err) {
     appearanceAssetsReady = true;

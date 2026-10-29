@@ -3,7 +3,20 @@
 <style>
 :root{--accent:#b79bc7;--bg-a:#f2e8f5;--bg-b:#e9dfee;--radius:28px;--blur:20px;--opacity:.68;--font-size:15px;--ink:#51475a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;font:var(--font-size)/1.55 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:linear-gradient(145deg,var(--bg-a),var(--bg-b));background-attachment:fixed;padding:18px 14px 32px;transition:background .25s,color .25s}
-body.photo-bg{background-size:cover;background-position:center;background-attachment:fixed}.wrap{max-width:760px;margin:0 auto}.top{display:flex;align-items:center;gap:12px;margin:4px 0 22px}.back{display:grid;place-items:center;flex:0 0 52px;height:52px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.58);color:inherit;border-radius:18px;text-decoration:none;backdrop-filter:blur(18px);font-size:22px}.eyebrow{font-size:10px;letter-spacing:3px;opacity:.62}.top h1{font-size:27px;letter-spacing:1px;margin:1px 0;font-weight:600}.sub{font-size:12px;opacity:.72}.panel{margin:13px 0;padding:18px;border:1px solid rgba(255,255,255,.76);border-radius:var(--radius);background:rgba(255,255,255,var(--opacity));box-shadow:0 16px 42px rgba(77,58,88,.07);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur))}h2{font-size:14px;letter-spacing:1.5px;margin:0 0 6px;font-weight:700}.hint{font-size:12px;opacity:.67;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}.opt,.action{font:inherit;cursor:pointer;border:1px solid rgba(153,128,168,.22);border-radius:18px;background:rgba(255,255,255,.56);color:inherit;padding:13px 10px;text-align:center;min-height:48px}.opt.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 20%,white);box-shadow:inset 0 0 0 1px var(--accent)}.opt.featured{min-height:82px}.opt.featured strong{display:block;font-size:15px}.opt.featured small{display:block;margin-top:4px;font-size:11px;opacity:.7}.swatches{display:flex;gap:11px;flex-wrap:wrap;margin:13px 0}.swatch{width:32px;height:32px;border:3px solid rgba(255,255,255,.9);outline:1px solid transparent;border-radius:50%;padding:0}.swatch.active{outline:2px solid var(--accent);outline-offset:2px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.action{flex:1;min-width:120px;text-decoration:none}.primary{background:var(--accent);border-color:transparent;color:white}.range{display:grid;grid-template-columns:1fr 54px;align-items:center;gap:10px;margin:12px 0 5px}input[type=range]{width:100%;accent-color:var(--accent)}.value{text-align:right;font-size:12px;opacity:.72}label{display:block;font-size:11px;letter-spacing:1px;opacity:.75;margin:13px 0 6px}input[type=color]{width:50px;height:42px;padding:3px;border:1px solid rgba(153,128,168,.25);border-radius:12px;background:transparent}input[type=file]{max-width:100%;font-size:12px}input[type=text]{width:100%;border:1px solid rgba(153,128,168,.3);border-radius:14px;padding:12px;background:rgba(255,255,255,.65);font:inherit;color:inherit}.status{position:sticky;bottom:10px;text-align:center;font-size:12px;margin-top:10px;pointer-events:none}.status span{display:inline-block;background:rgba(55,45,62,.88);color:white;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .2s}.status.show span{opacity:1}small{opacity:.7}body.ios{--ink:#1c1c1e}body.liquid{--ink:#4d4256}body.liquid .panel{border-color:rgba(255,255,255,.88);box-shadow:0 18px 50px rgba(124,100,145,.08)}@media(max-width:380px){body{padding:13px 10px}.panel{padding:14px}.grid{gap:7px}.opt{padding:11px 6px}}
+body.photo-bg{background-size:cover;background-position:center;background-attachment:fixed}.wrap{max-width:760px;margin:0 auto}.top{display:flex;align-items:center;gap:12px;margin:4px 0 22px}.back{display:grid;place-items:center;flex:0 0 52px;height:52px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.58);color:inherit;border-radius:18px;text-decoration:none;backdrop-filter:blur(18px);font-size:22px}.eyebrow{font-size:10px;letter-spacing:3px;opacity:.62}.top h1{font-size:27px;letter-spacing:1px;margin:1px 0;font-weight:600}.sub{font-size:12px;opacity:.72}.panel{margin:13px 0;padding:18px;border:1px solid rgba(255,255,255,.76);border-radius:var(--radius);background:rgba(255,255,255,var(--opacity));box-shadow:0 16px 42px rgba(77,58,88,.07);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur))}h2{font-size:14px;letter-spacing:1.5px;margin:0 0 6px;font-weight:700}.hint{font-size:12px;opacity:.67;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}.opt,.action{font:inherit;cursor:pointer;border:1px solid rgba(153,128,168,.22);border-radius:18px;background:rgba(255,255,255,.56);color:inherit;padding:13px 10px;text-align:center;min-height:48px}.opt.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 20%,white);box-shadow:inset 0 0 0 1px var(--accent)}.opt.featured{min-height:82px}.opt.featured strong{display:block;font-size:15px}.opt.featured small{display:block;margin-top:4px;font-size:11px;opacity:.7}.swatches{display:flex;gap:11px;flex-wrap:wrap;margin:13px 0}.swatch{width:32px;height:32px;border:3px solid rgba(255,255,255,.9);outline:1px solid transparent;border-radius:50%;padding:0}.swatch.active{outline:2px solid var(--accent);outline-offset:2px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.action{flex:1;min-width:120px;text-decoration:none}.primary{background:var(--accent);border-color:transparent;color:white}.range{display:grid;grid-template-columns:1fr 54px;align-items:center;gap:10px;margin:12px 0 5px}input[type=range]{width:100%;accent-color:var(--accent)}.value{text-align:right;font-size:12px;opacity:.72}label{display:block;font-size:11px;letter-spacing:1px;opacity:.75;margin:13px 0 6px}input[type=color]{width:50px;height:42px;padding:3px;border:1px solid rgba(153,128,168,.25);border-radius:12px;background:transparent}input[type=file]{max-width:100%;font-size:12px}input[type=text]{width:100%;border:1px solid rgba(153,128,168,.3);border-radius:14px;padding:12px;background:rgba(255,255,255,.65);font:inherit;color:inherit}.status{position:sticky;bottom:10px;text-align:center;font-size:12px;margin-top:10px;pointer-events:none}.status span{display:inline-block;background:rgba(55,45,62,.88);color:white;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .2s}.status.show span{opacity:1}small{opacity:.7}body.ios{--ink:#1c1c1e}body.liquid{--ink:#4d4256}body.liquid .panel{border-color:rgba(255,255,255,.88);box-shadow:0 18px 50px rgba(124,100,145,.08)}
+.home-icon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.home-icon-card{min-width:0;padding:12px;border:1px solid rgba(153,128,168,.20);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(239,230,246,.48));box-shadow:0 8px 20px rgba(111,83,130,.06),inset 0 1px 0 rgba(255,255,255,.96)}
+.home-icon-main{width:100%;display:flex;align-items:center;gap:10px;padding:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
+.home-icon-preview{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;overflow:hidden;border-radius:17px;border:1px solid rgba(255,255,255,.95);background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(220,204,237,.78));color:#8f72b5;font-size:25px;box-shadow:0 8px 18px rgba(132,103,169,.13),inset 0 1px 0 white}
+.home-icon-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.home-icon-name{font-size:13px;font-weight:600;line-height:1.4}
+.home-icon-note{font-size:10px;opacity:.62;margin-top:3px}
+.home-icon-actions{display:flex;gap:6px;margin-top:10px}
+.home-icon-actions button{flex:1;min-width:0;padding:7px 5px;border:1px solid rgba(153,128,168,.22);border-radius:10px;background:rgba(255,255,255,.62);color:inherit;font:inherit;font-size:11px;cursor:pointer}
+.home-icon-actions button:active,.home-icon-main:active{transform:scale(.98)}
+.home-icon-file{display:none}
+@media(max-width:380px){.home-icon-grid{gap:7px}.home-icon-card{padding:9px}.home-icon-preview{width:46px;height:46px;flex-basis:46px;border-radius:14px}}
+@media(max-width:380px){body{padding:13px 10px}.panel{padding:14px}.grid{gap:7px}.opt{padding:11px 6px}}
 </style>
 <script>try{if(sessionStorage.getItem('lr-skip-intro-once')==='1'){sessionStorage.removeItem('lr-skip-intro-once');document.documentElement.classList.add('lr-skip-intro-once')}}catch(e){}</script>
 </head><body><main class="wrap">
@@ -12,6 +25,11 @@ body.photo-bg{background-size:cover;background-position:center;background-attach
 <section class="panel"><h2>FONT · 全局字体</h2><div class="grid" id="fontGrid"></div><label for="fontFile">自定义字体文件 · TTF / OTF</label><input id="fontFile" type="file" accept=".ttf,.otf,font/ttf,font/otf"><div class="hint" id="fontStatus">选择字体文件后会自动保存，并应用到 LOVE RECORD 的主页及应用页面。</div><div class="range"><input id="fontSize" type="range" min="13" max="19" step="1"><div class="value" id="fontSizeVal">15px</div></div><label>FONT SIZE · 正文字号</label></section>
 <section class="panel"><h2>ACCENT COLOR · 强调色</h2><div class="hint">按钮、重点和小圆点都会跟着变。</div><div class="swatches" id="swatches"></div><div class="actions"><input type="color" id="customAccent" value="#b79bc7"><button class="action" id="useAccent">使用自定义颜色</button></div></section>
 <section class="panel"><h2>BACKGROUND · 背景</h2><div class="grid" id="backgroundGrid"></div><label for="bgFile">BACKGROUND PHOTO · 背景照片</label><input id="bgFile" type="file" accept="image/*"><div class="hint">照片只应用到主页背景，不改变聊天和空间的背景。选择后会自动保存。</div><button class="action" id="clearPhoto" style="width:100%;margin-top:10px">移除自定义背景照片</button></section>
+<section class="panel" id="homeIconPanel">
+  <h2>HOME ICONS · 更换图标图片</h2>
+  <p class="hint">点击任意主页图标即可上传自定义图片。保存后会自动应用到主页；只更换图标图片，不会改变应用功能。</p>
+  <div class="home-icon-grid" id="homeIconGrid"></div>
+</section>
 <section class="panel"><div class="actions"><button class="action" id="reset">恢复默认</button><a class="action primary" href="index.html" id="saveBack">保存并返回主页</a></div><div class="hint" style="margin-top:10px">字体文件保存在当前浏览器的本地数据库；同一设备上的 LOVE RECORD 页面会共用这份设置。</div></section>
 <div class="status" id="status"><span>已自动保存</span></div></main>
 <script>
@@ -20,24 +38,81 @@ const KEY='yanyan-love-appearance-v1', DB='love-record-appearance-assets-v2', ST
 const defaults={preset:'purple',font:'system',customFontName:'',fontSize:15,accent:'#b79bc7',bg:'soft',dark:false,liquid:false};
 let a={...defaults}, bgData=null, timer=null, fontFace=null;
 const presets={
- purple:{name:'柔雾紫',desc:'柔和芋泥紫 · 原版气质',accent:'#b79bc7',bg:'soft',font:'system',fontSize:15,dark:false,ios:false,liquid:false},
- liquid:{name:'白色高液态水玻璃',desc:'纯白透亮 · 高级磨砂玻璃',accent:'#c5a5d9',bg:'liquid',font:'system',fontSize:15,dark:false,ios:false,liquid:true}
+ purple:{name:'柔雾紫',desc:'柔和芋泥紫 · 原版气质',accent:'#b79bc7',bg:'soft',font:'system',fontSize:15,dark:false,ios:false,liquid:false}
 };
 const fonts={system:{name:'SYSTEM · 系统字体',value:'-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},serif:{name:'SERIF · 衬线字体',value:'Georgia,"Times New Roman",serif'},custom:{name:'自定义 TTF / OTF',value:'"LRCustomFont",sans-serif'}};
-const bgs={soft:{name:'柔雾紫',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'清晨奶油',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'雾蓝',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'柔和玫瑰',a:'#f6e9ef',b:'#eadce5'},plain:{name:'干净纯色',a:'#f7f5fa',b:'#f7f5fa'},liquid:{name:'纯白液态玻璃',a:'#fcfbff',b:'#f4f0f8'}};
+const bgs={soft:{name:'柔雾紫',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'清晨奶油',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'雾蓝',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'柔和玫瑰',a:'#f6e9ef',b:'#eadce5'},plain:{name:'干净纯色',a:'#f7f5fa',b:'#f7f5fa'}};
 function $(id){return document.getElementById(id)}
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('无法打开本地数据库'))})}
 async function assetPut(key,value){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(value,key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('写入失败'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('写入中断'))}})}
 async function assetGet(key){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).get(key);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
 async function assetDelete(key){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
-function readLegacy(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');const old=s.bgData;delete s.bgData;a={...defaults,...s};if(a.preset==='ios'||a.ios||a.bg==='ios'){a.preset='purple';a.ios=false;if(a.accent==='#007aff')a.accent='#b79bc7';if(a.bg==='ios')a.bg='soft';a.liquid=false;}return old||null}catch(e){return null}}
-function showSaved(){ $('status').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('status').classList.remove('show'),1300)}
+function normalizeTheme(){if(a.preset!=='purple')a.preset='purple';a.ios=false;a.liquid=false;if(a.bg==='liquid'||a.bg==='ios'||!bgs[a.bg])a.bg='soft';if(a.accent==='#007aff')a.accent='#b79bc7'}
+function readLegacy(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');const old=s.bgData;delete s.bgData;a={...defaults,...s};normalizeTheme();return old||null}catch(e){return null}}
+function showSaved(message='已自动保存'){ $('status').querySelector('span').textContent=message;$('status').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('status').classList.remove('show'),1600)}
 async function save(){const cfg={...a};delete cfg.bgData;try{await assetPut('settings',cfg);try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}showSaved()}catch(e){alert('保存失败：'+(e?.message||'本地数据库不可用'))}}
 function installFont(blob,name){try{if(fontFace){document.fonts.delete(fontFace);fontFace=null}if(!blob)return;const url=URL.createObjectURL(blob);fontFace=new FontFace('LRCustomFont',`url(${url})`);fontFace.load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--lr-global-font','"LRCustomFont",sans-serif')}).catch(()=>{});}catch(e){}}
 function fontStack(){return a.font==='custom'&&a.customFontName?'"LRCustomFont",sans-serif':(fonts[a.font]||fonts.system).value}
-function apply(){const bg=bgs[a.bg]||bgs.soft;document.documentElement.style.setProperty('--accent',a.accent);document.documentElement.style.setProperty('--bg-a',bg.a);document.documentElement.style.setProperty('--bg-b',bg.b);document.documentElement.style.setProperty('--font-size',a.fontSize+'px');document.documentElement.style.setProperty('--lr-global-font',fontStack());document.body.style.fontFamily=fontStack();document.body.classList.toggle('liquid',!!a.liquid);document.body.style.backgroundImage=bgData?'linear-gradient(rgba(250,248,253,.08),rgba(250,248,253,.08)),url("'+bgData+'")':'';document.body.style.backgroundSize=bgData?'cover':'';document.body.style.backgroundPosition=bgData?'center center':'';document.body.classList.toggle('photo-bg',!!bgData);document.querySelectorAll('.panel').forEach(p=>{p.style.setProperty('--radius',a.liquid?'30px':'28px');p.style.setProperty('--blur',a.liquid?'30px':'20px');p.style.setProperty('--opacity',a.liquid?'.56':'.72')});renderStates();save()}
+function apply(){normalizeTheme();const bg=bgs[a.bg]||bgs.soft;document.documentElement.style.setProperty('--accent',a.accent);document.documentElement.style.setProperty('--bg-a',bg.a);document.documentElement.style.setProperty('--bg-b',bg.b);document.documentElement.style.setProperty('--font-size',a.fontSize+'px');document.documentElement.style.setProperty('--lr-global-font',fontStack());document.body.style.fontFamily=fontStack();document.body.classList.remove('liquid','ios');document.body.style.backgroundImage=bgData?'linear-gradient(rgba(250,248,253,.08),rgba(250,248,253,.08)),url("'+bgData+'")':'';document.body.style.backgroundSize=bgData?'cover':'';document.body.style.backgroundPosition=bgData?'center center':'';document.body.classList.toggle('photo-bg',!!bgData);document.querySelectorAll('.panel').forEach(p=>{p.style.setProperty('--radius','28px');p.style.setProperty('--blur','20px');p.style.setProperty('--opacity','.72')});renderStates();save()}
 function renderStates(){ $('fontSize').value=a.fontSize;$('fontSizeVal').textContent=a.fontSize+'px';$('customAccent').value=a.accent;document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===a.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===a.font));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===a.bg));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===a.accent));$('fontStatus').textContent=a.font==='custom'&&a.customFontName?'已保存字体：'+a.customFontName+'（全局应用）':'选择字体文件后会自动保存，并应用到 LOVE RECORD 的主页及应用页面。'}
 function render(){ $('presetGrid').innerHTML=Object.entries(presets).map(([k,v])=>`<button class="opt featured ${a.preset===k?'active':''}" data-preset="${k}"><strong>${v.name}</strong><small>${v.desc}</small></button>`).join('');$('fontGrid').innerHTML=Object.entries(fonts).map(([k,v])=>`<button class="opt ${a.font===k?'active':''}" data-font="${k}" style="font-family:${v.value}">${v.name}</button>`).join('');$('backgroundGrid').innerHTML=Object.entries(bgs).map(([k,v])=>`<button class="opt ${a.bg===k?'active':''}" data-bg="${k}">${v.name}</button>`).join('');$('swatches').innerHTML=['#b79bc7','#c89bb0','#9faed0','#a9c4a2','#c7ad8b','#8e6fae'].map(c=>`<button class="swatch ${a.accent===c?'active':''}" data-accent="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');renderStates()}
+
+const homeIconDefs=[
+ {id:'app-shiyi',name:'拾忆',symbol:'✧'},
+ {id:'app-memories',name:'回忆',symbol:'▧'},
+ {id:'app-space',name:'空间',symbol:'♡'},
+ {id:'app-chat',name:'聊天',symbol:'♡'},
+ {id:'app-community',name:'社区',symbol:'◎'},
+ {id:'app-journal',name:'日记',symbol:'▤'},
+ {id:'app-music',name:'音乐',symbol:'♫'},
+ {id:'app-appearance',name:'美化',symbol:'✧'},
+ {id:'app-foodie',name:'生活集市',symbol:'♨'},
+ {id:'app-scrapbook',name:'手帐',symbol:'📎'},
+ {id:'app-live',name:'LIVE',symbol:'✦'}
+];
+function iconAssetKey(id){return 'home-icon:'+id}
+function iconPreviewMarkup(def,src){return src?`<img src="${src}" alt="">`:def.symbol}
+async function renderHomeIconEditor(){
+ const grid=$('homeIconGrid');
+ grid.innerHTML=homeIconDefs.map(d=>`<div class="home-icon-card" data-home-icon-card="${d.id}">
+   <button class="home-icon-main" type="button" data-icon-pick="${d.id}" aria-label="更换${d.name}图标">
+    <span class="home-icon-preview" id="icon-preview-${d.id}">${d.symbol}</span>
+    <span><span class="home-icon-name">${d.name}</span><span class="home-icon-note">主页应用图标</span></span>
+   </button>
+   <div class="home-icon-actions"><button type="button" data-icon-pick="${d.id}">更换图片</button><button type="button" data-icon-reset="${d.id}">恢复原图</button></div>
+   <input class="home-icon-file" id="icon-file-${d.id}" data-icon-file="${d.id}" type="file" accept="image/*">
+  </div>`).join('');
+ for(const d of homeIconDefs){
+  try{const src=await assetGet(iconAssetKey(d.id));if(typeof src==='string'&&src){const p=$('icon-preview-'+d.id);if(p)p.innerHTML=iconPreviewMarkup(d,src)} }catch(e){}
+ }
+}
+function readIconImage(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();reader.onerror=()=>reject(reader.error||new Error('读取图片失败'));
+  reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('图片格式无法读取'));img.onload=()=>{
+   const max=512,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+   const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+   const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+   const type=/png/i.test(file.type)?'image/png':'image/jpeg';
+   resolve(canvas.toDataURL(type,type==='image/png'?undefined:.9));
+  };img.src=reader.result};reader.readAsDataURL(file)
+ })
+}
+$('homeIconGrid').addEventListener('click',async e=>{
+ const pick=e.target.closest('[data-icon-pick]');
+ if(pick){const input=$('icon-file-'+pick.dataset.iconPick);if(input)input.click();return}
+ const reset=e.target.closest('[data-icon-reset]');
+ if(reset){const id=reset.dataset.iconReset;try{await assetDelete(iconAssetKey(id));const d=homeIconDefs.find(x=>x.id===id);const p=$('icon-preview-'+id);if(p)p.textContent=d?.symbol||'✧';showSaved('已恢复原图');}catch(err){alert('恢复失败：'+(err?.message||'存储不可用'))}}
+});
+$('homeIconGrid').addEventListener('change',async e=>{
+ const input=e.target.closest('[data-icon-file]');if(!input)return;const file=input.files?.[0];if(!file)return;
+ const id=input.dataset.iconFile,def=homeIconDefs.find(x=>x.id===id);
+ try{const data=await readIconImage(file);await assetPut(iconAssetKey(id),data);const p=$('icon-preview-'+id);if(p)p.innerHTML=iconPreviewMarkup(def,data);showSaved((def?.name||'图标')+'已保存到主页');}
+ catch(err){alert('图标保存失败：'+(err?.message||'本地存储空间不足'))}
+ finally{input.value=''}
+});
+
 function choosePreset(k){const p=presets[k];if(!p)return;const keep={bgData};a={...a,...p,preset:k};bgData=keep.bgData;apply()}
 $('presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)choosePreset(b.dataset.preset)});
 $('fontGrid').addEventListener('click',e=>{const b=e.target.closest('[data-font]');if(!b)return;a.font=b.dataset.font;if(a.font!=='custom')a.customFontName='';apply()});
@@ -51,6 +126,6 @@ $('clearPhoto').onclick=async()=>{bgData=null;await assetDelete('homepage-backgr
 $('reset').onclick=async()=>{a={...defaults};bgData=null;await assetDelete('homepage-background').catch(()=>{});apply();render()};
 $('saveBack').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}save()};
 $('backHome').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}};
-async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}render();apply()}
+async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};normalizeTheme();bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply()}
 init();
 </script></body></html>
