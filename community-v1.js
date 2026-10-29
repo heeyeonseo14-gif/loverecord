@@ -22,7 +22,7 @@
   const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const dateText = ts => new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(ts));
   let aiMemory = {};
-  let db = null, posts = [], page = 'home', activeCategory = '', activePost = '', sortMode = 'new', searchTerm = '', draftFiles = [], objectUrls = [], profile = {name:'妍妍', bio:'在这里记录喜欢的事。', avatar:'', cover:'', worldSetting:'', communityContactsEnabled:[], aiFollowers:[], following:[]}, initialized = false, aiBusy=false;
+  let db = null, posts = [], page = 'home', activeCategory = '', activePost = '', sortMode = 'new', searchTerm = '', draftFiles = [], objectUrls = [], profile = {name:'用户', bio:'在这里记录喜欢的事。', avatar:'', cover:'', worldSetting:'', communityContactsEnabled:[], aiFollowers:[], following:[]}, initialized = false, aiBusy=false;
 
   function getProfile() {
     try { aiMemory=JSON.parse(localStorage.getItem('love-record-community-ai-memory-v1')||'{}'); } catch { aiMemory={}; }
