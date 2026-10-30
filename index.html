@@ -1348,29 +1348,34 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 
 <main id="settings" class="page">
   <div class="eyebrow">SETTINGS</div><h1>SETTINGS 2.0</h1>
-  <div class="settings-intro sub">把我们的空间整理成你喜欢的样子。</div>
+  <div class="settings-intro sub">选择一个分类，进入对应的设置页面。</div>
+  <div class="settings-home-menu" id="settingsHomeMenu">
+    <button class="settings-entry" type="button" data-settings-open="settingsGroupUs"><span class="settings-entry-symbol" aria-hidden="true"></span><span class="settings-entry-copy"><strong>OUR SPACE</strong><small>我们的专属设置 · 开始日期与今日文字</small></span><span class="settings-entry-arrow" aria-hidden="true">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsGroupPersonal"><span class="settings-entry-symbol" aria-hidden="true"></span><span class="settings-entry-copy"><strong>PERSONALIZATION</strong><small>自设管理</small></span><span class="settings-entry-arrow" aria-hidden="true">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsGroupAI"><span class="settings-entry-symbol" aria-hidden="true"></span><span class="settings-entry-copy"><strong>AI &amp; API</strong><small>连接与管理自己的 AI 服务</small></span><span class="settings-entry-arrow" aria-hidden="true">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsGroupApp"><span class="settings-entry-symbol" aria-hidden="true"></span><span class="settings-entry-copy"><strong>APP</strong><small>安装与应用信息</small></span><span class="settings-entry-arrow" aria-hidden="true">›</span></button>
+  </div>
 
-  <section class="settings-group" aria-labelledby="settingsGroupUs">
-    <div class="settings-group-head"><span class="settings-group-icon">♡</span><div><h2 id="settingsGroupUs">OUR SPACE</h2><p>我们的专属设置</p></div></div>
+  <section class="settings-group" id="settingsGroupUs" aria-labelledby="settingsGroupUsTitle">
+    <div class="settings-group-head"><span class="settings-group-icon" aria-hidden="true"></span><div><h2 id="settingsGroupUsTitle">OUR SPACE</h2><p>我们的专属设置</p></div></div>
     <div class="card" id="usCard"><h3>我们</h3><label>开始日期</label><input id="setDate" type="date"><label>今天的文字</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">保存修改</button></div>
   </section>
 
-  <section class="settings-group" aria-labelledby="settingsGroupPersonal">
-    <div class="settings-group-head"><span class="settings-group-icon">✦</span><div><h2 id="settingsGroupPersonal">PERSONALIZATION</h2><p>自设与外观</p></div></div>
+  <section class="settings-group" id="settingsGroupPersonal" aria-labelledby="settingsGroupPersonalTitle">
+    <div class="settings-group-head"><span class="settings-group-icon" aria-hidden="true"></span><div><h2 id="settingsGroupPersonalTitle">PERSONALIZATION</h2><p>自设与外观</p></div></div>
     <div class="card" id="selfPersonaCard"><h3 id="selfPersonaTitle">MY PERSONAS</h3><div class="sub" id="selfPersonaSub">Create different versions of yourself. You can keep more than one.</div><div id="selfPersonaList" style="margin-top:13px"></div><button class="btn primary" id="addSelfPersona" type="button" style="margin-top:15px">+ ADD PERSONA</button></div>
-    <div class="card" id="appearanceCard"><h3 id="appearanceTitle">✦ APPEARANCE</h3><div class="sub" id="appearanceSub">字体、字号、主题色、卡片圆角、毛玻璃和背景，都可以在这里实时调整。</div><button class="btn primary" id="openAppearance" type="button" style="margin-top:15px">CUSTOMIZE LOOK</button></div>
-  </section>
+</section>
 
-  <section class="settings-group" aria-labelledby="settingsGroupAI">
-    <div class="settings-group-head"><span class="settings-group-icon">✧</span><div><h2 id="settingsGroupAI">AI & API</h2><p>连接你自己的 AI 服务</p></div></div>
+  <section class="settings-group" id="settingsGroupAI" aria-labelledby="settingsGroupAITitle">
+    <div class="settings-group-head"><span class="settings-group-icon" aria-hidden="true"></span><div><h2 id="settingsGroupAI">AI & API</h2><p>连接你自己的 AI 服务</p></div></div>
     <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
 <div id="modelPicker" class="model-picker" aria-label="可用模型"></div><div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
 <div class="api-preset-editor" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.45)"><label for="apiPresetName" style="margin-top:0">预设名称</label><input id="apiPresetName" placeholder="例如：主力中转站 / 备用站"><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="saveApiPreset" type="button">保存预设</button><button class="btn" id="addApiPreset" type="button">添加预设</button></div><div id="apiPresetStatus" class="sub" role="status" aria-live="polite" style="margin-top:9px">预设会保存在当前浏览器。</div><div id="apiPresetList" style="display:grid;gap:9px;margin-top:12px"></div></div>
 <button class="btn primary" id="connectApi" type="button" style="margin-top:17px">连接 API / 读取模型</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">刷新模型</button><button class="btn" id="testApi" type="button" style="margin-top:9px">测试 AI</button><div id="apiDebug" class="sub" style="margin-top:12px;word-break:break-word">还没有进行 API 测试。</div></div>
   </section>
 
-  <section class="settings-group" aria-labelledby="settingsGroupApp">
-    <div class="settings-group-head"><span class="settings-group-icon">⌂</span><div><h2 id="settingsGroupApp">APP</h2><p>安装与应用信息</p></div></div>
+  <section class="settings-group" id="settingsGroupApp" aria-labelledby="settingsGroupAppTitle">
+    <div class="settings-group-head"><span class="settings-group-icon" aria-hidden="true"></span><div><h2 id="settingsGroupAppTitle">APP</h2><p>安装与应用信息</p></div></div>
     <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
   </section>
   <div class="settings-future-note">账号管理、云端同步与隐私中心将在 LOVE RECORD 多人账号版本中开放。</div>
@@ -1379,9 +1384,9 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 
 <nav class="nav" aria-label="Dock">
   <div class="nav-inner">
-    <button class="nav-btn" type="button" data-launch-module="world"><span class="dock-icon">◇</span><span>世界书</span></button>
-    <button class="nav-btn" type="button" data-launch-module="people"><span class="dock-icon">♙</span><span>联系人</span></button>
-    <button class="nav-btn" type="button" data-launch-page="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+    <button class="nav-btn" type="button" data-launch-module="world"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v13H4zM8 9h8M8 12h8M8 15h5"/></svg><span>世界书</span></button>
+    <button class="nav-btn" type="button" data-launch-module="people"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c.5-4 2.8-6 6.5-6s6 2 6.5 6z"/></svg><span>联系人</span></button>
+    <button class="nav-btn" type="button" data-launch-page="settings"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2M12 19.2v2M21.2 12h-2M4.8 12h-2M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4M18.5 18.5l-1.4-1.4M6.9 6.9 5.5 5.5"/></svg><span>设置</span></button>
   </div>
 </nav>
 
@@ -2744,6 +2749,30 @@ if(loveIntro){
 <style>
 #lrLiveShell{position:fixed;inset:0;z-index:99999;background:#0b0910;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
 #lrLiveShell.show{display:flex}#lrLiveBar{height:42px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#171020;color:#eee;border-bottom:1px solid #b98ce533;font:13px system-ui,sans-serif}#lrLiveBar button{border:1px solid #b98ce555;border-radius:10px;background:#30203e;color:#f4eaff;padding:6px 12px}#lrLiveFrame{border:0;display:block;width:100%;height:calc(100% - 42px);flex:1;background:#0b0910}
+
+/* Settings 2.1: category landing page + nested setting views */
+.settings-home-menu{display:grid;gap:12px;margin-top:28px}.settings-home-menu[hidden]{display:none}
+.settings-entry{width:100%;display:flex;align-items:center;gap:15px;text-align:left;padding:18px 17px;border:1px solid rgba(255,255,255,.92);border-radius:23px;background:rgba(255,255,255,.82);box-shadow:0 12px 30px rgba(77,58,88,.055);color:var(--ink);min-height:82px}
+.settings-entry-symbol{width:42px;height:42px;flex:0 0 42px;border-radius:15px;background:linear-gradient(145deg,rgba(190,160,204,.22),rgba(255,255,255,.95));border:1px solid rgba(255,255,255,.95)}
+.settings-entry-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+.settings-entry-copy strong{font-size:12px;font-weight:500;letter-spacing:2px}
+.settings-entry-copy small{font-size:11px;color:var(--muted);line-height:1.5}
+.settings-entry-arrow{font-size:25px;font-weight:300;color:#a78db8;line-height:1}
+.settings-group{display:none;margin-top:18px}
+.settings-group.settings-subpage-active{display:block}
+.settings-group .settings-group-head{display:none}
+.settings-subpage-top{display:flex;align-items:center;gap:12px;margin:0 0 20px}
+.settings-subpage-back{width:38px;height:38px;border:1px solid rgba(255,255,255,.9);border-radius:50%;background:rgba(255,255,255,.85);color:#887596;font-size:23px;line-height:1}
+.settings-subpage-title{font-size:12px;letter-spacing:2.5px;color:var(--muted)}
+#settings.settings-subpage-open .settings-home-menu,
+#settings.settings-subpage-open>.eyebrow,
+#settings.settings-subpage-open>h1,
+#settings.settings-subpage-open>.settings-intro,
+#settings.settings-subpage-open>.settings-future-note{display:none}
+.dock-icon-svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;color:#a28bb3}
+.nav-inner{width:100%;max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.nav-btn{width:100%;min-width:0}
+.settings-group-icon{font-size:0}
 </style>
 <div id="lrLiveShell" aria-label="LIVE 直播应用"><div id="lrLiveBar"><button type="button" id="lrLiveBack">‹ 返回 LOVE RECORD</button><strong>LIVE · 直播舞台</strong></div><iframe id="lrLiveFrame" title="LIVE 直播应用" src="./live-app.html"></iframe></div>
 <script>
@@ -2760,5 +2789,43 @@ document.addEventListener('click',function(e){
 </script>
 <script src="./home-widgets-v1.js?v=7"></script>
 <script src="./global-font.js?v=1"></script>
+
+<script>
+(function(){
+  const settings=document.getElementById('settings');
+  if(!settings || settings.dataset.nestedSettingsReady==='1') return;
+  settings.dataset.nestedSettingsReady='1';
+  const groups=['settingsGroupUs','settingsGroupPersonal','settingsGroupAI','settingsGroupApp']
+    .map(id=>document.getElementById(id)).filter(Boolean);
+  const menu=document.getElementById('settingsHomeMenu');
+  groups.forEach(group=>{
+    const head=group.querySelector('.settings-group-head');
+    const title=head?.querySelector('h2')?.textContent?.trim() || 'SETTINGS';
+    const top=document.createElement('div');
+    top.className='settings-subpage-top';
+    top.innerHTML='<button class="settings-subpage-back" type="button" aria-label="返回设置">‹</button><span class="settings-subpage-title"></span>';
+    top.querySelector('.settings-subpage-title').textContent=title;
+    group.insertBefore(top,group.firstChild);
+    top.querySelector('button').addEventListener('click',()=>{
+      group.classList.remove('settings-subpage-active');
+      settings.classList.remove('settings-subpage-open');
+      if(menu) menu.hidden=false;
+      settings.scrollTop=0;
+      window.scrollTo({top:0,behavior:'instant'});
+    });
+  });
+  menu?.addEventListener('click',event=>{
+    const button=event.target.closest('[data-settings-open]');
+    if(!button) return;
+    const target=document.getElementById(button.dataset.settingsOpen);
+    if(!target) return;
+    groups.forEach(group=>group.classList.toggle('settings-subpage-active',group===target));
+    settings.classList.add('settings-subpage-open');
+    if(menu) menu.hidden=true;
+    window.scrollTo({top:0,behavior:'instant'});
+  });
+})();
+</script>
+
 </body>
 </html>
