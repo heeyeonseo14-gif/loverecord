@@ -2313,31 +2313,96 @@ async function lrKVGet(key){const d=await lrKVOpen();return new Promise((resolve
 async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const tx=d.transaction(LR_KV_STORE,'readwrite');tx.objectStore(LR_KV_STORE).put(value,key);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('IndexedDB write failed'));tx.onabort=()=>reject(tx.error||new Error('IndexedDB write aborted'))})}
 // Restore/migrate the independent world-book store before the editor is used.
 worldBooksReady=restoreWorldBooks();
-// Persistent multi-page phone launcher. Long-press to drag; swipe horizontally to switch pages.
+// Persistent Android-style multi-page launcher: 4x4 cells, independent positions per page.
 (function(){
  const grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');if(!grid||!pages)return;
- const getId=el=>el?.dataset?.dragId;const getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
- getApps().forEach(el=>{el.style.touchAction='none';el.style.userSelect='none';el.style.webkitUserSelect='none'});
- const ORDER_KEY='love-record-launcher-grid-order-v4',PAGE_KEY='love-record-launcher-pages-v2',LAYOUT_KV='launcher-layout-v2';
- // Initial arrangement mirrors the user's confirmed layout: community on page 1; shopping, food, memories and journal on page 2.
- const defaultOrder=['app-space','app-chat','app-music','app-community','app-foodie','app-memories','app-journal'];
- let order=defaultOrder.slice(),pageMap={'app-foodie':1,'app-memories':1,'app-journal':1},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,swipe=null,layoutWriteSeq=0,layoutReady=false;
- try{const x=JSON.parse(localStorage.getItem(ORDER_KEY)||'null');if(Array.isArray(x))order=x}catch{}try{const savedPages=JSON.parse(localStorage.getItem(PAGE_KEY)||'null');if(savedPages&&typeof savedPages==='object')pageMap={...pageMap,...savedPages}}catch{}
- const normalize=()=>{const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});getApps().forEach(el=>{if(pageMap[getId(el)]!==1)pageMap[getId(el)]=0})};
- const persist=()=>{const snap={order:order.slice(),pageMap:{...pageMap}};const seq=++layoutWriteSeq;lrKVSet(LAYOUT_KV,snap).then(()=>{if(seq===layoutWriteSeq){try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap))}catch(e){/* IndexedDB is the primary durable copy; localStorage may be full. */}}}).catch(e=>{console.warn('[LOVE RECORD] IndexedDB launcher layout save failed',e);try{localStorage.setItem(ORDER_KEY,JSON.stringify(snap.order));localStorage.setItem(PAGE_KEY,JSON.stringify(snap.pageMap));localStorage.removeItem('love-record-launcher-grid-order-backup-v1')}catch(err){if(typeof toast==='function')toast('布局保存失败：独立储存不可用，请导出备份并检查浏览器权限')}})};
- function render(){normalize();getApps().forEach(el=>{const id=getId(el);el.hidden=(pageMap[id]||0)!==currentPage;el.style.order=String(order.indexOf(id));el.style.removeProperty('transform');el.classList.remove('is-dragging')});pages.querySelectorAll('button').forEach(b=>b.classList.toggle('active',Number(b.dataset.launcherPage)===currentPage));pages.querySelectorAll('button').forEach(b=>b.style.display='block')}
+ const getId=el=>el?.dataset?.dragId,getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
+ const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
+ const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
+ const defaultPage={'app-foodie':1,'app-memories':1,'app-journal':1};
+ let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
+ const style=document.createElement('style');style.id='lr-launcher-grid-v5';style.textContent=`
+ #launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(${ROWS},${CELL_H}px)!important;grid-auto-rows:${CELL_H}px!important;grid-auto-flow:row!important;column-gap:10px!important;row-gap:${ROW_GAP}px!important;align-content:start!important;position:relative;touch-action:pan-y}
+ #launcher .launcher-grid .launcher-app{min-width:0;min-height:0;position:relative!important;left:auto!important;top:auto!important;transform:none!important;touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform}
+ #launcher .launcher-grid .launcher-app.is-dragging{z-index:30;opacity:.82;filter:drop-shadow(0 12px 18px rgba(74,51,90,.24));transition:none!important}
+ #launcher .launcher-grid .launcher-app .app-icon{pointer-events:none}
+ #launcher .launcher-pages button{width:12px;height:12px;min-width:12px;min-height:12px;padding:0;border-radius:50%}
+ #launcher .launcher-pages button.active{width:24px}
+ `;
+ document.head.appendChild(style);
+ const occupiedKey=(p,r,c)=>`${p}:${r}:${c}`;
+ function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:1-page,row:1,col:1}}
+ function normalize(){
+  const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});
+  const used=new Set();ids.forEach(id=>{const p=pageMap[id]===1?1:0;pageMap[id]=p;let cell=cells[id];if(!cell||!Number.isInteger(cell.row)||!Number.isInteger(cell.col)||cell.row<1||cell.row>ROWS||cell.col<1||cell.col>COLS||used.has(occupiedKey(p,cell.row,cell.col))){cell=firstFree(p,used);cells[id]={row:cell.row,col:cell.col}}used.add(occupiedKey(p,cells[id].row,cells[id].col))});
+ }
+ function render(){
+  normalize();
+  getApps().forEach(el=>{const id=getId(el),cell=cells[id];el.hidden=pageMap[id]!==currentPage;el.style.gridRow=String(cell.row);el.style.gridColumn=String(cell.col);el.style.order='0';el.style.removeProperty('transform');el.classList.remove('is-dragging')});
+  pages.querySelectorAll('button').forEach(b=>{b.classList.toggle('active',Number(b.dataset.launcherPage)===currentPage);b.style.display='block'});
+ }
+ async function persist(){
+  const snap={order:order.slice(),pageMap:{...pageMap},cells:JSON.parse(JSON.stringify(cells)),version:3,updatedAt:Date.now()},seq=++writeSeq;
+  try{await lrKVSet(LAYOUT_KV,snap);if(seq===writeSeq)window.dispatchEvent(new CustomEvent('lr-launcher-layout-saved',{detail:snap}))}
+  catch(e){console.warn('[LOVE RECORD] launcher grid layout IndexedDB save failed',e);if(typeof toast==='function')toast('图标布局保存失败，请检查浏览器储存权限')}
+ }
  function setPage(n){if(!layoutReady)return;currentPage=Math.max(0,Math.min(1,n));render();persist()}
  pages.addEventListener('click',e=>{const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
- grid.addEventListener('touchstart',e=>{if(e.target.closest('.launcher-app'))return;const t=e.touches[0];swipe={x:t.clientX,y:t.clientY}}, {passive:true});
- grid.addEventListener('touchend',e=>{if(!swipe)return;const t=e.changedTouches[0],dx=t.clientX-swipe.x,dy=t.clientY-swipe.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(currentPage+(dx<0?1:-1));swipe=null},{passive:true});
- document.addEventListener('pointerdown',e=>{if(!layoutReady)return;const el=e.target.closest('#launcher .launcher-app[data-drag-id]');if(!el||el.hidden||e.button!==0||e.target.closest('input,textarea,button:not(.launcher-app)'))return;active={el,id:getId(el),startX:e.clientX,startY:e.clientY,pointerId:e.pointerId};dragged=false;startPoint={x:e.clientX,y:e.clientY};timer=setTimeout(()=>{if(!active)return;dragged=true;active.el.classList.add('is-dragging');try{active.el.setPointerCapture(active.pointerId)}catch{}if(navigator.vibrate)navigator.vibrate(18);if(typeof toast==='function')toast('拖动图标整理位置；拖到对应页面圆点可切换页面')},420)});
- document.addEventListener('pointermove',e=>{if(!active||e.pointerId!==active.pointerId)return;if(!dragged){if(Math.hypot(e.clientX-active.startX,e.clientY-active.startY)>12){clearTimeout(timer);timer=null;active=null}return}if(e.cancelable)e.preventDefault();active.el.style.setProperty('transform',`translate3d(${e.clientX-active.startX}px,${e.clientY-active.startY}px,0)`,'important')},{passive:false});
- function finish(e){clearTimeout(timer);timer=null;if(active&&dragged){const moved=active.el,x=Number.isFinite(e?.clientX)?e.clientX:startPoint.x,y=Number.isFinite(e?.clientY)?e.clientY:startPoint.y;let targetPage=null;for(const dot of pages.querySelectorAll('[data-launcher-page]')){const r=dot.getBoundingClientRect();if(x>=r.left-26&&x<=r.right+26&&y>=r.top-34&&y<=r.bottom+34){targetPage=Number(dot.dataset.launcherPage);break}}if(targetPage!==null){pageMap[getId(moved)]=targetPage;currentPage=targetPage}else{const others=getApps().filter(el=>el!==moved&&!el.hidden);let target=null,best=Infinity;for(const el of others){const r=el.getBoundingClientRect(),d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2));if(d<best){best=d;target=el}}const visibleOrder=order.filter(id=>(pageMap[id]||0)===currentPage&&id!==getId(moved));let idx=target?visibleOrder.indexOf(getId(target)):visibleOrder.length;if(idx<0)idx=visibleOrder.length;visibleOrder.splice(idx,0,getId(moved));order=order.filter(id=>!visibleOrder.includes(id));order=[...order.filter(id=>(pageMap[id]||0)!==currentPage),...visibleOrder];if(!visibleOrder.length)order.push(getId(moved));pageMap[getId(moved)]=currentPage}persist();render();window.__launcherJustDragged=Date.now();if(e?.cancelable)e.preventDefault()}else if(active?.el){active.el.classList.remove('is-dragging');active.el.style.removeProperty('transform')}active=null;dragged=false;startPoint=null}
- document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);window.addEventListener('pagehide',persist);
- document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<700&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
- // Hydrate the durable layout BEFORE the first render. Previously render() immediately
- // persisted defaults, which could overwrite the saved IndexedDB layout during startup.
- (async()=>{let restored=false;try{const saved=await lrKVGet(LAYOUT_KV);if(saved&&Array.isArray(saved.order)&&saved.pageMap&&typeof saved.pageMap==='object'){order=saved.order.slice();pageMap={...saved.pageMap};restored=true}}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}normalize();layoutReady=true;render();if(!restored)persist()})();window.__loveRecordLauncherSetPage=setPage;
+ grid.addEventListener('touchstart',e=>{if(e.target.closest('.launcher-app'))return;const t=e.touches[0];startPoint={x:t.clientX,y:t.clientY}}, {passive:true});
+ grid.addEventListener('touchend',e=>{if(!startPoint)return;const t=e.changedTouches[0],dx=t.clientX-startPoint.x,dy=t.clientY-startPoint.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(currentPage+(dx<0?1:-1));startPoint=null},{passive:true});
+ function cellFromPoint(x,y){
+  const r=grid.getBoundingClientRect(),styles=getComputedStyle(grid),gap=parseFloat(styles.columnGap)||10,rowGap=parseFloat(styles.rowGap)||ROW_GAP;
+  const colW=(r.width-gap*(COLS-1))/COLS,stepX=colW+gap,stepY=CELL_H+rowGap;
+  const col=Math.max(1,Math.min(COLS,Math.floor((x-r.left)/stepX)+1));
+  const row=Math.max(1,Math.min(ROWS,Math.floor((y-r.top)/stepY)+1));
+  return {row,col};
+ }
+ function freeCell(page){const used=new Set(getApps().filter(a=>pageMap[getId(a)]===page).map(a=>occupiedKey(page,cells[getId(a)].row,cells[getId(a)].col)));return firstFree(page,used)}
+ function beginDrag(e){
+  const el=e.target.closest('#launcher .launcher-app[data-drag-id]');if(!el||el.hidden||e.button!==0||e.target.closest('button:not(.launcher-app),input,textarea'))return;
+  active={el,id:getId(el),pointerId:e.pointerId,x:e.clientX,y:e.clientY,originPage:pageMap[getId(el)]||0};dragged=false;startPoint={x:e.clientX,y:e.clientY};
+  timer=setTimeout(()=>{if(!active)return;dragged=true;try{el.setPointerCapture(e.pointerId)}catch{}el.classList.add('is-dragging');if(navigator.vibrate)navigator.vibrate(18);if(typeof toast==='function')toast('拖动图标到网格空位，或拖到页面圆点切换页面')},420);
+ }
+ document.addEventListener('pointerdown',beginDrag);
+ document.addEventListener('pointermove',e=>{
+  if(!active||e.pointerId!==active.pointerId)return;
+  if(!dragged)return
+  if(e.cancelable)e.preventDefault();
+  active.el.style.setProperty('transform',`translate3d(${e.clientX-active.x}px,${e.clientY-active.y}px,0) scale(1.04)`,'important');
+ },{passive:false});
+ function finish(e){
+  clearTimeout(timer);timer=null;
+  if(active&&dragged){
+   const el=active.el,id=active.id,x=Number.isFinite(e?.clientX)?e.clientX:active.x,y=Number.isFinite(e?.clientY)?e.clientY:active.y;
+   const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null;
+   for(const dot of dots){const r=dot.getBoundingClientRect();if(x>=r.left-34&&x<=r.right+34&&y>=r.top-34&&y<=r.bottom+34){targetPage=Number(dot.dataset.launcherPage);break}}
+   let dest;
+   if(targetPage!==null){dest=freeCell(targetPage)}
+   else{
+    const r=grid.getBoundingClientRect();
+    if(x>=r.left-8&&x<=r.right+8&&y>=r.top-12&&y<=r.bottom+12){targetPage=currentPage;dest=cellFromPoint(x,y)}
+    else{targetPage=active.originPage;dest={...cells[id]}}
+   }
+   const other=getApps().find(a=>getId(a)!==id&&pageMap[getId(a)]===targetPage&&cells[getId(a)].row===dest.row&&cells[getId(a)].col===dest.col);
+   const oldPage=pageMap[id],oldCell={...cells[id]};
+   if(other){const oid=getId(other);pageMap[oid]=oldPage;cells[oid]={row:oldCell.row,col:oldCell.col}}
+   pageMap[id]=targetPage;cells[id]={row:dest.row,col:dest.col};currentPage=targetPage;
+   el.classList.remove('is-dragging');el.style.removeProperty('transform');active=null;dragged=false;startPoint=null;render();persist();window.__launcherJustDragged=Date.now();if(e?.cancelable)e.preventDefault();
+  }else{if(active?.el){active.el.classList.remove('is-dragging');active.el.style.removeProperty('transform')}active=null;dragged=false;startPoint=null}
+ }
+ document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);window.addEventListener('pagehide',()=>{if(layoutReady)persist()});
+ document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<750&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+ (async()=>{
+  let saved=null;
+  try{saved=await lrKVGet(LAYOUT_KV);if(!saved)saved=await lrKVGet(LEGACY_KV)}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}
+  if(saved){if(Array.isArray(saved.order))order=saved.order.slice();if(saved.pageMap&&typeof saved.pageMap==='object')pageMap={...pageMap,...saved.pageMap};if(saved.cells&&typeof saved.cells==='object')cells={...saved.cells}}
+  if(!Object.keys(cells).length){
+   const byPage={0:0,1:0};
+   order.forEach(id=>{if(!pageMap[id])pageMap[id]=0;const p=pageMap[id]===1?1:0,n=byPage[p]++,row=Math.floor(n/COLS)+1,col=n%COLS+1;cells[id]={row,col}});
+  }
+  normalize();layoutReady=true;render();if(!saved||saved.version!==3)persist();
+ })();
+ window.__loveRecordLauncherSetPage=setPage;
 })();
 document.addEventListener('click',e=>{
 const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
@@ -2480,7 +2545,7 @@ function updateSystemTime(){
  el.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
 }
 updateSystemTime();setInterval(updateSystemTime,30000);
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=4',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=5',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
@@ -2573,7 +2638,7 @@ if(loveIntro){
   <script src="./chat-ux-v13.js?v=9"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
-  <script src="./music.js?v=11"></script>
+  <script src="./music.js?v=12"></script>
 
 <script>
 (()=>{
@@ -2648,7 +2713,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=4"></script>
+<script src="./home-widgets-v1.js?v=5"></script>
 <script src="./global-font.js?v=1"></script>
 </body>
 </html>

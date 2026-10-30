@@ -26,16 +26,25 @@ function applyPlayerCover(data){
 function chooseVinylCover(file){if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=async()=>{coverData=reader.result;applyPlayerCover(coverData);await saveVinylCover(coverData);toast('歌曲封面已更新 ♡')};reader.onerror=()=>toast('图片读取失败，请重试');reader.readAsDataURL(file)}
 function showPlayerView(){const page=$('music');if(page)page.classList.add('is-player-view');$('musicPlaybackView').hidden=false;renderLyrics()}
 function showLibraryView(){const page=$('music');if(page)page.classList.remove('is-player-view');$('musicPlaybackView').hidden=true}
+function publishMusicState(){
+ const cover=$('musicMainCover');
+ const state={title:current?.title||'还没有播放歌曲',artist:current?(current.artist||current.source||'音乐'):'从你的音乐库选择一首歌',playing:!!(audio&&!audio.paused),cover:cover&&cover.getAttribute('src')?cover.src:'',currentTime:audio?.currentTime||0,duration:audio?.duration||0};
+ window.LRMusicSnapshot=state;
+ if(audio){audio.dataset.title=state.title;audio.dataset.artist=state.artist}
+ window.dispatchEvent(new CustomEvent('lr-music-state-change',{detail:state}));
+}
 function updateLabels(t){
  $('musicNowTitle').textContent=t?.title||'还没有播放歌曲';
  $('musicNowArtist').textContent=t?(t.artist||t.source||'音乐'):'从你的音乐库选择一首歌';
  applyPlayerCover(coverData);
+ publishMusicState();
 }
 function setButtons(){
  const playing=!audio.paused;
  $('musicPlay').textContent=playing?'Ⅱ':'▶';
  $('musicPlay').setAttribute('aria-label',playing?'暂停':'播放');
  $('musicMainArt').classList.toggle('is-playing',playing);
+ publishMusicState();
 }
 function renderLocal(){
  const q=($('musicSearch')?.value||'').trim().toLowerCase(),list=$('musicTrackList');if(!list)return;
@@ -235,7 +244,8 @@ function init(){
  window.refreshLoveRecordListeningRoom=renderTogetherActive;
  audio.addEventListener('play',()=>{setButtons();renderLocal()});
  audio.addEventListener('pause',()=>{setButtons();renderLocal()});
- audio.addEventListener('timeupdate',()=>{const p=audio.duration?audio.currentTime/audio.duration*100:0;$('musicProgress').value=p;$('musicCurrentTime').textContent=fmt(audio.currentTime);$('musicDuration').textContent=fmt(audio.duration);updateLyrics()});
+ audio.addEventListener('loadedmetadata',publishMusicState);
+ audio.addEventListener('timeupdate',()=>{const p=audio.duration?audio.currentTime/audio.duration*100:0;$('musicProgress').value=p;$('musicCurrentTime').textContent=fmt(audio.currentTime);$('musicDuration').textContent=fmt(audio.duration);publishMusicState();updateLyrics()});
  audio.addEventListener('ended',next);
  $('musicUpload').onclick=()=>$('musicFiles').click();
  $('musicFiles').onchange=e=>{addFiles(e.target.files).catch(()=>toast('歌曲保存失败，请检查浏览器储存空间'));e.target.value=''};
