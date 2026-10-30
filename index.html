@@ -1339,24 +1339,65 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 </div>
 
 <main id="settings" class="page">
-  <div class="eyebrow">SETTINGS</div><h1>OUR SPACE</h1>
-  <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
-  <div class="card" id="usCard"><h3>我们</h3><label>开始日期</label><input id="setDate" type="date"><label>今天的文字</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">保存修改</button></div>
-  <div class="card" id="selfPersonaCard"><h3 id="selfPersonaTitle">MY PERSONAS</h3><div class="sub" id="selfPersonaSub">Create different versions of yourself. You can keep more than one.</div><div id="selfPersonaList" style="margin-top:13px"></div><button class="btn primary" id="addSelfPersona" type="button" style="margin-top:15px">+ ADD PERSONA</button></div>
-  <div class="card" id="appearanceCard"><h3 id="appearanceTitle">✦ APPEARANCE</h3><div class="sub" id="appearanceSub">字体、字号、主题色、卡片圆角、毛玻璃和背景，都可以在这里实时调整。</div><button class="btn primary" id="openAppearance" type="button" style="margin-top:15px">CUSTOMIZE LOOK</button></div>
-  <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
+  <div class="eyebrow" id="settingsEyebrow">SETTINGS</div>
+  <h1 id="settingsMainTitle">SETTINGS</h1>
+  <div class="settings-intro sub" id="settingsIntro">选择一个分类，进入对应的设置页面。</div>
+
+  <div class="settings-home-menu" id="settingsHomeMenu">
+    <button class="settings-entry" type="button" data-settings-open="settingsOurSpace">
+      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16M6.5 4.5h11A2.5 2.5 0 0 1 20 7v12H4V7a2.5 2.5 0 0 1 2.5-2.5Z"/><path d="M8 11h8M8 14.5h5"/></svg></span>
+      <span class="settings-entry-copy"><strong>OUR SPACE</strong><small>我们的专属设置 · 开始日期与今日文字</small></span>
+      <span class="settings-entry-arrow" aria-hidden="true">›</span>
+    </button>
+    <button class="settings-entry" type="button" data-settings-open="settingsPersonalization">
+      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.2"/><path d="M5 20c.5-4 2.8-6 7-6s6.5 2 7 6"/></svg></span>
+      <span class="settings-entry-copy"><strong>PERSONALIZATION</strong><small>自设管理</small></span>
+      <span class="settings-entry-arrow" aria-hidden="true">›</span>
+    </button>
+    <button class="settings-entry" type="button" data-settings-open="settingsAI">
+      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span>
+      <span class="settings-entry-copy"><strong>AI &amp; API</strong><small>连接与管理自己的 AI 服务</small></span>
+      <span class="settings-entry-arrow" aria-hidden="true">›</span>
+    </button>
+    <button class="settings-entry" type="button" data-settings-open="settingsApp">
+      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 7h6M9 17h6"/></svg></span>
+      <span class="settings-entry-copy"><strong>APP</strong><small>安装与应用信息</small></span>
+      <span class="settings-entry-arrow" aria-hidden="true">›</span>
+    </button>
+  </div>
+
+  <section class="settings-subpage" id="settingsOurSpace" aria-labelledby="settingsOurSpaceTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsOurSpaceTitle">OUR SPACE</h2></div></div>
+    <div class="card" id="usCard"><h3>我们</h3><label>开始日期</label><input id="setDate" type="date"><label>今天的文字</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">保存修改</button></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsPersonalization" aria-labelledby="settingsPersonalizationTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsPersonalizationTitle">PERSONALIZATION</h2></div></div>
+    <div class="card" id="selfPersonaCard"><h3 id="selfPersonaTitle">MY PERSONAS</h3><div class="sub" id="selfPersonaSub">Create different versions of yourself. You can keep more than one.</div><div id="selfPersonaList" style="margin-top:13px"></div><button class="btn primary" id="addSelfPersona" type="button" style="margin-top:15px">+ ADD PERSONA</button></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsAI" aria-labelledby="settingsAITitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsAITitle">AI &amp; API</h2></div></div>
+    <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
 <div id="modelPicker" class="model-picker" aria-label="可用模型"></div><div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
 <div class="api-preset-editor" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.45)"><label for="apiPresetName" style="margin-top:0">预设名称</label><input id="apiPresetName" placeholder="例如：主力中转站 / 备用站"><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="saveApiPreset" type="button">保存预设</button><button class="btn" id="addApiPreset" type="button">添加预设</button></div><div id="apiPresetStatus" class="sub" role="status" aria-live="polite" style="margin-top:9px">预设会保存在当前浏览器。</div><div id="apiPresetList" style="display:grid;gap:9px;margin-top:12px"></div></div>
 <button class="btn primary" id="connectApi" type="button" style="margin-top:17px">连接 API / 读取模型</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">刷新模型</button><button class="btn" id="testApi" type="button" style="margin-top:9px">测试 AI</button><div id="apiDebug" class="sub" style="margin-top:12px;word-break:break-word">还没有进行 API 测试。</div></div>
-  <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsApp" aria-labelledby="settingsAppTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsAppTitle">APP</h2></div></div>
+    <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
+    <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
+  </section>
+  <div class="settings-future-note" id="settingsFutureNote">账号管理、云端同步与隐私中心将在 LOVE RECORD 多人账号版本中开放。</div>
 </main>
 </div>
 
 <nav class="nav" aria-label="Dock">
   <div class="nav-inner">
-    <button class="nav-btn" type="button" data-launch-module="world"><span class="dock-icon">◇</span><span>世界书</span></button>
-    <button class="nav-btn" type="button" data-launch-module="people"><span class="dock-icon">♙</span><span>联系人</span></button>
-    <button class="nav-btn" type="button" data-launch-page="settings"><span class="dock-icon">⚙</span><span>设置</span></button>
+    <button class="nav-btn" type="button" data-launch-module="world"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5h16v13H4zM8 9h8M8 12h8M8 15h5"/></svg><span>世界书</span></button>
+    <button class="nav-btn" type="button" data-launch-module="people"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7.5" r="3.2"/><path d="M5.5 20c.5-4 2.8-6 6.5-6s6 2 6.5 6z"/></svg><span>联系人</span></button>
+    <button class="nav-btn" type="button" data-launch-page="settings"><svg class="dock-icon-svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2M12 19.2v2M21.2 12h-2M4.8 12h-2M18.5 5.5l-1.4 1.4M6.9 17.1l-1.4 1.4M18.5 18.5l-1.4-1.4M6.9 6.9 5.5 5.5"/></svg><span>设置</span></button>
   </div>
 </nav>
 
@@ -2719,6 +2760,26 @@ if(loveIntro){
 <style>
 #lrLiveShell{position:fixed;inset:0;z-index:99999;background:#0b0910;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
 #lrLiveShell.show{display:flex}#lrLiveBar{height:42px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#171020;color:#eee;border-bottom:1px solid #b98ce533;font:13px system-ui,sans-serif}#lrLiveBar button{border:1px solid #b98ce555;border-radius:10px;background:#30203e;color:#f4eaff;padding:6px 12px}#lrLiveFrame{border:0;display:block;width:100%;height:calc(100% - 42px);flex:1;background:#0b0910}
+
+/* Settings 2.0: category landing + independent subpages (scoped to #settings) */
+#settings .settings-home-menu{display:grid;gap:12px;margin:26px 0 18px}
+#settings .settings-entry{width:100%;min-height:82px;display:flex;align-items:center;gap:15px;padding:16px 17px;text-align:left;border:1px solid rgba(255,255,255,.94);border-radius:23px;background:rgba(255,255,255,.82);box-shadow:0 12px 30px rgba(77,57,88,.055);color:var(--ink)}
+#settings .settings-entry:active{transform:scale(.99)}
+#settings .settings-entry-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:15px;background:rgba(187,158,202,.13);border:1px solid rgba(255,255,255,.95)}
+#settings .settings-entry-icon svg{width:22px;height:22px;fill:none;stroke:#9b83aa;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+#settings .settings-entry-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:5px}
+#settings .settings-entry-copy strong{font-size:12px;font-weight:500;letter-spacing:2px}
+#settings .settings-entry-copy small{font-size:11px;color:var(--muted);line-height:1.5}
+#settings .settings-entry-arrow{font-size:25px;font-weight:300;color:#a78db8;line-height:1}
+#settings .settings-subpage[hidden]{display:none!important}
+#settings .settings-subpage:not([hidden]){display:block}
+#settings .settings-subpage-head{display:flex;align-items:center;gap:13px;margin:0 0 19px}
+#settings .settings-subpage-head h2{font-size:13px;font-weight:400;letter-spacing:2.5px;margin:4px 0 0}
+#settings .settings-back{width:38px;height:38px;flex:0 0 38px;border:1px solid rgba(255,255,255,.95);border-radius:50%;background:rgba(255,255,255,.86);color:#887596;font-size:25px;line-height:1}
+#settings .settings-future-note{font-size:11px;line-height:1.7;color:var(--muted);text-align:center;padding:18px 12px 8px}
+.nav-inner{width:100%;max-width:600px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.nav-btn{width:100%;min-width:0}
+.dock-icon-svg{width:21px;height:21px;display:block;fill:none;stroke:#a28bb3;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 </style>
 <div id="lrLiveShell" aria-label="LIVE 直播应用"><div id="lrLiveBar"><button type="button" id="lrLiveBack">‹ 返回 LOVE RECORD</button><strong>LIVE · 直播舞台</strong></div><iframe id="lrLiveFrame" title="LIVE 直播应用" src="./live-app.html"></iframe></div>
 <script>
@@ -2735,5 +2796,52 @@ document.addEventListener('click',function(e){
 </script>
 <script src="./home-widgets-v1.js?v=7"></script>
 <script src="./global-font.js?v=1"></script>
+
+<script>
+(function(){
+  const root=document.getElementById('settings');
+  if(!root || root.dataset.categoryNavigationBound==='true') return;
+  root.dataset.categoryNavigationBound='true';
+  const menu=root.querySelector('#settingsHomeMenu');
+  const note=root.querySelector('#settingsFutureNote');
+  const pages=Array.from(root.querySelectorAll('.settings-subpage'));
+  function showHome(){
+    pages.forEach(page=>page.hidden=true);
+    if(menu) menu.hidden=false;
+    if(note) note.hidden=false;
+    const intro=root.querySelector('#settingsIntro');
+    const eyebrow=root.querySelector('#settingsEyebrow');
+    const title=root.querySelector('#settingsMainTitle');
+    if(intro) intro.hidden=false;
+    if(eyebrow) eyebrow.hidden=false;
+    if(title) title.hidden=false;
+    root.scrollIntoView({block:'start',behavior:'auto'});
+  }
+  function showPage(page){
+    if(!page || !pages.includes(page)) return;
+    pages.forEach(item=>item.hidden=item!==page);
+    if(menu) menu.hidden=true;
+    if(note) note.hidden=true;
+    const intro=root.querySelector('#settingsIntro');
+    const eyebrow=root.querySelector('#settingsEyebrow');
+    const title=root.querySelector('#settingsMainTitle');
+    if(intro) intro.hidden=true;
+    if(eyebrow) eyebrow.hidden=true;
+    if(title) title.hidden=true;
+    root.scrollIntoView({block:'start',behavior:'auto'});
+  }
+  root.addEventListener('click',function(event){
+    const entry=event.target.closest('[data-settings-open]');
+    if(entry && root.contains(entry)){
+      showPage(document.getElementById(entry.dataset.settingsOpen));
+      return;
+    }
+    const back=event.target.closest('[data-settings-back]');
+    if(back && root.contains(back)) showHome();
+  });
+  showHome();
+})();
+</script>
+
 </body>
 </html>
