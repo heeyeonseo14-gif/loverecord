@@ -16,8 +16,8 @@ const definitions=[
 ];
 let config={items:[],order:['welcome','days','shelf'],hidden:[]},pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null;
 const style=document.createElement('style');style.id='lr-home-widgets-style';style.textContent=`
-#lrWidgetShelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 18px;padding:0 2px}
-.lr-widget{position:relative;min-width:0;min-height:112px;padding:14px;border:1px solid rgba(255,255,255,.78);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(239,229,247,.68));box-shadow:0 10px 28px rgba(105,78,128,.09),inset 0 1px 0 rgba(255,255,255,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:#574a62;overflow:hidden}
+#lrWidgetShelf{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin:0 0 18px;padding:0 2px;width:100%;min-width:0}
+.lr-widget{grid-column:1/-1;width:100%;position:relative;min-width:0;min-height:112px;padding:14px;border:1px solid rgba(255,255,255,.78);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(239,229,247,.68));box-shadow:0 10px 28px rgba(105,78,128,.09),inset 0 1px 0 rgba(255,255,255,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:#574a62;overflow:hidden}
 .lr-widget.large{grid-column:1/-1;min-height:142px}
 .lr-widget-kicker{font-size:9px;letter-spacing:1.7px;opacity:.58;margin-bottom:8px}
 .lr-widget-title{font-size:12px;font-weight:650;margin-bottom:6px}
@@ -26,7 +26,7 @@ const style=document.createElement('style');style.id='lr-home-widgets-style';sty
 .lr-widget-tools{position:absolute;right:8px;top:8px;display:flex;gap:5px;opacity:0;transition:opacity .15s}
 #launcher.lr-widgets-editing .lr-widget-tools{opacity:1}
 .lr-widget-tools button{width:25px;height:25px;border:1px solid #fff9;border-radius:50%;background:#fff9;color:#74617f;font-size:13px}
-.lr-widget-photo{width:100%;height:105px;object-fit:cover;border-radius:13px;display:block}
+.lr-widget-photo{width:100%;height:132px;object-fit:cover;border-radius:13px;display:block}
 .lr-widget-note{width:100%;min-height:64px;border:0;outline:0;resize:vertical;background:transparent;color:inherit;font:inherit;font-size:12px}
 .lr-widget-audio{display:flex;align-items:center;gap:9px;margin-top:9px}
 .lr-widget-play{width:34px;height:34px;border:0;border-radius:50%;background:#b99bc9;color:white;font-size:15px}
@@ -74,12 +74,14 @@ else if(grid)launcher.insertBefore(shelf,grid);
 const overlay=document.createElement('div');overlay.id='lrWidgetOverlay';overlay.innerHTML=`<section class="lr-widget-sheet" role="dialog" aria-modal="true" aria-labelledby="lrWidgetSheetTitle"><div class="lr-widget-sheet-head"><div><h2 id="lrWidgetSheetTitle">桌面组件</h2><p>可恢复已移除的固定组件，也可以添加新组件</p></div><button class="lr-widget-close" type="button" aria-label="关闭">×</button></div><div class="lr-widget-list" id="lrWidgetList"></div><div class="lr-widget-sheet-foot">长按组件进入编辑模式，再次拖动即可调整位置；点击 × 可移除。布局保存在当前设备。</div></section>`;
 document.body.appendChild(overlay);
 const $=id=>document.getElementById(id);
-function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');if(Array.isArray(v.items))config.items=v.items.filter(x=>definitions.some(d=>d.id===x.id)).map(x=>({id:x.id,size:x.size==='large'?'large':'small',note:String(x.note||'')}));if(Array.isArray(v.order))config.order=v.order.filter(x=>['welcome','days','shelf'].includes(x));if(Array.isArray(v.hidden))config.hidden=v.hidden.filter(x=>['welcome','days'].includes(x));if(Array.isArray(v.itemOrder)){const rank=new Map(v.itemOrder.map((id,i)=>[id,i]));config.items.sort((a,b)=>(rank.get(a.id)??999)-(rank.get(b.id)??999))}}catch{}}
+async function read(){let v=null;try{if(typeof lrKVGet==='function')v=await lrKVGet('home-widgets-layout-v2')}catch(e){console.warn('[LOVE RECORD] widget layout IDB read failed',e)}if(!v){try{v=JSON.parse(localStorage.getItem(KEY)||'null')}catch{v=null}}if(v&&Array.isArray(v.items))config.items=v.items.filter(x=>definitions.some(d=>d.id===x.id)).map(x=>({id:x.id,size:x.size==='large'?'large':'small',note:String(x.note||'')}));if(v&&Array.isArray(v.order))config.order=v.order.filter(x=>['welcome','days','shelf'].includes(x));if(v&&Array.isArray(v.hidden))config.hidden=v.hidden.filter(x=>['welcome','days'].includes(x));if(v&&Array.isArray(v.itemOrder)){const rank=new Map(v.itemOrder.map((id,i)=>[id,i]));config.items.sort((a,b)=>(rank.get(a.id)??999)-(rank.get(b.id)??999))}if(v&&Array.isArray(v.items)&&!await idbHasWidgetLayout())save()} 
+async function idbHasWidgetLayout(){try{return typeof lrKVGet==='function'&&!!(await lrKVGet('home-widgets-layout-v2'))}catch{return false}}
 function applyLayout(){const map={welcome,days:daysCard,shelf};config.order.forEach(id=>{const node=map[id];if(node&&node.parentElement===board)board.appendChild(node)});if(welcome)welcome.hidden=config.hidden.includes('welcome');if(daysCard)daysCard.hidden=config.hidden.includes('days');if(shelf)shelf.hidden=!config.items.length&&!editMode;}
 function setEditMode(on){editMode=!!on;launcher.classList.toggle('lr-widgets-editing',editMode);if(!editMode)dragState=null;renderChoices();applyLayout();}
 function addEditTools(node,kind){if(!node||node.querySelector(':scope > .lr-edit-tools'))return;const tools=document.createElement('div');tools.className='lr-edit-tools';tools.innerHTML=`<button type="button" data-fixed-remove="${kind}" aria-label="移除组件">×</button>`;node.appendChild(tools)}
 if(welcome)addEditTools(welcome,'welcome');if(daysCard)addEditTools(daysCard,'days');
-function save(){try{localStorage.setItem(KEY,JSON.stringify({...config,itemOrder:config.items.map(x=>x.id)}));window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:config}));}catch(e){notify('组件保存失败，请检查浏览器储存空间。')}}
+let saveSeq=0;
+async function save(){const seq=++saveSeq;const payload={...config,items:config.items.map(x=>({...x})),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now()};try{if(typeof lrKVSet!=='function')throw new Error('IndexedDB layout store unavailable');await lrKVSet('home-widgets-layout-v2',payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] widget layout save failed',e);if(seq===saveSeq)notify('组件保存失败：浏览器独立储存不可用，请检查浏览器权限。')}}
 function notify(t){if(typeof window.toast==='function')window.toast(t);else if($('toast')){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}}
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
@@ -107,16 +109,17 @@ overlay.addEventListener('click',e=>{if(e.target===overlay)closeChooser();const 
 function itemNode(target){return target.closest('.launcher-welcome,.launcher-info,.lr-widget')}
 function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
 function reorderAt(x,y){if(!dragState)return;const under=document.elementFromPoint(x,y);const target=under?.closest('.launcher-welcome,.launcher-info,.lr-widget');if(!target||target===dragState.node)return;if(dragState.scope==='board'&&(target===welcome||target===daysCard)){const rect=target.getBoundingClientRect();board.insertBefore(dragState.node,y<rect.top+rect.height/2?target:target.nextSibling)}else if(dragState.scope==='shelf'&&target.classList.contains('lr-widget')){const rect=target.getBoundingClientRect();shelf.insertBefore(dragState.node,y<rect.top+rect.height/2?target:target.nextSibling)}}
-function startDrag(node,e){if(!editMode||!node)return;dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board'};node.classList.add('is-lr-dragging')}
+function startDrag(node,e){if(!editMode||!node)return;dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board',oldPointerEvents:node.style.pointerEvents};try{if(e.pointerId!==undefined)node.setPointerCapture(e.pointerId)}catch{}node.classList.add('is-lr-dragging');node.style.pointerEvents='none';if(e.cancelable)e.preventDefault()}
 document.addEventListener('pointermove',e=>{if(dragState)reorderAt(e.clientX,e.clientY)});
-document.addEventListener('pointerup',()=>{if(!dragState)return;dragState.node.classList.remove('is-lr-dragging');dragState=null;saveOrder();renderChoices()});
-document.addEventListener('pointercancel',()=>{if(dragState){dragState.node.classList.remove('is-lr-dragging');dragState=null}});
+document.addEventListener('pointerup',()=>{if(!dragState)return;dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';dragState=null;saveOrder();renderChoices()});
+document.addEventListener('pointercancel',()=>{if(dragState){dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';dragState=null}});
 launcher.addEventListener('pointerdown',e=>{
+ if(e.target.closest('.launcher-app'))return; // app icons have their own multi-page drag controller
  const node=itemNode(e.target);
  if(editMode&&node&&!e.target.closest('button,input,textarea')){startDrag(node,e);return}
  if(e.target.closest('button,a,input,textarea,select,#lrWidgetOverlay'))return;
- if(node){pressTimer=setTimeout(()=>{pressTimer=null;setEditMode(true);notify('已进入桌面编辑模式，再次按住组件并拖动即可调整位置。')},520);return}
- if(e.target===launcher||e.target.closest('.launcher-pages,.launcher-grid')||e.target.id==='lrWidgetShelf'){pressTimer=setTimeout(()=>{pressTimer=null;openChooser()},560)}
+ if(node){const downEvent=e;pressTimer=setTimeout(()=>{pressTimer=null;setEditMode(true);startDrag(node,{pointerId:downEvent.pointerId,cancelable:false});notify('正在移动组件，松开即可放置。')},520);return}
+ if(e.target===launcher||e.target.closest('.launcher-pages')||e.target.id==='lrWidgetShelf'||(e.target.classList&&e.target.classList.contains('launcher-grid'))){pressTimer=setTimeout(()=>{pressTimer=null;openChooser()},560)}
 });
 ['pointerup','pointercancel','pointerleave'].forEach(type=>launcher.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null}));
 launcher.addEventListener('click',e=>{
@@ -136,5 +139,5 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()})
 const liveObserver=new MutationObserver(()=>{if(!document.hidden)render()});
 ['launcherDays','launcherToday','homePhoto','chatMessages','musicTogetherCurrentSong'].forEach(id=>{const node=$(id);if(node)liveObserver.observe(node,{childList:true,subtree:true,characterData:true,attributes:id==='homePhoto'})});
 const globalAudio=$('lrGlobalAudio');if(globalAudio)['play','pause','ended','loadedmetadata'].forEach(ev=>globalAudio.addEventListener(ev,()=>render()));
-read();applyLayout();render();
+read().then(()=>{applyLayout();render()}).catch(e=>{console.error('[LOVE RECORD] widget layout restore failed',e);applyLayout();render()});
 })();
