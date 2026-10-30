@@ -17,6 +17,7 @@
   let worldBookDraft=[];
   let memorySummaryRunning=false;
   let historyStorageReady=false;
+  let adoptUnscopedLegacyHistory=false;
   let historyDbPromise=null;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
   function cloneData(value){return JSON.parse(JSON.stringify(value||{}))}
@@ -140,13 +141,46 @@
           if(!meta||!meta.id)continue;
           let full=null;
           try{full=JSON.parse(localStorage.getItem(cityStorageKey(meta.id))||'null')}catch(e){}
-          restored.push(full&&full.id===meta.id?full:{...meta,snapshot:cloneData(EMPTY_DATA)});
+          restored.push(full&&full.id===meta.id?full:{...meta,snapshot:cloneData(EMPTY_DATA),_spaceMissingSnapshot:true});
         }
         cities=restored;
         activeCityId=registry.activeCityId||cities[0]?.id||'';
         const active=cities.find(c=>c.id===activeCityId)||cities[0];
-        if(active){activeCityId=active.id;data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})}}
-        else data={...cloneData(EMPTY_DATA),...legacy};
+        const legacyHasContent=!!((legacy.selectedPeople||[]).length||(legacy.locations||[]).length||(legacy.history||[]).length||(legacy.activityLog||[]).length||(legacy.memories||[]).length||(legacy.storyLines||[]).length);
+        const richness=o=>!o?0:
+          (Array.isArray(o.locations)?o.locations.length*100000:0)+
+          (Array.isArray(o.history)?o.history.length*1000:0)+
+          (Array.isArray(o.activityLog)?o.activityLog.length*500:0)+
+          (Array.isArray(o.memories)?o.memories.length*300:0)+
+          (Array.isArray(o.storyLines)?o.storyLines.length*200:0)+
+          (Array.isArray(o.selectedPeople)?o.selectedPeople.length*10:0)+
+          (Array.isArray(o.relationshipEvents)?o.relationshipEvents.length*100:0)+
+          (Array.isArray(o.echoes)?o.echoes.length*100:0);
+        if(active){
+          activeCityId=active.id;
+          const activeSnapshot=active.snapshot||{};
+          // Older releases kept the last active world in KEY. If its per-city snapshot
+          // is absent or less complete, restore that legacy payload into the active city.
+          if(active._spaceMissingSnapshot)adoptUnscopedLegacyHistory=true;
+          if(legacyHasContent&&richness(legacy)>richness(activeSnapshot)){
+            adoptUnscopedLegacyHistory=true;
+            active.snapshot=cloneData(legacy);
+            active.peopleIds=[...(legacy.selectedPeople||active.peopleIds||[])];
+            active.name=makeCityName(active.peopleIds);
+            active.updatedAt=Date.now();
+            active._spaceRecoveredFromLegacy=true;
+          }
+          data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})};
+        }else if(legacyHasContent){
+          data={...cloneData(EMPTY_DATA),...cloneData(legacy)};
+          activeCityId='city-recovered-'+Date.now();
+          const recovered={id:activeCityId,name:makeCityName(legacy.selectedPeople||[]),peopleIds:[...(legacy.selectedPeople||[])],createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(data)};
+          cities.push(recovered);
+          recovered._spaceRecoveredFromLegacy=true;
+          adoptUnscopedLegacyHistory=true;
+        }else data={...cloneData(EMPTY_DATA),...legacy};
+        // Keep the original legacy KEY untouched until a city snapshot has been
+        // successfully written. The marker is in-memory only and never deletes source data.
       }else if(registry&&Array.isArray(registry.cities)&&registry.cities.length){
         cities=registry.cities.map(c=>({...c,snapshot:cloneData(c.snapshot||{})}));
         activeCityId=registry.activeCityId||cities[0].id;
@@ -159,7 +193,7 @@
         if(hasLegacy){
           activeCityId='city-legacy-'+Date.now();
           cities=[{id:activeCityId,name:makeCityName(legacy.selectedPeople||[]),peopleIds:[...(legacy.selectedPeople||[])],createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(data)}];
-          persistCities();
+          // The final save() writes the city snapshot first, then updates the legacy mirror.
         }
       }
     }catch(e){
@@ -177,11 +211,16 @@
       // Preserve legacy memory snippets by migrating them into the new archive once.
       (data.memories||[]).forEach((old,i)=>{const content=String(old.text||'').trim();if(!content)return;const title='旧记忆 · '+String(old.place||'世界经历');const source=(data.history||[]).find(h=>h.at===old.at&&(h.place===old.place||!old.place));me.cards.push({id:String(old.id||('legacy-memory-'+i)),dedupeKey:'legacy-'+String(old.id||i),type:'shared',title,content,characterNames:[],characterIds:[],locationNames:old.place?[old.place]:[],locationIds:source?.locationId?[source.locationId]:[],threadIds:source?.threadId?[source.threadId]:[],sourceRecordIds:source?[source.id]:[],emotion:'',status:'active',tags:['旧版迁移'],createdAt:Number(old.at)||Date.now(),updatedAt:Number(old.at)||Date.now(),userEdited:false})});
     }else{me.nextSequence=Math.max(Number(me.nextSequence)||1,maxSeq+1);}
+    const recoveredCity=currentCity();
+    if(recoveredCity&&recoveredCity._spaceRecoveredFromLegacy){
+      toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
+      delete recoveredCity._spaceRecoveredFromLegacy;
+    }
     save();
   }
-  function save(){data.updatedAt=Date.now();try{const stored={...data};if(historyStorageReady)stored.history=[];localStorage.setItem(KEY,JSON.stringify(stored));return persistActiveCity()}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
+  function save(){data.updatedAt=Date.now();try{if(!persistActiveCity())return false;const stored={...data};if(historyStorageReady)stored.history=[];try{localStorage.setItem(KEY,JSON.stringify(stored))}catch(mirrorError){console.warn('[SPACE] legacy mirror skipped; city snapshot is saved',mirrorError)}return true}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
   function openHistoryDB(){if(historyDbPromise)return historyDbPromise;historyDbPromise=new Promise((resolve,reject)=>{if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}const req=indexedDB.open('love-record-space-history-v1',1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('history'))db.createObjectStore('history',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'))});return historyDbPromise}
-  async function hydrateHistoryFromIDB(){try{const db=await openHistoryDB();const stored=await new Promise((resolve,reject)=>{const tx=db.transaction('history','readonly'),req=tx.objectStore('history').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});const scoped=stored.filter(h=>h&&(h.cityId===activeCityId||(!h.cityId&&String(activeCityId).startsWith('city-legacy-'))));const byId=new Map();[...(data.history||[]),...scoped].forEach(h=>{if(h&&h.id)byId.set(h.id,h)});data.history=[...byId.values()].sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0)||(Number(a.at)||0)-(Number(b.at)||0));let max=0;data.history.forEach((h,i)=>{if(!Number.isFinite(Number(h.seq)))h.seq=i+1;max=Math.max(max,Number(h.seq)||0)});data.memoryEngine.nextSequence=Math.max(Number(data.memoryEngine.nextSequence)||1,max+1);const tx=db.transaction('history','readwrite'),store=tx.objectStore('history');data.history.forEach(h=>store.put(h));await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});historyStorageReady=true;save()}catch(e){console.warn('Space history archive using compatibility storage fallback',e);historyStorageReady=false}}
+  async function hydrateHistoryFromIDB(){try{const db=await openHistoryDB();const stored=await new Promise((resolve,reject)=>{const tx=db.transaction('history','readonly'),req=tx.objectStore('history').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});const scoped=stored.filter(h=>h&&(h.cityId===activeCityId||(!h.cityId&&(adoptUnscopedLegacyHistory||String(activeCityId).startsWith('city-legacy-')))));const byId=new Map();[...(data.history||[]),...scoped].forEach(h=>{if(h&&h.id)byId.set(h.id,h)});data.history=[...byId.values()].sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0)||(Number(a.at)||0)-(Number(b.at)||0));let max=0;data.history.forEach((h,i)=>{if(!Number.isFinite(Number(h.seq)))h.seq=i+1;max=Math.max(max,Number(h.seq)||0)});data.memoryEngine.nextSequence=Math.max(Number(data.memoryEngine.nextSequence)||1,max+1);const tx=db.transaction('history','readwrite'),store=tx.objectStore('history');data.history.forEach(h=>{if(!h.cityId&&(adoptUnscopedLegacyHistory||String(activeCityId).startsWith('city-legacy-')))h.cityId=activeCityId;store.put(h)});await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});historyStorageReady=true;adoptUnscopedLegacyHistory=false;save()}catch(e){console.warn('Space history archive using compatibility storage fallback',e);historyStorageReady=false}}
   async function persistHistoryRecord(record){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});return true}catch(e){console.error('Could not persist Space history to IndexedDB',e);historyStorageReady=false;try{const stored={...data};stored.history=data.history;localStorage.setItem(KEY,JSON.stringify(stored))}catch(_){}toast('剧情档案存储失败。请检查浏览器存储空间；本次内容仍保留在当前页面中。');return false}}
   async function deleteHistoryRecordFromIDB(id){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}catch(e){console.warn('Could not delete archived history record',e)}}
   function people(){
