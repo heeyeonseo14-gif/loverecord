@@ -2343,6 +2343,12 @@ worldBooksReady=restoreWorldBooks();
  function render(){
   normalize();
   getApps().forEach(el=>{const id=getId(el),cell=cells[id];el.hidden=pageMap[id]!==currentPage;el.style.gridRow=String(cell.row);el.style.gridColumn=String(cell.col);el.style.order='0';el.style.removeProperty('transform');el.classList.remove('is-dragging')});
+  // Collapse unused launcher rows so the page dots sit immediately below the last app row.
+  const visibleRows=getApps().filter(el=>pageMap[getId(el)]===currentPage).map(el=>cells[getId(el)].row);
+  const usedRows=Math.max(1,...visibleRows);
+  grid.style.setProperty('grid-template-rows',`repeat(${usedRows}, ${CELL_H}px)`,'important');
+  pages.style.marginTop='12px';
+  pages.style.padding='0 0 8px';
   pages.querySelectorAll('button').forEach(b=>{b.classList.toggle('active',Number(b.dataset.launcherPage)===currentPage);b.style.display='block'});
  }
  async function persist(){
