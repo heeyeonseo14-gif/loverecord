@@ -6,13 +6,13 @@ const launcher=document.getElementById('launcher');
 if(!launcher||document.getElementById('lrWidgetShelf'))return;
 const definitions=[
  {id:'days',name:'在一起的日子',category:'LOVE',size:'small',desc:'纪念日计数与今日寄语'},
- {id:'photo',name:'我们的照片',category:'MEMORY',size:'medium',desc:'读取主页照片，点按可更换'},
+ {id:'photo',name:'我们的照片',category:'MEMORY',size:'medium',desc:'读取 MEMORY 全部照片，点击切换'},
  {id:'daily',name:'今日寄语',category:'AI',size:'small',desc:'展示主页今日文字'},
  {id:'message',name:'最近一条消息',category:'AI',size:'medium',desc:'读取最近聊天记录'},
  {id:'music',name:'音乐播放器',category:'MUSIC',size:'medium',desc:'显示当前播放歌曲与控制'},
  {id:'calendar',name:'今日日历',category:'LIFE',size:'small',desc:'日期、星期与月份'},
  {id:'note',name:'快速便笺',category:'LIFE',size:'medium',desc:'随手记录，自动保存'},
- {id:'memory',name:'随机回忆',category:'MEMORY',size:'medium',desc:'从已有照片中随机展示'}
+ {id:'memory',name:'随机回忆',category:'MEMORY',size:'medium',desc:'从 MEMORY 照片中随机切换'}
 ];
 let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{}},pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
@@ -37,6 +37,14 @@ const style=document.createElement('style');style.id='lr-home-widgets-style';sty
 #launcher.lr-widgets-editing .lr-widget-tools{opacity:1}
 .lr-widget-tools button{width:25px;height:25px;border:1px solid #fff9;border-radius:50%;background:#fff9;color:#74617f;font-size:13px}
 .lr-widget-photo{width:100%;height:72px;object-fit:cover;border-radius:11px;display:block}
+.lr-widget-memory-widget{min-height:248px;grid-row:span 2}
+.lr-widget-memory-view{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;min-width:0}
+.lr-widget-memory-image{display:block;width:min(100%,190px);aspect-ratio:1/1;padding:0;border:0;border-radius:15px;overflow:hidden;background:rgba(183,155,199,.13);cursor:pointer}
+.lr-widget-photo-square{display:block;width:100%;height:100%;aspect-ratio:1/1;object-fit:cover}
+.lr-widget-memory-meta{display:flex;justify-content:space-between;gap:8px;width:min(100%,190px);font-size:9px;line-height:1.35;opacity:.62;white-space:nowrap;overflow:hidden}
+.lr-widget-memory-meta span:first-child{overflow:hidden;text-overflow:ellipsis}
+.lr-widget-memory-empty{width:100%;padding:18px 8px;text-align:center;font-size:11px;opacity:.65}
+
 .lr-widget-music-row{display:flex;align-items:center;gap:11px;min-width:0}
 .lr-widget-music-cover{width:42px;height:42px;flex:0 0 42px;object-fit:cover;border-radius:12px;background:rgba(183,155,199,.2)}
 .lr-widget-music-meta{min-width:0;flex:1}
@@ -104,22 +112,25 @@ function notify(t){if(typeof window.toast==='function')window.toast(t);else if($
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
 function latestMessage(){const threads=localJSON('love-record-chat-threads-v2');if(!threads)return null;let all=[];if(Array.isArray(threads))all=threads;else if(typeof threads==='object')Object.values(threads).forEach(v=>{if(Array.isArray(v))all.push(...v);else if(Array.isArray(v?.messages))all.push(...v.messages)});return all.filter(x=>x&&typeof x==='object'&&(x.text||x.content||x.message)).sort((a,b)=>new Date(b.createdAt||b.time||b.timestamp||0)-new Date(a.createdAt||a.time||a.timestamp||0))[0]||null}
-function photoFromDB(type){return new Promise(resolve=>{try{const req=indexedDB.open('yanyan-love-v5',1);req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('images')){db.close();resolve(null);return}const tx=db.transaction('images','readonly'),idx=tx.objectStore('images').index('type'),r=idx.getAll(type);r.onsuccess=()=>{const arr=(r.result||[]).reverse();db.close();resolve(arr[0]?.blob||null)};r.onerror=()=>{db.close();resolve(null)}};req.onerror=()=>resolve(null)}catch{resolve(null)}})}
+function photosFromDB(type='memory'){return new Promise(resolve=>{try{const req=indexedDB.open('yanyan-love-v5',1);req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('images')){db.close();resolve([]);return}let tx;try{tx=db.transaction('images','readonly')}catch(e){db.close();resolve([]);return}const store=tx.objectStore('images');if(!store.indexNames.contains('type')){db.close();resolve([]);return}const r=store.index('type').getAll(type);r.onsuccess=()=>{const arr=(r.result||[]).filter(x=>x&&x.blob).sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));db.close();resolve(arr)};r.onerror=()=>{db.close();resolve([])};tx.onabort=()=>{db.close();resolve([])}};req.onerror=()=>resolve([]);req.onblocked=()=>resolve([])}catch{resolve([])}})}
+const photoWidgetData=new Map();
+async function renderPhotoWidget(widgetId){const card=shelf.querySelector(`[data-widget-id="${widgetId}"]`),view=card?.querySelector(`[data-memory-view="${widgetId}"]`);if(!view)return;let data=photoWidgetData.get(widgetId);if(!data||!data.loaded){const records=await photosFromDB('memory');data={loaded:true,records,index:0,urls:new Map()};photoWidgetData.set(widgetId,data)}const records=data.records;if(!records.length){view.innerHTML='<div class="lr-widget-memory-empty">MEMORY 里还没有照片 ♡</div>';return}data.index=((data.index%records.length)+records.length)%records.length;const record=records[data.index];let url=data.urls.get(record.id);if(!url){url=URL.createObjectURL(record.blob);data.urls.set(record.id,url)}const note=String(record.note||'A little moment.');const date=String(record.date||'');view.innerHTML=`<button type="button" class="lr-widget-memory-image" data-memory-next="${widgetId}" aria-label="切换 MEMORY 照片"><img class="lr-widget-photo-square" src="${url}" alt="${escape(note)}"></button><div class="lr-widget-memory-meta"><span>${escape(date||note)}</span><span>${data.index+1} / ${records.length}　›</span></div>`}
+function cyclePhotoWidget(widgetId){const data=photoWidgetData.get(widgetId);if(!data||data.records.length<2)return;data.index=widgetId==='memory'?(data.index+1+Math.floor(Math.random()*(data.records.length-1)))%data.records.length:(data.index+1)%data.records.length;renderPhotoWidget(widgetId)}
 function widgetHTML(item){const d=definitions.find(x=>x.id===item.id);const sizeClass=item.size==='large'?'large':item.size==='medium'?'medium':'small';let body='';
  if(item.id==='days'){const days=$('launcherDays')?.textContent||'0';body=`<div class="lr-widget-main">${escape(days)} <span style="font-size:11px;font-weight:500">DAYS</span></div><div class="lr-widget-sub">${escape($('launcherToday')?.textContent||'把今天也留在这里。')}</div>`}
  if(item.id==='daily'){body=`<div class="lr-widget-main" style="font-size:16px">“${escape($('launcherToday')?.textContent||'把今天也留在这里。')}”</div><div class="lr-widget-sub">把今天也好好收藏起来。</div>`}
- if(item.id==='photo'||item.id==='memory'){body=`<div class="lr-widget-photo-wrap"><div class="lr-widget-sub">${item.id==='memory'?'正在寻找一段回忆…':'读取主页照片…'}</div></div>`}
+ if(item.id==='photo'||item.id==='memory'){body=`<div class="lr-widget-memory-view" data-memory-view="${item.id}"><div class="lr-widget-sub">正在读取 MEMORY 照片…</div></div>`}
  if(item.id==='message'){const m=latestMessage();const content=m?(m.text||m.content||m.message):'还没有聊天记录';body=`<div class="lr-widget-main" style="font-size:14px">${escape(content).slice(0,120)}</div><div class="lr-widget-sub">${m?escape(m.senderName||m.name||'最近的对话'):'开始一段对话，让这里留下你们的消息。'}</div>`}
  if(item.id==='music'){const snap=window.LRMusicSnapshot||{};const song=snap.title||$('musicNowTitle')?.textContent||'打开音乐，播放喜欢的歌';const artist=snap.artist||$('musicNowArtist')?.textContent||'LOVE RECORD · MUSIC';const cover=snap.cover||$('musicMainCover')?.src||'';const playing=!!snap.playing;body=`<div class="lr-widget-music-row"><img class="lr-widget-music-cover" data-widget-music-cover src="${escape(cover)}" alt=""><div class="lr-widget-music-meta"><strong data-widget-music-title>${escape(song)}</strong><small data-widget-music-artist>${escape(artist)}</small></div><button class="lr-widget-play" type="button" data-widget-play>${playing?'Ⅱ':'▶'}</button></div>`}
  if(item.id==='calendar'){const now=new Date();body=`<div class="lr-widget-main">${now.getDate()}</div><div class="lr-widget-sub">${now.toLocaleDateString('zh-CN',{year:'numeric',month:'long',weekday:'long'})}</div>`}
  if(item.id==='note'){body=`<textarea class="lr-widget-note" data-widget-note placeholder="写下一点想留下的话…">${escape(item.note||'')}</textarea><div class="lr-widget-sub">自动保存到这个桌面组件</div>`}
- return `<article class="lr-widget ${sizeClass}" data-widget-id="${item.id}"><div class="lr-widget-tools"><button type="button" data-widget-size title="切换大小">↔</button><button type="button" data-widget-remove title="移除组件">×</button></div><div class="lr-widget-kicker">${d.category} · LOVE RECORD</div><div class="lr-widget-title">${d.name}</div>${body}</article>`;
+ return `<article class="lr-widget ${sizeClass}${(item.id==='photo'||item.id==='memory')?' lr-widget-memory-widget':''}" data-widget-id="${item.id}"><div class="lr-widget-tools"><button type="button" data-widget-size title="切换大小">↔</button><button type="button" data-widget-remove title="移除组件">×</button></div><div class="lr-widget-kicker">${d.category} · LOVE RECORD</div><div class="lr-widget-title">${d.name}</div>${body}</article>`;
 }
-function widgetSpan(item){return {cols:item.size==='small'?1:2,rows:item.size==='large'?2:1}}
+function widgetSpan(item){return {cols:item.size==='small'?1:2,rows:(item.id==='photo'||item.id==='memory')?2:(item.size==='large'?2:1)}}
 function widgetCells(pos,item){const sp=widgetSpan(item),cells=[];for(let r=pos.row;r<pos.row+sp.rows;r++)for(let c=pos.col;c<pos.col+sp.cols;c++)cells.push(`${r}:${c}`);return cells}
 function layoutWidgetPositions(preferredId=null,preferred=null){const used=new Set(),ordered=preferredId?[...config.items.filter(x=>x.id===preferredId),...config.items.filter(x=>x.id!==preferredId)]:config.items.slice();for(const item of ordered){const sp=widgetSpan(item);let pos=item.id===preferredId&&preferred?{row:Math.max(2,preferred.row),col:sp.cols===2?1:Math.max(1,Math.min(2,preferred.col))}:config.positions[item.id];const valid=p=>p&&Number.isInteger(p.row)&&p.row>=2&&p.row<40&&Number.isInteger(p.col)&&p.col>=1&&p.col<=3-sp.cols&&widgetCells(p,item).every(k=>!used.has(k));if(!valid(pos)){pos=null;for(let row=2;row<40&&!pos;row++)for(let col=1;col<=3-sp.cols;col++){const candidate={row,col};if(valid(candidate)){pos=candidate;break}}}if(!pos)pos={row:40+ordered.indexOf(item),col:1};config.positions[item.id]=pos;widgetCells(pos,item).forEach(k=>used.add(k));const node=shelf.querySelector(`[data-widget-id="${item.id}"]`);if(node){node.style.gridColumn=`${pos.col} / span ${sp.cols}`;node.style.gridRow=`${pos.row} / span ${sp.rows}`}}}
 function commitWidgetDrop(id,x,y){const item=config.items.find(v=>v.id===id);if(!item)return;const rect=shelf.getBoundingClientRect();if(x<rect.left-20||x>rect.right+20||y<rect.top||y>rect.bottom+80)return;const st=getComputedStyle(shelf),gap=parseFloat(st.rowGap)||8,rowH=parseFloat(st.gridAutoRows)||120;const localY=Math.max(20,y-rect.top);const row=Math.max(2,Math.floor((localY-20)/(rowH+gap))+2);const col=widgetSpan(item).cols===2?1:(x<rect.left+rect.width/2?1:2);layoutWidgetPositions(id,{row,col});}
-async function render(){shelf.innerHTML=config.items.map(widgetHTML).join('');if(config.items.length&&!shelf.querySelector('.lr-widget-drag-hint'))shelf.insertAdjacentHTML('afterbegin','<div class="lr-widget-drag-hint">长按组件可移动 · × 移除</div>');layoutWidgetPositions();applyLayout();for(const item of config.items.filter(x=>x.id==='photo'||x.id==='memory')){const card=shelf.querySelector(`[data-widget-id="${item.id}"] .lr-widget-photo-wrap`);if(!card)continue;const blob=await photoFromDB(item.id==='photo'?'home':'memory');if(blob){const url=URL.createObjectURL(blob);card.innerHTML=`<img class="lr-widget-photo" src="${url}" alt="LOVE RECORD 照片">`}else card.innerHTML='<div class="lr-widget-sub">还没有照片，点主页照片卡片添加一张吧 ♡</div>'}}
+async function render(){shelf.innerHTML=config.items.map(widgetHTML).join('');if(config.items.length&&!shelf.querySelector('.lr-widget-drag-hint'))shelf.insertAdjacentHTML('afterbegin','<div class="lr-widget-drag-hint">长按组件可移动 · × 移除</div>');layoutWidgetPositions();applyLayout();for(const item of config.items.filter(x=>x.id==='photo'||x.id==='memory'))await renderPhotoWidget(item.id)}
 function refreshMusicWidget(){const card=shelf.querySelector('[data-widget-id="music"]');if(!card)return;const snap=window.LRMusicSnapshot||{},title=card.querySelector('[data-widget-music-title]'),artist=card.querySelector('[data-widget-music-artist]'),cover=card.querySelector('[data-widget-music-cover]'),play=card.querySelector('[data-widget-play]');if(title)title.textContent=snap.title||$('musicNowTitle')?.textContent||'打开音乐，播放喜欢的歌';if(artist)artist.textContent=snap.artist||$('musicNowArtist')?.textContent||'LOVE RECORD · MUSIC';if(cover){const src=snap.cover||$('musicMainCover')?.src||'';if(src&&src!=='about:blank')cover.src=src;else cover.removeAttribute('src')}if(play)play.textContent=snap.playing?'Ⅱ':'▶'}
 window.addEventListener('lr-music-state-change',refreshMusicWidget);
 function openChooser(){if(opening)return;opening=true;renderChoices();overlay.classList.add('show');setEditMode(true)}
@@ -147,6 +158,7 @@ launcher.addEventListener('pointerdown',e=>{
 });
 ['pointerup','pointercancel','pointerleave'].forEach(type=>launcher.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null}));
 launcher.addEventListener('click',e=>{
+ const memoryNext=e.target.closest('[data-memory-next]');if(memoryNext){e.preventDefault();e.stopPropagation();cyclePhotoWidget(memoryNext.dataset.memoryNext);return}
  const remove=e.target.closest('[data-fixed-remove]');
  if(remove){const id=remove.dataset.fixedRemove;if(!config.hidden.includes(id))config.hidden.push(id);save();applyLayout();renderChoices();return}
  const card=e.target.closest('[data-widget-id]');if(!card)return;const id=card.dataset.widgetId;
@@ -161,8 +173,9 @@ window.addEventListener('lr-home-widgets-refresh',()=>{render()});
 const sharedAudio=$('lrGlobalAudio');if(sharedAudio)['play','pause','loadedmetadata','ended'].forEach(ev=>sharedAudio.addEventListener(ev,refreshMusicWidget));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)render()});
 // Keep the widgets live when their source components change in the same page.
-const liveObserver=new MutationObserver(()=>{if(!document.hidden)render()});
+const liveObserver=new MutationObserver(records=>{if(document.hidden)return;if(records.some(r=>r.target&&r.target.closest&&r.target.closest('#memoryGrid'))){for(const id of ['photo','memory']){const data=photoWidgetData.get(id);if(data){data.loaded=false;for(const url of data.urls.values())URL.revokeObjectURL(url);photoWidgetData.delete(id)}}}render()});
 ['launcherDays','launcherToday','homePhoto','chatMessages','musicTogetherCurrentSong'].forEach(id=>{const node=$(id);if(node)liveObserver.observe(node,{childList:true,subtree:true,characterData:true,attributes:id==='homePhoto'})});
+const memoryGallery=$('memoryGrid');if(memoryGallery)liveObserver.observe(memoryGallery,{childList:true,subtree:true});
 const globalAudio=$('lrGlobalAudio');if(globalAudio)['play','pause','ended','loadedmetadata'].forEach(ev=>globalAudio.addEventListener(ev,()=>render()));
 read().then(()=>{applyLayout();render().then(()=>{if(needsUpgrade)save({silent:true})})}).catch(e=>{console.error('[LOVE RECORD] widget layout restore failed',e);applyLayout();render()});
 })();
