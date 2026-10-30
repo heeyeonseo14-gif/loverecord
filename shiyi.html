@@ -108,7 +108,7 @@ async function loadPeople(){
  try{merge(await readPeopleFromDB())}catch(e){console.warn('[拾忆] contact DB read skipped',e)}
  return Array.from(byId.values());
 }
-$('back').onclick=()=>{if(history.length>1)history.back();else location.href='./index.html'};
+$('back').onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}location.replace('./index.html')};
 $('contactSelect').onchange=e=>{selected=e.target.value;resetForm();render()};
 $('memoryForm').onsubmit=async e=>{e.preventDefault();if(!selected){toast('请先选择联系人');return}const title=$('entryTitle').value.trim(),content=$('entryText').value.trim(),at=new Date($('entryDate').value).getTime();if(!content||!Number.isFinite(at)){toast('请填写记忆内容和有效日期');return}let entries=getEntries(selected);if(editing){entries=entries.map(x=>String(x.id)===editing?{...x,title,content,at,source:'manual'}:x)}else entries.push({id:'mem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,content,at,source:'manual'});try{await syncEntries(selected,entries);resetForm();render();toast('这段记忆已被好好收藏 ♡')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}};
 $('cancelEdit').onclick=resetForm;

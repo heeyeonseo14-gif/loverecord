@@ -126,7 +126,7 @@ $('bgFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{cons
 $('clearPhoto').onclick=async()=>{bgData=null;await assetDelete('homepage-background').catch(()=>{});apply()};
 $('reset').onclick=async()=>{a={...defaults};bgData=null;await assetDelete('homepage-background').catch(()=>{});apply();render()};
 $('saveBack').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}save()};
-$('backHome').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}};
+$('backHome').onclick=(e)=>{if(window.parent!==window){e.preventDefault();window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}};
 async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};normalizeTheme();bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply()}
 init();
 </script></body></html>

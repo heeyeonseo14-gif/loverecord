@@ -2730,7 +2730,7 @@ if(loveIntro){
   <script src="./chat-ux-v13.js?v=9"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
-  <script src="./music.js?v=13"></script>
+  <script src="./music.js?v=14"></script>
 
 <script>
 (()=>{
@@ -2871,6 +2871,55 @@ document.addEventListener('click',function(e){
     if(back && root.contains(back)) showHome();
   });
   showHome();
+})();
+</script>
+
+
+<style id="lr-persistent-app-frame-style">
+#lrPersistentAppFrame{position:fixed;inset:0;z-index:10050;background:var(--bg,#f7f3fa);display:none;padding:0;margin:0}
+#lrPersistentAppFrame.is-open{display:block}
+#lrPersistentAppFrame iframe{display:block;width:100%;height:100%;height:100dvh;border:0;background:transparent}
+body.lr-external-app-open{overflow:hidden}
+</style>
+<div id="lrPersistentAppFrame" aria-hidden="true"><iframe id="lrPersistentAppIframe" title="LOVE RECORD 应用页面" allow="autoplay; fullscreen"></iframe></div>
+<script>
+(function(){
+ 'use strict';
+ const frame=document.getElementById('lrPersistentAppFrame');
+ const iframe=document.getElementById('lrPersistentAppIframe');
+ if(!frame||!iframe||window.__lrPersistentAppBridge)return;
+ window.__lrPersistentAppBridge=true;
+ let activeUrl='';
+ function openApp(url){
+  const target=new URL(url,location.href);
+  if(target.origin!==location.origin)return;
+  activeUrl=target.href;
+  iframe.src=activeUrl;
+  frame.classList.add('is-open');
+  frame.setAttribute('aria-hidden','false');
+  document.body.classList.add('lr-external-app-open');
+ }
+ function closeApp(){
+  frame.classList.remove('is-open');
+  frame.setAttribute('aria-hidden','true');
+  document.body.classList.remove('lr-external-app-open');
+  // Unload only the child frame; the parent document's music audio remains alive.
+  iframe.src='about:blank';
+  activeUrl='';
+ }
+ document.addEventListener('click',function(event){
+  const shiyi=event.target.closest('[data-shiyi-launch]');
+  if(shiyi){event.preventDefault();event.stopImmediatePropagation();openApp('./shiyi.html');return}
+  const appearance=event.target.closest('a.launcher-app[href*="appearance.html"]');
+  if(appearance){event.preventDefault();event.stopImmediatePropagation();openApp('./appearance.html');return}
+  const directAppearance=event.target.closest('#openAppearance');
+  if(directAppearance){event.preventDefault();event.stopImmediatePropagation();openApp('./appearance.html');}
+ },true);
+ window.addEventListener('message',function(event){
+  if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
+  if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP')closeApp();
+ });
+ window.LRCloseExternalApp=closeApp;
 })();
 </script>
 
