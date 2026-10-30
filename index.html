@@ -2320,11 +2320,15 @@ worldBooksReady=restoreWorldBooks();
  const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
  const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
  const defaultPage={'app-foodie':1,'app-memories':1,'app-journal':1};
- let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,active=null,timer=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
+ let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,active=null,timer=null,edgeTimer=null,edgeTarget=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
  const style=document.createElement('style');style.id='lr-launcher-grid-v5';style.textContent=`
  #launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(${ROWS},${CELL_H}px)!important;grid-auto-rows:${CELL_H}px!important;grid-auto-flow:row!important;column-gap:10px!important;row-gap:${ROW_GAP}px!important;align-content:start!important;position:relative;touch-action:pan-y}
+ #launcher.page.active.launcher-page{box-sizing:border-box;height:calc(100dvh - 172px - env(safe-area-inset-bottom));min-height:0;max-height:calc(100dvh - 172px - env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:18px}
+ #launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
  #launcher .launcher-grid .launcher-app{min-width:0;min-height:0;position:relative!important;left:auto!important;top:auto!important;transform:none!important;touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform}
  #launcher .launcher-grid .launcher-app.is-dragging{z-index:30;opacity:.82;filter:drop-shadow(0 12px 18px rgba(74,51,90,.24));transition:none!important}
+ #launcher .launcher-grid.lr-edge-target:after{content:'→';position:fixed;right:10px;top:48%;z-index:1000;font-size:28px;color:#9e7bb5;pointer-events:none}
+ #launcher .launcher-grid.lr-edge-target.lr-edge-left:after{content:'←';right:auto;left:10px}
  #launcher .launcher-grid .launcher-app .app-icon{pointer-events:none}
  #launcher .launcher-pages button{width:12px;height:12px;min-width:12px;min-height:12px;padding:0;border-radius:50%}
  #launcher .launcher-pages button.active{width:24px}
@@ -2360,31 +2364,41 @@ worldBooksReady=restoreWorldBooks();
  function freeCell(page){const used=new Set(getApps().filter(a=>pageMap[getId(a)]===page).map(a=>occupiedKey(page,cells[getId(a)].row,cells[getId(a)].col)));return firstFree(page,used)}
  function beginDrag(e){
   const el=e.target.closest('#launcher .launcher-app[data-drag-id]');if(!el||el.hidden||e.button!==0||e.target.closest('button:not(.launcher-app),input,textarea'))return;
-  active={el,id:getId(el),pointerId:e.pointerId,x:e.clientX,y:e.clientY,originPage:pageMap[getId(el)]||0};dragged=false;startPoint={x:e.clientX,y:e.clientY};
+  active={el,id:getId(el),pointerId:e.pointerId,x:e.clientX,y:e.clientY,originPage:pageMap[getId(el)]||0,originCell:{...(cells[getId(el)]||{row:1,col:1})},currentPage:pageMap[getId(el)]||0,edgeSwitched:false};dragged=false;startPoint={x:e.clientX,y:e.clientY};
   timer=setTimeout(()=>{if(!active)return;dragged=true;try{el.setPointerCapture(e.pointerId)}catch{}el.classList.add('is-dragging');if(navigator.vibrate)navigator.vibrate(18);if(typeof toast==='function')toast('拖动图标到网格空位，或拖到页面圆点切换页面')},420);
  }
  document.addEventListener('pointerdown',beginDrag);
  document.addEventListener('pointermove',e=>{
   if(!active||e.pointerId!==active.pointerId)return;
-  if(!dragged)return
+  if(!dragged)return;
   if(e.cancelable)e.preventDefault();
+  const edge=e.clientX>=window.innerWidth-34?1:(e.clientX<=34?0:null);
+  const wanted=edge!==null&&edge!==currentPage?edge:null;
+  if(wanted===null){clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null}
+  else if(edgeTarget!==wanted){clearTimeout(edgeTimer);edgeTarget=wanted;const px=e.clientX,py=e.clientY;edgeTimer=setTimeout(()=>{
+    if(!active||!dragged||edgeTarget!==wanted||wanted===currentPage)return;
+    const dest=freeCell(wanted);pageMap[active.id]=wanted;cells[active.id]={row:dest.row,col:dest.col};currentPage=wanted;active.currentPage=wanted;active.edgeSwitched=true;render();active.el.classList.add('is-dragging');
+    active.el.style.setProperty('transform',`translate3d(${px-active.x}px,${py-active.y}px,0) scale(1.04)`,'important');
+    if(typeof toast==='function')toast(wanted===1?'已切换到第二页，松开即可放置':'已切换到第一页，松开即可放置');
+  },520)}
   active.el.style.setProperty('transform',`translate3d(${e.clientX-active.x}px,${e.clientY-active.y}px,0) scale(1.04)`,'important');
  },{passive:false});
  function finish(e){
-  clearTimeout(timer);timer=null;
+  clearTimeout(timer);timer=null;clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null;
   if(active&&dragged){
    const el=active.el,id=active.id,x=Number.isFinite(e?.clientX)?e.clientX:active.x,y=Number.isFinite(e?.clientY)?e.clientY:active.y;
    const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null;
    for(const dot of dots){const r=dot.getBoundingClientRect();if(x>=r.left-34&&x<=r.right+34&&y>=r.top-34&&y<=r.bottom+34){targetPage=Number(dot.dataset.launcherPage);break}}
    let dest;
    if(targetPage!==null){dest=freeCell(targetPage)}
+   else if(active.edgeSwitched){targetPage=active.currentPage;const r=grid.getBoundingClientRect();dest=(x>=r.left-8&&x<=r.right+8&&y>=r.top-12&&y<=r.bottom+12)?cellFromPoint(x,y):{...cells[id]}}
    else{
     const r=grid.getBoundingClientRect();
     if(x>=r.left-8&&x<=r.right+8&&y>=r.top-12&&y<=r.bottom+12){targetPage=currentPage;dest=cellFromPoint(x,y)}
-    else{targetPage=active.originPage;dest={...cells[id]}}
+    else{targetPage=active.originPage;dest={...active.originCell}}
    }
    const other=getApps().find(a=>getId(a)!==id&&pageMap[getId(a)]===targetPage&&cells[getId(a)].row===dest.row&&cells[getId(a)].col===dest.col);
-   const oldPage=pageMap[id],oldCell={...cells[id]};
+   const oldPage=active.originPage,oldCell={...active.originCell};
    if(other){const oid=getId(other);pageMap[oid]=oldPage;cells[oid]={row:oldCell.row,col:oldCell.col}}
    pageMap[id]=targetPage;cells[id]={row:dest.row,col:dest.col};currentPage=targetPage;
    el.classList.remove('is-dragging');el.style.removeProperty('transform');active=null;dragged=false;startPoint=null;render();persist();window.__launcherJustDragged=Date.now();if(e?.cancelable)e.preventDefault();
@@ -2713,7 +2727,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=5"></script>
+<script src="./home-widgets-v1.js?v=6"></script>
 <script src="./global-font.js?v=1"></script>
 </body>
 </html>
