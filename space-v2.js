@@ -22,9 +22,22 @@
   function cloneData(value){return JSON.parse(JSON.stringify(value||{}))}
   function cityNames(ids){return (ids||[]).map(id=>person(id)?.name).filter(Boolean)}
   function makeCityName(ids){const names=cityNames(ids);return names.length?names.join(' ＆ ')+'的城市':'未命名城市'}
+  function cityStorageKey(id){return 'love-record-space-city-v2:'+encodeURIComponent(String(id))}
   function persistCities(){
-    try{localStorage.setItem(CITIES_KEY,JSON.stringify({activeCityId,cities}));return true}
-    catch(e){console.error('SPACE city registry save failed',e);toast('城市列表保存失败，请检查浏览器储存空间。');return false}
+    try{
+      for(const city of cities){
+        if(!city||!city.id)continue;
+        const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
+        localStorage.setItem(cityStorageKey(city.id),JSON.stringify(payload));
+      }
+      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
+      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
+      return true;
+    }catch(e){
+      console.error('SPACE city save failed',e);
+      toast('城市保存失败，原有城市不会被覆盖。请先导出备份或释放储存空间。');
+      return false;
+    }
   }
   function currentCity(){return cities.find(c=>c.id===activeCityId)||null}
   function renderCityDirectory(){
@@ -50,19 +63,22 @@
     return fresh;
   }
   function persistActiveCity(){
-    if(!activeCityId)return;
-    const city=currentCity();if(!city)return;
+    if(!activeCityId)return true;
+    const city=currentCity();if(!city)return true;
     const snapshot=cloneData(data);
     if(historyStorageReady)snapshot.history=[];
+    const previous={snapshot:city.snapshot,peopleIds:city.peopleIds,updatedAt:city.updatedAt,name:city.name};
     city.snapshot=snapshot;
     city.peopleIds=[...(data.selectedPeople||[])];
     city.updatedAt=Date.now();
     city.name=city.name||makeCityName(city.peopleIds);
-    persistCities();
+    if(persistCities())return true;
+    Object.assign(city,previous);
+    return false;
   }
   function openCity(id){
     const city=cities.find(c=>c.id===id);if(!city)return;
-    persistActiveCity();
+    if(!persistActiveCity())return;
     activeCityId=id;
     data={...cloneData(EMPTY_DATA),...cloneData(city.snapshot||{})};
     if(!Array.isArray(data.history))data.history=[];
@@ -78,46 +94,78 @@
   function createCityFromDraft(){
     const ids=[...new Set(cityDraftPeople)];
     if(!ids.length){toast('请至少选择一位同行者。');return}
-    persistActiveCity();
-    const id='city-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-    data=makeFreshCityData(ids);
-    historyStorageReady=false;
+    if(!persistActiveCity())return;
+    const previousActiveId=activeCityId;
+    const previousData=cloneData(data);
+    const id='city-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
+    const fresh=makeFreshCityData(ids);
+    const created={id,name:makeCityName(ids),peopleIds:ids,createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(fresh)};
+    cities.push(created);
     activeCityId=id;
-    cities.push({id,name:makeCityName(ids),peopleIds:ids,createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(data)});
+    data=fresh;
+    historyStorageReady=false;
+    if(!persistCities()){
+      cities=cities.filter(c=>c.id!==id);
+      activeCityId=previousActiveId;
+      data=previousData;
+      renderCityDirectory();
+      return;
+    }
     cityDraftPeople=[];
     creatingCity=false;
-    persistCities();
     renderCityDirectory();
-    $('lrSpaceMapMeta').textContent='同行者：'+cityNames(ids).join('、');
+    const meta=$('lrSpaceMapMeta');if(meta)meta.textContent='同行者：'+cityNames(ids).join('、');
     show('map');renderMap();renderCreatedList();renderActivity();applySeasonFX();renderMemoryProgress();
-    toast('新城市已保存。每座城市的数据都会独立保存。');
+    toast('新城市已添加，之前的城市都已保留。');
     hydrateHistoryFromIDB().then(()=>seedMap()).catch(()=>seedMap());
   }
   function deleteCity(id){
     const city=cities.find(c=>c.id===id);if(!city)return;
     if(!confirm('确定删除「'+(city.name||'这座城市')+'」吗？城市内的地图、地点、剧情和记忆都会一起删除，无法撤销。'))return;
+    const oldCities=cities.slice(),oldActive=activeCityId,oldData=cloneData(data),oldHistoryReady=historyStorageReady;
     cities=cities.filter(c=>c.id!==id);
-    if(activeCityId===id){activeCityId='';data=cloneData(EMPTY_DATA);historyStorageReady=false;show('directory')}
-    persistCities();renderCityDirectory();toast('城市已删除。');
+    if(activeCityId===id){activeCityId='';data=cloneData(EMPTY_DATA);historyStorageReady=false}
+    if(!persistCities()){cities=oldCities;activeCityId=oldActive;data=oldData;historyStorageReady=oldHistoryReady;renderCityDirectory();return}
+    try{localStorage.removeItem(cityStorageKey(id))}catch(e){}
+    show('directory');renderCityDirectory();toast('城市已删除。');
   }
   function load(){
     let legacy={};
     try{legacy=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
     try{
       const registry=JSON.parse(localStorage.getItem(CITIES_KEY)||'null');
-      if(registry&&Array.isArray(registry.cities)&&registry.cities.length){
-        cities=registry.cities;activeCityId=registry.activeCityId||cities[0].id;
+      if(registry&&registry.version===2&&Array.isArray(registry.cities)){
+        const restored=[];
+        for(const meta of registry.cities){
+          if(!meta||!meta.id)continue;
+          let full=null;
+          try{full=JSON.parse(localStorage.getItem(cityStorageKey(meta.id))||'null')}catch(e){}
+          restored.push(full&&full.id===meta.id?full:{...meta,snapshot:cloneData(EMPTY_DATA)});
+        }
+        cities=restored;
+        activeCityId=registry.activeCityId||cities[0]?.id||'';
+        const active=cities.find(c=>c.id===activeCityId)||cities[0];
+        if(active){activeCityId=active.id;data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})}}
+        else data={...cloneData(EMPTY_DATA),...legacy};
+      }else if(registry&&Array.isArray(registry.cities)&&registry.cities.length){
+        cities=registry.cities.map(c=>({...c,snapshot:cloneData(c.snapshot||{})}));
+        activeCityId=registry.activeCityId||cities[0].id;
         const active=cities.find(c=>c.id===activeCityId)||cities[0];activeCityId=active.id;
         data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})};
+        persistCities();
       }else{
         data={...data,...legacy};
         const hasLegacy=!!((legacy.selectedPeople||[]).length||(legacy.locations||[]).length||(legacy.history||[]).length||(legacy.activityLog||[]).length);
         if(hasLegacy){
           activeCityId='city-legacy-'+Date.now();
           cities=[{id:activeCityId,name:makeCityName(legacy.selectedPeople||[]),peopleIds:[...(legacy.selectedPeople||[])],createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(data)}];
+          persistCities();
         }
       }
-    }catch(e){console.warn('[SPACE] city registry read failed',e);data={...data,...legacy}}
+    }catch(e){
+      console.warn('[SPACE] city registry read failed; preserving legacy data',e);
+      data={...cloneData(EMPTY_DATA),...legacy};
+    }
     delete data.growthGarden; if(!Array.isArray(data.storyLines))data.storyLines=[];if(!Array.isArray(data.relationshipEvents))data.relationshipEvents=[];if(!Array.isArray(data.echoes))data.echoes=[];if(typeof data.currentStoryLineId!=='string')data.currentStoryLineId='';
     if(!data.home||typeof data.home!=='object')data.home={wall:'lavender',floor:'cream',furniture:'sofa',decor:'flowers',notes:[]};if(!Array.isArray(data.home.notes))data.home.notes=[];if(!Array.isArray(data.missions))data.missions=[];if(typeof data.selfPersonaId!=='string')data.selfPersonaId='';
     if(!Array.isArray(data.selectedPeople))data.selectedPeople=[];if(!Array.isArray(data.locations))data.locations=[];if(!Array.isArray(data.history))data.history=[];if(!Array.isArray(data.activityLog))data.activityLog=[];if(!Array.isArray(data.memories))data.memories=[];if(!Array.isArray(data.invites))data.invites=[];if(!data.characterSchedule||typeof data.characterSchedule!=='object')data.characterSchedule={};if(!Array.isArray(data.worldBookIds))data.worldBookIds=[];if(!data.timeSense||typeof data.timeSense!=='object')data.timeSense={enabled:false,zone:'Asia/Kuala_Lumpur'};if(!data.timeSense.zone)data.timeSense.zone='Asia/Kuala_Lumpur';if(!data.season)data.season='none';if(typeof data.seasonFx!=='boolean')data.seasonFx=true;if(typeof data.seasonAi!=='boolean')data.seasonAi=true;if(!data.worldTitle&&data.worldNote)data.worldTitle=data.worldNote;if(!data.worldTitle)data.worldTitle='我们的世界';
@@ -131,7 +179,7 @@
     }else{me.nextSequence=Math.max(Number(me.nextSequence)||1,maxSeq+1);}
     save();
   }
-  function save(){data.updatedAt=Date.now();try{const stored={...data};if(historyStorageReady)stored.history=[];localStorage.setItem(KEY,JSON.stringify(stored));persistActiveCity();return true}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
+  function save(){data.updatedAt=Date.now();try{const stored={...data};if(historyStorageReady)stored.history=[];localStorage.setItem(KEY,JSON.stringify(stored));return persistActiveCity()}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
   function openHistoryDB(){if(historyDbPromise)return historyDbPromise;historyDbPromise=new Promise((resolve,reject)=>{if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}const req=indexedDB.open('love-record-space-history-v1',1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('history'))db.createObjectStore('history',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'))});return historyDbPromise}
   async function hydrateHistoryFromIDB(){try{const db=await openHistoryDB();const stored=await new Promise((resolve,reject)=>{const tx=db.transaction('history','readonly'),req=tx.objectStore('history').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});const scoped=stored.filter(h=>h&&(h.cityId===activeCityId||(!h.cityId&&String(activeCityId).startsWith('city-legacy-'))));const byId=new Map();[...(data.history||[]),...scoped].forEach(h=>{if(h&&h.id)byId.set(h.id,h)});data.history=[...byId.values()].sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0)||(Number(a.at)||0)-(Number(b.at)||0));let max=0;data.history.forEach((h,i)=>{if(!Number.isFinite(Number(h.seq)))h.seq=i+1;max=Math.max(max,Number(h.seq)||0)});data.memoryEngine.nextSequence=Math.max(Number(data.memoryEngine.nextSequence)||1,max+1);const tx=db.transaction('history','readwrite'),store=tx.objectStore('history');data.history.forEach(h=>store.put(h));await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});historyStorageReady=true;save()}catch(e){console.warn('Space history archive using compatibility storage fallback',e);historyStorageReady=false}}
   async function persistHistoryRecord(record){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});return true}catch(e){console.error('Could not persist Space history to IndexedDB',e);historyStorageReady=false;try{const stored={...data};stored.history=data.history;localStorage.setItem(KEY,JSON.stringify(stored))}catch(_){}toast('剧情档案存储失败。请检查浏览器存储空间；本次内容仍保留在当前页面中。');return false}}
@@ -355,6 +403,7 @@
 `;
 
     s.textContent += `
+body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!important;visibility:hidden!important;pointer-events:none!important}
 #space.lr-space-v2 .lr-space-city-list{display:grid;gap:10px;margin-top:14px}
 #space.lr-space-v2 .lr-space-city-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border:1px solid #eadce8;border-radius:20px;background:rgba(255,255,255,.88);box-shadow:0 7px 20px rgba(175,119,157,.06)}
 #space.lr-space-v2 .lr-space-city-card-copy{min-width:0;display:grid;gap:4px}
@@ -410,6 +459,17 @@
     renderPeople();renderMap();renderCreatedList();renderCityDirectory();
   }
   function bindSpaceControls(){
+    if(!window.__lrSpaceDockRestoreBound){
+      window.__lrSpaceDockRestoreBound=true;
+      document.addEventListener('click',e=>{
+        if(e.target.closest?.('[data-launch-home]')){
+          document.body.classList.remove('lr-space-standalone');
+          const dock=document.querySelector('.nav');
+          if(dock){dock.style.removeProperty('display');dock.style.removeProperty('visibility');dock.style.removeProperty('pointer-events')}
+        }
+      },true);
+    }
+
     const bind=(id,fn)=>{
       const el=$(id);
       if(!el)return;
@@ -762,7 +822,7 @@
     if(!target)return false;
     target.classList.add('active');
     document.body.classList.remove('launcher-open');
-    const dock=document.querySelector('.nav');if(dock)dock.style.display='none';
+    document.body.classList.add('lr-space-standalone');const dock=document.querySelector('.nav');if(dock)dock.style.setProperty('display','none','important');
     const bar=$('systemAppbar');if(bar)bar.classList.add('show');
     const title=$('systemAppTitle');if(title)title.textContent='SPACE';
     window.scrollTo(0,0);
