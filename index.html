@@ -1084,6 +1084,30 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 .app-icon.has-custom-icon>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;border-radius:inherit!important;filter:none!important;-webkit-filter:none!important}
 #lr-home-background-fix-layer,#lr-home-background-fix-layer::before,#lr-home-background-fix-layer::after{filter:none!important;-webkit-filter:none!important}
 </style>
+
+
+<style id="love-record-listening-song-pill-v1">
+/* Keep the shared song title compact and centered inside the listening room. */
+#musicTogetherActive .listening-room-song{
+ display:block!important;
+ width:fit-content!important;
+ max-width:min(82%,320px)!important;
+ min-width:0!important;
+ box-sizing:border-box!important;
+ margin:8px auto 0!important;
+ padding:6px 13px!important;
+ border:1px solid rgba(196,169,207,.28)!important;
+ border-radius:999px!important;
+ background:rgba(255,255,255,.58)!important;
+ text-align:center!important;
+ line-height:1.45!important;
+ white-space:nowrap!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+#musicTogetherActive{align-content:center!important}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -2706,7 +2730,7 @@ if(loveIntro){
   <script src="./chat-ux-v13.js?v=9"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
-  <script src="./music.js?v=12"></script>
+  <script src="./music.js?v=13"></script>
 
 <script>
 (()=>{

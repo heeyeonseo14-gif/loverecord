@@ -31,6 +31,21 @@ function publishMusicState(){
  const state={title:current?.title||'还没有播放歌曲',artist:current?(current.artist||current.source||'音乐'):'从你的音乐库选择一首歌',playing:!!(audio&&!audio.paused),cover:cover&&cover.getAttribute('src')?cover.src:'',currentTime:audio?.currentTime||0,duration:audio?.duration||0};
  window.LRMusicSnapshot=state;
  if(audio){audio.dataset.title=state.title;audio.dataset.artist=state.artist}
+ // Android Chrome's system media controls can keep controlling the same
+ // document-level audio element while LOVE RECORD switches between SPA apps.
+ if('mediaSession' in navigator){
+  try{
+   if(current && 'MediaMetadata' in window){
+    navigator.mediaSession.metadata=new MediaMetadata({
+     title:state.title,
+     artist:state.artist,
+     album:current.album||'LOVE RECORD',
+     artwork:state.cover?[{src:state.cover,sizes:'512x512',type:'image/png'}]:[]
+    });
+   }else navigator.mediaSession.metadata=null;
+   navigator.mediaSession.playbackState=state.playing?'playing':'paused';
+  }catch(_){}
+ }
  window.dispatchEvent(new CustomEvent('lr-music-state-change',{detail:state}));
 }
 function updateLabels(t){
@@ -241,12 +256,31 @@ function openTogetherModal(){
 }
 function init(){
  audio=$('lrGlobalAudio');if(!audio)return;
+ // Keep one player outside the app panels: hiding/switching an SPA page must
+ // never pause or recreate this element.
+ audio.preload='auto';
+ audio.setAttribute('playsinline','');
+ audio.setAttribute('webkit-playsinline','');
+ if('mediaSession' in navigator){
+  const actions={
+   play:()=>{if(current)audio.play().then(setButtons).catch(()=>{});else toggle()},
+   pause:()=>{audio.pause();setButtons()},
+   previoustrack:prev,
+   nexttrack:next,
+   seekbackward:details=>{audio.currentTime=Math.max(0,audio.currentTime-(details.seekOffset||10))},
+   seekforward:details=>{audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+(details.seekOffset||10))},
+   seekto:details=>{if(Number.isFinite(details.seekTime))audio.currentTime=details.seekTime}
+  };
+  for(const [name,handler] of Object.entries(actions)){try{navigator.mediaSession.setActionHandler(name,handler)}catch(_){}}
+ }
  window.refreshLoveRecordListeningRoom=renderTogetherActive;
  audio.addEventListener('play',()=>{setButtons();renderLocal()});
  audio.addEventListener('pause',()=>{setButtons();renderLocal()});
  audio.addEventListener('loadedmetadata',publishMusicState);
  audio.addEventListener('timeupdate',()=>{const p=audio.duration?audio.currentTime/audio.duration*100:0;$('musicProgress').value=p;$('musicCurrentTime').textContent=fmt(audio.currentTime);$('musicDuration').textContent=fmt(audio.duration);publishMusicState();updateLyrics()});
  audio.addEventListener('ended',next);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){publishMusicState();setButtons()}});
+ window.addEventListener('pageshow',()=>{publishMusicState();setButtons()});
  $('musicUpload').onclick=()=>$('musicFiles').click();
  $('musicFiles').onchange=e=>{addFiles(e.target.files).catch(()=>toast('歌曲保存失败，请检查浏览器储存空间'));e.target.value=''};
  $('musicSearch').oninput=renderLocal;$('musicPlay').onclick=toggle;$('musicPrev').onclick=prev;$('musicNext').onclick=next;
