@@ -94,7 +94,7 @@ button,input,select,textarea{font:inherit}.wrap{max-width:760px;margin:auto;padd
 <div class="room-actions"><button class="btn" id="aiReply">✦ 主播回应评论</button><button class="btn" id="resumeAI">恢复互动</button><button class="btn" id="simComment">观众互动</button><button class="btn" id="likeRoom">♡ 点赞</button></div></div>
 <div class="live-footnote" id="liveFootnote">欢迎来到直播间。文明交流，享受此刻。</div>
 </div></div>
-<div class="liveview" id="endView" style="z-index:30"><div class="livecontent" style="margin:auto"><div class="stage"><div class="eyebrow">LIVE SESSION ENDED</div><h1>本场直播已结束</h1><p style="color:#d0c0df;font-size:13px;line-height:1.8">选择这场直播回放的可见范围。直播期间的可见范围与回放权限相互独立。</p><div class="field"><label>回放可见范围</label><select id="replayVisibility"><option value="private">私密 · 仅自己可见</option><option value="public">公开 · 允许其他人发现</option></select></div><div class="room-actions"><button class="btn primary" id="saveReplay">保存回放</button><button class="btn" id="discardReplay">不保存回放</button></div></div></div></div>
+<div class="liveview" id="endView" style="z-index:30"><div class="livecontent" style="margin:auto"><div class="stage"><div class="eyebrow">LIVE SESSION ENDED</div><h1>本场直播已结束</h1><p style="color:#d0c0df;font-size:13px;line-height:1.8">选择这场直播回放的可见范围。直播期间的可见范围与回放权限相互独立。</p><div class="field"><label>回放可见范围</label><select id="replayVisibility"><option value="private">私密 · 仅自己可见</option><option value="public">公开 · 允许其他人发现</option></select></div><div class="room-actions"><button type="button" class="btn primary" id="saveReplay">保存回放</button><button type="button" class="btn" id="discardReplay">不保存回放</button></div></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
 (()=>{'use strict';
@@ -157,7 +157,7 @@ function setStatus(t){$('#liveStatus').textContent=t}
 function updateRoomElapsed(){if(!current)return;const start=Number(current.startedAt||Date.now());const sec=Math.max(0,Math.floor((Date.now()-start)/1000));$('#roomElapsed').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');$('#roomLikeCount').textContent=likes}
 setInterval(()=>{if(current&&$('#liveView').classList.contains('show'))updateRoomElapsed()},1000)
 
-let commentSaveTimer=null;
+let commentSaveTimer=null,batchBusy=false;
 function addComment(name,text,flags={}){if(!current||!text.trim())return;const item={id:'msg-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name,text:text.trim(),at:Date.now(),...flags};current.comments.push(item);const box=$('#comments');if(box){if(box.querySelector('.comments-empty'))box.innerHTML='';const node=document.createElement('div');node.className='comment';const who=document.createElement('b');who.textContent=item.name;const body=document.createTextNode(item.text);node.append(who,body);box.appendChild(node);while(box.children.length>60)box.removeChild(box.firstChild);box.scrollTop=box.scrollHeight}$('#commentCount').textContent=current.comments.length;if(commentSaveTimer)clearTimeout(commentSaveTimer);commentSaveTimer=setTimeout(()=>{save('rooms',rooms);commentSaveTimer=null},1200)}
 function stopAuto(){if(autoTimer){clearTimeout(autoTimer);autoTimer=null}autoBusy=false}
 function back(){stopAuto();$('#liveView').classList.remove('show');current=null}
@@ -170,18 +170,22 @@ function getHomepageAPI(){
  for(const cfg of candidates){if(!cfg)continue;const base=String(cfg.apiBase||cfg.base||'').trim().replace(/\/+$/,'');const key=String(cfg.apiKey||cfg.key||'').trim();const model=String(cfg.apiModel||cfg.model||'').trim();if(base&&key&&model)return{base,key,model}}
  return null;
 }
-async function generate(system,user){const api=getHomepageAPI();if(!api){apiPaused=true;throw new Error('主页尚未配置完整 API。请返回 LOVE RECORD 主页设置中连接 API。')}const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),35000);try{const res=await fetch(api.base.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+api.key},body:JSON.stringify({model:api.model,messages:[{role:'system',content:system},{role:'user',content:user}],stream:false})});const raw=await res.text();if(!res.ok)throw new Error('HTTP '+res.status+' · '+raw.slice(0,160));const data=JSON.parse(raw),content=data?.choices?.[0]?.message?.content;if(!content)throw new Error('模型没有返回内容');return Array.isArray(content)?content.map(x=>x.text||'').join('\n'):String(content)}finally{clearTimeout(timer)}}
+async function generate(system,user){const api=getHomepageAPI();if(!api){apiPaused=true;throw new Error('主页尚未配置完整 API。请返回 LOVE RECORD 主页设置中连接 API。')}const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),25000);try{const res=await fetch(api.base.replace(/\/+$/,'')+'/chat/completions',{method:'POST',signal:ctrl.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+api.key},body:JSON.stringify({model:api.model,messages:[{role:'system',content:system},{role:'user',content:user}],stream:false,max_tokens:1200,temperature:0.85})});const raw=await res.text();if(!res.ok)throw new Error('HTTP '+res.status+' · '+raw.slice(0,160));const data=JSON.parse(raw),content=data?.choices?.[0]?.message?.content;if(!content)throw new Error('模型没有返回内容');return Array.isArray(content)?content.map(x=>x.text||'').join('\n'):String(content)}finally{clearTimeout(timer)}}
 function pauseForAPI(err){apiPaused=true;stopAuto();if(current){current.status='paused';save('rooms',rooms)}setStatus('API 连接中断，主播已暂停生成。请返回 LOVE RECORD 主页检查 API 配置。'+(err?.message?'（'+err.message+'）':''));}
 async function hostSpeak(host,context='请自然地延续直播主题，发表一段简短内容。'){if(!current||apiPaused)return false;setStatus(host.name+' 正在生成…');try{const recent=current.comments.slice(-14).map(c=>({name:c.name,text:c.text,simulated:!!c.simulated}));const out=await generate(`你是 LIVE 文字直播间的${host.role==='host'?'主持人':'联合主播'}「${host.name}」。角色设定：${host.persona}。你正在参与直播「${current.title}」。保持角色一致，结合上下文自然发言，不要声称自己是真人观众，不要重复之前说过的内容。每次只输出一段简洁自然的中文直播发言。`,`${context}\n直播简介：${current.description}\n最近直播内容：${JSON.stringify(recent)}`);if(!current)return false;addComment(host.name,out,{ai:true,owner:host.role==='host'});setStatus(host.name+' 已发言');return true}catch(e){pauseForAPI(e);return false}}
 async function generateLiveBatch(){
  if(!current||apiPaused)return false;
+ if(batchBusy){toast('正在生成这一轮互动，请稍等片刻');return false}
+ batchBusy=true;
+ const trigger=$('#simComment'),triggerText=trigger?.textContent;
+ if(trigger){trigger.disabled=true;trigger.textContent='正在生成…'}
  const isUserRoom=roomType(current)==='user';
  const hosts=(current.hosts||[]).filter(x=>x.role!=='user');
  const hostNames=hosts.map(x=>x.name);
  const recent=current.comments.slice(-16).map(x=>({name:x.name,text:x.text}));
  const count=8+Math.floor(Math.random()*3);const audienceEnabled=!!current.simAudience;
  const system=isUserRoom
- ?`你正在为一场用户本人主持的沉浸式文字直播创作观众弹幕。主持人由用户本人担任，绝对不要代替主持人发言。请一次生成${count}条观众评论，严格输出JSON数组，不要Markdown。每项格式：{"name":"观众昵称","type":"audience","text":"自然的中文发言"}。观众请创造自然、不重复的中文昵称，彼此之间可以接话，也可以回应主播刚才说的话、提问或分享感受。不要提及AI、模拟、生成、程序等字眼。内容紧扣直播主题，避免重复，每条1-2句。`
+ ?`你正在为一场用户本人主持的沉浸式文字直播创作观众弹幕。主持人由用户本人担任，绝对不要代替主持人发言。请一次生成${count}条观众评论，严格输出JSON数组，不要Markdown。每项格式：{"name":"观众昵称","type":"audience","text":"自然的中文发言"}。观众请创造自然、不重复的中文昵称，彼此之间可以接话，也可以回应主播刚才说的话、提问或分享感受。不要提及AI、模拟、生成、程序等字眼。内容紧扣直播主题，避免重复，每条不超过35字。`
  :`你正在创作一场沉浸式文字直播。这个世界里所有主播和观众都是角色，不要提及AI、模拟、生成、程序或虚拟身份。请一次生成${count}条连续互动，严格输出JSON数组，不要Markdown。每项格式：{"name":"角色名字","type":"host或audience","text":"自然的中文发言"}。主播只能从这些名字中选择：${JSON.stringify(hostNames)}。观众请随机创造自然的中文昵称。${audienceEnabled?'主播和观众要交替互动，观众会回应主播、彼此接话、提问或分享感受；主播会回应观众。':'本场不安排观众评论，全部由主播之间自然接续发言。'}内容紧扣主题，语言有个性，避免重复。每条1-3句，确保总数为${count}条。`;
  const prompt=`直播标题：${current.title}\n分类：${current.category}\n直播介绍：${current.description||'自由聊天'}\n最近发言：${JSON.stringify(recent)}\n请继续直播，生成下一段8-10条自然连贯的弹幕和主播发言。`;
  try{
@@ -196,13 +200,30 @@ async function generateLiveBatch(){
    await new Promise(resolve=>setTimeout(resolve,160));
   }
   save('rooms',rooms);setStatus('新一轮互动已加入直播间。');return true;
- }catch(e){pauseForAPI(e);return false}
+  }catch(e){pauseForAPI(e);return false}
+ finally{batchBusy=false;if(trigger){trigger.disabled=false;trigger.textContent=triggerText||'观众互动'}}
 }
 async function autoCycle(){if(!current||!current.auto||current.status!=='live'||apiPaused||autoBusy)return;autoBusy=true;await generateLiveBatch();autoBusy=false;if(current&&current.status==='live'&&!apiPaused){const elapsed=Date.now()-current.startedAt;if(elapsed>=current.duration*60000){setStatus('已达到设定时限，请结束直播并保存回放。');stopAuto();return}autoTimer=setTimeout(autoCycle,Math.max(18000,Number(current.interval||45)*1000))}}
 function startAuto(){stopAuto();if(!current||!current.auto||roomType(current)==='user'||apiPaused)return;current.status='live';save('rooms',rooms);autoTimer=setTimeout(autoCycle,1500)}
 async function manualAI(){if(!current)return;if(roomType(current)==='user'){toast('用户自主直播由你本人主持，可以直接发送弹幕');return}if(!getHomepageAPI()){toast('主页 API 配置未读取到，请检查主页 API 设置');return}await generateLiveBatch()}
-function finish(){if(!current)return;stopAuto();pendingArchive={...current,endedAt:new Date().toLocaleString(),endedAtMs:Date.now(),status:'ended'};$('#liveView').classList.remove('show');$('#endView').classList.add('show')}
-function saveReplay(visibility){if(!pendingArchive)return;pendingArchive.visibility=visibility;archives.push(pendingArchive);rooms=rooms.filter(r=>r.id!==pendingArchive.id);save('archives',archives);save('rooms',rooms);pendingArchive=null;$('#endView').classList.remove('show');current=null;persist();toast('直播回放已保存')}
+function finish(){if(!current)return;stopAuto();apiPaused=true;pendingArchive={...current,endedAt:new Date().toLocaleString(),endedAtMs:Date.now(),status:'ended'};$('#liveView').classList.remove('show');$('#endView').classList.add('show')}
+function saveReplay(visibility){
+ if(!pendingArchive)return;
+ const replay={...pendingArchive,visibility};
+ try{
+  archives.push(replay);
+  save('archives',archives);
+  rooms=rooms.filter(r=>r.id!==replay.id);
+  try{save('rooms',rooms)}catch(e){}
+  pendingArchive=null;current=null;
+  $('#endView').classList.remove('show');$('#liveView').classList.remove('show');
+  try{persist()}catch(e){}
+  toast('直播回放已保存');
+ }catch(e){
+  archives=archives.filter(a=>a.id!==replay.id);
+  toast('设备储存空间不足，回放未能保存。可以先选择不保存回放退出。');
+ }
+}
 $('#modePicker').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setMode(b.dataset.mode)});
 $('#goCreate').onclick=()=>$('#createSection').scrollIntoView({behavior:'smooth'});
 $('#generateLiveRooms').onclick=()=>generateDiscoveryRooms('live');
@@ -212,8 +233,8 @@ $('#createForm').addEventListener('submit',e=>{e.preventDefault();const f=new Fo
 $('#rooms').addEventListener('click',e=>{const b=e.target.closest('[data-room]');if(b)enter(b.dataset.room)});
 $('#backHome').onclick=()=>{if(current?.auto&&current.status==='live'){stopAuto();toast('已暂停本次自动生成；直播间仍保留。')}back()};
 $('#endLive').onclick=finish;
-$('#saveReplay').onclick=()=>saveReplay($('#replayVisibility').value);
-$('#discardReplay').onclick=()=>{if(pendingArchive){rooms=rooms.filter(r=>r.id!==pendingArchive.id);save('rooms',rooms)}pendingArchive=null;$('#endView').classList.remove('show');current=null;persist();toast('本场直播未保存回放')};
+document.addEventListener('click',e=>{const b=e.target.closest('#saveReplay');if(b){e.preventDefault();e.stopPropagation();saveReplay($('#replayVisibility').value)}},true);
+document.addEventListener('click',e=>{const b=e.target.closest('#discardReplay');if(b){e.preventDefault();e.stopPropagation();const id=pendingArchive?.id;pendingArchive=null;current=null;$('#endView').classList.remove('show');$('#liveView').classList.remove('show');try{if(id){rooms=rooms.filter(r=>r.id!==id);save('rooms',rooms)}persist()}catch(err){}toast('本场直播未保存回放')}},true);
 $('#sendComment').onclick=()=>{const text=$('#commentInput').value.trim();if(!text)return;addComment('你',text,{owner:true});$('#commentInput').value=''};
 $('#commentInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#sendComment').click()});
 $('#aiReply').onclick=manualAI;
