@@ -1,4 +1,4 @@
-/* LOVE RECORD V21 · Three.js fixed-isometric home renderer */
+/* LOVE RECORD V27 · Three.js portrait 3D home with full 360° orbit */
 (function(){
 'use strict';
 const THREE_CDN='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';
@@ -23,31 +23,32 @@ function cylinder(rt,rb,h,material,x,y,z,group=null,segments=18){const m=new THR
 function addLine(points,material,group){const g=new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(...p)));const m=new THREE.Line(g,material);group.add(m);return m}
 function makeRoom(room){
  const g=new THREE.Group();active.scene.add(g);
+ const backWall=new THREE.Group(),leftWall=new THREE.Group();g.add(backWall,leftWall);active.roomWalls={back:backWall,left:leftWall};
  const floorMat=new THREE.MeshStandardMaterial({color:room==='balcony'?0xe2c7a4:0xffffff,map:woodTexture(),roughness:.88}), wallMat=mat(palette.wall), sideMat=mat(palette.wallSide), trim=mat(0xd8c5a7), plank=mat(0xb98d66);
  const floor=new THREE.Mesh(new THREE.PlaneGeometry(8,6),floorMat);floor.rotation.x=-Math.PI/2;floor.position.y=.02;floor.receiveShadow=true;g.add(floor);active.floor=floor;
  // parquet seams and a warm border
  for(let z=-2.65;z<=2.7;z+=.42)addLine([[-3.9,.035,z],[3.9,.035,z]],new THREE.LineBasicMaterial({color:0xb78c68,transparent:true,opacity:.22}),g);
  for(let x=-3.7;x<=3.7;x+=1.15)addLine([[x,.036,-2.85],[x,.036,2.85]],new THREE.LineBasicMaterial({color:0xa97d59,transparent:true,opacity:.13}),g);
  // back and left walls, deliberately open toward the viewer
- box(8,5.2,.16,wallMat,0,2.62,-3.02,g);box(.16,5.2,6,sideMat,-4.02,2.62,0,g);
- box(8,.16,.22,trim,0,.12,-2.94,g);box(.22,.16,6,trim,-3.94,.12,0,g);
+ box(8,5.2,.16,wallMat,0,2.62,-3.02,backWall);box(.16,5.2,6,sideMat,-4.02,2.62,0,leftWall);
+ box(8,.16,.22,trim,0,.12,-2.94,backWall);box(.22,.16,6,trim,-3.94,.12,0,leftWall);
  // wall panel moulding
- for(let x=-3.35;x<=3.3;x+=1.1){box(.035,2.5,.035,trim,x,1.45,-2.91,g);box(.9,.035,.035,trim,x+.45,2.65,-2.91,g);}
+ for(let x=-3.35;x<=3.3;x+=1.1){box(.035,2.5,.035,trim,x,1.45,-2.91,backWall);box(.9,.035,.035,trim,x+.45,2.65,-2.91,backWall);}
  // window on back wall, panes and sill
  const winX=-2.15, winY=2.05, winZ=-2.89;
- box(1.45,1.65,.09,mat(0x9a7858),winX,winY,winZ,g);box(1.32,1.52,.08,mat(palette.glass,.25),winX,winY,winZ+.055,g);
- box(.075,1.56,.12,mat(0xfff8ec),winX,winY,winZ+.13,g);box(1.35,.075,.12,mat(0xfff8ec),winX,winY,winZ+.13,g);
- box(.07,1.55,.13,mat(0xfff8ec),winX,winY,winZ+.14,g);box(1.35,.07,.13,mat(0xfff8ec),winX,winY,winZ+.14,g);
- box(1.65,.12,.32,mat(0xc69b70),winX,1.2,winZ+.18,g);
- box(.045,1.48,.12,mat(0xfff8ec),winX,winY,winZ+.2,g);box(1.3,.045,.12,mat(0xfff8ec),winX,winY,winZ+.2,g);
+ box(1.45,1.65,.09,mat(0x9a7858),winX,winY,winZ,backWall);box(1.32,1.52,.08,mat(palette.glass,.25),winX,winY,winZ+.055,backWall);
+ box(.075,1.56,.12,mat(0xfff8ec),winX,winY,winZ+.13,backWall);box(1.35,.075,.12,mat(0xfff8ec),winX,winY,winZ+.13,backWall);
+ box(.07,1.55,.13,mat(0xfff8ec),winX,winY,winZ+.14,backWall);box(1.35,.07,.13,mat(0xfff8ec),winX,winY,winZ+.14,backWall);
+ box(1.65,.12,.32,mat(0xc69b70),winX,1.2,winZ+.18,backWall);
+ box(.045,1.48,.12,mat(0xfff8ec),winX,winY,winZ+.2,backWall);box(1.3,.045,.12,mat(0xfff8ec),winX,winY,winZ+.2,backWall);
  // curtains
- for(const x of [winX-.83,winX+.83]){const c=box(.28,1.85,.12,mat(0xe9dcc9),x,winY,winZ+.22,g);c.rotation.z=x<winX?-.04:.04;active.curtains=active.curtains||[];active.curtains.push({mesh:c,side:x<winX?-1:1});}
+ for(const x of [winX-.83,winX+.83]){const c=box(.28,1.85,.12,mat(0xe9dcc9),x,winY,winZ+.22,backWall);c.rotation.z=x<winX?-.04:.04;active.curtains=active.curtains||[];active.curtains.push({mesh:c,side:x<winX?-1:1});}
  // room-specific fixed architectural features
  if(room==='living'){
   // fireplace on back wall
-  box(1.55,1.8,.36,mat(0xe3d2b8),1.9,1.25,-2.72,g);box(1.12,1.12,.12,mat(0x76503b),1.9,1.18,-2.48,g);box(1.7,.16,.5,mat(0xc49a72),1.9,2.2,-2.62,g);
-  box(.9,.1,.1,mat(palette.brass),1.9,.64,-2.39,g);
-  const fire=new THREE.Group();fire.position.set(1.9,.95,-2.35);g.add(fire);const fm= new THREE.MeshStandardMaterial({color:0xffa84b,emissive:0xf36a20,emissiveIntensity:1.3,roughness:.5});const f1=new THREE.Mesh(new THREE.ConeGeometry(.25,.72,7),fm);f1.position.y=.36;fire.add(f1);const f2=new THREE.Mesh(new THREE.ConeGeometry(.14,.46,7),mat(0xffd27a));f2.position.set(.08,.24,.03);fire.add(f2);active.fire=fire;const glow=new THREE.PointLight(0xff8b38,1.35,4.8);glow.position.set(1.9,1.05,-1.9);g.add(glow);active.fireLight=glow;
+  box(1.55,1.8,.36,mat(0xe3d2b8),1.9,1.25,-2.72,backWall);box(1.12,1.12,.12,mat(0x76503b),1.9,1.18,-2.48,backWall);box(1.7,.16,.5,mat(0xc49a72),1.9,2.2,-2.62,backWall);
+  box(.9,.1,.1,mat(palette.brass),1.9,.64,-2.39,backWall);
+  const fire=new THREE.Group();fire.position.set(1.9,.95,-2.35);backWall.add(fire);const fm= new THREE.MeshStandardMaterial({color:0xffa84b,emissive:0xf36a20,emissiveIntensity:1.3,roughness:.5});const f1=new THREE.Mesh(new THREE.ConeGeometry(.25,.72,7),fm);f1.position.y=.36;fire.add(f1);const f2=new THREE.Mesh(new THREE.ConeGeometry(.14,.46,7),mat(0xffd27a));f2.position.set(.08,.24,.03);fire.add(f2);active.fire=fire;const glow=new THREE.PointLight(0xff8b38,1.35,4.8);glow.position.set(1.9,1.05,-1.9);g.add(glow);active.fireLight=glow;
  }
  if(room==='balcony'){
   // open-air rail on the far side
@@ -172,8 +173,12 @@ function setSelected(uid){
 }
 function pickFurniture(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObjects(active.furnitureGroups,true);for(const h of hits){let o=h.object;while(o&& !o.userData.uid)o=o.parent;if(o&&o.userData.uid)return o}return null}
 function floorPoint(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObject(active.floor);return hits[0]?.point||null}
+function updateRoomWallVisibility(){if(!active?.roomWalls)return;const p=active.camera.position;active.roomWalls.back.visible=p.z>=-0.15;active.roomWalls.left.visible=p.x>=-0.15;}
+function cameraState(){if(!active)return null;const target=active.cameraTarget||new THREE.Vector3(0,1.05,0);const spherical=new THREE.Spherical().setFromVector3(active.camera.position.clone().sub(target));return {theta:spherical.theta,phi:spherical.phi,radius:spherical.radius,zoom:active.camera.zoom,target:{x:target.x,y:target.y,z:target.z}}}
+function persistCamera(){const st=cameraState();if(st)getBridge()?.updateCameraState?.(active.state.room,st);}
+function resetCamera(){if(!active)return;const target=new THREE.Vector3(0,1.35,0),spherical=new THREE.Spherical(18.5,0.98,0.70);active.cameraTarget.copy(target);active.camera.position.copy(target).add(new THREE.Vector3().setFromSpherical(spherical));active.camera.zoom=1.42;active.camera.lookAt(target);active.camera.updateProjectionMatrix();updateRoomWallVisibility();persistCamera();}
 function cameraOrbitStart(ev){
- const target=new THREE.Vector3(0,1.05,0);
+ const target=active.cameraTarget||new THREE.Vector3(0,1.35,0);
  const offset=active.camera.position.clone().sub(target);
  const spherical=new THREE.Spherical().setFromVector3(offset);
  active.orbit={pointerId:ev.pointerId,lastX:ev.clientX,lastY:ev.clientY,target,spherical};
@@ -207,11 +212,14 @@ function pointerMove(ev){
  if(active.pointers?.size>=2){
   const pts=[...active.pointers.values()];
   const distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+  const center={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2};
   if(active.pinchDistance>0){
-   active.camera.zoom=Math.max(.72,Math.min(2.2,active.camera.zoom*distance/active.pinchDistance));
+   active.camera.zoom=Math.max(.72,Math.min(2.65,active.camera.zoom*distance/active.pinchDistance));
    active.camera.updateProjectionMatrix();
+   const dx=center.x-(active.pinchCenter?.x??center.x),dy=center.y-(active.pinchCenter?.y??center.y);
+   if(Math.abs(dx)+Math.abs(dy)>0){active.camera.updateMatrixWorld();const rect=active.renderer.domElement.getBoundingClientRect();const units=(active.camera.top-active.camera.bottom)/(Math.max(1,rect.height)*active.camera.zoom);const right=new THREE.Vector3().setFromMatrixColumn(active.camera.matrix,0);const up=new THREE.Vector3().setFromMatrixColumn(active.camera.matrix,1);const shift=right.multiplyScalar(-dx*units).add(up.multiplyScalar(dy*units));active.cameraTarget.add(shift);active.camera.position.add(shift);active.camera.lookAt(active.cameraTarget);updateRoomWallVisibility()}
   }
-  active.pinchDistance=distance;ev.preventDefault();return;
+  active.pinchDistance=distance;active.pinchCenter=center;ev.preventDefault();return;
  }
  if(active.drag&&active.drag.pointerId===ev.pointerId){
   const p=floorPoint(ev);if(!p)return;
@@ -224,9 +232,9 @@ function pointerMove(ev){
   const o=active.orbit,dx=ev.clientX-o.lastX,dy=ev.clientY-o.lastY;
   o.lastX=ev.clientX;o.lastY=ev.clientY;
   o.spherical.theta-=dx*.012;
-  o.spherical.phi=Math.max(.22,Math.min(1.48,o.spherical.phi+dy*.006));
+  o.spherical.phi=Math.max(.18,Math.min(1.52,o.spherical.phi+dy*.006));
   active.camera.position.copy(o.target).add(new THREE.Vector3().setFromSpherical(o.spherical));
-  active.camera.lookAt(o.target);ev.preventDefault();
+  active.camera.lookAt(o.target);updateRoomWallVisibility();ev.preventDefault();
  }
 }
 function pointerUp(ev){
@@ -239,36 +247,41 @@ function pointerUp(ev){
   }
  }
  active.pointers?.delete(ev.pointerId);
- if(active.pointers?.size<2)active.pinchDistance=0;
+ if(active.pointers?.size<2){active.pinchDistance=0;active.pinchCenter=null;if(active.pointers?.size===1){const [id,pt]=[...active.pointers.entries()][0];cameraOrbitStart({pointerId:id,clientX:pt.x,clientY:pt.y})}else{active.orbit=null;persistCamera()}}
  if(active.orbit?.pointerId===ev.pointerId)active.orbit=null;
 }
 function addRoomDetails(room){/* Empty-room rule: no decorative furniture is pre-installed. Only architectural shell remains. */}
 
 function renderLoop(){if(!active)return;active.raf=requestAnimationFrame(renderLoop);const t=performance.now()*.001;if(active.fire){active.fire.rotation.z=Math.sin(t*2.4)*.05;active.fire.scale.y=.96+Math.sin(t*5)*.07}if(active.fireLight)active.fireLight.intensity=1.15+Math.sin(t*7)*.22;if(active.curtains)active.curtains.forEach(c=>c.mesh.rotation.z=c.side*(.04+Math.sin(t*1.15+c.side)*.018));if(active.dust){for(let i=0;i<active.dust.length;i++){const d=active.dust[i];d.position.y=1.2+((t*.12+i*.53)%2.6);d.position.x=Math.sin(t*.5+i)*2.8}}if(active.lampLight)active.lampLight.intensity=active.state.lampOn?1.0+.07*Math.sin(t*2):.08;active.renderer.render(active.scene,active.camera)}
-function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(320,host.clientHeight||Math.round(window.innerHeight*.58));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-5,5,5,-5,.1,80);
- const cameraTarget=new THREE.Vector3(0,1.05,0);
- camera.position.set(10,11,12);camera.lookAt(cameraTarget);
+function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(320,host.clientHeight||Math.round(window.innerHeight*.58));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-5,5,5,-5,.1,100);
+ const savedCamera=state.camera||null;
+ const cameraTarget=new THREE.Vector3(savedCamera?.target?.x??0,savedCamera?.target?.y??1.35,savedCamera?.target?.z??0);
+ const initialSpherical=new THREE.Spherical(savedCamera?.radius||18.5,savedCamera?.phi||.98,savedCamera?.theta??.70);
+ camera.position.copy(cameraTarget).add(new THREE.Vector3().setFromSpherical(initialSpherical));camera.lookAt(cameraTarget);
  function fitCamera(){
-  const aspect=Math.max(.45,(host.clientWidth||360)/Math.max(320,host.clientHeight||Math.round(window.innerHeight*.58)));
-  const viewHeight=Math.max(10.8,8.8/aspect);
+  const aspect=Math.max(.45,(host.clientWidth||360)/Math.max(320,host.clientHeight||Math.round(window.innerHeight*.68)));
+  const viewHeight=Math.max(10.2,8.4/aspect);
   camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;
   camera.top=viewHeight/2;camera.bottom=-viewHeight/2;
-  camera.zoom=1.28;camera.updateProjectionMatrix();
+  camera.zoom=Math.max(.72,Math.min(2.65,savedCamera?.zoom||1.42));camera.updateProjectionMatrix();
  }
  fitCamera();const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));renderer.setSize(width,height,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.domElement.className='lr3d-canvas';renderer.domElement.setAttribute('aria-label',roomNames[state.room]+' 3D房间');host.appendChild(renderer.domElement);
- active={host,scene,camera,renderer,state,raycaster:new THREE.Raycaster(),floor:null,furnitureGroups:[],selectedUid:null,drag:null,fire:null,fireLight:null,curtains:[],dust:[],lampLight:null};
+ active={host,scene,camera,cameraTarget,renderer,state,raycaster:new THREE.Raycaster(),floor:null,furnitureGroups:[],selectedUid:null,drag:null,fire:null,fireLight:null,curtains:[],dust:[],lampLight:null,roomWalls:null};
  scene.add(new THREE.HemisphereLight(0xfff7e9,0x887b68,1.9));const sun=new THREE.DirectionalLight(0xffe6c2,2.1);sun.position.set(-5,10,7);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-8;sun.shadow.camera.right=8;sun.shadow.camera.top=8;sun.shadow.camera.bottom=-8;scene.add(sun);const fill=new THREE.DirectionalLight(0xe1eddf,.82);fill.position.set(5,6,-4);scene.add(fill);
  // Warm studio-like ground plane and soft ambient bounce.
  const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0xeee3d2,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.16;ground.receiveShadow=true;scene.add(ground);
  const bounce=new THREE.PointLight(0xffe9c9,.32,14);bounce.position.set(0,1.2,3.5);scene.add(bounce);
  // Build the room shell and use its floor mesh as the drag plane.
  makeRoom(state.room);
+ updateRoomWallVisibility();
  addRoomDetails(state.room);drawFurniture(state);
  active.lampLight=new THREE.PointLight(0xffd99c,state.lampOn?1:.08,7);active.lampLight.position.set(0,2.5,0);scene.add(active.lampLight);
  for(let i=0;i<16;i++){const d=sphere(.018,mat(0xfff6d8),Math.sin(i*12)*2.8,1.2+(i%5)*.42,Math.cos(i*8)*2.2,scene);d.material.transparent=true;d.material.opacity=.38;active.dust.push(d)}
+ renderer.domElement.addEventListener('dblclick',ev=>{const hit=pickFurniture(ev);if(!hit)return;const obj=hit;const target=new THREE.Vector3(obj.position.x,.75,obj.position.z);const offset=active.camera.position.clone().sub(active.cameraTarget);active.cameraTarget.copy(target);active.camera.position.copy(target).add(offset);active.camera.zoom=Math.min(2.35,Math.max(active.camera.zoom,1.75));active.camera.lookAt(target);active.camera.updateProjectionMatrix();updateRoomWallVisibility();persistCamera()});
  renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',pointerUp);renderer.domElement.addEventListener('lostpointercapture',pointerUp);
- renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.72,Math.min(2.2,camera.zoom*(e.deltaY>0?.94:1.06)));camera.updateProjectionMatrix()},{passive:false});
- const hint=document.createElement('div');hint.className='lr3d-hint';hint.textContent=state.decorMode?'拖动空白处旋转视角 · 拖动家具自由摆放 · 选中后调色与旋转':'单指拖动旋转视角 · 双指缩放 · 进入装修模式摆放家具';host.appendChild(hint);
+ renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.72,Math.min(2.65,camera.zoom*(e.deltaY>0?.94:1.06)));camera.updateProjectionMatrix();persistCamera()},{passive:false});
+ const resetButton=host.closest('.v21-room-stage')?.querySelector('[data-lr3d-reset-view]');if(resetButton&&!resetButton.dataset.lr3dBound){resetButton.dataset.lr3dBound='1';resetButton.addEventListener('click',resetCamera)}
+ const hint=document.createElement('div');hint.className='lr3d-hint';hint.textContent=state.decorMode?'单指旋转视角 · 拖动家具摆放 · 双指缩放与平移 · 双击家具聚焦':'左右环绕 360° · 上下调整视角 · 双指缩放与平移 · 双击家具聚焦';host.appendChild(hint);
  if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(()=>{if(!active||active.host!==host)return;const w=Math.max(300,host.clientWidth),h=Math.max(320,host.clientHeight);renderer.setSize(w,h,false);fitCamera()});resizeObserver.observe(host)}
  renderLoop();
 }
@@ -440,6 +453,15 @@ function injectStyles(){if(document.getElementById('lr3d-style'))return;const s=
  .lr3d-rotation-row{gap:6px!important;font-size:9px!important;}
  .lr3d-tools-actions{gap:5px!important;}
  .lr3d-tools-actions button{font-size:9px!important;padding:5px 8px!important;}
+ /* V27: larger portrait 3D viewport, full horizontal orbit and usable room controls */
+ #lr-games .house-page .v21-room-stage{height:76svh!important;min-height:580px!important;max-height:860px!important;margin-bottom:14px!important;padding:8px!important;background:linear-gradient(150deg,#fffaf0 0%,#e9dfca 100%)!important;}
+ #lr-games .house-page .lr3d-viewport{min-height:0!important;background:radial-gradient(ellipse at 50% 36%,#fff8eb 0%,#e8ddca 78%)!important;}
+ #lr-games .house-page .lr3d-caption{font-size:10px!important;letter-spacing:.06em!important;}
+ #lr-games .lr3d-stage-tools{top:16px!important;left:16px!important;right:16px!important;gap:7px!important;}
+ #lr-games .lr3d-stage-tools button{padding:9px 13px!important;font-size:11px!important;backdrop-filter:blur(10px)!important;}
+ #lr-games .lr3d-stage-tools [data-lr3d-reset-view]{margin-left:auto!important;}
+ #lr-games .house-controls{padding:13px 15px!important;background:linear-gradient(145deg,#fffdf8,#f7f0e5)!important;}
+ @media(max-width:600px){#lr-games .house-page .v21-room-stage{height:76svh!important;min-height:570px!important;max-height:820px!important;width:calc(100% + 24px)!important;margin-left:-12px!important;margin-right:-12px!important;}#lr-games .lr3d-stage-tools{top:12px!important;left:12px!important;right:12px!important;}#lr-games .lr3d-stage-tools button{padding:8px 11px!important;font-size:10px!important;}}
 
  `;document.head.appendChild(s)}
 function start(){injectStyles();if(observer)observer.disconnect();observer=new MutationObserver(()=>{if(document.querySelector('[data-lr3d-viewport]'))scan();else if(active)disposeActive()});observer.observe(document.body,{childList:true,subtree:true});scan();}
