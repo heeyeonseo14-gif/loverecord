@@ -677,7 +677,7 @@ const css=`#lr-games{position:fixed;inset:0;z-index:100100;background:#f7f0e7;co
 
 #lr-games .v19-room-stage .placed-furniture:active svg{transform:scale(1.05)}
 #lr-games .v19-room-stage.decor-active{outline:2px solid #91a17d;outline-offset:3px;touch-action:none}
-#lr-games .furniture-mega-shop>.shop-accordion-body{padding-top:10px}
+#lr-games .house-page .furniture-mega-shop{margin:16px 0 0;border-radius:24px;box-shadow:0 10px 28px #80634412}#lr-games .house-page .furniture-mega-shop>summary{padding:17px 18px;font-size:14px}#lr-games .house-page .furniture-mega-shop>.shop-accordion-body{padding:0 12px 14px}#lr-games .furniture-mega-shop>.shop-accordion-body{padding-top:10px}
 #lr-games .furniture-shop-intro{padding:16px;border-radius:18px;background:linear-gradient(135deg,#f7efdf,#e8eddf);border:1px solid #e1d5c1;margin-bottom:12px}
 #lr-games .furniture-shop-intro b{font:600 15px Georgia,'Noto Serif SC',serif;color:#5d5144}
 #lr-games .furniture-shop-intro p{font-size:11px;line-height:1.8;color:#897a68;margin:7px 0}
@@ -1045,6 +1045,7 @@ function houseView(){
  <section class="house-controls"><div class="house-section-title"><b>${h.decorMode?'装修模式 · 拖动家具摆放':'屋里的小日常'}</b><button data-action="decor-toggle">${h.decorMode?'完成摆放':'进入装修'}</button></div>
  ${h.decorMode?`<p class="gmuted">按住家具拖动到喜欢的位置。家具需要先在装修商店购买。</p><div class="furniture-inventory">${inv||'<p class="gmuted">这个房间还没有可摆放的家具，去商店看看吧。</p>'}</div>`:`<div class="house-action-grid"><button data-house-action="lamp">${houseIcon('lamp')}<b>${h.lampOn?'关掉暖灯':'点亮暖灯'}</b><small>调节室内光线</small></button><button data-house-action="window">${houseIcon('window')}<b>${h.windowOpen?'关上窗户':'打开窗户'}</b><small>听听外面的风声</small></button><button data-house-action="rest">${houseIcon('sofa')}<b>坐下休息</b><small>已休息 ${h.rests||0} 次</small></button><button data-house-action="tea">${houseIcon('tea')}<b>泡一杯热茶</b><small>一起享受安静时光 · ${h.teas||0} 杯</small></button></div>`}
  <div class="house-note">${h.windowOpen?'微风穿过窗户，窗帘轻轻摆动。':h.lampOn?'暖黄色灯光落在木地板上，整个小屋都柔软起来。':'自然光透过窗棂，小屋安静又明亮。'}</div></section>
+ ${furnitureShopView()}
  <section class="house-memory"><b>共同生活记忆</b><p>${(farm.log||[]).filter(x=>/小屋|休息|热茶|窗户|暖灯|卧室|厨房|阳台/.test(x.text)).slice(0,4).map(x=>esc(x.text)).join(' · ')||'这里还没有留下特别的回忆。今天可以从一杯热茶开始。'}</p></section></section>`;
 }
 
@@ -1066,7 +1067,6 @@ function shopView(){
  return `${header()}<h2 class="gtitle">小镇商店</h2><p class="gsub">按类别收纳货架，想买什么再展开看看。</p>
  <details class="gcard shop-accordion" open><summary><span>种子铺</span><small>作物种子 · ${Object.keys(crops).length} 种</small></summary><div class="shop-accordion-body">${Object.entries(crops).map(([id,c])=>`<div class="grow shop-product-row"><span class="shop-product-art">${c.emoji}</span><div style="flex:1"><b>${c.name}</b><div class="gmuted">${c.desc} · 售价 ${c.sell} 金币</div></div><button data-buy="${id}">购买 · ${c.cost}</button></div>`).join('')}</div></details>
  <details class="gcard shop-accordion"><summary><span>动物用品</span><small>小鸡与农场伙伴</small></summary><div class="shop-accordion-body"><div class="grow shop-product-row"><span class="shop-product-art">🐥</span><div style="flex:1"><b>小鸡</b><div class="gmuted">每只 45 金币 · 每隔一段时间产出鸡蛋</div><small>现有 ${farm.animals.chickens||0} 只</small></div><button data-action="buy-chicken">领养 · 45</button></div></div></details>
- ${furnitureShopView()}
  <details class="gcard shop-accordion"><summary><span>建筑与扩建</span><small>农场设施 · ${buildings.length} 项</small></summary><div class="shop-accordion-body">${buildings.map(([id,emoji,name,cost,desc])=>`<div class="grow shop-product-row"><span class="shop-product-art">${emoji}</span><div style="flex:1"><b>${name}</b><div class="gmuted">${desc}</div></div>${farm.buildings[id]?'<span>已建造 ✓</span>':`<button data-build="${id}" data-cost="${cost}">建造 · ${cost}</button>`}</div>`).join('')}<p class="gmuted">农场扩建</p><button class="primary" data-action="expand" ${farm.plots.length>=18?'disabled':''}>增加一块土地 · ${80+Math.max(0,farm.plots.length-9)*35} 金币</button></div></details>`;
 }
 
