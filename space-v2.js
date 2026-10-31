@@ -244,10 +244,12 @@
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
   function apiConfig(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}let st={};try{if(typeof state!=='undefined')st=state||{}}catch(e){}return {base:String(st.apiBase||s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String(st.apiKey||s.apiKey||$('apiKey')?.value||'').trim(),model:String(st.apiModel||s.apiModel||$('apiModel')?.value||'').trim()}}
-  async function callAPI(system,user,loadingText='正在连接 API…'){
+  async function callAPI(system,user,loadingText='正在生成…',inline=false){
     const {base,key,model}=apiConfig();
     if(!base||!key||!model){toast('请先在 LOVE RECORD 的 API 设置里连接模型。');return null}
-    busy=true; setBusy(true,loadingText);
+    busy=true;
+    if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent=loadingText;status.hidden=false;}}
+    else setBusy(true,loadingText);
     const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);
     try{
       const r=await fetch(base+'/chat/completions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:.9,stream:false})});
@@ -258,7 +260,7 @@
       if(!String(c).trim())throw new Error('API 返回为空');
       return String(c).trim();
     }catch(e){toast(e.name==='AbortError'?'API 请求超时（30秒）':'API 请求失败：'+e.message);return null}
-    finally{clearTimeout(timer);busy=false;setBusy(false)}
+    finally{clearTimeout(timer);busy=false;if(inline){const status=$('lrSpaceStoryGenerating');if(status)status.hidden=true;}else setBusy(false)}
   }
   function setBusy(on,text='正在生成…'){
     const m=$('lrSpaceV2Busy');if(!m)return;m.querySelector('.lr-space-busy-text').textContent=text;m.classList.toggle('show',!!on);
@@ -475,6 +477,34 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
 #space.lr-space-v2 #lrSpaceBackupSection{display:none!important}
 #space.lr-space-v2 .lr-space-feature-grid{grid-template-columns:1fr}
 `;
+    s.textContent += `
+.lr-space-story-generating{margin:10px 0 14px;padding:9px 13px;border-radius:14px;background:rgba(213,185,220,.18);color:#a17ca4;font-size:13px;letter-spacing:.04em}
+.lr-space-story-generating[hidden]{display:none!important}
+.lr-space-story-generating:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#b88fb9;margin-right:9px;vertical-align:1px;animation:lrStoryPulse 1s ease-in-out infinite}
+@keyframes lrStoryPulse{50%{opacity:.3;transform:scale(.75)}}
+.lr-space-review-fold{padding:0!important;border-top:1px solid #f0e3ec}
+.lr-space-review-fold>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;cursor:pointer}
+.lr-space-review-fold>summary::-webkit-details-marker{display:none}
+.lr-space-review-fold-main{display:block;min-width:0;flex:1}
+.lr-space-review-fold .lr-space-review-meta{margin-bottom:5px}
+.lr-space-review-fold summary b{display:block;color:#70546e;font-size:13px;margin:0}
+.lr-space-review-fold-hint{display:block;color:#ad9bad;font-size:11px;margin-top:5px}
+.lr-space-review-chevron{color:#a987b3;font-size:20px;transition:transform .2s}
+.lr-space-review-fold[open] .lr-space-review-chevron{transform:rotate(180deg)}
+.lr-space-review-fold-content{padding:0 4px 16px}
+.lr-space-review-fold-content .lr-space-review-text{padding:2px 0 8px}
+#lrSpaceV2Story .lr-space-v2-head{align-items:center;gap:8px}
+#lrSpaceV2Story .lr-space-v2-head>div:first-child{min-width:0;flex:1}
+#lrSpaceV2Story .lr-space-v2-head h1{font-size:22px;line-height:1.35;max-width:100%;overflow-wrap:anywhere;margin:5px 0}
+#lrSpaceV2Story .lr-space-story-head-actions{flex-direction:row;align-items:center;gap:6px;flex:none}
+#lrSpaceV2Story .lr-space-story-head-actions button{font-size:11px;padding:8px 10px;white-space:nowrap}
+@media(max-width:560px){
+ #lrSpaceV2Story .lr-space-v2-head{align-items:center}
+ #lrSpaceV2Story .lr-space-v2-head h1{font-size:20px;max-width:100%}
+ #lrSpaceV2Story .lr-space-story-head-actions{flex-direction:column;gap:5px}
+ #lrSpaceV2Story .lr-space-story-head-actions button{font-size:10px;padding:7px 9px}
+}
+`;
     document.head.appendChild(s);
   }
   function replaceSpace(){
@@ -493,7 +523,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
       </div>
       <div id="lrSpaceV2Story" class="lr-space-v2-screen" hidden>
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">CURRENT PLACE</div><h1 id="lrSpaceCurrentPlaceTitle">当前地点</h1></div><div class="lr-space-story-head-actions"><button id="lrSpaceReviewStory" class="lr-space-secondary" type="button">回顾剧情</button><button id="lrSpaceBackMap" class="lr-space-secondary" type="button">返回地图</button></div></div>
-        <section class="lr-space-story"><div id="lrSpaceStoryPlace" class="lr-space-story-place"></div><h2 id="lrSpaceStoryTitle" hidden></h2><div id="lrSpaceStoryMeta" class="lr-space-story-meta" hidden></div><div id="lrSpaceStoryBody" class="lr-space-story-body">正在让这个地点发生故事……</div><div class="lr-space-story-input"><input id="lrSpaceStoryInput" placeholder="告诉 AI 你想做什么……"><button id="lrSpaceStorySend" class="lr-space-primary" type="button">继续</button></div></section>
+        <section class="lr-space-story"><div id="lrSpaceStoryPlace" class="lr-space-story-place"></div><h2 id="lrSpaceStoryTitle" hidden></h2><div id="lrSpaceStoryMeta" class="lr-space-story-meta" hidden></div><div id="lrSpaceStoryBody" class="lr-space-story-body">正在让这个地点发生故事……</div><div id="lrSpaceStoryGenerating" class="lr-space-story-generating" role="status" aria-live="polite" hidden>正在生成…</div><div class="lr-space-story-input"><input id="lrSpaceStoryInput" placeholder="告诉 AI 你想做什么……"><button id="lrSpaceStorySend" class="lr-space-primary" type="button">继续</button></div></section>
         <div id="lrSpaceStoryReview" class="lr-space-modal" aria-hidden="true"><section class="lr-space-sheet lr-space-review-sheet"><div class="lr-space-sheet-head"><div><div class="lr-space-v2-kicker">STORY ARCHIVE</div><h2>回顾剧情</h2><p>按时间回顾这条连续的故事。</p></div><button class="lr-space-close" id="lrSpaceReviewClose" type="button">×</button></div><div id="lrSpaceReviewList" class="lr-space-review-list"></div></section></div>
 
       </div>
@@ -769,7 +799,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     if(!historyStorageReady) await hydrateHistoryFromIDB();
     const modal=$('lrSpaceStoryReview'),list=$('lrSpaceReviewList');if(!modal||!list)return;
     const entries=[...(data.history||[])].sort((a,b)=>b.at-a.at);
-    list.innerHTML=entries.length?entries.map((h,i)=>`<article class="lr-space-review-item"><div class="lr-space-review-meta"><span>${esc(fmtTime(h.at))}</span><span>${esc(h.place||'未知地点')}</span></div><b>第 ${entries.length-i} 段剧情</b><div class="lr-space-review-text">${esc(h.text||'')}</div><div class="lr-space-review-actions"><button class="lr-space-secondary lr-space-review-jump" type="button" data-review-jump="${esc(h.id)}">回到这段剧情</button><button class="lr-space-secondary" type="button" data-review-delete="${esc(h.id)}">删除记录</button></div></article>`).join(''):'<div class="lr-space-review-empty">这里还没有剧情记录。进入地点后，写下你的行动并发送，生成的剧情就会保存在这里。</div>';
+    list.innerHTML=entries.length?entries.map((h,i)=>`<details class="lr-space-review-item lr-space-review-fold"><summary><span class="lr-space-review-fold-main"><span class="lr-space-review-meta"><span>${esc(fmtTime(h.at))}</span><span>${esc(h.place||'未知地点')}</span></span><b>第 ${entries.length-i} 段剧情</b><span class="lr-space-review-fold-hint">点击展开剧情内容</span></span><span class="lr-space-review-chevron" aria-hidden="true">⌄</span></summary><div class="lr-space-review-fold-content"><div class="lr-space-review-text">${esc(h.text||'')}</div><div class="lr-space-review-actions"><button class="lr-space-secondary lr-space-review-jump" type="button" data-review-jump="${esc(h.id)}">回到这段剧情</button><button class="lr-space-secondary" type="button" data-review-delete="${esc(h.id)}">删除记录</button></div></div></details>`).join(''):'<div class="lr-space-review-empty">这里还没有剧情记录。进入地点后，写下你的行动并发送，生成的剧情就会保存在这里。</div>';
     modal.classList.add('show');modal.setAttribute('aria-hidden','false');
   }
   function jumpToHistory(id){
@@ -824,7 +854,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
   }
   function makeStoryActions(text){$('lrSpaceStoryActions').innerHTML='';const defaults=['继续观察眼前发生的事情','回应同行的人','做一个和当前地点有关的小行动'];defaults.forEach(t=>{const b=document.createElement('button');b.className='lr-space-secondary';b.type='button';b.textContent=t;b.onclick=()=>continueStory(t);$('lrSpaceStoryActions').appendChild(b)});}
   async function continueStory(action){if(busy)return;const loc=locationById(data.currentLocation);if(!loc)return;const thread=data.activeStoryThread||('thread-'+Date.now());data.activeStoryThread=thread;const system=`你是 LOVE RECORD【空间】的剧情导演。继续当前跨地点连续剧情。只写新的剧情正文，不复述旧剧情。不要替用户决定行动、台词、思想或情绪；用户的行动只有在输入明确后才发生。同行人物可以自然回应。严格遵循已保存的事实与约定，跨地点保持连续性。`;
-    const me=data.memoryEngine||{};const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>data.selectedPeople.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=data.history.slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user);if(out){await appendHistory(loc.name,out,action);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out)}}
+    const me=data.memoryEngine||{};const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>data.selectedPeople.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=data.history.slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user,'正在生成…',true);if(out){await appendHistory(loc.name,out,action);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out)}}
   async function sendStory(){const input=$('lrSpaceStoryInput');const t=String(input?.value||'').trim();if(!t||busy)return;if(input)input.value='';await continueStory(t)}
   async function appendHistory(place,text,userAction=''){
     const me=data.memoryEngine||(data.memoryEngine={batchSize:10,completedThrough:0,batches:[],summaries:[],diaryEntries:[],cards:[],currentState:'',lastSuccessAt:0,autoEnabled:true,nextSequence:1,health:{lastCheckedAt:0,issues:[]}});
