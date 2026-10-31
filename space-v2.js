@@ -462,6 +462,19 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
 #space.lr-space-v2 #lrSpaceHomeModal{display:none!important}
 @media(max-width:420px){#space.lr-space-v2 .lr-space-city-card{align-items:flex-start;flex-direction:column}#space.lr-space-v2 .lr-space-city-card-actions{width:100%;justify-content:flex-end}}
 `;
+    s.textContent += `
+/* SPACE · temporarily simplify World Life shortcuts as requested */
+#space.lr-space-v2 #lrSpaceWorldRefresh,
+#space.lr-space-v2 #lrSpaceOpenPeopleDynamics,
+#space.lr-space-v2 #lrSpaceOpenMissions,
+#space.lr-space-v2 #lrSpaceOpenStoryStudio,
+#space.lr-space-v2 #lrSpaceOpenDataBackup,
+#space.lr-space-v2 [data-creator-action="story"],
+#space.lr-space-v2 [data-creator-action="backup"],
+#space.lr-space-v2 #lrSpaceStoryStudioSection,
+#space.lr-space-v2 #lrSpaceBackupSection{display:none!important}
+#space.lr-space-v2 .lr-space-feature-grid{grid-template-columns:1fr}
+`;
     document.head.appendChild(s);
   }
   function replaceSpace(){
