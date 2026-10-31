@@ -1157,7 +1157,7 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
     <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
     <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
-    <button class="launcher-app" data-launch-scrapbook type="button" data-drag-id="app-scrapbook"><span class="app-icon" style="background:linear-gradient(145deg,#fff7e8,#e6cfad);color:#9b7357;box-shadow:0 8px 24px rgba(132,103,79,.14)">📎</span><span>手帐</span></button>
+    <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
     <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
@@ -2318,7 +2318,7 @@ const homeIconBindings=[
  {id:'app-shiyi',symbol:'✧'},{id:'app-memories',symbol:'▧'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},{id:'app-journal',symbol:'▤'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
- {id:'app-scrapbook',symbol:'📎'},{id:'app-live',symbol:'✦'},{id:'app-checkin',symbol:'◉'}
+ {id:'app-games',symbol:'🎮'},{id:'app-live',symbol:'✦'},{id:'app-checkin',symbol:'◉'}
 ];
 document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>toast('查岗功能将在周末开放，先把图标留在这里啦。'));
 async function loadHomeCustomIcons(){
@@ -2787,7 +2787,7 @@ if(loveIntro){
 <script src="./diary-v1.js?v=3"></script>
 <script src="./space-v2.js?v=49"></script>
 <script src="./life-apps.js?v=20261011-v34"></script>
-<script src="./scrapbook-v1.js?v=11"></script>
+<script src="./games-v1.js?v=1"></script>
 <style>
 #lrLiveShell{position:fixed;inset:0;z-index:99999;background:#0b0910;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
 #lrLiveShell.show{display:flex}#lrLiveBar{height:42px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#171020;color:#eee;border-bottom:1px solid #b98ce533;font:13px system-ui,sans-serif}#lrLiveBar button{border:1px solid #b98ce555;border-radius:10px;background:#30203e;color:#f4eaff;padding:6px 12px}#lrLiveFrame{border:0;display:block;width:100%;height:calc(100% - 42px);flex:1;background:#0b0910}
