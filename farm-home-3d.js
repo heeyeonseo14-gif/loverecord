@@ -172,7 +172,7 @@ function setSelected(uid){
 function pickFurniture(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObjects(active.furnitureGroups,true);for(const h of hits){let o=h.object;while(o&& !o.userData.uid)o=o.parent;if(o&&o.userData.uid)return o}return null}
 function floorPoint(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObject(active.floor);return hits[0]?.point||null}
 function cameraOrbitStart(ev){
- const target=new THREE.Vector3(0,.55,0);
+ const target=new THREE.Vector3(0,1.05,0);
  const offset=active.camera.position.clone().sub(target);
  const spherical=new THREE.Spherical().setFromVector3(offset);
  active.orbit={pointerId:ev.pointerId,lastX:ev.clientX,lastY:ev.clientY,target,spherical};
@@ -222,8 +222,8 @@ function pointerMove(ev){
  if(active.orbit&&active.orbit.pointerId===ev.pointerId){
   const o=active.orbit,dx=ev.clientX-o.lastX,dy=ev.clientY-o.lastY;
   o.lastX=ev.clientX;o.lastY=ev.clientY;
-  o.spherical.theta-=dx*.008;
-  o.spherical.phi=Math.max(.22,Math.min(1.48,o.spherical.phi+dy*.006));
+  o.spherical.theta-=dx*.010;
+  o.spherical.phi=Math.max(.22,Math.min(1.48,o.spherical.phi+dy*.007));
   active.camera.position.copy(o.target).add(new THREE.Vector3().setFromSpherical(o.spherical));
   active.camera.lookAt(o.target);ev.preventDefault();
  }
@@ -244,15 +244,15 @@ function pointerUp(ev){
 function addRoomDetails(room){/* Empty-room rule: no decorative furniture is pre-installed. Only architectural shell remains. */}
 
 function renderLoop(){if(!active)return;active.raf=requestAnimationFrame(renderLoop);const t=performance.now()*.001;if(active.fire){active.fire.rotation.z=Math.sin(t*2.4)*.05;active.fire.scale.y=.96+Math.sin(t*5)*.07}if(active.fireLight)active.fireLight.intensity=1.15+Math.sin(t*7)*.22;if(active.curtains)active.curtains.forEach(c=>c.mesh.rotation.z=c.side*(.04+Math.sin(t*1.15+c.side)*.018));if(active.dust){for(let i=0;i<active.dust.length;i++){const d=active.dust[i];d.position.y=1.2+((t*.12+i*.53)%2.6);d.position.x=Math.sin(t*.5+i)*2.8}}if(active.lampLight)active.lampLight.intensity=active.state.lampOn?1.0+.07*Math.sin(t*2):.08;active.renderer.render(active.scene,active.camera)}
-function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(420,Math.round(Math.min(window.innerHeight*.68,width*1.02)));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-5,5,5,-5,.1,80);
- const cameraTarget=new THREE.Vector3(0,.55,0);
- camera.position.set(10,10.5,12);camera.lookAt(cameraTarget);
+function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(320,host.clientHeight||Math.round(window.innerHeight*.58));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-5,5,5,-5,.1,80);
+ const cameraTarget=new THREE.Vector3(0,1.05,0);
+ camera.position.set(10,11,12);camera.lookAt(cameraTarget);
  function fitCamera(){
-  const aspect=Math.max(.45,(host.clientWidth||360)/Math.max(420,Math.min(window.innerHeight*.68,(host.clientWidth||360)*1.02)));
-  const viewHeight=Math.max(8.6,10.2/aspect);
+  const aspect=Math.max(.45,(host.clientWidth||360)/Math.max(320,host.clientHeight||Math.round(window.innerHeight*.58)));
+  const viewHeight=Math.max(10.8,8.8/aspect);
   camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;
   camera.top=viewHeight/2;camera.bottom=-viewHeight/2;
-  camera.zoom=1;camera.updateProjectionMatrix();
+  camera.zoom=1.08;camera.updateProjectionMatrix();
  }
  fitCamera();const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));renderer.setSize(width,height,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.domElement.className='lr3d-canvas';renderer.domElement.setAttribute('aria-label',roomNames[state.room]+' 3D房间');host.appendChild(renderer.domElement);
  active={host,scene,camera,renderer,state,raycaster:new THREE.Raycaster(),floor:null,furnitureGroups:[],selectedUid:null,drag:null,fire:null,fireLight:null,curtains:[],dust:[],lampLight:null};
@@ -268,7 +268,7 @@ function initHost(host){if(!THREE||!host.isConnected)return;const state=stageSta
  renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',pointerUp);renderer.domElement.addEventListener('lostpointercapture',pointerUp);
  renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.72,Math.min(2.2,camera.zoom*(e.deltaY>0?.94:1.06)));camera.updateProjectionMatrix()},{passive:false});
  const hint=document.createElement('div');hint.className='lr3d-hint';hint.textContent=state.decorMode?'拖动空白处旋转视角 · 拖动家具自由摆放 · 选中后调色与旋转':'单指拖动旋转视角 · 双指缩放 · 进入装修模式摆放家具';host.appendChild(hint);
- if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(()=>{if(!active||active.host!==host)return;const w=Math.max(300,host.clientWidth),h=Math.max(420,Math.round(Math.min(window.innerHeight*.68,w*1.02)));renderer.setSize(w,h,false);fitCamera()});resizeObserver.observe(host)}
+ if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(()=>{if(!active||active.host!==host)return;const w=Math.max(300,host.clientWidth),h=Math.max(320,host.clientHeight);renderer.setSize(w,h,false);fitCamera()});resizeObserver.observe(host)}
  renderLoop();
 }
 function refreshHost(host){const state=stageState();if(!state)return;initHost(host)}
@@ -300,6 +300,56 @@ function injectStyles(){if(document.getElementById('lr3d-style'))return;const s=
  .house-decor-summary{display:flex;justify-content:space-between;gap:12px;padding:13px 15px;border-radius:14px;background:#f0eadc;color:#8c806e;font-size:12px}
  .house-page .furniture-mega-shop{margin-top:18px}
  @media(max-width:600px){.house-page .v21-room-stage{width:calc(100% + 20px);margin-left:-10px;margin-right:-10px;padding:6px}.house-page .lr3d-viewport{height:clamp(420px,68svh,620px);min-height:420px}.lr3d-customizer{left:8px;right:8px;top:8px;max-width:calc(100% - 16px);padding:10px}.lr3d-palette-row label{width:68px;flex-basis:68px}}
+
+ /* V25: portrait-first immersive home and bottom-sheet furniture catalogue */
+ #lr-games .gscroll:has(.house-page){overflow:hidden!important;padding:0!important;max-width:none!important}
+ #lr-games .house-page{height:100%;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:8px 12px 0;max-width:none}
+ #lr-games .house-intro{flex:none;margin:0;padding:0 6px}
+ #lr-games .house-intro .house-back{display:none}
+ #lr-games .house-intro .house-kicker{font-size:8px;letter-spacing:.18em;margin:0 0 2px}
+ #lr-games .house-intro h1{font-size:22px;line-height:1.1;margin:0}
+ #lr-games .house-intro p{font-size:10px;margin:2px 0 0}
+ #lr-games .room-tabs{flex:none;margin:0;padding:4px;gap:4px;border-radius:18px}
+ #lr-games .room-tabs button{padding:8px 4px;font-size:11px}
+ #lr-games .house-page .v21-room-stage{position:relative;flex:1 1 auto;min-height:240px;height:auto;width:calc(100% + 24px);margin:0 -12px;padding:6px;border-radius:23px;display:flex;flex-direction:column;overflow:hidden}
+ #lr-games .house-page .lr3d-viewport{flex:1 1 auto;width:100%;height:100%;min-height:0;max-height:none;aspect-ratio:auto;border-radius:18px}
+ #lr-games .house-page .lr3d-caption{flex:none;padding:6px 4px 2px;font-size:9px}
+ #lr-games .house-page .lr3d-hint{bottom:35px;font-size:9px;max-width:94%;white-space:normal;text-align:center}
+ #lr-games .lr3d-stage-tools{position:absolute;z-index:5;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
+ #lr-games .lr3d-stage-tools button{pointer-events:auto;border:1px solid #e2d5c2;border-radius:99px;padding:8px 13px;background:rgba(255,251,243,.92);box-shadow:0 4px 15px #66503820;font-size:11px}
+ #lr-games .house-controls{flex:none;margin:0!important;padding:8px 12px!important;border-radius:16px!important;box-shadow:none!important}
+ #lr-games .house-controls .house-section-title{gap:8px}
+ #lr-games .house-controls .house-section-title b{font-size:12px}
+ #lr-games .house-controls .house-section-title small{font-size:9px}
+ #lr-games .house-controls .house-decor-summary{font-size:10px}
+ #lr-games .house-memory{display:none}
+ #lr-games .furniture-shop-backdrop{position:fixed;inset:62px 0 76px;background:rgba(49,42,34,.28);backdrop-filter:blur(3px);z-index:100105;opacity:0;pointer-events:none;transition:opacity .22s}
+ #lr-games .furniture-shop-backdrop.is-open{opacity:1;pointer-events:auto}
+ #lr-games .furniture-shop-drawer{position:fixed;z-index:100106;left:0;right:0;bottom:calc(65px + env(safe-area-inset-bottom));height:min(62svh,610px);display:flex;flex-direction:column;padding:8px 14px 12px;background:linear-gradient(180deg,#fffdf8,#f7efe3);border:1px solid #e6dac8;border-bottom:0;border-radius:24px 24px 0 0;box-shadow:0 -12px 35px rgba(73,55,35,.18);transform:translateY(110%);transition:transform .28s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+ #lr-games .furniture-shop-drawer.is-open{transform:translateY(0);pointer-events:auto}
+ #lr-games .furniture-drawer-grip{width:38px;height:4px;border-radius:99px;background:#d9cbb9;margin:0 auto 8px;flex:none}
+ #lr-games .furniture-drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;padding:0 2px 8px}
+ #lr-games .furniture-drawer-head>div{display:flex;flex-direction:column;gap:2px}
+ #lr-games .furniture-drawer-head b{font:600 17px Georgia,'Noto Serif SC',serif;color:#5c4f42}
+ #lr-games .furniture-drawer-head small{font-size:10px;color:#9b8c78}
+ #lr-games .furniture-drawer-close{width:34px;height:34px;border-radius:50%!important;padding:0!important;font-size:23px!important;line-height:1;background:#f5eee3!important;border:0!important}
+ #lr-games .furniture-category-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex:none;padding:2px 0 10px}
+ #lr-games .furniture-category-tabs::-webkit-scrollbar{display:none}
+ #lr-games .furniture-category-tabs button{flex:none;padding:7px 13px!important;border-radius:99px!important;font-size:10px!important;background:#f4eee4!important;border:1px solid #e7dccd!important;white-space:nowrap}
+ #lr-games .furniture-category-tabs button.active{background:#59604f!important;color:#fffaf0!important;border-color:#59604f!important}
+ #lr-games .furniture-drawer-grid{overflow-y:auto;overscroll-behavior:contain;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 0 18px;align-content:start}
+ #lr-games .furniture-drawer-grid .furniture-product-card{min-width:0;border-radius:15px;background:#fffaf2;border:1px solid #e9dfd1;overflow:hidden;box-shadow:0 3px 12px #765b3510}
+ #lr-games .furniture-drawer-grid .furniture-product-art{height:84px;display:grid;place-items:center;background:linear-gradient(145deg,#f5efdf,#eae5d8);border-bottom:1px solid #e9dfd1}
+ #lr-games .furniture-drawer-grid .furniture-product-art svg{width:86%;height:78px}
+ #lr-games .furniture-drawer-grid .furniture-product-copy{padding:7px 7px 8px;display:flex;flex-direction:column;gap:5px}
+ #lr-games .furniture-drawer-grid .furniture-product-copy>b{font-size:10px;line-height:1.4;min-height:27px}
+ #lr-games .furniture-drawer-grid .furniture-product-copy>small{font-size:8px;line-height:1.4;color:#988875;min-height:22px}
+ #lr-games .furniture-drawer-grid .furniture-product-buy{display:flex;align-items:center;justify-content:space-between;gap:3px}
+ #lr-games .furniture-drawer-grid .furniture-product-buy strong{font-size:9px;color:#7d8a6b;white-space:nowrap}
+ #lr-games .furniture-drawer-grid .furniture-product-buy button{font-size:9px!important;padding:5px 8px!important;border-radius:99px!important}
+ #lr-games .furniture-drawer-grid .furniture-product-copy em{font-size:8px;color:#a49480;font-style:normal}
+ @media(min-width:700px){#lr-games .house-page{max-width:620px;margin:0 auto}#lr-games .furniture-shop-drawer{left:50%;right:auto;width:min(620px,100%);transform:translate(-50%,110%)}#lr-games .furniture-shop-drawer.is-open{transform:translate(-50%,0)}}
+
  `;document.head.appendChild(s)}
 function start(){injectStyles();if(observer)observer.disconnect();observer=new MutationObserver(()=>{if(document.querySelector('[data-lr3d-viewport]'))scan();else if(active)disposeActive()});observer.observe(document.body,{childList:true,subtree:true});scan();}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')scan()});
