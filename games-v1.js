@@ -135,49 +135,50 @@ const css=`#lr-games{position:fixed;inset:0;z-index:100100;background:#f7f0e7;co
 #lr-games .gtabs button.active{background:#e9efdf;color:#596c4b}
 #lr-games .gtoast{bottom:calc(82px + env(safe-area-inset-bottom))}
 #lr-games .yard-enter{width:100%;font-size:10px!important;padding:7px 5px!important;border-radius:99px!important;background:linear-gradient(135deg,#8d9c78,#71865f)!important;color:#fff!important;border:0!important;box-shadow:0 4px 10px #71865f30}
-/* Cottage interior */
-#lr-games .house-page{max-width:680px;margin:0 auto;padding-bottom:12px}
-#lr-games .house-intro{padding:8px 3px 14px}
-#lr-games .house-back{padding:8px 12px!important;border-radius:99px!important;background:#fffaf3!important;margin-bottom:14px}
-#lr-games .house-kicker{font-size:9px;letter-spacing:.22em;color:#a28b70}
-#lr-games .house-intro h1{font:600 clamp(26px,7vw,34px)/1.3 Georgia,'Noto Serif SC',serif;margin:7px 0;color:#57483d}
+/* V9 · French country cottage / isometric interior */
+#lr-games .gscroll{flex:1 1 auto!important;min-height:0!important;overscroll-behavior:contain;padding-bottom:24px!important}
+#lr-games .gtabs{flex:0 0 auto!important;position:relative!important;inset:auto!important;z-index:20;margin:0!important;padding:9px 12px max(10px,env(safe-area-inset-bottom))!important;border-radius:22px 22px 0 0!important;border:1px solid #eee2d2;border-bottom:0;background:rgba(255,251,244,.96)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 -8px 28px #6b543018!important}
+#lr-games .house-page{max-width:720px;margin:0 auto;padding:4px 0 18px}
+#lr-games .house-intro{padding:3px 3px 15px}
+#lr-games .house-back{padding:8px 13px!important;border-radius:99px!important;background:#fffaf3!important;margin-bottom:13px}
+#lr-games .house-kicker{font-size:9px;letter-spacing:.2em;color:#a28b70}
+#lr-games .house-intro h1{font:600 clamp(25px,7vw,34px)/1.3 Georgia,'Noto Serif SC',serif;margin:7px 0;color:#57483d}
 #lr-games .house-intro p{font-size:12px;color:#988777;margin:0}
-#lr-games .house-room{height:clamp(300px,92vw,430px);max-height:430px;position:relative;overflow:hidden;border:8px solid #fffaf0;border-radius:27px;background:linear-gradient(180deg,#e9e4d4 0 68%,#c99d78 68% 72%,#b88763 72%);box-shadow:0 14px 32px #6f50301a,inset 0 0 0 1px #d9c5aa;isolation:isolate}
-#lr-games .house-room:before{content:'';position:absolute;inset:0 0 32% 0;background:linear-gradient(180deg,#e7e5d5,#f1e8d4);z-index:-1}
-#lr-games .room-ceiling{position:absolute;top:0;left:0;right:0;height:30px;background:#d9cbb5;border-bottom:5px solid #c8b497}
-#lr-games .room-star{position:absolute;left:12%;top:8px;color:#d2ae6a;animation:sparkle 2.6s infinite}
-#lr-games .room-pendant{position:absolute;top:22px;left:50%;transform:translateX(-50%);font-size:25px;filter:drop-shadow(0 0 10px #f7d98b)}
-#lr-games .room-window{position:absolute;top:17%;left:8%;width:37%;height:36%;border:8px solid #f8f0df;border-radius:12px;background:#a8c4b1;box-shadow:0 5px 12px #705c3c25;overflow:visible}
-#lr-games .window-sky{position:absolute;inset:0;background:linear-gradient(#b9d4d2,#d8e5ce);display:flex;align-items:center;justify-content:space-around;font-size:20px;overflow:hidden}
-#lr-games .window-sky span{animation:cloudFloat 7s ease-in-out infinite}.window-sky b{font-size:23px}.window-sky i{font-style:normal;font-size:28px;align-self:flex-end}
-#lr-games .window-sill{position:absolute;left:-8px;right:-8px;bottom:-17px;height:16px;border-radius:5px;background:#d3b48e;text-align:center;font-size:12px}
-#lr-games .curtain{position:absolute;top:-5px;bottom:-5px;width:18%;background:linear-gradient(90deg,#d6a98d,#efcfb4);z-index:2;box-shadow:0 3px 8px #72533a22;transition:transform .7s ease}
-#lr-games .curtain-left{left:-7px;border-radius:6px 0 10px 4px}#lr-games .curtain-right{right:-7px;border-radius:0 6px 4px 10px}
-#lr-games .window-open .curtain-left{transform:translateX(-45%)}#lr-games .window-open .curtain-right{transform:translateX(45%)}
-#lr-games .room-shelf{position:absolute;top:20%;right:9%;width:30%;height:12%;border-bottom:8px solid #b78b67;display:flex;align-items:flex-end;justify-content:space-around;font-size:24px}
-#lr-games .room-fireplace{position:absolute;right:10%;top:38%;width:30%;height:25%;border:8px solid #d3b48e;border-bottom-width:12px;border-radius:12px 12px 5px 5px;background:linear-gradient(#8b6750,#6d4b3b);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff0d5;box-shadow:inset 0 4px 8px #49332366}
-#lr-games .fire-glow{font-size:42px;animation:fireFlicker .9s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px #f6a34b)}
-#lr-games .room-fireplace small{font-size:9px;color:#f2dfc2}
-#lr-games .room-rug{position:absolute;left:19%;right:17%;bottom:9%;height:22%;border-radius:50%;background:radial-gradient(ellipse,#d8b18b 0 58%,#b98f6c 60% 68%,#d9b995 70%);opacity:.9}
-#lr-games .room-sofa{position:absolute;left:18%;bottom:17%;width:43%;height:24%;display:grid;place-items:center;z-index:3}
-#lr-games .room-sofa span{font-size:clamp(60px,18vw,90px);filter:drop-shadow(0 7px 3px #60432d33);animation:sofaBreath 4s ease-in-out infinite}
-#lr-games .room-sofa small,#lr-games .room-table small{position:absolute;bottom:-8px;font-size:9px;color:#fff8e8;text-shadow:0 1px 3px #61432d}
-#lr-games .room-table{position:absolute;right:13%;bottom:14%;z-index:4;display:grid;place-items:center;font-size:33px;width:22%;height:18%;border-radius:50%;background:radial-gradient(ellipse,#c99b70,#a97852);border:5px solid #dfbd97;box-shadow:0 5px 9px #6b452a33}
-#lr-games .room-plant{position:absolute;left:5%;bottom:12%;font-size:37px;z-index:4;animation:yardBob 4s infinite}
-#lr-games .room-cat{position:absolute;right:7%;bottom:9%;font-size:29px;z-index:5;animation:yardBob 2.5s infinite}
-#lr-games .room-light-wash{position:absolute;inset:0;background:radial-gradient(ellipse at 48% 38%,#ffe8a955,transparent 65%);pointer-events:none;transition:opacity .4s;z-index:6}
-#lr-games .lamp-off .room-light-wash{opacity:.12}#lr-games .lamp-off .room-pendant{filter:grayscale(1);opacity:.45}#lr-games .lamp-on .room-light-wash{opacity:1}
-#lr-games .window-open .window-sky{animation:windowBreeze 3s ease-in-out infinite alternate}
+#lr-games .iso-room-shell{position:relative;overflow:hidden;border:7px solid #fffaf1;border-radius:27px;background:#f4ead7;box-shadow:0 15px 36px #765a351b,inset 0 0 0 1px #dfcdb6}
+#lr-games .iso-room{display:block;width:100%;height:auto;aspect-ratio:640/500}
+#lr-games .iso-room .wall-left{fill:url(#wallLeft)}#lr-games .iso-room .wall-right{fill:url(#wallRight)}
+#lr-games .iso-room .floor-base{fill:url(#floorWood)}#lr-games .iso-room .floor-line{fill:none;stroke:#a87955;stroke-width:2;opacity:.23}
+#lr-games .iso-room .window-glass{fill:url(#windowGlass)}#lr-games .iso-room .curtain-shape{fill:url(#curtainFabric);stroke:#d8b79b;stroke-width:2}
+#lr-games .iso-room .fire-flame{transform-origin:468px 248px;animation:isoFlame 1.15s ease-in-out infinite alternate}
+#lr-games .iso-room .lamp-glow{opacity:1;transition:opacity .4s}#lr-games .iso-room.lamp-off .lamp-glow{opacity:.12}
+#lr-games .iso-room .window-shutter{transform-origin:center;transition:transform .6s ease}#lr-games .iso-room.window-open .window-shutter.left{transform:translateX(-16px)}#lr-games .iso-room.window-open .window-shutter.right{transform:translateX(16px)}
+#lr-games .iso-room .curtain-left{transform-origin:100% 0;transition:transform .65s ease}#lr-games .iso-room .curtain-right{transform-origin:0 0;transition:transform .65s ease}
+#lr-games .iso-room.window-open .curtain-left{transform:skewY(-5deg) translateX(-9px)}#lr-games .iso-room.window-open .curtain-right{transform:skewY(5deg) translateX(9px)}
+#lr-games .iso-room .plant-leaf{transform-box:fill-box;transform-origin:bottom center;animation:leafSway 4s ease-in-out infinite}
+#lr-games .iso-room .plant-leaf:nth-child(2n){animation-delay:-1.5s}
+#lr-games .iso-room .dust{animation:dustDrift 8s ease-in-out infinite}
+#lr-games .iso-room .curtain-sheen{opacity:.38}
+#lr-games .room-hotspot{position:absolute;z-index:5;border:0!important;background:transparent!important;padding:0!important;border-radius:12px!important;min-width:0;min-height:0;box-shadow:none!important;outline-offset:3px}
+#lr-games .room-hotspot:focus-visible{outline:2px solid #82966d}
+#lr-games .room-hotspot.sofa{left:37%;top:62%;width:28%;height:20%}
+#lr-games .room-hotspot.window{left:8%;top:23%;width:29%;height:30%}
+#lr-games .room-hotspot.fireplace{right:10%;top:27%;width:25%;height:25%}
+#lr-games .room-hotspot.lamp{left:51%;top:8%;width:12%;height:17%}
 #lr-games .house-controls,#lr-games .house-memory{margin-top:15px;padding:17px;border:1px solid #e7dac8;border-radius:22px;background:linear-gradient(145deg,#fffdf8,#faf2e7);box-shadow:0 8px 22px #7b5c3210}
-#lr-games .house-section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}#lr-games .house-section-title span{font-size:10px;color:#9a8875}
+#lr-games .house-section-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+#lr-games .house-section-title span{font-size:10px;color:#9a8875}
 #lr-games .house-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-#lr-games .house-action-grid button{min-height:96px;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:8px;align-content:center;text-align:left;padding:12px;border-radius:17px;background:#fffaf2;border-color:#e7d9c7}
-#lr-games .house-action-grid button>span{grid-row:1/3;font-size:26px;align-self:center}#lr-games .house-action-grid button>b{font-size:12px}#lr-games .house-action-grid button>small{font-size:9px;color:#9a8875;margin-top:4px;line-height:1.4}
+#lr-games .house-action-grid button{min-height:88px;display:grid;grid-template-columns:38px 1fr;grid-template-rows:auto auto;column-gap:9px;align-content:center;text-align:left;padding:12px;border-radius:17px;background:#fffaf2;border-color:#e7d9c7}
+#lr-games .house-action-grid button>svg{grid-row:1/3;width:34px;height:34px;align-self:center;stroke:#8b9876;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#lr-games .house-action-grid button>b{font-size:12px}#lr-games .house-action-grid button>small{font-size:9px;color:#9a8875;margin-top:4px;line-height:1.4}
 #lr-games .house-note{margin-top:12px;padding:12px 14px;border-radius:14px;background:#edf1e5;color:#788568;font-size:11px;line-height:1.7}
 #lr-games .house-memory b{font-size:13px}#lr-games .house-memory p{font-size:11px;color:#94816d;line-height:1.8;margin:8px 0 0}
-@keyframes cloudFloat{0%,100%{transform:translateX(-3px)}50%{transform:translateX(7px)}}@keyframes fireFlicker{from{transform:scale(.94);filter:brightness(.95) drop-shadow(0 0 6px #f6a34b)}to{transform:scale(1.06);filter:brightness(1.18) drop-shadow(0 0 13px #f6a34b)}}@keyframes sofaBreath{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}@keyframes windowBreeze{from{filter:saturate(.9)}to{filter:saturate(1.2)}}
-@media(max-width:390px){#lr-games .house-room{height:330px;border-width:6px}#lr-games .house-action-grid button{min-height:88px;padding:9px}}
-@media(prefers-reduced-motion:reduce){#lr-games .house-room *{animation:none!important;transition:none!important}}
+@keyframes isoFlame{from{transform:scale(.92) rotate(-2deg);filter:drop-shadow(0 0 4px #e99b54)}to{transform:scale(1.07) rotate(2deg);filter:drop-shadow(0 0 12px #f3ad5d)}}
+@keyframes leafSway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(3deg)}}
+@keyframes dustDrift{0%{transform:translate(0,0);opacity:.15}50%{opacity:.65}100%{transform:translate(18px,-15px);opacity:.1}}
+@media(max-width:390px){#lr-games .iso-room-shell{border-width:5px;border-radius:22px}#lr-games .house-action-grid button{min-height:82px;padding:9px}}
+@media(prefers-reduced-motion:reduce){#lr-games .iso-room *{animation:none!important;transition:none!important}}
+
 `;
 function mount(){if($('#lr-games'))return;const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);const root=document.createElement('div');root.id='lr-games';root.innerHTML=`<div class="gbar"><button id="gclose">‹ 返回 LOVE RECORD</button><b id="gbarTitle">OUR LITTLE FARM · 我们的小农场</b></div><main class="gscroll" id="gbody"></main><nav class="gtabs" id="farmDock" aria-label="农场导航"></nav><div class="gtoast" id="farmToast"></div>`;document.body.appendChild(root);root.addEventListener('click',onClick);root.addEventListener('change',onChange);$('#gclose').onclick=close;render()}
 function partnerCard(){const p=people().find(x=>String(x.id)===String(farm.partnerId));return `<section class="gcard"><b>共同农场主人</b><div class="grow" style="margin-top:10px"><div class="gavatar">${farm.partnerAvatar?`<img src="${esc(farm.partnerAvatar)}">`:esc((farm.partnerName||'♡').slice(0,1))}</div><div style="flex:1"><b>${esc(farm.partnerName||'还没有选择搭档')}</b><div class="gmuted">${p?'与你共同经营这座农场':'选择一位联系人，成为共同主人'}</div></div></div><select id="farmPartner" style="margin-top:12px"><option value="">选择联系人…</option>${people().map(x=>`<option value="${esc(x.id)}" ${String(x.id)===String(farm.partnerId)?'selected':''}>${esc(x.remark||x.name||'联系人')}</option>`).join('')}</select></section>`}
@@ -191,32 +192,126 @@ function farmyardView(){
  ];
  return `<section class="gcard farmyard-card"><div class="grow" style="justify-content:space-between"><b>🌼 农场的小天地</b><span class="gmuted">已建造 ${spots.filter(x=>x.built).length}/3</span></div><p class="gmuted">建好的设施会出现在这里，也会随着农场生活慢慢热闹起来。</p><div class="farmyard-grid">${spots.map(x=>`<article class="yard-item ${x.built?'is-built':'is-locked'}"><div class="yard-scene">${x.built?x.art:`<div class="yard-empty">${x.emoji}<small>等待建造</small></div>`}</div><b>${x.name}</b><small>${x.built?x.desc:'去商店把它带回农场吧'}</small>${x.built?(x.id==='cottage'?'<button class="yard-enter" data-enter-house>推门进去 ↗</button>':'<span class="yard-status">已入住 · 正在生活</span>'):`<button data-view="shop">去建造</button>`}</article>`).join('')}</div></section>`;
 }
+function houseIcon(type){
+ const common='viewBox="0 0 48 48" aria-hidden="true"';
+ const paths={lamp:'<path d="M24 5v8M13 15h22l-4 12H17zM19 27v12h10V27M15 40h18"/><path d="M18 8l-3-3M30 8l3-3"/>',window:'<rect x="7" y="7" width="34" height="34" rx="3"/><path d="M24 8v32M8 24h32M12 12l8 8M36 12l-8 8"/>',sofa:'<path d="M9 24v-6a5 5 0 0 1 5-5h20a5 5 0 0 1 5 5v6M7 23a4 4 0 0 0-4 4v9h42v-9a4 4 0 0 0-4-4M9 36v5M39 36v5M12 23h24v10H12z"/>',tea:'<path d="M10 17h24v16a8 8 0 0 1-8 8h-8a8 8 0 0 1-8-8zM34 21h4a5 5 0 0 1 0 10h-5M15 11c-2-3 2-4 0-7M24 11c-2-3 2-4 0-7"/>'};
+ return `<svg ${common}>${paths[type]||paths.lamp}</svg>`;
+}
+function houseScene(h){
+ return `<div class="iso-room-shell"><svg class="iso-room ${h.lampOn?'lamp-on':'lamp-off'} ${h.windowOpen?'window-open':''}" viewBox="0 0 640 500" role="img" aria-label="奶油色法式乡村风等距视角小屋室内：客厅、壁炉、拱窗、沙发和绿植">
+ <defs>
+  <linearGradient id="wallLeft" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7efd9"/><stop offset="1" stop-color="#e9dfc8"/></linearGradient>
+  <linearGradient id="wallRight" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4ead3"/><stop offset="1" stop-color="#e5d8bd"/></linearGradient>
+  <linearGradient id="floorWood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d9b48d"/><stop offset="1" stop-color="#b98660"/></linearGradient>
+  <linearGradient id="windowGlass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b7d2ce"/><stop offset="1" stop-color="#dce6cf"/></linearGradient>
+  <linearGradient id="curtainFabric" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#d5a98e"/><stop offset=".55" stop-color="#f3d9bd"/><stop offset="1" stop-color="#d8b092"/></linearGradient>
+  <linearGradient id="sofaFabric" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c4cda9"/><stop offset="1" stop-color="#899a76"/></linearGradient>
+  <linearGradient id="fireGlass" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#745342"/><stop offset="1" stop-color="#3f3029"/></linearGradient>
+  <radialGradient id="warmGlow"><stop stop-color="#ffe7a3" stop-opacity=".72"/><stop offset="1" stop-color="#ffe7a3" stop-opacity="0"/></radialGradient>
+  <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="7"/></filter>
+  <filter id="furnitureShadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="4"/></filter>
+ </defs>
+ <!-- isometric room shell -->
+ <path class="wall-left" d="M36 155 320 22v286L36 442Z"/>
+ <path class="wall-right" d="M320 22 604 155v287L320 308Z"/>
+ <path d="M36 155 320 22 604 155" fill="none" stroke="#d2bea0" stroke-width="12" stroke-linecap="round"/>
+ <path d="M36 442 320 308 604 442" fill="none" stroke="#c8a984" stroke-width="7" opacity=".75"/>
+ <!-- wall panels and trim -->
+ <path d="M55 170 320 47v13L55 183Z M320 60 585 183v13L320 73Z" fill="#fff8e9" opacity=".8"/>
+ <path d="M58 188 58 416 M320 80V291 M582 188V416" stroke="#d8c7a9" stroke-width="3" opacity=".55"/>
+ <path d="M72 205 302 97M338 98l230 108" stroke="#fff9e9" stroke-width="2" opacity=".5"/>
+ <!-- window on left wall -->
+ <g class="iso-window">
+  <path d="M83 174 205 117l1 137-123 57Z" fill="#c39a75" opacity=".35" transform="translate(0 7)"/>
+  <path d="M83 166 205 109l0 137-122 57Z" fill="#f8f0df" stroke="#caa986" stroke-width="7"/>
+  <path d="M94 169 194 122v112l-100 47Z" class="window-glass"/>
+  <path d="M94 169 194 122v112l-100 47Z" fill="#fff" opacity=".12"/>
+  <path d="M144 146v119M94 218l100-47" stroke="#fff8e8" stroke-width="6"/>
+  <path d="M99 170 189 128" stroke="#fff" stroke-width="4" opacity=".55"/>
+  <g class="window-shutter left"><path d="M73 160 91 151v151l-18 9Z" fill="#c78f72"/><path d="M77 166 86 162v132l-9 4Z" fill="#e4b99b" opacity=".8"/></g>
+  <g class="window-shutter right"><path d="M197 102 215 94v151l-18 9Z" fill="#c78f72"/><path d="M201 108 210 104v132l-9 4Z" fill="#e4b99b" opacity=".8"/></g>
+  <path d="M76 305 211 242l10 9-145 68Z" fill="#b98b68"/><path d="M80 305 211 245" stroke="#f6dfc3" stroke-width="4"/>
+  <g class="curtain-left"><path class="curtain-shape" d="M70 151q18-8 26 7v143q-13 13-26 4Z"/><path class="curtain-sheen" d="M77 157q8-4 11 3v133q-5 6-11 4Z" fill="#fff5e8"/></g>
+  <g class="curtain-right"><path class="curtain-shape" d="M198 93q17-9 25 7v143q-12 12-25 4Z"/><path class="curtain-sheen" d="M205 100q8-4 11 3v132q-5 6-11 4Z" fill="#fff5e8"/></g>
+  <path d="M83 318q40-16 77-36" stroke="#fff2d7" stroke-width="3" opacity=".8"/>
+ </g>
+ <!-- right wall fireplace -->
+ <g>
+  <path d="M390 188 520 248v116l-130-61Z" fill="#8d6c51" opacity=".18" transform="translate(0 8)"/>
+  <path d="M384 180 528 247v123l-144-67Z" fill="#c8a47e" stroke="#a77f5c" stroke-width="5"/>
+  <path d="M402 196 511 247v91l-109-51Z" fill="url(#fireGlass)" stroke="#ead2ad" stroke-width="5"/>
+  <path d="M382 177 528 244l-10 13-145-68Z" fill="#f0d9b8" stroke="#c5a27b" stroke-width="3"/>
+  <ellipse cx="458" cy="287" rx="61" ry="48" fill="url(#warmGlow)" class="lamp-glow"/>
+  <g class="fire-flame"><path d="M456 322q-31-22-10-55 3 19 15 22-2-30 19-49-6 29 13 43 21 33-8 47-18 10-29-8Z" fill="#e99a50"/><path d="M458 324q-17-18-3-35 3 12 11 14 0-17 13-26-4 20 8 29 11 19-8 26-13 5-21-8Z" fill="#ffd98b"/><path d="M461 324q-7-12 3-21 2 8 8 9 5 8-3 14-5 3-8-2Z" fill="#fff0bd"/></g>
+  <path d="M410 350 502 393" stroke="#a77e5d" stroke-width="5" opacity=".5"/>
+ </g>
+ <!-- wall shelf, books and pottery -->
+ <g>
+  <path d="M375 133 535 207l-8 10-160-74Z" fill="#a97c59"/><path d="M379 131 535 203" stroke="#f3d9b7" stroke-width="4"/>
+  <path d="M406 118l42 20-5 7-42-20Z" fill="#8c9b80"/><path d="M410 108l42 20-5 8-42-20Z" fill="#b47e62"/><path d="M414 99l42 20-5 8-42-20Z" fill="#d8bd91"/>
+  <path d="M482 147q12-9 23 2l-2 36q-9 9-20 0Z" fill="#f3e6cf" stroke="#c5a889" stroke-width="2"/><path d="M488 146q5-13 10-1" fill="none" stroke="#c5a889" stroke-width="3"/>
+  <path d="M516 169q15-12 27 1l-7 25q-12 8-22-1Z" fill="#9ba987"/><path d="M529 169q-10-17-17-8m17 8q9-18 17-12m-17 12q-2-20 2-24" stroke="#647b5c" stroke-width="4" fill="none" stroke-linecap="round"/>
+ </g>
+ <!-- floor -->
+ <path class="floor-base" d="M36 442 320 308 604 442 320 492Z"/>
+ <path class="floor-line" d="M88 417 371 466M145 390 429 440M204 363 487 413M262 335 546 386M122 462 406 328M215 480 499 347M309 490 581 362"/>
+ <path d="M36 442 320 308 604 442" fill="none" stroke="#a97a56" stroke-width="8" opacity=".6"/>
+ <!-- rug -->
+ <path d="M157 386 319 310 485 388 320 470Z" fill="#9f795c" opacity=".2" filter="url(#furnitureShadow)"/>
+ <path d="M151 378 319 300 490 380 320 461Z" fill="#e9d6b9" stroke="#c9a985" stroke-width="4"/>
+ <path d="M173 379 320 312 468 380 320 448Z" fill="#d7bea0" stroke="#f5e8d4" stroke-width="3"/>
+ <path d="M197 379 320 323 445 380 320 437Z" fill="none" stroke="#f7ead8" stroke-width="2" opacity=".8"/>
+ <!-- sofa: isometric cushions and arms -->
+ <g class="sofa-art">
+  <path d="M192 343 265 309 394 369 319 407Z" fill="#6e7960" opacity=".22" transform="translate(0 8)"/>
+  <path d="M191 322 255 292 390 354 322 388Z" fill="#879779" stroke="#718366" stroke-width="4"/>
+  <path d="M187 319 217 305 219 353 190 367Z" fill="#9aa889" stroke="#718366" stroke-width="4"/>
+  <path d="M360 354 390 340 390 385 361 399Z" fill="#849473" stroke="#718366" stroke-width="4"/>
+  <path d="M219 306 254 290 389 353 356 371Z" fill="url(#sofaFabric)" stroke="#728267" stroke-width="3"/>
+  <path d="M222 311 256 296 303 318 269 334Z" fill="#dce0c9"/><path d="M273 335 307 319 353 340 320 358Z" fill="#d1d8bd"/>
+  <path d="M193 362 322 421 389 389 389 402 321 436 191 376Z" fill="#6f8063"/>
+  <path d="M202 366 321 421 377 395" fill="none" stroke="#c7d0b1" stroke-width="3" opacity=".8"/>
+  <path d="M220 380 220 400M361 410 361 427" stroke="#8b674d" stroke-width="7" stroke-linecap="round"/>
+ </g>
+ <!-- coffee table -->
+ <g>
+  <path d="M392 382 459 350 524 380 457 413Z" fill="#8f6548" opacity=".22" transform="translate(0 10)"/>
+  <path d="M405 375 461 349 518 375 460 402Z" fill="#d9b58e" stroke="#a97e5c" stroke-width="4"/>
+  <path d="M423 385 420 415M498 384 501 410" stroke="#936b4e" stroke-width="7" stroke-linecap="round"/>
+  <path d="M444 366q12-9 23 0l-2 16q-10 8-19 0Z" fill="#f5eee0" stroke="#b6a58b" stroke-width="2"/><path d="M466 369q15-4 12 9-4 8-12 3" fill="none" stroke="#b6a58b" stroke-width="3"/>
+  <path d="M448 365q-2-7 3-10m8 10q-1-8 5-11" stroke="#a9b68c" stroke-width="2" fill="none"/>
+ </g>
+ <!-- floor lamp -->
+ <g><path d="M320 292v65" stroke="#8c684d" stroke-width="6"/><path d="M297 294 342 294 334 265 305 265Z" fill="#e6c96f" stroke="#c5a65a" stroke-width="3"/><path d="M303 298 336 298" stroke="#fff2bc" stroke-width="4"/><ellipse cx="320" cy="362" rx="25" ry="7" fill="#8c684d" opacity=".3"/></g>
+ <!-- plants in ceramic pots -->
+ <g transform="translate(94 362)"><path d="M-18 20h38l-5 34h-28Z" fill="#c78e70" stroke="#a8755b" stroke-width="3"/><path d="M0 23q-29-24-25-42 21 5 25 42Zm2-4q27-32 39-24-2 24-39 31Zm-1-8Q-5-28 7-40q16 20-3 51Z" fill="#8fa17a" stroke="#6f8666" stroke-width="2"/><path d="M0 25q-8-40 4-57" stroke="#6c815f" stroke-width="3" fill="none"/></g>
+ <g transform="translate(548 375) scale(.8)"><path d="M-18 20h38l-5 34h-28Z" fill="#d3a17f" stroke="#ad7d5d" stroke-width="3"/><path d="M0 23q-29-24-25-42 21 5 25 42Zm2-4q27-32 39-24-2 24-39 31Zm-1-8Q-5-28 7-40q16 20-3 51Z" fill="#91a47b" stroke="#6f8666" stroke-width="2"/><path d="M0 25q-8-40 4-57" stroke="#6c815f" stroke-width="3" fill="none"/></g>
+ <!-- warm sunlight and dust -->
+ <ellipse class="lamp-glow" cx="282" cy="260" rx="190" ry="170" fill="url(#warmGlow)" pointer-events="none"/>
+ <g fill="#fff5d5"><circle class="dust" cx="270" cy="208" r="3"/><circle class="dust" cx="346" cy="250" r="2.5"/><circle class="dust" cx="300" cy="285" r="2"/><circle class="dust" cx="235" cy="270" r="2.5"/></g>
+ </svg>
+ <button class="room-hotspot window" data-house-action="window" aria-label="打开或关闭窗户" title="窗户"></button>
+ <button class="room-hotspot fireplace" data-house-action="lamp" aria-label="切换壁炉和暖灯" title="暖灯"></button>
+ <button class="room-hotspot sofa" data-house-action="rest" aria-label="坐下休息" title="沙发"></button>
+ <button class="room-hotspot lamp" data-house-action="lamp" aria-label="切换室内暖灯" title="暖灯"></button>
+ </div>`;
+}
 function houseView(){
  const h=farm.house||{lampOn:true,windowOpen:false,rests:0,teas:0,visited:0};
  if(!farm.buildings.cottage)return `${header()}<section class="gcard"><b>小屋还没有建好</b><p class="gmuted">先去商店建造温馨小屋，再回来看看吧。</p><button class="primary" data-view="shop">去建造</button></section>`;
  return `<section class="house-page">
-  <div class="house-intro"><button class="house-back" data-view="farm">← 回到农场</button><div class="house-kicker">OUR LITTLE FARM · HOME SWEET HOME</div><h1>温馨小屋</h1><p>${esc(farm.partnerName||'你们')}的小小休息站 · 已来访 ${h.visited||0} 次</p></div>
-  <div class="house-room ${h.lampOn?'lamp-on':'lamp-off'} ${h.windowOpen?'window-open':''}">
-   <div class="room-ceiling"><span class="room-star">✦</span><span class="room-pendant">💡</span></div>
-   <div class="room-window"><div class="window-sky"><span>☁️</span><b>☀️</b><i>🌳</i></div><div class="window-sill">🌼　🪴</div><span class="curtain curtain-left"></span><span class="curtain curtain-right"></span></div>
-   <div class="room-shelf"><span>📚</span><span>🕯️</span><span>🪴</span></div>
-   <div class="room-fireplace"><span class="fire-glow">🔥</span><small>暖暖的壁炉</small></div>
-   <div class="room-rug"></div>
-   <div class="room-sofa"><span>🛋️</span><small>柔软的小沙发</small></div>
-   <div class="room-table"><span>🍵</span><small>茶几</small></div>
-   <div class="room-plant">🪴</div><div class="room-cat">🐈</div>
-   <div class="room-light-wash"></div>
-  </div>
+  <div class="house-intro"><button class="house-back" data-view="farm">← 回到农场</button><div class="house-kicker">LOVE RECORD · FRENCH COUNTRY HOME</div><h1>温馨小屋</h1><p>${esc(farm.partnerName||'你们')}的小小休息站 · 已来访 ${h.visited||0} 次</p></div>
+  ${houseScene(h)}
   <section class="house-controls"><div class="house-section-title"><b>屋里的小日常</b><span>慢下来，休息一会儿</span></div>
    <div class="house-action-grid">
-    <button data-house-action="lamp"><span>${h.lampOn?'🕯️':'💡'}</span><b>${h.lampOn?'关掉暖灯':'点亮暖灯'}</b><small>${h.lampOn?'让阳光陪着房间':'给房间一点温柔'}</small></button>
-    <button data-house-action="window"><span>${h.windowOpen?'🍃':'🪟'}</span><b>${h.windowOpen?'关上窗户':'打开窗户'}</b><small>${h.windowOpen?'微风已经吹进来了':'听听外面的风声'}</small></button>
-    <button data-house-action="rest"><span>🛋️</span><b>坐下休息</b><small>已休息 ${h.rests||0} 次</small></button>
-    <button data-house-action="tea"><span>🍵</span><b>泡一杯热茶</b><small>一起享受安静时光 · ${h.teas||0} 杯</small></button>
+    <button data-house-action="lamp">${houseIcon('lamp')}<b>${h.lampOn?'关掉暖灯':'点亮暖灯'}</b><small>${h.lampOn?'让傍晚的灯光柔和一点':'给房间一点温柔'}</small></button>
+    <button data-house-action="window">${houseIcon('window')}<b>${h.windowOpen?'关上窗户':'打开窗户'}</b><small>${h.windowOpen?'微风已经吹进来了':'听听花园外面的风声'}</small></button>
+    <button data-house-action="rest">${houseIcon('sofa')}<b>坐下休息</b><small>已休息 ${h.rests||0} 次</small></button>
+    <button data-house-action="tea">${houseIcon('tea')}<b>泡一杯热茶</b><small>一起享受安静时光 · ${h.teas||0} 杯</small></button>
    </div>
-   <div class="house-note">${h.windowOpen?'窗帘轻轻晃动，花园的风带着青草香。':h.lampOn?'暖黄色的灯光落在沙发上，整个小屋都软乎乎的。':'阳光从窗边洒进来，小屋安静又明亮。'}</div>
+   <div class="house-note">${h.windowOpen?'窗帘轻轻摆动，花园的风穿过半开的窗户。':h.lampOn?'暖黄色的灯光落在木地板上，整个小屋都变得柔软。':'傍晚的自然光透过窗棂，小屋安静又明亮。'}</div>
   </section>
-  <section class="house-memory"><b>📖 小屋记忆</b><p>${(farm.log||[]).filter(x=>/小屋|休息|热茶|窗户|暖灯/.test(x.text)).slice(0,4).map(x=>esc(x.text)).join(' · ')||'这里还没有留下特别的回忆。今天可以从一杯热茶开始。'}</p></section>
+  <section class="house-memory"><b>小屋记忆</b><p>${(farm.log||[]).filter(x=>/小屋|休息|热茶|窗户|暖灯/.test(x.text)).slice(0,4).map(x=>esc(x.text)).join(' · ')||'这里还没有留下特别的回忆。今天可以从一杯热茶开始。'}</p></section>
  </section>`;
 }
 function farmView(){
