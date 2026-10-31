@@ -153,8 +153,14 @@ function setSelected(uid){
  const shownPalettes=Object.entries(palettes).filter(([role])=>availableRoles.has(role));
  tools.innerHTML=`<div class="lr3d-customizer-head"><b>家具装修 · ${active.furnitureName}</b><span>选择颜色后实时预览并自动保存</span></div>
   ${shownPalettes.map(([role,items])=>`<div class="lr3d-palette-row"><label>${labels[role]}</label><div class="lr3d-swatches">${items.map(([name,color])=>`<button type="button" class="lr3d-swatch ${placement.colors?.[role]===color?'is-active':''}" data-lr3d-color-role="${role}" data-lr3d-color="${color}" title="${name}" aria-label="${labels[role]}：${name}" style="--swatch:${color}"></button>`).join('')}</div></div>`).join('')}
+  <div class="lr3d-rotation-row"><label for="lr3d-rotation">自由旋转</label><input id="lr3d-rotation" type="range" min="0" max="360" step="1" value="${Math.round(Number(placement.rotation)||0)}"><output>${Math.round(Number(placement.rotation)||0)}°</output></div>
   <div class="lr3d-tools-actions"><button type="button" data-lr3d-rotate="-15" aria-label="向左旋转">↶ 旋转</button><button type="button" data-lr3d-rotate="15" aria-label="向右旋转">旋转 ↷</button><button type="button" class="lr3d-remove" data-lr3d-remove>收回家具</button></div>`;
  active.host.appendChild(tools);
+ const rotationSlider=tools.querySelector('#lr3d-rotation');
+ const rotationOutput=tools.querySelector('output');
+ const selectedObject=active.furnitureGroups?.find(x=>String(x.userData.uid)===String(uid));
+ rotationSlider?.addEventListener('input',()=>{const degrees=Number(rotationSlider.value)||0;if(selectedObject)selectedObject.rotation.y=degrees*Math.PI/180;if(rotationOutput)rotationOutput.textContent=degrees+'°'});
+ rotationSlider?.addEventListener('change',()=>{const p=active.state.placed.find(x=>String(x.uid)===String(uid));if(p)getBridge().updatePlacement(uid,p.x,p.y,Number(rotationSlider.value)||0)});
  tools.addEventListener('click',e=>{
   const color=e.target.closest('[data-lr3d-color-role]');
   if(color){getBridge().updateFurnitureColor(uid,color.dataset.lr3dColorRole,color.dataset.lr3dColor);const host=active.host;refreshHost(host);setSelected(uid);return}
@@ -165,13 +171,90 @@ function setSelected(uid){
 }
 function pickFurniture(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObjects(active.furnitureGroups,true);for(const h of hits){let o=h.object;while(o&& !o.userData.uid)o=o.parent;if(o&&o.userData.uid)return o}return null}
 function floorPoint(ev){const rect=active.renderer.domElement.getBoundingClientRect();const p=new THREE.Vector2((ev.clientX-rect.left)/rect.width*2-1,-((ev.clientY-rect.top)/rect.height)*2+1);active.raycaster.setFromCamera(p,active.camera);const hits=active.raycaster.intersectObject(active.floor);return hits[0]?.point||null}
-function pointerDown(ev){if(!active)return;const state=stageState();if(!state?.decorMode)return;const obj=pickFurniture(ev);if(obj){active.drag={uid:obj.userData.uid,obj,pointerId:ev.pointerId};active.renderer.domElement.setPointerCapture?.(ev.pointerId);setSelected(obj.userData.uid);ev.preventDefault()}}
-function pointerMove(ev){if(!active?.drag||active.drag.pointerId!==ev.pointerId)return;const p=floorPoint(ev);if(!p)return;const x=Math.max(4,Math.min(88,50+(p.x/3.45)*50));const y=Math.max(12,Math.min(84,50-(p.z/2.45)*50));active.drag.obj.position.x=p.x;active.drag.obj.position.z=p.z;active.drag.pending={x,y}}
-function pointerUp(ev){if(!active?.drag||active.drag.pointerId!==ev.pointerId)return;const d=active.drag;active.drag=null;if(d.pending){const old=active.state.placed.find(x=>String(x.uid)===String(d.uid));const host=active.host;getBridge().updatePlacement(d.uid,d.pending.x,d.pending.y,old?.rotation||0);refreshHost(host);setSelected(d.uid)}}
+function cameraOrbitStart(ev){
+ const target=new THREE.Vector3(0,.55,0);
+ const offset=active.camera.position.clone().sub(target);
+ const spherical=new THREE.Spherical().setFromVector3(offset);
+ active.orbit={pointerId:ev.pointerId,lastX:ev.clientX,lastY:ev.clientY,target,spherical};
+}
+function pointerDown(ev){
+ if(!active)return;
+ active.pointers=active.pointers||new Map();
+ active.pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ const canvas=active.renderer.domElement;
+ try{canvas.setPointerCapture(ev.pointerId)}catch(_){}
+ if(active.pointers.size>=2){
+  active.drag=null;active.orbit=null;
+  const pts=[...active.pointers.values()];
+  active.pinchDistance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+  ev.preventDefault();return;
+ }
+ const state=stageState();
+ const obj=state?.decorMode?pickFurniture(ev):null;
+ if(obj){
+  active.drag={uid:obj.userData.uid,obj,pointerId:ev.pointerId};
+  setSelected(obj.userData.uid);
+ }else{
+  if(state?.decorMode)setSelected(null);
+  cameraOrbitStart(ev);
+ }
+ ev.preventDefault();
+}
+function pointerMove(ev){
+ if(!active)return;
+ if(active.pointers?.has(ev.pointerId))active.pointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
+ if(active.pointers?.size>=2){
+  const pts=[...active.pointers.values()];
+  const distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+  if(active.pinchDistance>0){
+   active.camera.zoom=Math.max(.72,Math.min(2.2,active.camera.zoom*distance/active.pinchDistance));
+   active.camera.updateProjectionMatrix();
+  }
+  active.pinchDistance=distance;ev.preventDefault();return;
+ }
+ if(active.drag&&active.drag.pointerId===ev.pointerId){
+  const p=floorPoint(ev);if(!p)return;
+  const x=Math.max(4,Math.min(88,50+(p.x/3.45)*50));
+  const y=Math.max(12,Math.min(84,50-(p.z/2.45)*50));
+  active.drag.obj.position.x=p.x;active.drag.obj.position.z=p.z;active.drag.pending={x,y};
+  ev.preventDefault();return;
+ }
+ if(active.orbit&&active.orbit.pointerId===ev.pointerId){
+  const o=active.orbit,dx=ev.clientX-o.lastX,dy=ev.clientY-o.lastY;
+  o.lastX=ev.clientX;o.lastY=ev.clientY;
+  o.spherical.theta-=dx*.008;
+  o.spherical.phi=Math.max(.22,Math.min(1.48,o.spherical.phi+dy*.006));
+  active.camera.position.copy(o.target).add(new THREE.Vector3().setFromSpherical(o.spherical));
+  active.camera.lookAt(o.target);ev.preventDefault();
+ }
+}
+function pointerUp(ev){
+ if(!active)return;
+ if(active.drag&&active.drag.pointerId===ev.pointerId){
+  const d=active.drag;active.drag=null;
+  if(d.pending){
+   const old=active.state.placed.find(x=>String(x.uid)===String(d.uid));
+   getBridge().updatePlacement(d.uid,d.pending.x,d.pending.y,old?.rotation||0);
+  }
+ }
+ active.pointers?.delete(ev.pointerId);
+ if(active.pointers?.size<2)active.pinchDistance=0;
+ if(active.orbit?.pointerId===ev.pointerId)active.orbit=null;
+}
 function addRoomDetails(room){/* Empty-room rule: no decorative furniture is pre-installed. Only architectural shell remains. */}
 
 function renderLoop(){if(!active)return;active.raf=requestAnimationFrame(renderLoop);const t=performance.now()*.001;if(active.fire){active.fire.rotation.z=Math.sin(t*2.4)*.05;active.fire.scale.y=.96+Math.sin(t*5)*.07}if(active.fireLight)active.fireLight.intensity=1.15+Math.sin(t*7)*.22;if(active.curtains)active.curtains.forEach(c=>c.mesh.rotation.z=c.side*(.04+Math.sin(t*1.15+c.side)*.018));if(active.dust){for(let i=0;i<active.dust.length;i++){const d=active.dust[i];d.position.y=1.2+((t*.12+i*.53)%2.6);d.position.x=Math.sin(t*.5+i)*2.8}}if(active.lampLight)active.lampLight.intensity=active.state.lampOn?1.0+.07*Math.sin(t*2):.08;active.renderer.render(active.scene,active.camera)}
-function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(420,Math.round(Math.min(window.innerHeight*.68,width*1.02)));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-4.8,4.8,3.65,-3.65,.1,80);camera.position.set(10,11,12);camera.zoom=1.12;camera.lookAt(0,.35,0);const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));renderer.setSize(width,height,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.domElement.className='lr3d-canvas';renderer.domElement.setAttribute('aria-label',roomNames[state.room]+' 3D房间');host.appendChild(renderer.domElement);
+function initHost(host){if(!THREE||!host.isConnected)return;const state=stageState();if(!state)return;disposeActive();host.innerHTML='';const width=Math.max(300,host.clientWidth||360),height=Math.max(420,Math.round(Math.min(window.innerHeight*.68,width*1.02)));const scene=new THREE.Scene();scene.background=new THREE.Color(0xf4eadb);scene.fog=new THREE.Fog(0xf4eadb,15,28);const camera=new THREE.OrthographicCamera(-5,5,5,-5,.1,80);
+ const cameraTarget=new THREE.Vector3(0,.55,0);
+ camera.position.set(10,10.5,12);camera.lookAt(cameraTarget);
+ function fitCamera(){
+  const aspect=Math.max(.45,(host.clientWidth||360)/Math.max(420,Math.min(window.innerHeight*.68,(host.clientWidth||360)*1.02)));
+  const viewHeight=Math.max(8.6,10.2/aspect);
+  camera.left=-viewHeight*aspect/2;camera.right=viewHeight*aspect/2;
+  camera.top=viewHeight/2;camera.bottom=-viewHeight/2;
+  camera.zoom=1;camera.updateProjectionMatrix();
+ }
+ fitCamera();const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.8));renderer.setSize(width,height,false);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;renderer.domElement.className='lr3d-canvas';renderer.domElement.setAttribute('aria-label',roomNames[state.room]+' 3D房间');host.appendChild(renderer.domElement);
  active={host,scene,camera,renderer,state,raycaster:new THREE.Raycaster(),floor:null,furnitureGroups:[],selectedUid:null,drag:null,fire:null,fireLight:null,curtains:[],dust:[],lampLight:null};
  scene.add(new THREE.HemisphereLight(0xfff7e9,0x887b68,1.9));const sun=new THREE.DirectionalLight(0xffe6c2,2.1);sun.position.set(-5,10,7);sun.castShadow=true;sun.shadow.mapSize.set(1536,1536);sun.shadow.camera.left=-8;sun.shadow.camera.right=8;sun.shadow.camera.top=8;sun.shadow.camera.bottom=-8;scene.add(sun);const fill=new THREE.DirectionalLight(0xe1eddf,.82);fill.position.set(5,6,-4);scene.add(fill);
  // Warm studio-like ground plane and soft ambient bounce.
@@ -182,16 +265,15 @@ function initHost(host){if(!THREE||!host.isConnected)return;const state=stageSta
  addRoomDetails(state.room);drawFurniture(state);
  active.lampLight=new THREE.PointLight(0xffd99c,state.lampOn?1:.08,7);active.lampLight.position.set(0,2.5,0);scene.add(active.lampLight);
  for(let i=0;i<16;i++){const d=sphere(.018,mat(0xfff6d8),Math.sin(i*12)*2.8,1.2+(i%5)*.42,Math.cos(i*8)*2.2,scene);d.material.transparent=true;d.material.opacity=.38;active.dust.push(d)}
- renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',pointerUp);
- let lastPinch=0;renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.78,Math.min(1.9,camera.zoom*(e.deltaY>0?.94:1.06)));camera.updateProjectionMatrix()},{passive:false});
- let touches=new Map();renderer.domElement.addEventListener('touchstart',e=>{for(const t of e.changedTouches)touches.set(t.identifier,{x:t.clientX,y:t.clientY});if(touches.size===2){const a=[...touches.values()];lastPinch=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}},{passive:true});renderer.domElement.addEventListener('touchmove',e=>{if(touches.size===2){for(const t of e.changedTouches)touches.set(t.identifier,{x:t.clientX,y:t.clientY});const a=[...touches.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(lastPinch){camera.zoom=Math.max(.78,Math.min(1.9,camera.zoom*d/lastPinch));camera.updateProjectionMatrix()}lastPinch=d}},{passive:true});renderer.domElement.addEventListener('touchend',e=>{for(const t of e.changedTouches)touches.delete(t.identifier);if(touches.size<2)lastPinch=0},{passive:true});
- const hint=document.createElement('div');hint.className='lr3d-hint';hint.textContent=state.decorMode?'点选家具后可旋转或收回，拖动即可调整位置':'精致 3D 家园 · 进入装修模式布置家具';host.appendChild(hint);
- if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(()=>{if(!active||active.host!==host)return;const w=Math.max(300,host.clientWidth),h=Math.max(420,Math.round(Math.min(window.innerHeight*.68,w*1.02)));renderer.setSize(w,h,false)});resizeObserver.observe(host)}
+ renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',pointerUp);renderer.domElement.addEventListener('lostpointercapture',pointerUp);
+ renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();camera.zoom=Math.max(.72,Math.min(2.2,camera.zoom*(e.deltaY>0?.94:1.06)));camera.updateProjectionMatrix()},{passive:false});
+ const hint=document.createElement('div');hint.className='lr3d-hint';hint.textContent=state.decorMode?'拖动空白处旋转视角 · 拖动家具自由摆放 · 选中后调色与旋转':'单指拖动旋转视角 · 双指缩放 · 进入装修模式摆放家具';host.appendChild(hint);
+ if(typeof ResizeObserver!=='undefined'){resizeObserver=new ResizeObserver(()=>{if(!active||active.host!==host)return;const w=Math.max(300,host.clientWidth),h=Math.max(420,Math.round(Math.min(window.innerHeight*.68,w*1.02)));renderer.setSize(w,h,false);fitCamera()});resizeObserver.observe(host)}
  renderLoop();
 }
 function refreshHost(host){const state=stageState();if(!state)return;initHost(host)}
 function scan(){const hosts=[...document.querySelectorAll('[data-lr3d-viewport]')];const visible=hosts.find(x=>x.offsetWidth>0&&x.offsetHeight>0);if(!visible)return;if(!THREE){loadThree().then(t=>{THREE=t;scan()}).catch(err=>{visible.innerHTML='<div class="lr3d-error"><b>3D 场景暂时无法载入</b><span>请检查网络连接后刷新页面。农场存档不受影响。</span></div>';console.warn('[LR 3D]',err)});return}if(active?.host===visible){const st=stageState();if(st&&JSON.stringify([st.owner,st.room,st.decorMode,st.placed])!==JSON.stringify([active.state.owner,active.state.room,active.state.decorMode,active.state.placed])){try{initHost(visible)}catch(err){visible.innerHTML='<div class="lr3d-error"><b>3D 场景渲染失败</b><span>请刷新页面重试。农场存档不会受影响。</span></div>';console.warn('[LR 3D render]',err)}}return}try{initHost(visible)}catch(err){visible.innerHTML='<div class="lr3d-error"><b>当前设备暂不支持 3D 场景</b><span>请更新浏览器或检查 WebGL 设置。农场存档不会受影响。</span></div>';console.warn('[LR 3D render]',err)}}
-function injectStyles(){if(document.getElementById('lr3d-style'))return;const s=document.createElement('style');s.id='lr3d-style';s.textContent=`.v21-room-stage{width:100%;margin:16px 0 18px;padding:10px;border-radius:28px;background:linear-gradient(145deg,#fffaf0,#e9dfca);box-shadow:0 12px 32px rgba(103,78,51,.10),inset 0 0 0 1px rgba(255,255,255,.8);overflow:hidden}.lr3d-viewport{position:relative;width:100%;aspect-ratio:1.18;min-height:280px;border-radius:21px;overflow:hidden;background:radial-gradient(ellipse at 50% 28%,#fff8e9 0,#e8ddca 100%);touch-action:pan-y;box-shadow:inset 0 0 0 1px #fff9ed,0 12px 30px rgba(99,72,45,.10)}.lr3d-canvas{display:block;width:100%;height:100%;touch-action:none;outline:none;filter:saturate(1.04) contrast(1.015)}.lr3d-loading,.lr3d-error{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#76664f;background:linear-gradient(135deg,#f7efdf,#e8e8d8);font-family:inherit}.lr3d-loading-mark{font-size:34px;color:#8d9c78}.lr3d-loading small,.lr3d-error span{font-size:12px;color:#9b8c78}.lr3d-caption{display:flex;justify-content:space-between;padding:9px 5px 1px;color:#9b8c78;font-size:10px;letter-spacing:.12em}.lr3d-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);max-width:90%;white-space:nowrap;padding:7px 12px;border-radius:99px;background:rgba(255,250,240,.88);color:#85745e;font-size:10px;box-shadow:0 2px 12px #77634a20;pointer-events:none}.lr3d-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:4}.lr3d-tools button{border:1px solid #d8c9b3;border-radius:18px;background:rgba(255,250,240,.94);color:#6f795e;padding:8px 12px;font:inherit;box-shadow:0 3px 12px #5c4a3218}.lr3d-tools .lr3d-remove{color:#a46d5a}.lr3d-error{padding:24px;text-align:center}.house-page .lr3d-caption{letter-spacing:.08em}
+function injectStyles(){if(document.getElementById('lr3d-style'))return;const s=document.createElement('style');s.id='lr3d-style';s.textContent=`.v21-room-stage{width:100%;margin:16px 0 18px;padding:10px;border-radius:28px;background:linear-gradient(145deg,#fffaf0,#e9dfca);box-shadow:0 12px 32px rgba(103,78,51,.10),inset 0 0 0 1px rgba(255,255,255,.8);overflow:hidden}.lr3d-viewport{position:relative;width:100%;aspect-ratio:1.18;min-height:280px;border-radius:21px;overflow:hidden;background:radial-gradient(ellipse at 50% 28%,#fff8e9 0,#e8ddca 100%);touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:inset 0 0 0 1px #fff9ed,0 12px 30px rgba(99,72,45,.10)}.lr3d-canvas{display:block;width:100%;height:100%;touch-action:none;outline:none;filter:saturate(1.04) contrast(1.015)}.lr3d-loading,.lr3d-error{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#76664f;background:linear-gradient(135deg,#f7efdf,#e8e8d8);font-family:inherit}.lr3d-loading-mark{font-size:34px;color:#8d9c78}.lr3d-loading small,.lr3d-error span{font-size:12px;color:#9b8c78}.lr3d-caption{display:flex;justify-content:space-between;padding:9px 5px 1px;color:#9b8c78;font-size:10px;letter-spacing:.12em}.lr3d-hint{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);max-width:90%;white-space:nowrap;padding:7px 12px;border-radius:99px;background:rgba(255,250,240,.88);color:#85745e;font-size:10px;box-shadow:0 2px 12px #77634a20;pointer-events:none}.lr3d-tools{position:absolute;right:12px;top:12px;display:flex;gap:6px;z-index:4}.lr3d-tools button{border:1px solid #d8c9b3;border-radius:18px;background:rgba(255,250,240,.94);color:#6f795e;padding:8px 12px;font:inherit;box-shadow:0 3px 12px #5c4a3218}.lr3d-tools .lr3d-remove{color:#a46d5a}.lr3d-error{padding:24px;text-align:center}.house-page .lr3d-caption{letter-spacing:.08em}
  .house-page{width:100%;max-width:none}
  .house-page .v21-room-stage{width:calc(100% + 28px);margin:18px -14px 22px;padding:8px;border-radius:24px;background:linear-gradient(145deg,#fffaf0,#e9dfca);box-shadow:0 14px 34px rgba(103,78,51,.12),inset 0 0 0 1px rgba(255,255,255,.88)}
  .house-page .lr3d-viewport{width:100%;height:clamp(420px,68svh,720px);min-height:420px;aspect-ratio:auto;border-radius:19px}
@@ -207,6 +289,10 @@ function injectStyles(){if(document.getElementById('lr3d-style'))return;const s=
  .lr3d-tools-actions{display:flex;gap:6px;flex-wrap:wrap}
  .lr3d-tools-actions button{font-size:11px;padding:7px 10px}
  .lr3d-tools-actions .lr3d-remove{margin-left:auto}
+ .lr3d-rotation-row{display:flex;align-items:center;gap:9px;color:#897861;font-size:11px}
+ .lr3d-rotation-row label{white-space:nowrap}
+ .lr3d-rotation-row input{flex:1;min-width:80px;accent-color:#829171}
+ .lr3d-rotation-row output{min-width:36px;text-align:right;font-variant-numeric:tabular-nums}
  .house-decor-panel{padding:22px;border-radius:26px;background:linear-gradient(145deg,#fffdf7,#f8f0e2);border:1px solid #e4d8c5}
  .house-decor-panel .house-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px}
  .house-decor-panel .house-section-title>div{display:flex;flex-direction:column;gap:5px}
