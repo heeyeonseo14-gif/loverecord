@@ -530,6 +530,45 @@ const css=`#lr-games{position:fixed;inset:0;z-index:100100;background:#f7f0e7;co
 @keyframes roomDust{0%{opacity:.15;transform:translateY(4px)}100%{opacity:.8;transform:translateY(-7px)}}
 @media(prefers-reduced-motion:reduce){#lr-games .sway-plant,#lr-games .lamp-glow,#lr-games .balcony-lights circle,#lr-games .room-fire,#lr-games .room-wall-sparkles circle{animation:none!important}}
 
+/* V18 · Living Storybook art direction: painterly layers, ambient motion, depth */
+#lr-games .v18-storybook-stage{isolation:isolate;position:relative;overflow:hidden;border:7px solid #fffaf1;border-radius:28px;background:radial-gradient(ellipse at 32% 18%,#fff8e8 0%,#f2e5ce 52%,#d9c3a4 100%);box-shadow:inset 0 0 0 1px #fffdf5,inset 0 -24px 40px #8b684522,0 18px 38px #73583a22}
+#lr-games .v18-storybook-stage>svg{position:relative;z-index:1;filter:drop-shadow(0 8px 7px #6e52351c);overflow:visible}
+#lr-games .v18-storybook-stage:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(135deg,#fff9e9aa 0%,transparent 34%,transparent 70%,#9e805019 100%);mix-blend-mode:soft-light}
+#lr-games .v18-storybook-stage .room-vignette{position:absolute;inset:0;z-index:4;pointer-events:none;box-shadow:inset 0 0 36px #8b6b4320;border-radius:20px}
+#lr-games .v18-storybook-stage .room-stage-grain{z-index:3;opacity:.08;background-image:radial-gradient(#987b5a .55px,transparent .8px),radial-gradient(#fff .45px,transparent .7px);background-position:0 0,5px 7px;background-size:12px 12px,17px 17px;mix-blend-mode:multiply}
+#lr-games .v18-storybook-stage .room-sunbeam{transform-origin:20% 10%;animation:v18Sunbeam 14s ease-in-out infinite alternate;mix-blend-mode:screen}
+#lr-games .v18-storybook-stage .room-dust circle{animation:v18Dust 7s ease-in-out infinite alternate;filter:drop-shadow(0 0 3px #fff5ce)}
+#lr-games .v18-storybook-stage .room-dust circle:nth-child(2n){animation-delay:-3.2s}
+#lr-games .v18-storybook-stage .room-glints{animation:v18Glimmer 4s ease-in-out infinite alternate}
+#lr-games .v18-storybook-stage .room-curtain{transform-box:fill-box;transform-origin:top center;animation:v18Curtain 5.5s ease-in-out infinite alternate}
+#lr-games .v18-storybook-stage .room-curtain-right{animation-delay:-2.7s}
+#lr-games .v18-storybook-stage .room-flame{transform-box:fill-box;transform-origin:50% 100%;animation:v18Fire .95s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px #f5a45c99)}
+#lr-games .v18-storybook-stage .room-leaves{transform-box:fill-box;transform-origin:50% 100%;animation:v18Leaves 4.8s ease-in-out infinite alternate}
+#lr-games .v18-storybook-stage .room-steam{animation:v18Steam 3s ease-out infinite;transform-box:fill-box;transform-origin:bottom center}
+#lr-games .v18-storybook-stage .room-lamp-glow{animation:v18Lamp 2.8s ease-in-out infinite alternate;filter:drop-shadow(0 0 9px #f6d58a)}
+#lr-games .v18-storybook-stage .balcony-lights circle{animation:v18Twinkle 2.3s ease-in-out infinite alternate;filter:drop-shadow(0 0 7px #f7d98e)}
+#lr-games .v18-storybook-stage .balcony-lights circle:nth-child(2n){animation-delay:-1.1s}
+#lr-games .v18-storybook-stage .room-pollen circle{animation:v18Pollen 9s ease-in-out infinite alternate}
+#lr-games .v18-storybook-stage .room-pollen circle:nth-child(2n){animation-delay:-4s}
+#lr-games .v18-storybook-stage .room-weather-wash{z-index:5;mix-blend-mode:soft-light}
+#lr-games .v18-storybook-stage .placed-furniture-wrap{z-index:6}
+#lr-games .v18-storybook-stage .placed-furniture svg{filter:drop-shadow(0 7px 5px #5d452d42) saturate(1.06)}
+#lr-games .v18-storybook-stage.decor-active{outline:2px solid #a9b88e;outline-offset:3px}
+#lr-games .room-intro-card{background:linear-gradient(145deg,#fffaf1,#f4eadb);border:1px solid #e5d5c1;border-radius:20px;padding:14px 16px;box-shadow:0 8px 22px #765a3510}
+@keyframes v18Sunbeam{0%{transform:translate(-8px,0) rotate(-1deg);opacity:.24}100%{transform:translate(18px,5px) rotate(2deg);opacity:.55}}
+@keyframes v18Dust{0%{transform:translate(0,5px);opacity:.12}50%{opacity:.8}100%{transform:translate(12px,-15px);opacity:.18}}
+@keyframes v18Glimmer{0%{opacity:.2;transform:scale(.8)}100%{opacity:.9;transform:scale(1.1)}}
+@keyframes v18Curtain{0%{transform:skewY(-1deg) translateX(0)}100%{transform:skewY(1.5deg) translateX(2px)}}
+@keyframes v18Fire{0%{transform:scale(.94,1) rotate(-2deg)}100%{transform:scale(1.06,1.08) rotate(2deg)}}
+@keyframes v18Leaves{0%{transform:rotate(-2deg)}100%{transform:rotate(3deg)}}
+@keyframes v18Steam{0%{opacity:0;transform:translateY(5px) scale(.8)}30%{opacity:.7}100%{opacity:0;transform:translateY(-13px) scale(1.2)}}
+@keyframes v18Lamp{0%{opacity:.72}100%{opacity:1}}
+@keyframes v18Twinkle{0%{opacity:.55}100%{opacity:1}}
+@keyframes v18Pollen{0%{transform:translate(0,0);opacity:.12}100%{transform:translate(9px,-12px);opacity:.62}}
+@media(max-width:430px){#lr-games .v18-storybook-stage{border-width:5px;border-radius:23px}#lr-games .v18-storybook-stage>svg{min-height:0}}
+@media(prefers-reduced-motion:reduce){#lr-games .v18-storybook-stage *{animation:none!important;transition:none!important}}
+
+
 `;
 function mount(){if($('#lr-games'))return;const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);const root=document.createElement('div');root.id='lr-games';root.innerHTML=`<div class="gbar"><button id="gclose">‹ 返回 LOVE RECORD</button><b id="gbarTitle">OUR LITTLE FARM · 我们的小农场</b></div><main class="gscroll" id="gbody"></main><nav class="gtabs" id="farmDock" aria-label="农场导航"></nav><div class="gtoast" id="farmToast"></div>`;document.body.appendChild(root);root.addEventListener('click',onClick);root.addEventListener('change',onChange);root.addEventListener('pointerdown',onFurniturePointerDown);root.addEventListener('pointermove',onFurniturePointerMove);root.addEventListener('pointerup',onFurniturePointerUp);root.addEventListener('pointercancel',onFurniturePointerUp);$('#gclose').onclick=close;render()}
 function partnerCard(){const p=people().find(x=>String(x.id)===String(farm.partnerId));return `<section class="gcard"><b>共同农场主人</b><div class="grow" style="margin-top:10px"><div class="gavatar">${farm.partnerAvatar?`<img src="${esc(farm.partnerAvatar)}">`:esc((farm.partnerName||'♡').slice(0,1))}</div><div style="flex:1"><b>${esc(farm.partnerName||'还没有选择搭档')}</b><div class="gmuted">${p?'与你共同经营这座农场':'选择一位联系人，成为共同主人'}</div></div></div><select id="farmPartner" style="margin-top:12px"><option value="">选择联系人…</option>${people().map(x=>`<option value="${esc(x.id)}" ${String(x.id)===String(farm.partnerId)?'selected':''}>${esc(x.remark||x.name||'联系人')}</option>`).join('')}</select></section>`}
@@ -648,113 +687,190 @@ function houseScene(h){
  </div>`;
 }
 function roomArtwork(room){
- const art={
- living:`<path d="M35 145 320 18 605 145 320 285Z" fill="#f2e6d1" stroke="#d9c7a9" stroke-width="5"/><path d="M35 145 320 285 320 430 35 290Z" fill="#f7eddd"/><path d="M320 285 605 145 605 290 320 430Z" fill="#eee1cb"/><path d="M35 290 320 430 605 290" fill="none" stroke="#b88d68" stroke-width="9"/><path d="M85 300 320 405 555 300 320 195Z" fill="#d8bea0" stroke="#f8edda" stroke-width="8"/><path d="M130 300 320 385 510 300 320 215Z" fill="none" stroke="#f8edda" stroke-width="4"/><path d="M90 92 190 48 190 160 90 205Z" fill="#b7d2ce" stroke="#fff5e6" stroke-width="8"/><path d="M140 70v112M91 150l99-45" stroke="#fff8ed" stroke-width="5"/><path d="M410 110 520 160v95l-110-52Z" fill="#87624b" stroke="#c8a47e" stroke-width="9"/><path d="M425 126 505 163v60l-80-38Z" fill="#513b30"/><path class="room-fire" d="M464 215q-24-24-4-50 2 16 13 18-3-23 15-36-5 24 11 36 15 25-7 37-17 8-28-5Z" fill="#efad63"/>`,
- bedroom:`<path d="M35 145 320 18 605 145 320 285Z" fill="#f3e8d6" stroke="#d9c7a9" stroke-width="5"/><path d="M35 145 320 285 320 430 35 290Z" fill="#f8efdf"/><path d="M320 285 605 145 605 290 320 430Z" fill="#efe2ce"/><path d="M35 290 320 430 605 290" fill="none" stroke="#b88d68" stroke-width="9"/><path d="M82 293 320 405 556 293 320 181Z" fill="#e8d8bf" stroke="#fff7e9" stroke-width="7"/><path d="M110 200 245 139 380 202 245 265Z" fill="#b98e6b"/><path d="M110 200 245 265 245 345 110 280Z" fill="#cda985"/><path d="M245 265 380 202 380 282 245 345Z" fill="#f5e7d5"/><path d="M130 204 245 151 355 203 245 257Z" fill="#fffaf0" stroke="#d2b89b" stroke-width="4"/><path d="M145 198 202 172 248 194 191 222Z" fill="#d8b9a5"/><path d="M250 194 305 169 347 190 292 216Z" fill="#d8b9a5"/><path d="M435 90 535 135v100l-100-46Z" fill="#b9d4cf" stroke="#fff7e8" stroke-width="8"/><path d="M485 113v100" stroke="#fff" stroke-width="5"/>`,
- kitchen:`<path d="M35 145 320 18 605 145 320 285Z" fill="#f4ead8" stroke="#d9c7a9" stroke-width="5"/><path d="M35 145 320 285 320 430 35 290Z" fill="#f8efdf"/><path d="M320 285 605 145 605 290 320 430Z" fill="#eee0ca"/><path d="M35 290 320 430 605 290" fill="none" stroke="#b88d68" stroke-width="9"/><path d="M90 220 220 160 350 220 220 282Z" fill="#d9b68f" stroke="#a77c59" stroke-width="5"/><path d="M90 220 220 282 220 350 90 288Z" fill="#c99c73"/><path d="M220 282 350 220 350 288 220 350Z" fill="#e4c29c"/><path d="M115 216 220 168 325 217 220 267Z" fill="#f7f0e3" stroke="#c4a887" stroke-width="4"/><path d="M140 218 220 181 300 219 220 256Z" fill="#74685c"/><circle cx="190" cy="214" r="10" fill="#d4c8b3"/><circle cx="250" cy="214" r="10" fill="#d4c8b3"/><path d="M410 110 535 168v125l-125-58Z" fill="#d7b58e" stroke="#b58a65" stroke-width="5"/><path d="M430 132 515 171v88l-85-40Z" fill="#f4e6d2"/><path d="M445 150 500 175M445 190 500 215" stroke="#c5a17d" stroke-width="4"/>`,
- balcony:`<path d="M35 145 320 18 605 145 320 285Z" fill="#e9e9d9" stroke="#d9c7a9" stroke-width="5"/><path d="M35 145 320 285 320 430 35 290Z" fill="#f4ead9"/><path d="M320 285 605 145 605 290 320 430Z" fill="#e7dfcf"/><path d="M35 290 320 430 605 290" fill="none" stroke="#b88d68" stroke-width="9"/><path d="M72 220 320 342 568 220" fill="none" stroke="#fffaf0" stroke-width="12"/><path d="M72 220 72 155M155 262 155 198M238 303 238 238M320 342 320 278M403 303 403 238M486 262 486 198M568 220 568 155" stroke="#b99c79" stroke-width="8"/><path d="M92 116 185 73 185 180 92 223Z" fill="#b6d4d0" stroke="#fff8ea" stroke-width="7"/><path d="M137 94v110" stroke="#fff" stroke-width="5"/><path d="M430 292 485 265 540 292 485 320Z" fill="#c79d75"/><path d="M442 291 442 345M528 291 528 345" stroke="#98704f" stroke-width="7"/>`
- };
- return art[room]||art.living;
+ const shell=`
+ <!-- hand-painted room shell: wallpaper, mouldings, parquet and skirting -->
+ <path d="M35 145 320 18 605 145 320 285Z" fill="url(#v18wallpaper)" stroke="#d4c2a5" stroke-width="5"/>
+ <path d="M35 145 320 285 320 430 35 290Z" fill="url(#v18leftwall)"/>
+ <path d="M320 285 605 145 605 290 320 430Z" fill="url(#v18rightwall)"/>
+ <path d="M35 145 320 18 605 145" fill="none" stroke="#d2bd9d" stroke-width="11" stroke-linejoin="round"/>
+ <path d="M42 151 320 29 598 151" fill="none" stroke="#fff9ec" stroke-width="3" opacity=".9"/>
+ <path d="M35 290 320 430 605 290" fill="none" stroke="#9e7454" stroke-width="11" stroke-linejoin="round"/>
+ <path d="M42 284 320 420 598 284" fill="none" stroke="#f8ead4" stroke-width="7"/>
+ <path d="M52 173 320 300 588 173" fill="none" stroke="#fff9ed" stroke-width="5" opacity=".72"/>
+ <path d="M54 182 320 309 586 182" fill="none" stroke="#d7c5a9" stroke-width="2" opacity=".65"/>
+ <!-- wainscot panels -->
+ <g fill="#f5ead8" fill-opacity=".34" stroke="#d8c5a8" stroke-width="2" opacity=".8">
+ <path d="M52 208 105 233 105 279 52 253Z"/><path d="M120 241 174 267 174 313 120 287Z"/><path d="M189 275 243 301 243 347 189 321Z"/>
+ <path d="M397 301 451 275 451 321 397 347Z"/><path d="M466 267 520 241 520 287 466 313Z"/><path d="M535 233 588 208 588 253 535 279Z"/>
+ </g>
+ <!-- parquet floor boards -->
+ <path d="M35 290 320 430 605 290 320 151Z" fill="url(#v18floor)" opacity=".96"/>
+ <path d="M35 290 320 430 605 290 320 151Z" fill="url(#v18parquet)" opacity=".72"/>
+ <path d="M55 292 320 420 585 292" fill="none" stroke="#fff5e5" stroke-width="3" opacity=".55"/>
+ <path d="M95 312 320 420M145 336 320 420M195 360 320 420M245 384 320 420M545 312 320 420M495 336 320 420M445 360 320 420M395 384 320 420" stroke="#946e4d" stroke-width="1.5" opacity=".18"/>
+ <path d="M80 304 320 420 560 304" fill="none" stroke="#fff8eb" stroke-width="2" opacity=".35"/>
+ <!-- soft woven rug -->
+ <path d="M118 300 320 202 522 300 320 398Z" fill="url(#v18rug)" stroke="#f9f0e2" stroke-width="9"/>
+ <path d="M137 300 320 212 503 300 320 388Z" fill="none" stroke="#c9aa88" stroke-width="2.5" opacity=".7"/>
+ <path d="M154 300 320 221 486 300 320 379Z" fill="none" stroke="#fff8ec" stroke-width="2" opacity=".8"/>
+ <path d="M178 300 320 232 462 300 320 368Z" fill="none" stroke="#c5a584" stroke-width="1.4" stroke-dasharray="3 7" opacity=".55"/>
+ <g fill="#fff4e2" opacity=".65"><circle cx="320" cy="205" r="3"/><circle cx="522" cy="300" r="3"/><circle cx="320" cy="398" r="3"/><circle cx="118" cy="300" r="3"/></g>`;
+ const window=`
+ <!-- tall French casement window with outdoor garden view -->
+ <g class="room-window" filter="url(#v18shadow)">
+  <path d="M83 105 202 51 202 191 83 247Z" fill="#b58c68" stroke="#fff8e9" stroke-width="9"/>
+  <path d="M94 111 191 67 191 183 94 228Z" fill="url(#v18glass)" stroke="#f8f0df" stroke-width="5"/>
+  <path d="M94 111 191 67 191 183 94 228Z" fill="url(#v18skyshine)" opacity=".5"/>
+  <path d="M143 89 143 205M94 169 191 125" stroke="#fffaf0" stroke-width="6"/>
+  <path d="M103 119q22-15 40-5M154 91q15-8 27-4" stroke="#fff" stroke-width="3" opacity=".65" fill="none"/>
+  <path d="M95 226q28-16 48-4 25-22 47-8" fill="none" stroke="#8ea47a" stroke-width="7" opacity=".7"/>
+  <path d="M113 219q-7-35 12-43 18 18-12 43Zm24-10q7-38 27-35 8 24-27 35Z" fill="#88a277" opacity=".85"/>
+  <!-- curtain rod and linen curtains -->
+  <path d="M73 99 211 36" stroke="#9d7657" stroke-width="7" stroke-linecap="round"/>
+  <path class="room-curtain room-curtain-left" d="M78 100q20-15 34-8l9 124q-18 18-35 9Z" fill="url(#v18linen)" stroke="#ddc7ab" stroke-width="2"/>
+  <path class="room-curtain room-curtain-right" d="M190 49q-16-9-27 2l4 129q17 12 29-1Z" fill="url(#v18linen)" stroke="#ddc7ab" stroke-width="2"/>
+  <path d="M86 115q12 8 24-2M88 145q12 8 25-2M171 65q10 8 18 0" stroke="#c9ad91" stroke-width="2" fill="none" opacity=".65"/>
+ </g>`;
+ const fireplace=`
+ <g class="room-fireplace" filter="url(#v18shadow)">
+  <path d="M407 128 520 178 520 294 407 244Z" fill="#b88b66" stroke="#e7d0b2" stroke-width="8"/>
+  <path d="M421 145 506 183 506 275 421 237Z" fill="#594033" stroke="#8f694d" stroke-width="5"/>
+  <path d="M414 132 520 178" stroke="#f8e8d0" stroke-width="8" stroke-linecap="round"/>
+  <path d="M423 238 506 275" stroke="#3c3029" stroke-width="9"/>
+  <g class="room-flame"><path d="M461 257q-29-28-9-57 1 18 13 22-4-31 18-49-7 29 11 43 20 30-8 48-18 11-25-7Z" fill="#e8894d"/><path d="M469 257q-12-18 1-34 2 12 9 14 9 15-3 25-5 4-7-5Z" fill="#ffd27b"/><path d="M480 260q-4-11 5-18 10 15-1 23Z" fill="#fff0b1"/></g>
+  <path d="M397 126 525 184" stroke="#d8b58d" stroke-width="7"/>
+ </g>`;
+ const leftShelf=`
+ <g class="room-shelf" filter="url(#v18shadow)">
+  <path d="M75 263 182 213" stroke="#a77a55" stroke-width="10" stroke-linecap="round"/>
+  <path d="M90 255 90 276M166 219 166 242" stroke="#916a4b" stroke-width="4"/>
+  <path d="M100 241q10-22 22-2v21h-22Z" fill="#f3e6d1" stroke="#c5a889" stroke-width="2"/>
+  <path d="M128 228q10-18 20 0v20h-20Z" fill="#d7e1d2" stroke="#9daa8c" stroke-width="2"/>
+  <path d="M151 216q8-16 17 0v18h-17Z" fill="#d9b89b" stroke="#b48d6c" stroke-width="2"/>
+ </g>`;
+ if(room==='living') return shell+window+fireplace+leftShelf;
+ if(room==='bedroom') return shell+window+`<g class="bedroom-wall-decor"><path d="M408 92 485 57 485 135 408 170Z" fill="#b98e6b" stroke="#fff8e9" stroke-width="7"/><path d="M420 99 474 75 474 127 420 151Z" fill="#e7e5d4"/><path d="M431 141q10-27 27-39m-23 23q-13-12-18-3m31-16q14-14 21-7" fill="none" stroke="#81966f" stroke-width="4"/></g>`;
+ if(room==='kitchen') return shell+`<g class="kitchen-window"><path d="M80 105 196 52 196 177 80 230Z" fill="#b58b67" stroke="#fff8e9" stroke-width="8"/><path d="M91 111 185 68 185 169 91 212Z" fill="url(#v18glass)"/><path d="M138 90v101M91 160l94-43" stroke="#fff" stroke-width="5"/></g>`;
+ return shell+window+`<g class="balcony-view"><path d="M45 260 320 395 595 260" stroke="#fff7e9" stroke-width="8" fill="none"/><path d="M58 268 58 190M125 301 125 223M192 334 192 256M259 367 259 289M326 383 326 305M393 350 393 272M460 317 460 239M527 284 527 206M594 251 594 173" stroke="#a98260" stroke-width="6"/><path d="M45 190 320 325 595 190" stroke="#d2b18d" stroke-width="8" fill="none"/><path d="M45 198 320 333 595 198" stroke="#fff4df" stroke-width="3" fill="none"/></g>`;
 }
 function furnitureButton(item,room,index){const arr=farm.house.placed[room]||[],placed=arr.find(x=>x.id===item.id);if(!placed)return '';const x=Math.max(4,Math.min(88,Number(placed.x??(18+(index%3)*28)))),y=Math.max(12,Math.min(78,Number(placed.y??(48+(index%2)*13))));return `<div class="placed-furniture-wrap" style="left:${x}%;top:${y}%"><button class="placed-furniture" data-drag-furniture="${item.id}" data-furniture-room="${room}" aria-label="拖动${item.name}">${item.svg}</button>${farm.house.decorMode?`<button class="furniture-remove" data-remove-furniture="${item.id}" data-furniture-room="${room}">收回</button>`:''}</div>`}
 
 function roomDetailArt(room){
- const common=`<g class="room-architecture" pointer-events="none">
-  <path d="M44 148 320 282 596 148" fill="none" stroke="#fff9ec" stroke-width="8" opacity=".75"/>
-  <path d="M48 157 320 291 592 157" fill="none" stroke="#c9b18e" stroke-width="2" opacity=".42"/>
-  <path d="M43 278 320 414 597 278" fill="none" stroke="#fff8e9" stroke-width="8" opacity=".9"/>
-  <path d="M43 286 320 422 597 286" fill="none" stroke="#9c7657" stroke-width="3" opacity=".3"/>
-  <path d="M70 170 70 273M110 190 110 294M150 210 150 314M190 230 190 334M230 250 230 354" stroke="#b89b78" stroke-width="1.4" opacity=".15"/>
-  <path d="M390 250 390 350M430 230 430 330M470 210 470 310M510 190 510 290M550 170 550 270" stroke="#b89b78" stroke-width="1.4" opacity=".15"/>
-  <path d="M75 160 130 188M510 188 565 160" stroke="#fffdf5" stroke-width="3" opacity=".8"/>
-  <g class="room-wall-sparkles" fill="#fff9e8"><circle cx="280" cy="110" r="2.2"/><circle cx="350" cy="92" r="1.7"/><circle cx="390" cy="145" r="1.5"/><circle cx="240" cy="160" r="1.4"/></g>
+ const ambient=`<g class="room-ambient" pointer-events="none">
+  <path class="room-sunbeam" d="M105 90 270 40 410 340 220 390Z" fill="url(#v18sunbeam)" opacity=".42"/>
+  <g class="room-dust" fill="#fff8df"><circle cx="260" cy="128" r="2.8"/><circle cx="330" cy="180" r="2"/><circle cx="375" cy="110" r="2.4"/><circle cx="215" cy="225" r="1.8"/><circle cx="470" cy="260" r="2.2"/></g>
+  <g class="room-glints" fill="#fff9e9"><path d="M285 85l3 8 8 3-8 3-3 8-3-8-8-3 8-3Z"/><path d="M540 220l2 5 5 2-5 2-2 5-2-5-5-2 5-2Z"/></g>
  </g>`;
+ const plant=(x,y,scale=1)=>`<g transform="translate(${x} ${y}) scale(${scale})" class="room-potted-plant" filter="url(#v18shadow)"><path d="M-21 0 0-11 21 0 0 12Z" fill="#b88767"/><path d="M-15 1 15 1 11 32-11 32Z" fill="url(#v18pot)" stroke="#a97759" stroke-width="2"/><path d="M0 3 0-53" stroke="#71865d" stroke-width="4"/><g class="room-leaves" fill="#78946a" stroke="#5f7d58" stroke-width="1.5"><path d="M0-28q-31-31-43-9 15 24 43 9Z"/><path d="M0-36q-8-38 13-42 17 23-13 42Z"/><path d="M0-24q28-39 45-18-12 27-45 18Z"/><path d="M0-13q-26-25-39-8 15 22 39 8Z"/><path d="M0-45q17-29 31-17-7 22-31 17Z"/></g></g>`;
+ const lamp=(x,y)=>`<g class="room-table-lamp" filter="url(#v18shadow)"><path d="M${x} ${y}v42" stroke="#9b7657" stroke-width="5"/><path d="M${x-19} ${y} ${x+19} ${y} ${x+12} ${y-28} ${x-12} ${y-28}Z" fill="url(#v18lampshade)" stroke="#c7a66e" stroke-width="2"/><path d="M${x-14} ${y-2}h28" stroke="#fff0b7" stroke-width="3"/><ellipse cx="${x}" cy="${y+44}" rx="14" ry="4" fill="#8e6d4e" opacity=".25"/></g>`;
  const rooms={
- bedroom:`<g class="bedroom-details" pointer-events="none">
-   <!-- padded headboard and soft quilt stitching -->
-   <path d="M148 195 245 150 343 195 343 215 245 260 148 215Z" fill="#b58b69" stroke="#9d7658" stroke-width="4"/>
-   <path d="M160 198 245 160 330 198 245 238Z" fill="#e7d2b9" stroke="#fff4e4" stroke-width="4"/>
-   <path d="M173 201 245 168 316 201 245 234Z" fill="#f6ead9"/>
-   <path d="M180 203 245 174 309 203 245 232Z" fill="none" stroke="#d7b99b" stroke-width="2" stroke-dasharray="4 5"/>
-   <!-- embroidered duvet -->
-   <path d="M130 207 245 260 355 207 355 225 245 281 130 228Z" fill="#d8bca3" stroke="#b99170" stroke-width="3"/>
-   <path d="M145 218 245 264 340 220M160 226 245 266 325 229" fill="none" stroke="#f9eee0" stroke-width="2" opacity=".9"/>
-   <path d="M195 230 245 253 295 230" fill="none" stroke="#b98d70" stroke-width="2" stroke-dasharray="3 4"/>
-   <!-- bedside tables -->
-   <path d="M392 270 435 250 478 270 435 292Z" fill="#d6b28d" stroke="#a77f5e" stroke-width="3"/>
-   <path d="M392 270 435 292 435 332 392 310Z" fill="#bd956f"/><path d="M435 292 478 270 478 310 435 332Z" fill="#d9b995"/>
-   <path d="M410 281 435 293 460 281" stroke="#f7e6d1" stroke-width="2"/>
-   <path d="M426 251 426 231 435 226 444 231 444 258" fill="#e8d6b7" stroke="#b99b76" stroke-width="2"/>
-   <path d="M429 230q-4-13 6-19 10 8 5 19Z" fill="#f2d38c" class="lamp-glow"/>
-   <!-- bedside plant -->
-   <path d="M92 330 120 316 148 330 120 345Z" fill="#bf9875"/><path d="M102 330 102 353 120 363 138 353 138 330Z" fill="#c88f70"/>
-   <g class="sway-plant" transform-origin="120px 320px" fill="#718b64"><path d="M120 321q-27-35-38-14 9 22 38 14Z"/><path d="M120 321q-3-42 17-39 8 24-17 39Z"/><path d="M120 321q22-31 36-15-10 21-36 15Z"/><path d="M120 321q-17-24-30-9 8 18 30 9Z"/></g>
-   <!-- wall art -->
-   <path d="M420 88 486 58 486 124 420 154Z" fill="#b88e6b" stroke="#fff7e9" stroke-width="6"/>
-   <path d="M430 91 476 70 476 119 430 140Z" fill="#e8e3cf"/><path d="M435 126q14-30 34-38" fill="none" stroke="#82936e" stroke-width="4"/>
- </g>`,
  living:`<g class="living-details" pointer-events="none">
-   <!-- French linen curtains -->
-   <path d="M75 88q24-10 42 2l-4 112q-22 8-34-3Z" fill="#fff7e8" stroke="#e4d2b9" stroke-width="3"/>
-   <path d="M174 51q-20-6-33 5l4 109q19 10 30-3Z" fill="#fff7e8" stroke="#e4d2b9" stroke-width="3"/>
-   <path d="M82 100q15 12 29 0M83 122q14 12 28 0M149 65q12 10 23 0" fill="none" stroke="#d7c0a5" stroke-width="2"/>
-   <!-- sideboard -->
-   <path d="M388 280 450 251 515 281 452 311Z" fill="#c79e78" stroke="#a67c59" stroke-width="3"/>
-   <path d="M388 280 452 311 452 354 388 323Z" fill="#b88b66"/><path d="M452 311 515 281 515 324 452 354Z" fill="#d6b18a"/>
-   <path d="M407 291 452 313 452 335 407 313Z" fill="#ead5b8" stroke="#a77d5a" stroke-width="2"/>
-   <circle cx="444" cy="324" r="3" fill="#8e684b"/>
-   <!-- potted olive tree -->
-   <path d="M70 350 104 334 138 350 104 367Z" fill="#c89472"/><path d="M80 350 80 379 104 392 128 379 128 350Z" fill="#b77f61"/>
-   <path d="M104 351 104 286" stroke="#8b694d" stroke-width="7" stroke-linecap="round"/>
-   <g class="sway-plant" transform-origin="104px 300px" fill="#78916b"><path d="M104 313q-44-35-48-6 20 22 48 6Z"/><path d="M104 300q-7-48 19-44 14 28-19 44Z"/><path d="M105 307q35-42 53-15-13 28-53 15Z"/><path d="M103 325q-28-20-39-2 17 19 39 2Z"/></g>
-   <!-- framed botanical print -->
-   <path d="M470 75 535 105v72l-65-30Z" fill="#b98f6b" stroke="#fff5e5" stroke-width="5"/>
-   <path d="M480 87 525 108v54l-45-21Z" fill="#f2e8d7"/><path d="M502 145q-8-22 3-36m-3 28q-13-13-18-7m20-5q12-13 17-5" fill="none" stroke="#81916d" stroke-width="3"/>
-   <!-- coffee table tray -->
-   <ellipse cx="320" cy="372" rx="43" ry="16" fill="#9c7657" opacity=".18"/>
-   <path d="M284 350 320 333 356 350 320 368Z" fill="#d7b48e" stroke="#ad805d" stroke-width="3"/>
-   <path d="M299 349q12-14 24 0" fill="none" stroke="#fff3df" stroke-width="3"/>
+  <!-- large hand-upholstered French sofa -->
+  <ellipse cx="320" cy="348" rx="145" ry="42" fill="#765b43" opacity=".18" filter="url(#v18blur)"/>
+  <path d="M185 292 318 230 455 293 318 358Z" fill="#8b9a79" stroke="#687b60" stroke-width="4"/>
+  <path d="M185 292 185 333q5 24 29 31l104 48v-54Z" fill="url(#v18sofaSide)" stroke="#6f8062" stroke-width="4"/>
+  <path d="M318 358 455 293v42q-4 22-25 31l-112 52Z" fill="#879775" stroke="#6c7d5f" stroke-width="4"/>
+  <path d="M202 283q8-36 37-45l80-37 93 44q31 16 36 48l-130 65Z" fill="url(#v18sofa)" stroke="#6c8061" stroke-width="4"/>
+  <path d="M214 288 318 337 427 286l-4 39-105 53-104-49Z" fill="#aab895" stroke="#74876b" stroke-width="3"/>
+  <path d="M225 286 267 266 310 286 310 324 267 344 225 324Z" fill="#e8d4bd" stroke="#c5aa8c" stroke-width="3"/><path d="M326 285 370 265 413 285 413 323 370 344 326 324Z" fill="#d9b59d" stroke="#b68f76" stroke-width="3"/>
+  <path d="M237 292q22-13 45 0M338 291q22-13 45 0" fill="none" stroke="#fff4e6" stroke-width="3" opacity=".75"/>
+  <path d="M204 343 204 363M438 333 438 353" stroke="#88674e" stroke-width="8" stroke-linecap="round"/>
+  <!-- coffee table with book and tea -->
+  <path d="M268 365 320 340 375 366 320 394Z" fill="#a97f5d" opacity=".24"/>
+  <path d="M270 344 320 320 371 344 320 370Z" fill="url(#v18oak)" stroke="#956d4d" stroke-width="3"/><path d="M283 350 283 375M357 350 357 375" stroke="#936b4c" stroke-width="5"/>
+  <path d="M297 339 319 329 341 339 319 350Z" fill="#f2e5d2" stroke="#cbb79d" stroke-width="2"/><path d="M301 337 320 328 338 337" stroke="#a4a98a" stroke-width="2" fill="none"/>
+  <path d="M344 341q-10-13 2-18 14 7 7 18Z" fill="#f4eee0" stroke="#b9a58c" stroke-width="2"/><path d="M351 323q-6-8 1-13m2 12q-2-8 5-11" stroke="#fff" stroke-width="2" fill="none" class="room-steam"/>
+  <!-- sideboard, books, vase -->
+  <path d="M405 250 470 219 535 250 470 282Z" fill="#d6b28d" stroke="#a77c59" stroke-width="3"/><path d="M405 250 470 282 470 329 405 297Z" fill="#b98d68"/><path d="M470 282 535 250 535 297 470 329Z" fill="#d0a982"/>
+  <path d="M424 260 470 282 470 310 424 288Z" fill="#ead7bd" stroke="#a77c59" stroke-width="2"/><circle cx="460" cy="292" r="3" fill="#806047"/>
+  <path d="M433 240 459 228 483 239 457 252Z" fill="#81916e"/><path d="M438 235 463 223 488 234 463 246Z" fill="#d6a77f"/><path d="M443 230 466 219 489 230 466 241Z" fill="#eee1c9"/>
+  <path d="M502 238q-12-16-1-25 13 7 6 25Z" fill="#d9c4a7" stroke="#b69877" stroke-width="2"/><path d="M505 234q-20-18-25-5 8 14 25 5m0 0q17-19 25-7-7 17-25 7" fill="#81966e"/>
+  ${plant(105,340,.9)}${lamp(350,270)}
+  <!-- framed botanical print -->
+  <path d="M480 75 548 107v76l-68-32Z" fill="#a97d5d" stroke="#fff7e8" stroke-width="6"/><path d="M490 86 538 109v60l-48-23Z" fill="#f3eadb"/><path d="M515 156q-10-26 3-43m-3 31q-14-14-21-7m22-17q13-13 20-5" stroke="#82966e" stroke-width="3" fill="none"/>
+ </g>`,
+ bedroom:`<g class="bedroom-details" pointer-events="none">
+  <!-- upholstered headboard -->
+  <path d="M160 190 275 137 392 191 392 234 275 290 160 234Z" fill="#b88c6b" stroke="#966f53" stroke-width="5"/>
+  <path d="M173 194 275 147 379 194 379 224 275 273 173 224Z" fill="url(#v18headboard)" stroke="#e9d5bd" stroke-width="4"/>
+  <path d="M190 199 275 160 362 199M190 217 275 256 362 217" stroke="#fff3e3" stroke-width="2" opacity=".7" fill="none"/>
+  <!-- layered pillows -->
+  <path d="M190 211 242 187 293 211 242 236Z" fill="#f9f1e4" stroke="#d6bea1" stroke-width="3"/><path d="M253 211 308 185 359 209 305 235Z" fill="#f3e6d6" stroke="#d0b69a" stroke-width="3"/>
+  <path d="M205 210q34-18 67 0M269 210q35-18 69 0" fill="none" stroke="#d9c2a7" stroke-width="2"/>
+  <!-- thick duvet with embroidered seams -->
+  <path d="M145 235 275 296 405 235 405 292 275 359 145 297Z" fill="url(#v18duvet)" stroke="#b98f70" stroke-width="4"/>
+  <path d="M145 235 275 296 405 235 375 220 275 267 174 220Z" fill="#f8efe1" stroke="#d8c1a6" stroke-width="3"/>
+  <path d="M164 246 275 298 385 246M164 270 275 322 385 270M184 288 275 331 366 288" fill="none" stroke="#fff8ec" stroke-width="2.5" opacity=".8"/>
+  <path d="M205 267q18-14 35 0m68 28q18-14 35 0" fill="none" stroke="#c8a78b" stroke-width="2" stroke-dasharray="3 5"/>
+  <!-- bed frame and turned legs -->
+  <path d="M145 297 275 359 405 292v24L275 382 145 321Z" fill="#b78965" stroke="#956c4e" stroke-width="3"/><path d="M163 320 163 344M386 313 386 337" stroke="#8e684a" stroke-width="8" stroke-linecap="round"/>
+  <!-- bedside tables -->
+  <path d="M410 276 451 256 492 276 451 297Z" fill="#d8b48f" stroke="#a77d5c" stroke-width="3"/><path d="M410 276 451 297 451 338 410 316Z" fill="#bb906c"/><path d="M451 297 492 276 492 316 451 338Z" fill="#d3ae88"/><path d="M420 285 451 301 451 321 420 305Z" fill="#ecdac1"/><circle cx="444" cy="309" r="3" fill="#8d684d"/>
+  <path d="M438 262v-19l13-6 13 6v19" fill="#f2e4cf" stroke="#b89a78" stroke-width="2"/><path d="M442 242q-6-13 9-20 14 10 7 20Z" fill="#f5d58d" class="room-lamp-glow"/>
+  <path d="M95 306 132 289 168 306 132 324Z" fill="#c38f70"/><path d="M107 306 107 339 132 352 157 339 157 306Z" fill="#d2a083"/>${plant(132,302,.65)}
+  <!-- wall art and small floating shelf -->
+  <path d="M430 91 495 61 495 126 430 157Z" fill="#ad8060" stroke="#fff8ea" stroke-width="6"/><path d="M440 99 484 79v42l-44 20Z" fill="#e8eadc"/><path d="M459 132q-5-20 7-35m-6 25q-12-9-17-1" stroke="#84976f" stroke-width="3" fill="none"/>
+  <path d="M405 180 490 140" stroke="#9f7958" stroke-width="7"/><path d="M420 171q9-15 18 0v12h-18Z" fill="#e8d9c5"/><path d="M447 159q9-14 18 0v12h-18Z" fill="#d8e2d3"/>
  </g>`,
  kitchen:`<g class="kitchen-details" pointer-events="none">
-   <!-- tiled backsplash -->
-   <path d="M90 178 220 118 350 178 350 220 220 282 90 220Z" fill="#f3eadb" opacity=".72"/>
-   <path d="M115 190 220 141 325 190M115 210 220 259 325 210M167 166 167 235M220 141 220 259M273 166 273 235" stroke="#d5c2a8" stroke-width="2" opacity=".75"/>
-   <!-- hanging shelf and crockery -->
-   <path d="M405 105 520 159" stroke="#a77c59" stroke-width="8" stroke-linecap="round"/>
-   <path d="M425 109 425 143M455 123 455 157M485 137 485 171" stroke="#b98f6c" stroke-width="3"/>
-   <path d="M416 140q10-18 20 0v14h-20Z" fill="#e7d7c2" stroke="#bca184" stroke-width="2"/>
-   <path d="M447 154q10-18 20 0v14h-20Z" fill="#d8e4d9" stroke="#9cae95" stroke-width="2"/>
-   <path d="M477 168q10-18 20 0v14h-20Z" fill="#f0d7c0" stroke="#c8a17e" stroke-width="2"/>
-   <!-- fruit bowl -->
-   <path d="M255 232q38 30 76 0l-8 17q-30 18-60 0Z" fill="#c88e6b" stroke="#a97555" stroke-width="2"/>
-   <circle cx="274" cy="228" r="11" fill="#d98c75"/><circle cx="294" cy="222" r="12" fill="#e3b36e"/><circle cx="313" cy="230" r="10" fill="#8da276"/>
-   <!-- towel and hanging herbs -->
-   <path d="M535 195q20 2 26 18l-8 46-25-12Z" fill="#f7f0e3" stroke="#d9c6ac" stroke-width="2"/>
-   <path d="M535 201q10 7 15 0" fill="none" stroke="#b7a18a" stroke-width="2"/>
-   <g class="sway-plant" transform-origin="390px 190px" fill="#82956e"><path d="M390 190q-28-22-30-4 14 17 30 4Z"/><path d="M390 190q-4-28 12-27 8 16-12 27Z"/><path d="M390 190q20-24 29-8-10 16-29 8Z"/></g>
+  <!-- tiled backsplash with hand-painted tile details -->
+  <path d="M80 175 220 110 365 178 220 246Z" fill="#f8f1e5" stroke="#d7c5aa" stroke-width="3"/>
+  <path d="M104 175 220 121 341 178M104 198 220 253 341 198M143 157 143 216M181 139 181 235M220 121 220 253M260 140 260 235M300 159 300 216" stroke="#d8c8b2" stroke-width="2" fill="none"/>
+  <g fill="#a5b18d" opacity=".55"><path d="M130 178q8-13 16 0-8 12-16 0Z"/><path d="M237 150q8-13 16 0-8 12-16 0Z"/><path d="M286 190q8-13 16 0-8 12-16 0Z"/></g>
+  <!-- lower cabinets and butcher-block counter -->
+  <path d="M82 232 222 166 362 232 222 300Z" fill="#d8b38c" stroke="#a77c58" stroke-width="4"/><path d="M82 232 222 300 222 365 82 297Z" fill="#c29570"/><path d="M222 300 362 232 362 297 222 365Z" fill="#d0a77f"/>
+  <path d="M99 242 222 301 222 345 99 285Z" fill="#e9d4b8" stroke="#a77d59" stroke-width="3"/><path d="M235 306 345 253 345 294 235 348Z" fill="#e7d1b3" stroke="#a77d59" stroke-width="3"/>
+  <path d="M160 272 160 319M286 291 286 328" stroke="#b58b67" stroke-width="3"/><circle cx="176" cy="309" r="3" fill="#89664a"/><circle cx="303" cy="319" r="3" fill="#89664a"/>
+  <!-- inset sink and brass tap -->
+  <path d="M117 227 176 199 234 227 175 256Z" fill="#f4eee2" stroke="#b89b7c" stroke-width="3"/><path d="M135 227 176 208 216 227 175 247Z" fill="#b8d1cb" stroke="#e9f3e9" stroke-width="3"/><path d="M176 207v-17q0-12 13-12h10" fill="none" stroke="#b88d5d" stroke-width="5" stroke-linecap="round"/>
+  <!-- stove with enamel top and burners -->
+  <path d="M245 180 293 158 341 180 293 204Z" fill="#f6f0e5" stroke="#b99d7e" stroke-width="3"/><ellipse cx="278" cy="180" rx="12" ry="6" fill="#81776b"/><ellipse cx="307" cy="192" rx="12" ry="6" fill="#81776b"/><path d="M266 181 266 194M319 190 319 203" stroke="#aa8b69" stroke-width="3"/>
+  <!-- wall shelf with jars, plates and hanging herbs -->
+  <path d="M398 123 526 183" stroke="#9f7654" stroke-width="9" stroke-linecap="round"/><path d="M416 129v-24M458 149v-24M500 169v-24" stroke="#a57c58" stroke-width="3"/>
+  <path d="M405 104q12-18 24 0v23h-24Z" fill="#e9dcc8" stroke="#bda487" stroke-width="2"/><path d="M448 124q12-18 24 0v22h-24Z" fill="#d7e3d6" stroke="#a3b296" stroke-width="2"/><path d="M490 144q12-18 24 0v22h-24Z" fill="#f2d8bf" stroke="#c9a17d" stroke-width="2"/>
+  <path d="M410 96q15-20 30 0M453 116q15-20 30 0" fill="none" stroke="#fff8ec" stroke-width="3"/>
+  <!-- fruit bowl, bread board, tea kettle -->
+  <path d="M270 218q35 27 70 0l-7 17q-27 17-56 0Z" fill="#b67f5e" stroke="#946847" stroke-width="2"/><circle cx="284" cy="213" r="11" fill="#d77f6d"/><circle cx="306" cy="207" r="12" fill="#e5b86f"/><circle cx="327" cy="215" r="10" fill="#8b9e72"/>
+  <path d="M375 229 402 216 428 229 401 242Z" fill="#c69c73"/><path d="M387 220q-4-16 10-20 15 8 7 20Z" fill="#f0e7d7" stroke="#ad9274" stroke-width="2"/><path d="M398 201q-7-10 1-17m4 16q-2-9 5-13" fill="none" stroke="#fff" stroke-width="2" class="room-steam"/>
+  <path d="M540 194q18-4 25 13l-7 39-25-12Z" fill="#f8f0e4" stroke="#d7c4aa" stroke-width="2"/><path d="M538 207q10 8 19 0" stroke="#c5aa8e" stroke-width="2" fill="none"/>
+  ${plant(550,285,.65)}
  </g>`,
  balcony:`<g class="balcony-details" pointer-events="none">
-   <!-- canopy and string lights -->
-   <path d="M65 103q130-55 260 0" fill="none" stroke="#b78f6c" stroke-width="4"/>
-   <path d="M92 91 92 105M145 77 145 91M200 68 200 82M255 70 255 84M310 88 310 102" stroke="#b78f6c" stroke-width="2"/>
-   <g class="balcony-lights" fill="#f5d98e"><circle cx="92" cy="107" r="5"/><circle cx="145" cy="93" r="5"/><circle cx="200" cy="84" r="5"/><circle cx="255" cy="86" r="5"/><circle cx="310" cy="104" r="5"/></g>
-   <!-- flower boxes -->
-   <path d="M80 312 130 288 180 312 130 337Z" fill="#b98262" stroke="#986c50" stroke-width="3"/>
-   <path d="M91 311 91 338 130 359 169 338 169 311Z" fill="#c58e6b"/>
-   <g class="sway-plant" transform-origin="130px 300px" fill="#78936a"><path d="M130 311q-35-34-42-10 17 22 42 10Z"/><path d="M130 311q-4-40 18-40 12 26-18 40Z"/><path d="M130 311q32-35 47-12-14 25-47 12Z"/></g>
-   <g fill="#e7a6a0"><circle cx="104" cy="294" r="8"/><circle cx="146" cy="276" r="9"/><circle cx="166" cy="300" r="7"/></g>
-   <!-- rattan chair -->
-   <path d="M395 270 455 242 515 270 455 300Z" fill="#c9a17a" stroke="#9d7657" stroke-width="4"/>
-   <path d="M405 270 405 325M505 270 505 325M420 310 490 310" stroke="#98704f" stroke-width="6" stroke-linecap="round"/>
-   <path d="M416 269 455 250 494 269 455 289Z" fill="#f3e5d1" stroke="#b58c67" stroke-width="3"/>
-   <!-- lantern -->
-   <path d="M540 170 558 160 576 170 558 180Z" fill="#c39a70"/><path d="M546 170 546 207 558 214 570 207 570 170Z" fill="#ead9b8" stroke="#b58c67" stroke-width="2"/><path d="M558 180q-10 13 0 20 10-7 0-20Z" fill="#f2c879" class="lamp-glow"/>
+  <!-- canopy and warm string lights -->
+  <path d="M70 103q120-65 270-4" fill="none" stroke="#a9805d" stroke-width="5"/><path d="M93 92v16M145 75v17M200 66v18M255 73v18M310 91v16" stroke="#a9805d" stroke-width="2"/>
+  <g class="balcony-lights" fill="#f5d98e"><circle cx="93" cy="109" r="6"/><circle cx="145" cy="92" r="6"/><circle cx="200" cy="84" r="6"/><circle cx="255" cy="91" r="6"/><circle cx="310" cy="107" r="6"/></g>
+  <!-- wrought iron railing and climbing vines -->
+  <path d="M55 250 320 382 585 250" fill="none" stroke="#987455" stroke-width="9"/><path d="M55 250 55 181M112 278 112 209M169 306 169 237M226 335 226 266M283 363 283 294M340 372 340 303M397 344 397 275M454 316 454 247M511 288 511 219M585 250 585 181" stroke="#b48c67" stroke-width="6"/><path d="M55 185 320 317 585 185" fill="none" stroke="#f4e6d0" stroke-width="5"/>
+  <!-- bistro table -->
+  <path d="M250 300 304 274 358 300 304 327Z" fill="#c59b74" stroke="#987150" stroke-width="4"/><path d="M304 327v43M282 361h44" stroke="#987150" stroke-width="6"/><path d="M275 298 304 284 333 298 304 312Z" fill="#f3e7d6"/>
+  <path d="M291 293q-7-13 4-17 12 7 6 17Z" fill="#f4e9d8" stroke="#b89b7d" stroke-width="2"/><path d="M298 276q-5-7 1-12m3 12q-2-7 4-10" stroke="#fff" stroke-width="2" fill="none" class="room-steam"/>
+  <!-- rattan chair with woven back -->
+  <path d="M390 273 439 250 489 273 439 297Z" fill="#d2aa7f" stroke="#98704f" stroke-width="4"/><path d="M397 269 397 229q42-28 84 0v43" fill="#d8b48b" stroke="#98704f" stroke-width="5"/><path d="M407 237q30-18 63 0M407 249q30-18 63 0M407 261q30-18 63 0" fill="none" stroke="#f0d8b6" stroke-width="2"/><path d="M401 273v55M477 273v55M413 319h54" stroke="#98704f" stroke-width="6"/>
+  <!-- flower boxes and abundant blooms -->
+  <path d="M78 310 130 284 183 310 130 337Z" fill="#b98262" stroke="#986b4e" stroke-width="3"/><path d="M89 310v27l41 21 42-21v-27" fill="#c78e6c"/><g class="room-leaves" fill="#7f986b"><path d="M130 307q-39-38-49-12 20 23 49 12Z"/><path d="M130 307q-3-45 20-45 13 28-20 45Z"/><path d="M130 307q37-40 52-14-15 27-52 14Z"/><path d="M130 307q-20-27-34-12 12 21 34 12Z"/></g><g fill="#e6a6a0" stroke="#c78379" stroke-width="1.5"><circle cx="100" cy="287" r="9"/><circle cx="148" cy="267" r="10"/><circle cx="169" cy="294" r="8"/><circle cx="121" cy="275" r="7"/></g>
+  <path d="M500 321 535 304 570 321 535 338Z" fill="#b98060"/><path d="M510 321v29l25 13 25-13v-29" fill="#ca9270"/>${plant(535,312,.65)}
  </g>`
  };
- return `${common}${rooms[room]||rooms.living}`;
+ return `${ambient}${rooms[room]||rooms.living}`;
 }
 
-function roomStage(room){const roomNames={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'};const placed=(farm.house.placed[room]||[]).map((x,i)=>{const item=furnitureCatalog.find(c=>c.id===x.id);return item?furnitureButton(item,room,i):''}).join('');return `<div class="v11-room-stage ${farm.house.decorMode?'decor-active':''}" data-room-stage="${room}"><svg viewBox="0 0 640 460" role="img" aria-label="奶油法式乡村风${roomNames[room]}2D等距场景"><defs><linearGradient id="v11wall" x2="0" y2="1"><stop stop-color="#fbf3e3"/><stop offset="1" stop-color="#e9ddc7"/></linearGradient><linearGradient id="v11floor" x2="0" y2="1"><stop stop-color="#d9b58e"/><stop offset="1" stop-color="#b98761"/></linearGradient><pattern id="v12wood" width="34" height="18" patternUnits="userSpaceOnUse"><path d="M0 8H34M8 0V8M25 8V18" stroke="#9b7657" stroke-opacity=".12" stroke-width="1"/><path d="M4 3q8-2 15 0" stroke="#fff7e9" stroke-opacity=".35" fill="none"/></pattern><pattern id="v12wallpaper" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="7" cy="8" r="1.2" fill="#c8b89b" opacity=".2"/><path d="M20 17q4-5 7 0" stroke="#c8b89b" stroke-opacity=".15" fill="none"/></pattern></defs>${roomArtwork(room)}<g pointer-events="none" opacity=".52"><path d="M35 145 320 285 605 145" fill="none" stroke="url(#v12wallpaper)" stroke-width="24"/><path d="M35 290 320 430 605 290" fill="none" stroke="url(#v12wood)" stroke-width="118"/><path d="M54 286 320 416 585 286" fill="none" stroke="#fff5e5" stroke-opacity=".42" stroke-width="2"/><path d="M92 318 320 425M150 345 320 430M210 373 320 430M548 310 320 425M490 340 320 425M430 370 320 425" stroke="#916d4e" stroke-opacity=".12" stroke-width="2"/><path d="M70 290 320 412 570 290" fill="none" stroke="#fff8e9" stroke-opacity=".6" stroke-width="3"/></g>${roomDetailArt(room)}<path d="M35 290 320 430 605 290" fill="none" stroke="#a97d59" stroke-width="7" opacity=".65"/><g fill="#fff5d8" opacity=".5"><circle cx="280" cy="170" r="3"/><circle cx="330" cy="205" r="2"/><circle cx="380" cy="150" r="2.5"/></g></svg>${placed}<div class="room-stage-grain"></div><div class="room-weather-wash ${farm.world?.weather==='细雨'?'rainy':farm.world?.weather==='晴'?'sunny':''}"></div></div>`}
+function roomStage(room){const roomNames={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'};const placed=(farm.house.placed[room]||[]).map((x,i)=>{const item=furnitureCatalog.find(c=>c.id===x.id);return item?furnitureButton(item,room,i):''}).join('');return `<div class="v11-room-stage v18-storybook-stage ${farm.house.decorMode?'decor-active':''}" data-room-stage="${room}"><svg viewBox="0 0 640 460" role="img" aria-label="手绘法式奶油乡村风${roomNames[room]}2D等距生活模拟游戏场景"><defs>
+ <linearGradient id="v18wallpaper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbf3e4"/><stop offset=".55" stop-color="#f2e7d4"/><stop offset="1" stop-color="#e9dbc4"/></linearGradient>
+ <linearGradient id="v18leftwall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff8e9"/><stop offset="1" stop-color="#eadcc6"/></linearGradient><linearGradient id="v18rightwall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7efdf"/><stop offset="1" stop-color="#dfcfb7"/></linearGradient>
+ <linearGradient id="v18floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e4c7a4"/><stop offset=".55" stop-color="#d2ad85"/><stop offset="1" stop-color="#b98b65"/></linearGradient>
+ <linearGradient id="v18glass" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#a8c9c6"/><stop offset=".5" stop-color="#d4e5d9"/><stop offset="1" stop-color="#92b6b0"/></linearGradient><linearGradient id="v18skyshine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".65"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+ <linearGradient id="v18linen" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#e9d8c2"/><stop offset=".4" stop-color="#fff8eb"/><stop offset=".7" stop-color="#f5e8d5"/><stop offset="1" stop-color="#dfc5a8"/></linearGradient>
+ <linearGradient id="v18oak" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dfbd96"/><stop offset="1" stop-color="#b88760"/></linearGradient><linearGradient id="v18pot" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d9a887"/><stop offset="1" stop-color="#ad765b"/></linearGradient>
+ <linearGradient id="v18sofa" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c1cba9"/><stop offset="1" stop-color="#839775"/></linearGradient><linearGradient id="v18sofaSide" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a7b694"/><stop offset="1" stop-color="#748969"/></linearGradient>
+ <linearGradient id="v18headboard" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ead7c1"/><stop offset="1" stop-color="#c8a98c"/></linearGradient><linearGradient id="v18duvet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8f0e4"/><stop offset=".6" stop-color="#e9d9c7"/><stop offset="1" stop-color="#cdb49a"/></linearGradient><linearGradient id="v18lampshade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0b6"/><stop offset="1" stop-color="#d7b86f"/></linearGradient>
+ <linearGradient id="v18rug" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4e8d6"/><stop offset=".5" stop-color="#d9c3a7"/><stop offset="1" stop-color="#c6a889"/></linearGradient><linearGradient id="v18sunbeam" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff5c9" stop-opacity=".8"/><stop offset="1" stop-color="#fff5c9" stop-opacity="0"/></linearGradient>
+ <pattern id="v18parquet" width="48" height="28" patternUnits="userSpaceOnUse"><path d="M0 14H48M24 0V14M0 14V28M48 14V28" stroke="#8e694b" stroke-opacity=".22" stroke-width="1.2"/><path d="M5 5q10-3 18 0M28 20q10-3 17 0" stroke="#fff7e8" stroke-opacity=".34" stroke-width="1.2" fill="none"/></pattern>
+ <filter id="v18shadow" x="-35%" y="-35%" width="170%" height="180%"><feGaussianBlur stdDeviation="3.5"/></filter><filter id="v18blur"><feGaussianBlur stdDeviation="8"/></filter>
+ </defs>${roomArtwork(room)}${roomDetailArt(room)}
+ <g class="room-front-glow" pointer-events="none"><ellipse cx="320" cy="300" rx="230" ry="135" fill="url(#v18sunbeam)" opacity=".22"/></g>
+ <g class="room-pollen" pointer-events="none" fill="#fff8d8"><circle cx="220" cy="170" r="2.4"/><circle cx="300" cy="210" r="1.7"/><circle cx="430" cy="150" r="2.1"/><circle cx="520" cy="255" r="1.8"/><circle cx="160" cy="280" r="1.5"/></g>
+ </svg>${placed}<div class="room-stage-grain"></div><div class="room-weather-wash ${farm.world?.weather==='细雨'?'rainy':farm.world?.weather==='晴'?'sunny':''}"></div><div class="room-vignette" aria-hidden="true"></div></div>`}
+
 function houseView(){
  ensureWorld();const h=farm.house,room=h.currentRoom||'living',names={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'},ch=storyScene();
  if(!farm.buildings.cottage)return `${header()}<section class="gcard"><b>小屋还没有建好</b><p class="gmuted">先去商店建造温馨小屋，再回来看看吧。</p><button class="primary" data-view="shop">去建造</button></section>`;
