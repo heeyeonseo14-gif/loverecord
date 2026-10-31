@@ -112,13 +112,36 @@ function looksLikeFarmData(v){
  const d=v.data&&typeof v.data==='object'?v.data:v;
  return ('coins'in d||'plots'in d||'inventory'in d)&&('stats'in d||'level'in d||'buildings'in d);
 }
+
 function addRescueCandidate(list,source,raw,ownerHint=''){
- const data=raw?.data&&typeof raw.data==='object'?raw.data:raw;
- if(!looksLikeFarmData(data))return;
- const owner=String(data.ownerId||data.partnerId||ownerHint||'solo');
- const sig=owner+'|'+(Number(data.lastVisit)||0)+'|'+(Number(data.coins)||0)+'|'+(Array.isArray(data.plots)?data.plots.length:0)+'|'+source;
- if(list.some(x=>x.sig===sig))return;
- list.push({source,owner,data,summary:rescueSummary(data),score:farmProgressScore(data),sig});
+ const seen=new WeakSet();
+ function walk(value,path,depth,owner){
+  if(depth>6||value==null)return;
+  let obj=value;
+  if(typeof obj==='string'){
+   const s=obj.trim();
+   if((s.startsWith('{')&&s.endsWith('}'))||(s.startsWith('[')&&s.endsWith(']'))){
+    try{obj=JSON.parse(s)}catch(_){return}
+   }else return;
+  }
+  if(typeof obj!=='object')return;
+  if(seen.has(obj))return;seen.add(obj);
+  if(looksLikeFarmData(obj)){
+   const data=obj.data&&typeof obj.data==='object'?obj.data:obj;
+   const resolvedOwner=String(data.ownerId||data.partnerId||owner||ownerHint||'solo');
+   const sig=resolvedOwner+'|'+(Number(data.lastVisit||data.updatedAt||data.savedAt)||0)+'|'+(Number(data.coins)||0)+'|'+(Array.isArray(data.plots)?data.plots.length:0)+'|'+path;
+   if(!list.some(x=>x.sig===sig)){
+    list.push({source:path,owner:resolvedOwner,data,summary:rescueSummary(data),score:farmProgressScore(data),sig});
+   }
+  }
+  if(Array.isArray(obj)){obj.forEach((v,i)=>walk(v,`${path} → [${i}]`,depth+1,owner));return;}
+  for(const [k,v] of Object.entries(obj)){
+   if(['__proto__','prototype','constructor'].includes(k))continue;
+   const nextOwner=(/^(id|ownerId|partnerId|profileId)$/i.test(k)&&typeof v==='string')?v:owner;
+   walk(v,`${path} → ${k}`,depth+1,nextOwner);
+  }
+ }
+ walk(raw,source,0,ownerHint);
 }
 async function readAllFromDatabase(dbName){
  return new Promise(resolve=>{
@@ -139,30 +162,46 @@ async function readAllFromDatabase(dbName){
   };
  });
 }
+
 async function scanFarmArchives(){
  rescueScanBusy=true;rescueScanError='';rescueCandidates=[];render();
  const found=[];
  try{
-  // Scan every farm-related database that already exists. Never create a database during rescue.
+  // Scan every database exposed by this origin. Do not filter by name:
+  // older versions may have used unrelated database names.
   let dbNames=[];
-  try{if(indexedDB.databases)dbNames=(await indexedDB.databases()).map(x=>x.name).filter(Boolean)}catch(_){}
+  try{
+   if(typeof indexedDB.databases==='function'){
+    const listed=await indexedDB.databases();
+    dbNames=(listed||[]).map(x=>x&&x.name).filter(Boolean);
+   }else{
+    rescueScanError='当前浏览器不支持列出全部 IndexedDB 数据库；已扫描可访问的本地备份，但数据库历史记录可能不完整。';
+   }
+  }catch(e){rescueScanError='读取数据库清单失败：'+(e?.message||String(e))}
   dbNames=[...new Set(dbNames)];
-  const farmDbs=dbNames.filter(n=>/farm|little/i.test(n));
-  const dbResults=await Promise.all(farmDbs.map(readAllFromDatabase));
+  const dbResults=await Promise.all(dbNames.map(readAllFromDatabase));
   dbResults.flat().forEach(x=>found.push(x));
-  // Scan localStorage keys without modifying any of them.
-  for(let i=0;i<localStorage.length;i++){
-   const key=localStorage.key(i);if(!key)continue;
-   try{
-    const value=JSON.parse(localStorage.getItem(key)||'null');
-    if(looksLikeFarmData(value)){
-     const data=value.data&&typeof value.data==='object'?value.data:value;
-     addRescueCandidate(found,`localStorage · ${key}`,data,key.includes('::')?decodeURIComponent(key.split('::').slice(1).join('::')):'');
-    }
-   }catch(_){}
-  }
+  try{
+   for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);if(!key)continue;
+    try{
+     const value=localStorage.getItem(key);
+     if(value!=null)addRescueCandidate(found,`localStorage · ${key}`,value,key.includes('::')?decodeURIComponent(key.split('::').slice(1).join('::')):'');
+    }catch(_){}
+   }
+  }catch(e){rescueScanError=(rescueScanError?rescueScanError+'；':'')+'localStorage 扫描受限：'+(e?.message||String(e))}
+  try{
+   for(let i=0;i<sessionStorage.length;i++){
+    const key=sessionStorage.key(i);if(!key)continue;
+    try{addRescueCandidate(found,`sessionStorage · ${key}`,sessionStorage.getItem(key))}catch(_){}
+   }
+  }catch(_){}
   rescueCandidates=found.sort((a,b)=>b.score-a.score||b.summary.updatedAt-a.summary.updatedAt);
-  if(!rescueCandidates.length)rescueScanError='没有在当前浏览器可访问的农场数据库或本地备份中找到可识别的存档。扫描没有修改任何数据。';
+  if(!rescueCandidates.length){
+   rescueScanError=(rescueScanError?rescueScanError+'；':'')+'没有在当前网站来源可访问的 IndexedDB、localStorage 或 sessionStorage 中找到可识别的农场存档。扫描没有修改任何数据。';
+  }else{
+   rescueScanError=(rescueScanError?rescueScanError+'；':'')+`本次已检查当前网站来源的 ${dbNames.length} 个 IndexedDB 数据库及本地/会话存储。不同浏览器来源（域名或协议）之间的数据无法互相读取。`;
+  }
  }catch(e){rescueScanError='扫描遇到问题：'+(e?.message||String(e))}
  finally{rescueScanBusy=false;render()}
  return rescueCandidates;
@@ -197,7 +236,7 @@ async function restoreFarmArchive(index){
 }
 function rescueView(){
  const rows=rescueCandidates.map((x,i)=>`<section class="gcard"><div class="grow" style="justify-content:space-between"><b>候选存档 ${i+1}</b><span class="gmuted">${esc(x.owner)}</span></div><p class="gmuted" style="word-break:break-all">${esc(x.source)}</p><div class="gstats"><div class="gstat"><b>🪙 ${x.summary.coins}</b>金币</div><div class="gstat"><b>⭐ ${x.summary.level}</b>等级</div><div class="gstat"><b>🌾 ${x.summary.harvests}</b>收获</div></div><p class="gmuted">经验 ${x.summary.xp} · 已种植 ${x.summary.planted} · 土地上作物 ${x.summary.crops} · 库存作物 ${x.summary.harvestedCrops} · 小鸡 ${x.summary.chickens} · 设施 ${x.summary.buildings}</p><p class="gmuted">存档时间：${x.summary.updatedAt?new Date(x.summary.updatedAt).toLocaleString():'未记录'}</p><button class="primary" data-rescue-restore="${i}">恢复到当前联系人</button></section>`).join('');
- return `<section class="gcard"><div class="grow" style="justify-content:space-between"><b>🛟 农场存档急救中心</b><button data-view="farm">返回农场</button></div><p class="gmuted">扫描当前浏览器中可访问的农场 IndexedDB 和 localStorage。扫描只读取，不会自动覆盖、删除或初始化任何存档。</p><button class="primary" data-action="rescue-scan" ${rescueScanBusy?'disabled':''}>${rescueScanBusy?'正在扫描…':'重新扫描所有存档'}</button>${rescueScanError?`<div class="gnotice">${esc(rescueScanError)}</div>`:''}<p class="gmuted">找到 ${rescueCandidates.length} 份候选存档。请根据金币、等级、收获和存档时间选择，不要只看排序。</p>${rows||'<div class="gnotice">尚未扫描，或没有找到可识别的备份。</div>'}</section>`;
+ return `<section class="gcard"><div class="grow" style="justify-content:space-between"><b>🛟 农场存档急救中心</b><button data-view="farm">返回农场</button></div><p class="gmuted">扫描当前网站来源下全部可枚举 IndexedDB 数据库、localStorage 与 sessionStorage，并递归检查嵌套备份。扫描只读取，不会自动覆盖、删除或初始化任何存档。</p><button class="primary" data-action="rescue-scan" ${rescueScanBusy?'disabled':''}>${rescueScanBusy?'正在扫描…':'重新扫描所有存档'}</button>${rescueScanError?`<div class="gnotice">${esc(rescueScanError)}</div>`:''}<p class="gmuted">找到 ${rescueCandidates.length} 份候选存档。请根据金币、等级、收获和存档时间选择，不要只看排序。</p>${rows||'<div class="gnotice">尚未扫描，或没有找到可识别的备份。</div>'}</section>`;
 }
 
 async function save(){
