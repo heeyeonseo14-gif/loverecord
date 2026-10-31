@@ -286,15 +286,74 @@ function achievementDefs(){return [
  ['festival-first','节日来客','参加一次季节庆典',(farm.world?.festivalClaims||[]).length>=1,65],
  ['story-two','共同回忆','完成两章共同故事',(farm.story?.chapter||0)>=2,80]
  ];}
+function furnitureArt(type){
+ const svg={
+ sofa:`<path d="M14 35 50 17 87 35 50 54Z" fill="#708568"/><path d="M14 35 50 54v12L14 48Z" fill="#829779"/><path d="M50 54 87 35v13L50 66Z" fill="#657a5e"/><path d="M18 31q2-13 13-17l19-9 23 11q10 5 10 16L50 50Z" fill="#b8c4a3" stroke="#708568" stroke-width="2.5"/><path d="m22 31 14-7 14 7v14L36 52 22 45Z" fill="#e9d9c5" stroke="#d2bca2"/><path d="m53 31 15-7 13 7v14l-13 7-15-7Z" fill="#d8b6a3" stroke="#bd9985"/><path d="M28 32q7-5 13 0m17 0q7-5 13 0" fill="none" stroke="#fff8eb" stroke-width="2"/><path d="M20 48v9m59-9v9" stroke="#8a674d" stroke-width="3"/>`,
+ armchair:`<path d="m24 31 26-13 26 13-26 14Z" fill="#a8b592"/><path d="M24 31v17l26 14V45Z" fill="#849775"/><path d="M50 45v17l26-14V31Z" fill="#6e8566"/><path d="M21 28q0-12 12-17l17-8 18 9q10 5 10 17L50 45Z" fill="#c9d1b7" stroke="#849775" stroke-width="2.5"/><path d="m31 29 18-9 18 9-18 10Z" fill="#f0dfcb"/><path d="M29 48v13m43-13v13" stroke="#936e50" stroke-width="3"/>`,
+ coffee:`<path d="m14 36 36-18 36 18-36 19Z" fill="#a97b55"/><path d="m20 36 30-15 30 15-30 16Z" fill="#dfbd96" stroke="#9a704e" stroke-width="2"/><path d="M27 42v17m46-17v17" stroke="#896345" stroke-width="4"/><path d="m38 31 12-6 12 6-12 6Z" fill="#f7eddf"/><path d="m57 35 7-4 7 4-7 4Z" fill="#a5b18d"/><path d="M44 27q-2-5 3-7m5 7q-1-5 4-7" stroke="#fff" stroke-width="1.5" fill="none"/>`,
+ bookcase:`<path d="m23 14 29-10 28 10v47L52 72 23 61Z" fill="#9c704e"/><path d="m28 17 24-8 23 8v40l-23 9-24-10Z" fill="#bd9067" stroke="#815b40" stroke-width="2"/><path d="m28 29 24 10 23-10M28 43l24 10 23-10" stroke="#815b40" stroke-width="2"/><path d="m34 20 5-2 0 12-5-2Zm8-3 5-2v15l-5-2Zm12 8 5-2v12l-5 2Zm9-4 5-2v13l-5 2ZM35 39l5-2v11l-5 2Zm10 3 5-2v12l-5 2Zm13 5 5-2v10l-5 2Z" fill="#e7d4b8"/><path d="M51 8v60" stroke="#80583e" stroke-width="2"/>`,
+ lamp:`<path d="M49 33v28m-11 4h23" stroke="#9a744f" stroke-width="3"/><path d="m30 30 8-21h23l9 21-20 10Z" fill="#f1dba8" stroke="#c3a36d" stroke-width="2"/><path d="M35 28h31" stroke="#fff4d5" stroke-width="2"/><ellipse cx="50" cy="66" rx="14" ry="3" fill="#8c6a4b" opacity=".3"/>`,
+ sideboard:`<path d="m13 32 37-18 37 18-37 19Z" fill="#c99d72"/><path d="m13 32 37 19v17L13 49Z" fill="#a77a55"/><path d="m50 51 37-19v17L50 68Z" fill="#bd9067"/><path d="m21 34 13-6 13 7-13 7Z" fill="#f0dfc8"/><path d="m54 35 13-7 13 6-13 7Z" fill="#f0dfc8"/><circle cx="34" cy="38" r="1.8" fill="#97714f"/><circle cx="67" cy="39" r="1.8" fill="#97714f"/><path d="M22 51v10m55-10v10" stroke="#896448" stroke-width="3"/>`,
+ curtain:`<path d="M15 10h70" stroke="#987454" stroke-width="3"/><path d="M20 14q13-8 22 0v46q-11 8-22 0Zm31 0q14-8 29 0v46q-14 8-29 0Z" fill="#f3e6d3" stroke="#d0b89b" stroke-width="2"/><path d="M26 18v37m8-39v39m24-37v37m8-39v39m8-37v37" stroke="#ddc8ad" stroke-width="1.5"/><path d="M20 51q10 6 22 0m9 0q14 6 29 0" stroke="#c9a98b" stroke-width="2" fill="none"/>`,
+ bed:`<path d="m10 39 40-21 40 21-40 21Z" fill="#a77b56"/><path d="m15 36 35-18 35 18-35 18Z" fill="#f5e8d7" stroke="#c7a889" stroke-width="2"/><path d="m18 38 32 16v12L18 50Z" fill="#d7b89f"/><path d="m50 54 32-16v12L50 67Z" fill="#e8d7c4"/><path d="m20 34 14-7 14 7-14 7Z" fill="#fffaf0"/><path d="m52 34 14-7 14 7-14 7Z" fill="#fffaf0"/><path d="M14 39v22m72-22v22" stroke="#8e684b" stroke-width="3"/><path d="m20 18 30-15 30 15" fill="none" stroke="#b58c68" stroke-width="4"/>`,
+ wardrobe:`<path d="m23 17 27-13 27 13v48L50 78 23 65Z" fill="#c49a73"/><path d="m29 19 21-10 21 10v42L50 72 29 61Z" fill="#e8d4b8" stroke="#9c7654" stroke-width="2"/><path d="M50 9v63" stroke="#a17a56" stroke-width="2"/><path d="M44 36v8m12-8v8" stroke="#9a704d" stroke-width="3" stroke-linecap="round"/><path d="m33 22 13-6m-13 12 13-6" stroke="#fff4e4" stroke-width="1.5"/>`,
+ dresser:`<path d="m18 31 32-16 32 16-32 16Z" fill="#d7b18a"/><path d="m18 31 32 16v20L18 51Z" fill="#b98c65"/><path d="m50 47 32-16v20L50 67Z" fill="#c99c74"/><path d="m25 34 24 12v8L25 42Z" fill="#f1dfc8"/><path d="m54 48 22-11v8L54 56Z" fill="#f1dfc8"/><circle cx="43" cy="48" r="1.5" fill="#98704f"/><circle cx="65" cy="47" r="1.5" fill="#98704f"/>`,
+ vanity:`<path d="m20 34 30-15 30 15-30 16Z" fill="#d6b28d"/><path d="m20 34 30 16v18L20 52Z" fill="#b98c66"/><path d="m50 50 30-16v18L50 68Z" fill="#c99b73"/><path d="m34 17 16-9 16 9v18l-16 8-16-8Z" fill="#9d7759"/><path d="m39 18 11-6 11 6v13l-11 6-11-6Z" fill="#c8ded8" stroke="#f8efe1" stroke-width="2"/><path d="M44 55v10m12-10v10" stroke="#896547" stroke-width="3"/>`,
+ stove:`<path d="m16 28 34-17 34 17-34 18Z" fill="#e8dfd1" stroke="#aa9276" stroke-width="2"/><path d="m16 28 34 18v20L16 48Z" fill="#c8b49a"/><path d="m50 46 34-18v20L50 66Z" fill="#b29b7e"/><ellipse cx="39" cy="28" rx="9" ry="5" fill="#6c665e"/><ellipse cx="61" cy="39" rx="9" ry="5" fill="#6c665e"/><circle cx="39" cy="28" r="3" fill="#c5b69e"/><circle cx="61" cy="39" r="3" fill="#c5b69e"/><path d="m29 52 17 9m12-12 17-9" stroke="#f8eee0" stroke-width="2"/>`,
+ cupboard:`<path d="m18 28 32-16 32 16-32 17Z" fill="#ead9c2"/><path d="m18 28 32 17v22L18 49Z" fill="#c59a72"/><path d="m50 45 32-17v22L50 67Z" fill="#d8b28d"/><path d="m25 32 22 12v15L25 47Z" fill="#f3e7d6"/><path d="m55 47 20-11v15L55 62Z" fill="#f3e7d6"/><circle cx="43" cy="49" r="2" fill="#9d7856"/><circle cx="63" cy="50" r="2" fill="#9d7856"/>`,
+ island:`<path d="m12 34 38-19 38 19-38 20Z" fill="#9ba98a"/><path d="m12 34 38 20v18L12 52Z" fill="#7f9274"/><path d="m50 54 38-20v18L50 72Z" fill="#8c9d7e"/><path d="m20 32 30-15 30 15-30 16Z" fill="#e3c39e" stroke="#a67d59" stroke-width="2"/><path d="m30 40 18-9 18 9-18 9Z" fill="#f6eee0"/><path d="M26 55v12m48-12v12" stroke="#657b5d" stroke-width="3"/>`,
+ dining:`<path d="m13 34 37-19 37 19-37 19Z" fill="#c49569"/><path d="m20 34 30-15 30 15-30 15Z" fill="#e0bd95" stroke="#9c704d" stroke-width="2"/><path d="M28 43v20m44-20v20" stroke="#8d6748" stroke-width="4"/><path d="m38 29 12-6 12 6-12 6Z" fill="#f6eee0"/><path d="M50 23v-8m-4 5 4-5 4 5" stroke="#87956d" stroke-width="2" fill="none"/>`,
+ chair:`<path d="m30 29 21-11 21 11-21 11Z" fill="#cda77e"/><path d="m30 29 21 11v11L30 40Z" fill="#a97d57"/><path d="m51 40 21-11v11L51 51Z" fill="#bc9168"/><path d="M34 17v18m34-18v18m-29 19-4 12m34-12 4 12" stroke="#8f6849" stroke-width="3"/><path d="M36 20 51 12 66 20" fill="none" stroke="#e6c8a5" stroke-width="3"/>`,
+ shelf:`<path d="m17 24 33-16 33 16-33 17Z" fill="#a77a55"/><path d="m22 24 28-13 28 13-28 14Z" fill="#d7b18a"/><path d="m25 27 50 0M31 21v9m17-17v20m17-12v10" stroke="#8b6446" stroke-width="2"/><path d="m32 19 6-3 0 8-6 3Zm25-2 7-3v11l-7 3Z" fill="#f1e3cf"/>`,
+ chairbal:`<path d="m27 29 23-12 23 12-23 12Z" fill="#d2ad83" stroke="#98704f" stroke-width="2"/><path d="m30 27 0-17q20-13 40 0v18" fill="#dfc19d" stroke="#98704f" stroke-width="3"/><path d="M34 14q16-9 32 0M34 21q16-9 32 0" stroke="#f3dfc2" stroke-width="2" fill="none"/><path d="M33 39v24m34-24v24m-27-4h20" stroke="#98704f" stroke-width="3"/>`,
+ bistro:`<path d="m17 34 33-17 33 17-33 17Z" fill="#e0c49f" stroke="#98714f" stroke-width="2"/><path d="M50 49v17m-14 0h28" stroke="#98714f" stroke-width="4"/><path d="m43 30 7-4 7 4-7 4Z" fill="#f7eee1"/><path d="M50 26v-8" stroke="#78906b" stroke-width="2"/>`,
+ flowers:`<path d="m20 43 60 0-7 22H27Z" fill="#b87f61" stroke="#91684b" stroke-width="2"/><path d="M31 44q-15-27 2-31 13 12-2 31m18 0q-3-35 14-35 10 21-14 35m8 0q20-29 30-13-8 20-30 13" fill="#82966f" stroke="#637d5b" stroke-width="2"/><g fill="#e9a9a0"><circle cx="34" cy="15" r="6"/><circle cx="62" cy="11" r="6"/><circle cx="82" cy="29" r="6"/></g>`,
+ lantern:`<path d="M50 5v8m-13 5h26l-4 36H41Z" fill="#e7d1ad" stroke="#9c7954" stroke-width="2.5"/><path d="M43 23h14v22H43Z" fill="#f6d98b" opacity=".85"/><path d="M38 18 50 11 62 18M42 54l-5 8m21-8 5 8" stroke="#9c7954" stroke-width="2.5" fill="none"/>`,
+ plant:`<path d="m34 44 32 0-6 23H40Z" fill="#c98d70" stroke="#9e6e54" stroke-width="2"/><path d="M50 45q-30-27-28-42 23 1 28 42m2-3q12-39 30-34 3 25-30 34m-2-4Q39 2 51 0q18 17-1 38" fill="#83966d" stroke="#647e5a" stroke-width="2"/>`,
+ mirror:`<path d="m31 13 19-9 19 9v37L50 60 31 50Z" fill="#a77c59"/><path d="m36 15 14-7 14 7v31L50 53 36 46Z" fill="#c7dedb" stroke="#f7eddf" stroke-width="2"/><path d="m41 18 17-8m-17 18 17-8" stroke="#fff" stroke-width="2" opacity=".8"/><path d="M50 60v7m-10 0h20" stroke="#8b674a" stroke-width="3"/>`,
+ wallart:`<path d="m22 20 28-14 28 14v35L50 69 22 55Z" fill="#a87d5b"/><path d="m28 22 22-11 22 11v29L50 62 28 51Z" fill="#e7eadb" stroke="#fff8eb" stroke-width="3"/><path d="M50 52q-13-18 0-29 11 14 0 29m0-9q-18-15-20-3 8 12 20 3m0-7q18-18 22-4-7 14-22 4" fill="none" stroke="#83966f" stroke-width="2.5"/>`,
+ clock:`<path d="m50 6 24 13v32L50 64 26 51V19Z" fill="#b58b65"/><path d="m50 12 18 10v24L50 56 32 46V22Z" fill="#f4e8d6" stroke="#8e694c" stroke-width="2"/><circle cx="50" cy="34" r="13" fill="#fff9ed" stroke="#b89978" stroke-width="2"/><path d="M50 23v12l8 5" stroke="#86684b" stroke-width="2.5" fill="none"/>`,
+ rug:`<path d="m10 37 40-21 40 21-40 21Z" fill="#e9d9c2" stroke="#b99a78" stroke-width="3"/><path d="m20 37 30-15 30 15-30 15Z" fill="none" stroke="#fff7e8" stroke-width="3"/><path d="m30 37 20-10 20 10-20 10Z" fill="none" stroke="#c78f83" stroke-width="2"/><path d="m10 37-5 0m85 0 5 0" stroke="#b99a78" stroke-width="2"/>`,
+ cushion:`<path d="m19 31 31-16 31 16-31 17Z" fill="#e8d4c1" stroke="#bd9e83" stroke-width="2"/><path d="m19 31 31 17v17L19 48Z" fill="#d7b69f"/><path d="m50 48 31-17v17L50 65Z" fill="#c99f8c"/><path d="m32 34 18-9 18 9-18 10Z" fill="none" stroke="#fff4e6" stroke-width="2"/>`
+ }[type]||'';
+ return `<svg viewBox="0 0 100 76" aria-hidden="true" focusable="false"><ellipse cx="50" cy="68" rx="34" ry="4" fill="#6f5237" opacity=".13"/>${svg}</svg>`;
+}
 const furnitureCatalog=[
- {id:'bed',name:'奶油双人床',room:'bedroom',price:120,svg:'<svg viewBox="0 0 100 70"><path d="M8 37 50 16 92 37 50 59Z" fill="#b98e6b"/><path d="M14 34 50 15 86 33 50 52Z" fill="#f5e8d6" stroke="#c9ad8e" stroke-width="3"/><path d="M18 34 50 19 50 43 18 58Z" fill="#d9b8a2"/><path d="M50 19 82 34 82 58 50 43Z" fill="#fff5e7"/><path d="M23 31 38 24 50 30 35 37Z" fill="#fffdf7"/><path d="M50 30 65 23 78 30 63 37Z" fill="#fffdf7"/></svg>'},
- {id:'nightstand',name:'橡木床头柜',room:'bedroom',price:48,svg:'<svg viewBox="0 0 100 70"><path d="M25 25 51 12 78 25 51 39Z" fill="#d5b18a"/><path d="M25 25 51 39 51 62 25 48Z" fill="#a97b57"/><path d="M51 39 78 25 78 49 51 62Z" fill="#bd916a"/><path d="M39 32 51 26 63 32 51 38Z" fill="#e7c9a4"/></svg>'},
- {id:'stove',name:'复古炉灶',room:'kitchen',price:95,svg:'<svg viewBox="0 0 100 70"><path d="M20 22 52 7 84 22 52 38Z" fill="#eee5d7" stroke="#b9a58b" stroke-width="3"/><path d="M20 22 52 38 52 62 20 46Z" fill="#d7c5ad"/><path d="M52 38 84 22 84 46 52 62Z" fill="#b6a18a"/><path d="M32 24 51 15 71 24 52 33Z" fill="#71695e"/><circle cx="43" cy="24" r="5" fill="#b9b6a9"/><circle cx="61" cy="25" r="5" fill="#b9b6a9"/></svg>'},
- {id:'cupboard',name:'奶油餐边柜',room:'kitchen',price:78,svg:'<svg viewBox="0 0 100 70"><path d="M22 20 51 6 80 20 51 35Z" fill="#f2dfc5"/><path d="M22 20 51 35 51 62 22 47Z" fill="#c99d76"/><path d="M51 35 80 20 80 47 51 62Z" fill="#dfba94"/><path d="M31 25 48 34 48 52 31 43Z" fill="#f3e7d6"/><path d="M55 36 72 27 72 45 55 54Z" fill="#f3e7d6"/></svg>'},
- {id:'balcony-chair',name:'藤编休闲椅',room:'balcony',price:65,svg:'<svg viewBox="0 0 100 70"><path d="M30 17 66 17 76 40 39 40Z" fill="#cda77f" stroke="#9b7654" stroke-width="4"/><path d="M39 40 34 62M70 40 75 62M31 18 26 48M67 18 72 48" stroke="#9b7654" stroke-width="4" fill="none"/><path d="M36 23 65 23M39 30 68 30" stroke="#f0d7b4" stroke-width="2"/></svg>'},
- {id:'plant',name:'陶盆绿植',room:'all',price:28,svg:'<svg viewBox="0 0 100 70"><path d="M37 42 65 42 60 64 42 64Z" fill="#c78e70" stroke="#a8755b" stroke-width="3"/><path d="M51 43Q25 19 32 9Q48 13 51 43M52 43Q73 10 84 19Q78 37 52 43M50 41Q43 5 55 4Q67 20 50 41" fill="#8da17a" stroke="#6e8666" stroke-width="2"/></svg>'},
- {id:'rug',name:'奶油花纹地毯',room:'all',price:42,svg:'<svg viewBox="0 0 100 70"><path d="M10 36 50 15 90 36 50 58Z" fill="#ead8bd" stroke="#c9ad8e" stroke-width="3"/><path d="M22 36 50 22 78 36 50 50Z" fill="none" stroke="#fff8eb" stroke-width="3"/></svg>'}
-];
+ {id:'sofa',name:'鼠尾草绒布沙发',room:'living',category:'living',price:180,type:'sofa',desc:'柔软绒布与花卉靠枕，客厅主角'},
+ {id:'armchair',name:'法式单人扶手椅',room:'living',category:'living',price:105,type:'armchair',desc:'奶油色软包，适合窗边阅读'},
+ {id:'coffee-table',name:'复古橡木茶几',room:'living',category:'living',price:88,type:'coffee',desc:'摆上茶杯、书本与花束'},
+ {id:'bookcase',name:'乡村高书柜',room:'living',category:'living',price:145,type:'bookcase',desc:'收藏书籍与旅行纪念品'},
+ {id:'floor-lamp',name:'奶油布罩落地灯',room:'living',category:'living',price:76,type:'lamp',desc:'夜晚为沙发旁添一盏暖光'},
+ {id:'sideboard',name:'复古餐边柜',room:'living',category:'living',price:125,type:'sideboard',desc:'橡木抽屉与展示台面'},
+ {id:'bed',name:'法式雕花双人床',room:'bedroom',category:'bedroom',price:220,type:'bed',desc:'层叠棉被、软枕与雕花床头'},
+ {id:'nightstand',name:'橡木床头柜',room:'bedroom',category:'bedroom',price:58,type:'sideboard',desc:'床边收纳与小小台灯'},
+ {id:'wardrobe',name:'奶油双开门衣柜',room:'bedroom',category:'bedroom',price:175,type:'wardrobe',desc:'复古门板与黄铜把手'},
+ {id:'dresser',name:'三斗抽屉柜',room:'bedroom',category:'bedroom',price:115,type:'dresser',desc:'收纳衣物与日常小物'},
+ {id:'vanity',name:'花漾梳妆台',room:'bedroom',category:'bedroom',price:138,type:'vanity',desc:'椭圆镜与精致小抽屉'},
+ {id:'bedside-lamp',name:'暖光床头灯',room:'bedroom',category:'bedroom',price:48,type:'lamp',desc:'睡前阅读的柔和光线'},
+ {id:'stove',name:'复古珐琅炉灶',room:'kitchen',category:'kitchen',price:135,type:'stove',desc:'奶油白炉身与深色炉圈'},
+ {id:'cupboard',name:'鼠尾草餐边柜',room:'kitchen',category:'kitchen',price:118,type:'cupboard',desc:'收纳餐具与厨房杂货'},
+ {id:'kitchen-island',name:'乡村料理中岛',room:'kitchen',category:'kitchen',price:165,type:'island',desc:'备餐、摆放面包与水果'},
+ {id:'dining-table',name:'四人橡木餐桌',room:'kitchen',category:'kitchen',price:145,type:'dining',desc:'一起吃早餐、分享小故事'},
+ {id:'dining-chair',name:'格纹软垫餐椅',room:'kitchen',category:'kitchen',price:55,type:'chair',desc:'与餐桌搭配的木质餐椅'},
+ {id:'wall-shelf',name:'陶器展示层架',room:'kitchen',category:'kitchen',price:68,type:'shelf',desc:'摆放陶罐、香料和杯子'},
+ {id:'balcony-chair',name:'藤编休闲椅',room:'balcony',category:'balcony',price:75,type:'chairbal',desc:'适合阳台午后小憩'},
+ {id:'bistro-table',name:'铁艺圆形茶桌',room:'balcony',category:'balcony',price:92,type:'bistro',desc:'两个人的下午茶角落'},
+ {id:'flower-rack',name:'层叠花架',room:'balcony',category:'balcony',price:64,type:'flowers',desc:'让阳台开满小花'},
+ {id:'lantern',name:'复古玻璃提灯',room:'balcony',category:'balcony',price:52,type:'lantern',desc:'傍晚点亮阳台一角'},
+ {id:'plant',name:'陶盆琴叶绿植',room:'all',category:'decor',price:32,type:'plant',desc:'每个房间都适合的一抹绿意'},
+ {id:'rug',name:'手织花卉地毯',room:'all',category:'decor',price:58,type:'rug',desc:'柔软织纹与细致花边'},
+ {id:'mirror',name:'古典椭圆穿衣镜',room:'all',category:'decor',price:72,type:'mirror',desc:'让墙面多一处优雅细节'},
+ {id:'wall-art',name:'植物学装饰画',room:'all',category:'decor',price:38,type:'wallart',desc:'手绘花草主题墙面装饰'},
+ {id:'clock',name:'复古木框挂钟',room:'all',category:'decor',price:46,type:'clock',desc:'为小屋增添生活气息'},
+ {id:'curtain',name:'法式蕾丝窗帘',room:'all',category:'decor',price:82,type:'curtain',desc:'轻柔亚麻与蕾丝细节'},
+ {id:'cushion',name:'刺绣花卉抱枕',room:'all',category:'decor',price:24,type:'cushion',desc:'为沙发和床铺增加柔软层次'}
+].map(item=>({...item,svg:furnitureArt(item.type)}));
+function furnitureShopView(){
+ const groups=[['living','客厅家具','沙发、茶几、书柜与灯具'],['bedroom','卧室家具','床铺、衣柜、梳妆台与床头灯'],['kitchen','厨房家具','炉灶、橱柜、料理台与餐桌'],['balcony','阳台家具','藤椅、茶桌、花架与提灯'],['decor','软装与装饰','绿植、地毯、镜子、窗帘与墙面装饰']];
+ return `<details class="gcard shop-accordion furniture-mega-shop"><summary><span>家具与软装商店</span><small>全新精选 · ${furnitureCatalog.length} 件</small></summary><div class="shop-accordion-body"><div class="furniture-shop-intro"><b>把小屋慢慢布置成家</b><p>挑选喜欢的家具，购买后会放进当前联系人的家具库存。进入小屋装修模式即可摆放。</p><span>FRENCH COUNTRY COLLECTION · 2026</span></div>${groups.map(([key,title,desc],idx)=>{const items=furnitureCatalog.filter(x=>x.category===key);return `<details class="furniture-category" ${idx===0?'open':''}><summary><span>${title}</span><small>${items.length} 件 · ${desc}</small></summary><div class="furniture-shop-grid">${items.map(item=>`<article class="furniture-product-card"><div class="furniture-product-art">${item.svg}</div><div class="furniture-product-copy"><b>${item.name}</b><small>${item.desc}</small><div class="furniture-product-buy"><strong>◉ ${item.price}</strong><button data-buy-furniture="${item.id}">购买</button></div><em>库存 ${farm.house.furnitureInventory[item.id]||0}</em></div></article>`).join('')}</div></details>`}).join('')}</div></details>`;
+}
+
 const weatherTypes=['晴','多云','细雨','微风'];
 const seasonalFestivals={春:'春日花展',夏:'夏夜萤火祭',秋:'丰收集市',冬:'暖冬灯会'};
 const randomEvents=[
@@ -567,6 +626,57 @@ const css=`#lr-games{position:fixed;inset:0;z-index:100100;background:#f7f0e7;co
 @keyframes v18Pollen{0%{transform:translate(0,0);opacity:.12}100%{transform:translate(9px,-12px);opacity:.62}}
 @media(max-width:430px){#lr-games .v18-storybook-stage{border-width:5px;border-radius:23px}#lr-games .v18-storybook-stage>svg{min-height:0}}
 @media(prefers-reduced-motion:reduce){#lr-games .v18-storybook-stage *{animation:none!important;transition:none!important}}
+
+
+/* V19 · premium illustrated cottage interiors + redesigned furniture boutique */
+#lr-games .v19-room-stage{position:relative;isolation:isolate;overflow:hidden;aspect-ratio:4/3;border:7px solid #fffaf1;border-radius:27px;background:#e9ddc8;box-shadow:0 18px 42px #634b321f,inset 0 0 0 1px #fffdf5;touch-action:pan-y}
+#lr-games .v19-room-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;z-index:0;image-rendering:auto;filter:saturate(.98) contrast(1.015);transition:filter .8s ease,transform 1.2s cubic-bezier(.2,.7,.2,1)}
+#lr-games .v19-room-stage:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(135deg,#fff7e51c,transparent 40%,#6c503015);}
+#lr-games .v19-room-light{position:absolute;inset:-15%;z-index:2;pointer-events:none;background:radial-gradient(ellipse at 25% 22%,#fff1bc55 0,transparent 42%);mix-blend-mode:screen;animation:v19SunDrift 16s ease-in-out infinite alternate}
+#lr-games .v19-room-stage.lamp-off .v19-room-art{filter:saturate(.82) brightness(.86)}
+#lr-games .v19-room-stage.lamp-on .v19-room-light{background:radial-gradient(ellipse at 68% 60%,#ffd77a44 0,transparent 42%),radial-gradient(ellipse at 24% 25%,#fff2c455 0,transparent 40%)}
+#lr-games .v19-room-dust{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+#lr-games .v19-room-dust i{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff9df;box-shadow:0 0 9px #fff2b9;left:22%;top:38%;animation:v19DustFloat 8s ease-in-out infinite alternate}
+#lr-games .v19-room-dust i:nth-child(2){left:44%;top:24%;animation-delay:-2s;transform:scale(.7)}
+#lr-games .v19-room-dust i:nth-child(3){left:68%;top:49%;animation-delay:-4s;transform:scale(.6)}
+#lr-games .v19-room-dust i:nth-child(4){left:80%;top:31%;animation-delay:-1s;transform:scale(.8)}
+#lr-games .v19-room-dust i:nth-child(5){left:34%;top:70%;animation-delay:-5s;transform:scale(.55)}
+#lr-games .v19-room-weather{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;transition:opacity .5s}
+#lr-games .v19-room-weather.is-rain{opacity:.18;background:repeating-linear-gradient(108deg,transparent 0 18px,#c5d9dc 19px 20px,transparent 21px 32px)}
+#lr-games .v19-room-weather.is-cloudy{opacity:.12;background:linear-gradient(120deg,#aebbb3,transparent 65%)}
+#lr-games .v19-room-vignette{position:absolute;inset:0;z-index:5;pointer-events:none;box-shadow:inset 0 0 34px #614b301c}
+#lr-games .v19-room-stage .placed-furniture-wrap{position:absolute;width:22%;height:24%;transform:translate(-50%,-50%);z-index:7;display:grid;place-items:center}
+#lr-games .v19-room-stage .placed-furniture{width:100%;height:100%;min-width:0;min-height:0;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;touch-action:none;display:grid;place-items:center}
+#lr-games .v19-room-stage .placed-furniture svg{filter:drop-shadow(0 7px 6px #49362155);transition:transform .2s ease}
+#lr-games .v19-room-stage .placed-furniture:active svg{transform:scale(1.05)}
+#lr-games .v19-room-stage.decor-active{outline:2px solid #91a17d;outline-offset:3px;touch-action:none}
+#lr-games .furniture-mega-shop>.shop-accordion-body{padding-top:10px}
+#lr-games .furniture-shop-intro{padding:16px;border-radius:18px;background:linear-gradient(135deg,#f7efdf,#e8eddf);border:1px solid #e1d5c1;margin-bottom:12px}
+#lr-games .furniture-shop-intro b{font:600 15px Georgia,'Noto Serif SC',serif;color:#5d5144}
+#lr-games .furniture-shop-intro p{font-size:11px;line-height:1.8;color:#897a68;margin:7px 0}
+#lr-games .furniture-shop-intro span{font-size:8px;letter-spacing:.18em;color:#9a987d}
+#lr-games .furniture-category{border:1px solid #e9ddca;border-radius:17px;background:#fffaf2;margin:10px 0;overflow:hidden}
+#lr-games .furniture-category>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 14px;cursor:pointer;color:#655547;font-size:12px;font-weight:650}
+#lr-games .furniture-category>summary::-webkit-details-marker{display:none}
+#lr-games .furniture-category>summary:after{content:'＋';display:grid;place-items:center;flex:none;width:25px;height:25px;border-radius:50%;background:#edf0e5;color:#7f906f;font-size:14px}
+#lr-games .furniture-category[open]>summary:after{content:'−'}
+#lr-games .furniture-category>summary small{font-size:9px;font-weight:400;color:#a0907d;text-align:right}
+#lr-games .furniture-shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding:0 10px 12px}
+#lr-games .furniture-product-card{min-width:0;overflow:hidden;border:1px solid #eee3d3;border-radius:15px;background:linear-gradient(160deg,#fffdf8,#f7efe3);box-shadow:0 3px 10px #8063440c}
+#lr-games .furniture-product-art{height:91px;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 80%,#e9dfce 0,transparent 62%),linear-gradient(145deg,#f6efdf,#fffaf1);border-bottom:1px solid #f0e6d8}
+#lr-games .furniture-product-art svg{width:94%;height:83px;filter:drop-shadow(0 5px 4px #5e452b25)}
+#lr-games .furniture-product-copy{padding:9px 9px 10px}
+#lr-games .furniture-product-copy>b{display:block;font-size:11px;line-height:1.45;color:#5f5144;min-height:30px}
+#lr-games .furniture-product-copy>small{display:block;min-height:28px;font-size:9px;line-height:1.55;color:#9a8875}
+#lr-games .furniture-product-buy{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-top:7px}
+#lr-games .furniture-product-buy strong{font-size:10px;color:#83916e;white-space:nowrap}
+#lr-games .furniture-product-buy button{min-height:0;padding:6px 10px!important;border:1px solid #d9cbb8!important;border-radius:999px!important;background:#fffaf1!important;font-size:10px!important;color:#655344!important}
+#lr-games .furniture-product-copy em{display:block;margin-top:5px;font-size:8px;font-style:normal;color:#a89986}
+#lr-games .furniture-inventory button svg{width:48px;height:40px;filter:drop-shadow(0 3px 2px #5e452b1d)}
+@keyframes v19SunDrift{0%{transform:translate(-2%,0) rotate(-1deg);opacity:.5}100%{transform:translate(3%,2%) rotate(1.5deg);opacity:1}}
+@keyframes v19DustFloat{0%{transform:translate3d(0,10px,0);opacity:.08}50%{opacity:.8}100%{transform:translate3d(10px,-16px,0);opacity:.16}}
+@media(max-width:390px){#lr-games .v19-room-stage{border-width:5px;border-radius:22px}#lr-games .furniture-shop-grid{gap:7px;padding:0 8px 10px}#lr-games .furniture-product-art{height:78px}#lr-games .furniture-product-art svg{height:72px}#lr-games .furniture-product-copy{padding:8px 7px}#lr-games .furniture-product-copy>b{font-size:10px}}
+@media(prefers-reduced-motion:reduce){#lr-games .v19-room-stage *{animation:none!important;transition:none!important}}
 
 
 `;
@@ -854,22 +964,20 @@ function roomDetailArt(room){
  return `${ambient}${rooms[room]||rooms.living}`;
 }
 
-function roomStage(room){const roomNames={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'};const placed=(farm.house.placed[room]||[]).map((x,i)=>{const item=furnitureCatalog.find(c=>c.id===x.id);return item?furnitureButton(item,room,i):''}).join('');return `<div class="v11-room-stage v18-storybook-stage ${farm.house.decorMode?'decor-active':''}" data-room-stage="${room}"><svg viewBox="0 0 640 460" role="img" aria-label="手绘法式奶油乡村风${roomNames[room]}2D等距生活模拟游戏场景"><defs>
- <linearGradient id="v18wallpaper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbf3e4"/><stop offset=".55" stop-color="#f2e7d4"/><stop offset="1" stop-color="#e9dbc4"/></linearGradient>
- <linearGradient id="v18leftwall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff8e9"/><stop offset="1" stop-color="#eadcc6"/></linearGradient><linearGradient id="v18rightwall" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7efdf"/><stop offset="1" stop-color="#dfcfb7"/></linearGradient>
- <linearGradient id="v18floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#e4c7a4"/><stop offset=".55" stop-color="#d2ad85"/><stop offset="1" stop-color="#b98b65"/></linearGradient>
- <linearGradient id="v18glass" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#a8c9c6"/><stop offset=".5" stop-color="#d4e5d9"/><stop offset="1" stop-color="#92b6b0"/></linearGradient><linearGradient id="v18skyshine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity=".65"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
- <linearGradient id="v18linen" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#e9d8c2"/><stop offset=".4" stop-color="#fff8eb"/><stop offset=".7" stop-color="#f5e8d5"/><stop offset="1" stop-color="#dfc5a8"/></linearGradient>
- <linearGradient id="v18oak" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#dfbd96"/><stop offset="1" stop-color="#b88760"/></linearGradient><linearGradient id="v18pot" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d9a887"/><stop offset="1" stop-color="#ad765b"/></linearGradient>
- <linearGradient id="v18sofa" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c1cba9"/><stop offset="1" stop-color="#839775"/></linearGradient><linearGradient id="v18sofaSide" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#a7b694"/><stop offset="1" stop-color="#748969"/></linearGradient>
- <linearGradient id="v18headboard" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ead7c1"/><stop offset="1" stop-color="#c8a98c"/></linearGradient><linearGradient id="v18duvet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8f0e4"/><stop offset=".6" stop-color="#e9d9c7"/><stop offset="1" stop-color="#cdb49a"/></linearGradient><linearGradient id="v18lampshade" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0b6"/><stop offset="1" stop-color="#d7b86f"/></linearGradient>
- <linearGradient id="v18rug" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4e8d6"/><stop offset=".5" stop-color="#d9c3a7"/><stop offset="1" stop-color="#c6a889"/></linearGradient><linearGradient id="v18sunbeam" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff5c9" stop-opacity=".8"/><stop offset="1" stop-color="#fff5c9" stop-opacity="0"/></linearGradient>
- <pattern id="v18parquet" width="48" height="28" patternUnits="userSpaceOnUse"><path d="M0 14H48M24 0V14M0 14V28M48 14V28" stroke="#8e694b" stroke-opacity=".22" stroke-width="1.2"/><path d="M5 5q10-3 18 0M28 20q10-3 17 0" stroke="#fff7e8" stroke-opacity=".34" stroke-width="1.2" fill="none"/></pattern>
- <filter id="v18shadow" x="-35%" y="-35%" width="170%" height="180%"><feGaussianBlur stdDeviation="3.5"/></filter><filter id="v18blur"><feGaussianBlur stdDeviation="8"/></filter>
- </defs>${roomArtwork(room)}${roomDetailArt(room)}
- <g class="room-front-glow" pointer-events="none"><ellipse cx="320" cy="300" rx="230" ry="135" fill="url(#v18sunbeam)" opacity=".22"/></g>
- <g class="room-pollen" pointer-events="none" fill="#fff8d8"><circle cx="220" cy="170" r="2.4"/><circle cx="300" cy="210" r="1.7"/><circle cx="430" cy="150" r="2.1"/><circle cx="520" cy="255" r="1.8"/><circle cx="160" cy="280" r="1.5"/></g>
- </svg>${placed}<div class="room-stage-grain"></div><div class="room-weather-wash ${farm.world?.weather==='细雨'?'rainy':farm.world?.weather==='晴'?'sunny':''}"></div><div class="room-vignette" aria-hidden="true"></div></div>`}
+function roomStage(room){
+ const roomNames={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'};
+ const files={living:'living-room.webp',bedroom:'bedroom.webp',kitchen:'kitchen.webp',balcony:'balcony.webp'};
+ const placed=(farm.house.placed[room]||[]).map((x,i)=>{const item=furnitureCatalog.find(c=>c.id===x.id);return item?furnitureButton(item,room,i):''}).join('');
+ const weather=farm.world?.weather||'晴';
+ return `<div class="v19-room-stage ${farm.house.decorMode?'decor-active':''} ${farm.house.lampOn?'lamp-on':'lamp-off'} ${farm.house.windowOpen?'window-open':''}" data-room-stage="${room}">
+   <img class="v19-room-art" src="./farm-art/${files[room]||files.living}" alt="法式乡村风${roomNames[room]}手绘等距游戏场景" loading="eager" decoding="async">
+   <div class="v19-room-light" aria-hidden="true"></div>
+   <div class="v19-room-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+   ${placed}
+   <div class="v19-room-weather ${weather==='细雨'?'is-rain':weather==='多云'?'is-cloudy':''}" aria-hidden="true"></div>
+   <div class="v19-room-vignette" aria-hidden="true"></div>
+ </div>`;
+}
 
 function houseView(){
  ensureWorld();const h=farm.house,room=h.currentRoom||'living',names={living:'客厅',bedroom:'卧室',kitchen:'厨房',balcony:'阳台'},ch=storyScene();
@@ -902,7 +1010,7 @@ function shopView(){
  return `${header()}<h2 class="gtitle">小镇商店</h2><p class="gsub">按类别收纳货架，想买什么再展开看看。</p>
  <details class="gcard shop-accordion" open><summary><span>种子铺</span><small>作物种子 · ${Object.keys(crops).length} 种</small></summary><div class="shop-accordion-body">${Object.entries(crops).map(([id,c])=>`<div class="grow shop-product-row"><span class="shop-product-art">${c.emoji}</span><div style="flex:1"><b>${c.name}</b><div class="gmuted">${c.desc} · 售价 ${c.sell} 金币</div></div><button data-buy="${id}">购买 · ${c.cost}</button></div>`).join('')}</div></details>
  <details class="gcard shop-accordion"><summary><span>动物用品</span><small>小鸡与农场伙伴</small></summary><div class="shop-accordion-body"><div class="grow shop-product-row"><span class="shop-product-art">🐥</span><div style="flex:1"><b>小鸡</b><div class="gmuted">每只 45 金币 · 每隔一段时间产出鸡蛋</div><small>现有 ${farm.animals.chickens||0} 只</small></div><button data-action="buy-chicken">领养 · 45</button></div></div></details>
- <details class="gcard shop-accordion"><summary><span>家具商店</span><small>家具与软装 · ${furnitureCatalog.length} 件</small></summary><div class="shop-accordion-body"><p class="gmuted">购买后放入当前联系人的家具库存，可在小屋装修模式中自由拖动摆放。</p>${furnitureCatalog.map(item=>`<div class="furniture-shop-row">${item.svg}<div><b>${item.name}</b><small>${item.room==='all'?'所有房间均可使用':({bedroom:'卧室',kitchen:'厨房',balcony:'阳台'}[item.room])}</small></div><strong>${item.price} 金币</strong><button data-buy-furniture="${item.id}">购买</button></div>`).join('')}</div></details>
+ ${furnitureShopView()}
  <details class="gcard shop-accordion"><summary><span>建筑与扩建</span><small>农场设施 · ${buildings.length} 项</small></summary><div class="shop-accordion-body">${buildings.map(([id,emoji,name,cost,desc])=>`<div class="grow shop-product-row"><span class="shop-product-art">${emoji}</span><div style="flex:1"><b>${name}</b><div class="gmuted">${desc}</div></div>${farm.buildings[id]?'<span>已建造 ✓</span>':`<button data-build="${id}" data-cost="${cost}">建造 · ${cost}</button>`}</div>`).join('')}<p class="gmuted">农场扩建</p><button class="primary" data-action="expand" ${farm.plots.length>=18?'disabled':''}>增加一块土地 · ${80+Math.max(0,farm.plots.length-9)*35} 金币</button></div></details>`;
 }
 
