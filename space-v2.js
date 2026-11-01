@@ -716,30 +716,6 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     const zone=data.timeSense.zone||'Asia/Kuala_Lumpur',instant=new Date();
     try{const parts=new Intl.DateTimeFormat('zh-CN',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(instant);const o=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `时间感知已开启，必须以本次请求读取的现实时间为准，不得沿用剧情时间或编造。地区时区：${zone}；现实时间戳：${instant.toISOString()}；当地时间：${o.year}-${o.month}-${o.day} ${o.hour}:${o.minute}:${o.second}；星期：${o.weekday}。`;}catch(e){return `时间感知开启；地区：${zone}；现实时间戳：${instant.toISOString()}。`}
   }
-  // SPACE story controls: these helpers must live inside the SPACE module closure
-  // so every story-generation path can read the current saved settings.
-  function selectedWritingStyle(){
-    const cfg=data.writingStyle&&typeof data.writingStyle==='object'?data.writingStyle:{};
-    const presets=Array.isArray(cfg.presets)?cfg.presets:[];
-    const selected=Array.isArray(cfg.selectedIds)?cfg.selectedIds:[];
-    return presets
-      .filter(p=>p&&selected.includes(p.id))
-      .map(p=>({name:String(p.name||'未命名文风'),style:String(p.style||'').trim()}))
-      .filter(p=>p.style);
-  }
-  function writingStyleInstruction(){
-    const styles=selectedWritingStyle();
-    return styles.length
-      ?'请同时遵循以下已启用的 SPACE 文风预设：\n'+styles.map((p,i)=>(i+1)+'. '+p.name+'：'+p.style).join('\n')
-      :'';
-  }
-  function roleplayPerspectiveInstruction(){
-    // This is a strict, live read of the saved switch: OFF must never write for the user.
-    if(data.takeoverEnabled===true){
-      return '【抢话／代入视角：已开启】允许在剧情需要时，以第二人称叙事并适度补写用户视角的自然反应、日常动作和简短回应，让场景连贯。必须贴合用户刚刚输入的意图和既有设定；不得覆盖或改写用户明确输入的内容，不得替用户作重大决定、承诺、金钱行为、关系选择或任何未经表达同意的亲密行为。';
-    }
-    return '【抢话／代入视角：已关闭】严格禁止替用户补写任何台词、回复、动作、决定、想法或情绪。不得使用“你说”“你点头”“你走过去”等替用户行动的叙述。只描写环境、其他角色的言行与反应，并在需要用户回应或行动时停下，把控制权交还用户。';
-  }
   function worldContext(){return {worldName:data.worldTitle||data.worldNote||'我们的世界',worldDescription:data.worldDescription||'',worldBooks:worldBookContext(),time:timeContext(),season:data.season||'none',seasonAware:!!data.seasonAi,atmosphere:data.atmosphere||'default',writingStyles:selectedWritingStyle(),takeoverEnabled:!!data.takeoverEnabled}}
   function applySeasonFX(){
     const root=$('lrSpaceSeasonFX');if(!root)return;root.innerHTML='';root.className='lr-space-season-fx season-'+(data.season||'none');if(!data.seasonFx||!data.season||data.season==='none')return;
@@ -779,6 +755,22 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
   window.addEventListener('lr-worldbooks-updated',()=>{
     try{renderWorldBookPickerTrigger();const modal=$('lrSpaceBookPicker');if(modal?.classList.contains('show'))openWorldBookPicker()}catch(e){console.warn('[LOVE RECORD] worldbook picker refresh skipped',e)}
   });
+  // SPACE prompt helpers: keep takeover and writing-style settings available to every story API path.
+  function selectedWritingStyle(){
+    const cfg=data.writingStyle||{};
+    const ids=Array.isArray(cfg.selectedIds)?cfg.selectedIds:[];
+    const presets=Array.isArray(cfg.presets)?cfg.presets:[];
+    return presets.filter(p=>ids.includes(p.id));
+  }
+  function writingStyleInstruction(){
+    return selectedWritingStyle().map(p=>String(p.style||'').trim()).filter(Boolean).join('\\n');
+  }
+  function roleplayPerspectiveInstruction(){
+    if(data.takeoverEnabled===true){
+      return '【抢话/代入视角：开启】允许在自然、轻微且符合上下文的范围内补写用户的即时回应、动作和简短台词；不得替用户作重大决定、改变立场或制造用户未同意的亲密/危险行为。';
+    }
+    return '【抢话/代入视角：关闭】严格禁止替用户说话、行动、做决定、表达情绪或描写内心想法。只描写环境与其他角色的行为、台词和反应；在需要用户回应时停下来等待用户输入。';
+  }
   function renderStylePresets(){
     const box=$('lrSpaceStylePresetList');if(!box)return;
     const cfg=data.writingStyle||(data.writingStyle={presets:[],selectedIds:[]});
@@ -856,10 +848,11 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     else if(!data.currentLocation){toast('原地点已不存在，仍可查看记录，但无法在该地点继续。');}
     data.activeStoryThread=h.threadId||data.activeStoryThread||('thread-'+Date.now());save();
     const loc=locationById(data.currentLocation);
-    $('lrSpaceCurrentPlaceTitle').textContent=loc?.name||h.place||'剧情回顾';
-    $('lrSpaceStoryPlace').textContent=loc?.name||h.place||'';
-    $('lrSpaceStoryTitle').textContent='';$('lrSpaceStoryMeta').textContent='';
-    $('lrSpaceStoryBody').innerHTML=(h.userAction?`<div class="lr-space-story-user-reply"><small>YOU · 你的回复</small><p>${esc(h.userAction)}</p></div>`:'')+`<div class="lr-space-story-ai-reply"><small>AI · 剧情续写</small><p>${esc(h.text||'')}</p></div>`;makeStoryActions(h.text||'');
+    const title=$('lrSpaceCurrentPlaceTitle'),place=$('lrSpaceStoryPlace'),storyTitle=$('lrSpaceStoryTitle'),meta=$('lrSpaceStoryMeta'),body=$('lrSpaceStoryBody');
+    if(title)title.textContent=loc?.name||h.place||'剧情回顾';
+    if(place)place.textContent=loc?.name||h.place||'';
+    if(storyTitle)storyTitle.textContent='';if(meta)meta.textContent='';
+    if(body)body.innerHTML=(h.userAction?`<div class="lr-space-story-user-reply"><small>YOU · 你的回复</small><p>${esc(h.userAction)}</p></div>`:'')+`<div class="lr-space-story-ai-reply"><small>AI · 剧情续写</small><p>${esc(h.text||'')}</p></div>`;makeStoryActions(h.text||'');
     closeStoryReview();show('story');window.scrollTo({top:0,behavior:'smooth'});
   }
   function deleteHistoryEntry(id){
@@ -892,21 +885,21 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     data.currentLocation=id;
     if(!data.activeStoryThread)data.activeStoryThread='thread-'+Date.now();
     save();show('story');
-    $('lrSpaceStoryPlace').textContent=loc.name;
-    $('lrSpaceCurrentPlaceTitle').textContent=loc.name;
-    $('lrSpaceStoryTitle').textContent='';$('lrSpaceStoryMeta').textContent='';
+    const place=$('lrSpaceStoryPlace'),currentTitle=$('lrSpaceCurrentPlaceTitle'),storyTitle=$('lrSpaceStoryTitle'),meta=$('lrSpaceStoryMeta'),body=$('lrSpaceStoryBody'),actions=$('lrSpaceStoryActions');
+    if(place)place.textContent=loc.name;if(currentTitle)currentTitle.textContent=loc.name;
+    if(storyTitle)storyTitle.textContent='';if(meta)meta.textContent='';
     const previous=[...(data.history||[])].reverse().find(h=>h.locationId===id||h.place===loc.name);
-    $('lrSpaceStoryBody').textContent=previous?previous.text:'这里还没有开始剧情。写下你想说的话或想做的事，再点击「继续」，AI 才会生成新的剧情。';
-    $('lrSpaceStoryActions').innerHTML='';
+    if(body)body.textContent=previous?previous.text:'这里还没有开始剧情。写下你想说的话或想做的事，再点击「继续」，AI 才会生成新的剧情。';
+    if(actions)actions.innerHTML='';
     if(previous)makeStoryActions(previous.text);
   }
-  function makeStoryActions(text){$('lrSpaceStoryActions').innerHTML='';const defaults=['继续观察眼前发生的事情','回应同行的人','做一个和当前地点有关的小行动'];defaults.forEach(t=>{const b=document.createElement('button');b.className='lr-space-secondary';b.type='button';b.textContent=t;b.onclick=()=>continueStory(t);$('lrSpaceStoryActions').appendChild(b)});}
+  function makeStoryActions(text){const actions=$('lrSpaceStoryActions');if(!actions)return;actions.innerHTML='';const defaults=['继续观察眼前发生的事情','回应同行的人','做一个和当前地点有关的小行动'];defaults.forEach(t=>{const b=document.createElement('button');b.className='lr-space-secondary';b.type='button';b.textContent=t;b.onclick=()=>continueStory(t);actions.appendChild(b)});}
   function findTravelDestination(text,fromId){
     const t=String(text||'');if(!/(去|前往|过去|回到|返回|走到|来到|带你去|一起去|出发去|回家)/.test(t))return null;
     return (data.locations||[]).filter(l=>l.id!==fromId&&l.name&&t.includes(l.name)).sort((a,b)=>b.name.length-a.name.length)[0]||null;
   }
-  async function continueStory(action){if(busy)return;const previousLocation=locationById(data.currentLocation);const requestedDestination=findTravelDestination(action,data.currentLocation);if(requestedDestination){data.currentLocation=requestedDestination.id;save();addActivity('前往新地点',`从${previousLocation?.name||'当前位置'}前往${requestedDestination.name}`,{kind:'travel',locationId:requestedDestination.id});$('lrSpaceStoryPlace').textContent=requestedDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=requestedDestination.name;}const loc=locationById(data.currentLocation);if(!loc){toast('找不到当前地点，请返回地图重新进入。');return false}const thread=data.activeStoryThread||('thread-'+Date.now());data.activeStoryThread=thread;const system=`你是 LOVE RECORD【空间】的剧情导演。继续当前跨地点连续剧情。只写新的剧情正文，不复述旧剧情。${roleplayPerspectiveInstruction()}${writingStyleInstruction()?'文风要求：'+writingStyleInstruction():''}同行人物可以自然回应。严格遵循已保存事实与约定，跨地点保持连续性。`;
-    const me=data.memoryEngine||{};const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>data.selectedPeople.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=data.history.slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,allLocations:data.locations.map(x=>({id:x.id,name:x.name,type:x.type,description:x.description})),travelRule:'当用户明确提出前往某个已存在地点时，剧情必须承接移动；抵达后地点状态切换到目标地点。用户未提出移动时不得擅自跳转。',people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user,'正在生成回复…',true);if(!out)return false;if(out){const aiDestination=findTravelDestination(out,data.currentLocation);if(aiDestination){data.currentLocation=aiDestination.id;save();addActivity('抵达新地点',`剧情前往${aiDestination.name}`,{kind:'travel',locationId:aiDestination.id});$('lrSpaceStoryPlace').textContent=aiDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=aiDestination.name;}const finalLoc=locationById(data.currentLocation)||loc;await appendHistory(finalLoc.name,out,action);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out);return true}return false}
+  async function continueStory(action){if(busy)return;const previousLocation=locationById(data.currentLocation);const requestedDestination=findTravelDestination(action,data.currentLocation);if(requestedDestination){data.currentLocation=requestedDestination.id;save();addActivity('前往新地点',`从${previousLocation?.name||'当前位置'}前往${requestedDestination.name}`,{kind:'travel',locationId:requestedDestination.id});const placeEl=$('lrSpaceStoryPlace'),titleEl=$('lrSpaceCurrentPlaceTitle');if(placeEl)placeEl.textContent=requestedDestination.name;if(titleEl)titleEl.textContent=requestedDestination.name;}const loc=locationById(data.currentLocation);if(!loc){toast('找不到当前地点，请返回地图重新进入。');return false}const thread=data.activeStoryThread||('thread-'+Date.now());data.activeStoryThread=thread;const system=`你是 LOVE RECORD【空间】的剧情导演。继续当前跨地点连续剧情。只写新的剧情正文，不复述旧剧情。${roleplayPerspectiveInstruction()}${writingStyleInstruction()?'文风要求：'+writingStyleInstruction():''}同行人物可以自然回应。严格遵循已保存事实与约定，跨地点保持连续性。`;
+    const me=data.memoryEngine||{};const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>data.selectedPeople.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=data.history.slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,allLocations:data.locations.map(x=>({id:x.id,name:x.name,type:x.type,description:x.description})),travelRule:'当用户明确提出前往某个已存在地点时，剧情必须承接移动；抵达后地点状态切换到目标地点。用户未提出移动时不得擅自跳转。',people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user,'正在生成回复…',true);if(!out)return false;if(out){const aiDestination=findTravelDestination(out,data.currentLocation);if(aiDestination){data.currentLocation=aiDestination.id;save();addActivity('抵达新地点',`剧情前往${aiDestination.name}`,{kind:'travel',locationId:aiDestination.id});const placeEl=$('lrSpaceStoryPlace'),titleEl=$('lrSpaceCurrentPlaceTitle');if(placeEl)placeEl.textContent=aiDestination.name;if(titleEl)titleEl.textContent=aiDestination.name;}const finalLoc=locationById(data.currentLocation)||loc;await appendHistory(finalLoc.name,out,action);const body=$('lrSpaceStoryBody');if(body)body.textContent=out;makeStoryActions(out);return true}return false}
   async function sendStory(){
     const input=$('lrSpaceStoryInput'),status=$('lrSpaceStoryGenerating'),action=String(input?.value||'').trim();
     if(!action){toast('先写下你想做的事，再继续剧情。');return}
