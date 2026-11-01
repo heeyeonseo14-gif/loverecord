@@ -716,6 +716,30 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     const zone=data.timeSense.zone||'Asia/Kuala_Lumpur',instant=new Date();
     try{const parts=new Intl.DateTimeFormat('zh-CN',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(instant);const o=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));return `时间感知已开启，必须以本次请求读取的现实时间为准，不得沿用剧情时间或编造。地区时区：${zone}；现实时间戳：${instant.toISOString()}；当地时间：${o.year}-${o.month}-${o.day} ${o.hour}:${o.minute}:${o.second}；星期：${o.weekday}。`;}catch(e){return `时间感知开启；地区：${zone}；现实时间戳：${instant.toISOString()}。`}
   }
+  // SPACE story controls: these helpers must live inside the SPACE module closure
+  // so every story-generation path can read the current saved settings.
+  function selectedWritingStyle(){
+    const cfg=data.writingStyle&&typeof data.writingStyle==='object'?data.writingStyle:{};
+    const presets=Array.isArray(cfg.presets)?cfg.presets:[];
+    const selected=Array.isArray(cfg.selectedIds)?cfg.selectedIds:[];
+    return presets
+      .filter(p=>p&&selected.includes(p.id))
+      .map(p=>({name:String(p.name||'未命名文风'),style:String(p.style||'').trim()}))
+      .filter(p=>p.style);
+  }
+  function writingStyleInstruction(){
+    const styles=selectedWritingStyle();
+    return styles.length
+      ?'请同时遵循以下已启用的 SPACE 文风预设：\n'+styles.map((p,i)=>(i+1)+'. '+p.name+'：'+p.style).join('\n')
+      :'';
+  }
+  function roleplayPerspectiveInstruction(){
+    // This is a strict, live read of the saved switch: OFF must never write for the user.
+    if(data.takeoverEnabled===true){
+      return '【抢话／代入视角：已开启】允许在剧情需要时，以第二人称叙事并适度补写用户视角的自然反应、日常动作和简短回应，让场景连贯。必须贴合用户刚刚输入的意图和既有设定；不得覆盖或改写用户明确输入的内容，不得替用户作重大决定、承诺、金钱行为、关系选择或任何未经表达同意的亲密行为。';
+    }
+    return '【抢话／代入视角：已关闭】严格禁止替用户补写任何台词、回复、动作、决定、想法或情绪。不得使用“你说”“你点头”“你走过去”等替用户行动的叙述。只描写环境、其他角色的言行与反应，并在需要用户回应或行动时停下，把控制权交还用户。';
+  }
   function worldContext(){return {worldName:data.worldTitle||data.worldNote||'我们的世界',worldDescription:data.worldDescription||'',worldBooks:worldBookContext(),time:timeContext(),season:data.season||'none',seasonAware:!!data.seasonAi,atmosphere:data.atmosphere||'default',writingStyles:selectedWritingStyle(),takeoverEnabled:!!data.takeoverEnabled}}
   function applySeasonFX(){
     const root=$('lrSpaceSeasonFX');if(!root)return;root.innerHTML='';root.className='lr-space-season-fx season-'+(data.season||'none');if(!data.seasonFx||!data.season||data.season==='none')return;
