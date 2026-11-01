@@ -25,15 +25,41 @@
   function makeCityName(ids){const names=cityNames(ids);return names.length?names.join(' ＆ ')+'的城市':'未命名城市'}
   function cityStorageKey(id){return 'love-record-space-city-v2:'+encodeURIComponent(String(id))}
   let cityDbPromise=null,cityWriteQueue=Promise.resolve(),cityStorageReady=false;
+  function openSpaceDB(dbName,storeName,keyPath){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}
+      let settled=false;
+      const fail=e=>{if(!settled){settled=true;reject(e instanceof Error?e:new Error(String(e?.message||e||'IndexedDB open failed')))}};
+      const openAtVersion=version=>{
+        let req;
+        try{req=version==null?indexedDB.open(dbName):indexedDB.open(dbName,version)}catch(e){fail(e);return}
+        req.onupgradeneeded=()=>{
+          const db=req.result;
+          if(!db.objectStoreNames.contains(storeName))db.createObjectStore(storeName,{keyPath});
+        };
+        req.onerror=()=>fail(req.error||new Error('IndexedDB open failed'));
+        req.onblocked=()=>fail(new Error('IndexedDB upgrade blocked; close other LOVE RECORD tabs and retry'));
+        req.onsuccess=()=>{
+          const db=req.result;
+          if(db.objectStoreNames.contains(storeName)){
+            if(!settled){settled=true;resolve(db)}
+            return;
+          }
+          // An older database exists but lacks the required store. Upgrade from
+          // its actual version; never force version 1 onto a newer database.
+          const nextVersion=(Number(db.version)||0)+1;
+          db.close();
+          openAtVersion(nextVersion);
+        };
+      };
+      openAtVersion(null);
+    });
+  }
   function openCityDB(){
     if(cityDbPromise)return cityDbPromise;
-    cityDbPromise=new Promise((resolve,reject)=>{
-      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}
-      const req=indexedDB.open('love-record-space-cities-v1',1);
-      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('cities'))db.createObjectStore('cities',{keyPath:'id'})};
-      req.onsuccess=()=>resolve(req.result);
-      req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
-      req.onblocked=()=>reject(new Error('IndexedDB upgrade blocked'));
+    cityDbPromise=openSpaceDB('love-record-space-cities-v1','cities','id').catch(e=>{
+      cityDbPromise=null;
+      throw e;
     });
     return cityDbPromise;
   }
@@ -372,7 +398,14 @@
     save();
   }
   function save(){data.updatedAt=Date.now();try{if(!persistActiveCity())return false;const stored={...data};if(historyStorageReady)stored.history=[];try{localStorage.setItem(KEY,JSON.stringify(stored))}catch(mirrorError){console.warn('[SPACE] legacy mirror skipped; city snapshot is saved',mirrorError)}return true}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
-  function openHistoryDB(){if(historyDbPromise)return historyDbPromise;historyDbPromise=new Promise((resolve,reject)=>{if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}const req=indexedDB.open('love-record-space-history-v1',1);req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('history'))db.createObjectStore('history',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'))});return historyDbPromise}
+  function openHistoryDB(){
+    if(historyDbPromise)return historyDbPromise;
+    historyDbPromise=openSpaceDB('love-record-space-history-v1','history','id').catch(e=>{
+      historyDbPromise=null;
+      throw e;
+    });
+    return historyDbPromise;
+  }
   async function hydrateHistoryFromIDB(){try{const db=await openHistoryDB();const stored=await new Promise((resolve,reject)=>{const tx=db.transaction('history','readonly'),req=tx.objectStore('history').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});const scoped=stored.filter(h=>h&&(h.cityId===activeCityId||(!h.cityId&&(adoptUnscopedLegacyHistory||String(activeCityId).startsWith('city-legacy-')))));const byId=new Map();[...(data.history||[]),...scoped].forEach(h=>{if(h&&h.id)byId.set(h.id,h)});data.history=[...byId.values()].sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0)||(Number(a.at)||0)-(Number(b.at)||0));let max=0;data.history.forEach((h,i)=>{if(!Number.isFinite(Number(h.seq)))h.seq=i+1;max=Math.max(max,Number(h.seq)||0)});data.memoryEngine.nextSequence=Math.max(Number(data.memoryEngine.nextSequence)||1,max+1);const tx=db.transaction('history','readwrite'),store=tx.objectStore('history');data.history.forEach(h=>{if(!h.cityId&&(adoptUnscopedLegacyHistory||String(activeCityId).startsWith('city-legacy-')))h.cityId=activeCityId;store.put(h)});await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});historyStorageReady=true;adoptUnscopedLegacyHistory=false;save()}catch(e){console.warn('Space history archive using compatibility storage fallback',e);historyStorageReady=false}}
   async function persistHistoryRecord(record){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').put(record);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)});return true}catch(e){console.error('Could not persist Space history to IndexedDB',e);historyStorageReady=false;try{const stored={...data};stored.history=data.history;localStorage.setItem(KEY,JSON.stringify(stored))}catch(_){}toast('剧情档案存储失败。请检查浏览器存储空间；本次内容仍保留在当前页面中。');return false}}
   async function deleteHistoryRecordFromIDB(id){try{const db=await openHistoryDB();await new Promise((resolve,reject)=>{const tx=db.transaction('history','readwrite');tx.objectStore('history').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}catch(e){console.warn('Could not delete archived history record',e)}}
