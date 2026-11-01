@@ -74,13 +74,14 @@ async function hydrateOwner(id){
  try{current=await idbGet(key)}catch(e){readError=e;storageReadOnly=true;console.error('[Farm] IndexedDB read failed; searching backups without overwriting the database:',e)}
  const candidates=[];
  const localProfile=readStore(profileKey(key));if(localProfile)candidates.push({source:'local profile backup',data:localProfile});
+ const previousProfile=readStore(profileKey(key)+'::previous');if(previousProfile)candidates.push({source:'previous local profile backup',data:previousProfile});
  // Recover from the previous database and legacy key even when the current DB contains a newly-created default profile.
  try{const oldDbData=await legacyIdbGet(key==='solo'?'':key);if(oldDbData)candidates.push({source:'legacy IndexedDB',data:oldDbData})}catch(_){}
  const legacy=readStore(KEY);
  if(legacy&&ownerKey(legacy.ownerId||legacy.partnerId)===key)candidates.push({source:'legacy localStorage',data:legacy});
  let chosen=current?normalizeFarm(current,key):null,chosenSource='current IndexedDB';
  let chosenScore=chosen?farmProgressScore(chosen):-1;
- for(const c of candidates){const candidate=normalizeFarm(c.data,key),score=farmProgressScore(candidate);if(score>chosenScore+25){chosen=candidate;chosenScore=score;chosenSource=c.source}}
+ for(const c of candidates){const candidate=normalizeFarm(c.data,key),score=farmProgressScore(candidate);if(score>chosenScore){chosen=candidate;chosenScore=score;chosenSource=c.source}}
  if(chosen){
   const recovered=chosenSource!=='current IndexedDB';
   if(recovered){console.warn('[Farm] recovered a more complete save from',chosenSource);chosen.log=Array.isArray(chosen.log)?chosen.log:[];chosen.log.unshift({id:Date.now(),text:'已找回一份较完整的农场备份。',kind:'note',at:Date.now()});chosen.log=chosen.log.slice(0,40)}
@@ -242,12 +243,16 @@ function rescueView(){
 
 async function save(){
  const owner=ownerKey(activeOwnerId);
- if(storageBlocked){saveError='存档读取尚未恢复，为保护旧数据已暂停写入';return Promise.resolve(false)}
+ if(storageBlocked||!farmHydrated){saveError='农场存档尚未完成读取或正在切换，为保护旧数据已暂停写入';return Promise.resolve(false)}
  farm=normalizeFarm(farm,owner);farm.lastVisit=Date.now();const snap=JSON.parse(JSON.stringify(farm));
  // Write the compact local backup synchronously BEFORE awaiting IndexedDB.
  // Android Chrome may freeze a background tab before an async transaction settles.
  let localOk=false;const errors=[];
- try{localStorage.setItem(profileKey(owner),JSON.stringify(snap));localOk=true}catch(e){errors.push('本地备份 '+(e?.name||e?.message||'失败'));console.error('[Farm] synchronous local backup failed',e)}
+ try{
+  const profile=profileKey(owner),oldRaw=localStorage.getItem(profile);
+  if(oldRaw&&oldRaw!==JSON.stringify(snap)){try{const oldData=JSON.parse(oldRaw);if(oldData&&typeof oldData==='object')localStorage.setItem(profile+'::previous',oldRaw)}catch(_){}}
+  localStorage.setItem(profile,JSON.stringify(snap));localOk=true;
+ }catch(e){errors.push('本地备份 '+(e?.name||e?.message||'失败'));console.error('[Farm] synchronous local backup failed',e)}
  try{localStorage.setItem(ACTIVE_KEY,owner)}catch(e){errors.push('活动联系人标记 '+(e?.name||'失败'))}
  saveChain=saveChain.catch(()=>false).then(async()=>{
   let idbOk=false;
@@ -257,7 +262,7 @@ async function save(){
  });return saveChain;
 }
 let activeOwnerId=getInitialOwner();
-let farm=loadOwner(activeOwnerId),view='farm',selectedSeed='carrot',busy=false,apiMessage='',switchingOwner=false,storageReadOnly=false,storageBlocked=false;
+let farm=loadOwner(activeOwnerId),view='farm',selectedSeed='carrot',busy=false,apiMessage='',switchingOwner=false,storageReadOnly=false,storageBlocked=false,farmHydrated=false;
 function cfg(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch{};return {base:String((typeof state!=='undefined'&&state.apiBase)||s.apiBase||document.querySelector('#apiBase')?.value||'').trim().replace(/\/+$/,''),key:String((typeof state!=='undefined'&&state.apiKey)||s.apiKey||document.querySelector('#apiKey')?.value||'').trim(),model:String((typeof state!=='undefined'&&state.apiModel)||s.apiModel||document.querySelector('#apiModel')?.value||'').trim()}}
 function addLog(text,kind='note'){farm.log.unshift({id:Date.now()+Math.random(),text,kind,at:Date.now()});farm.log=farm.log.slice(0,40)}
 function toast(s){const n=$('#farmToast');if(n){n.textContent=s;n.classList.add('show');setTimeout(()=>n.classList.remove('show'),1800)}}
@@ -396,8 +401,8 @@ async function storyClaim(){
 }
 
 function settleOffline(){const now=Date.now(),calendarNow=now,calendarBase=farm.lastCalendarAt||calendarNow,passedDays=Math.floor(Math.max(0,calendarNow-calendarBase)/86400000);if(passedDays>0){const seasons=['春','夏','秋','冬'];for(let d=0;d<Math.min(passedDays,365);d++){farm.day++;if((farm.day-1)%7===0){const idx=seasons.indexOf(farm.season);farm.season=seasons[(idx+1+4)%4]}}farm.lastCalendarAt=calendarBase+passedDays*86400000;addLog(`新的一天到来啦：${farm.season}季，第${farm.day}天。`,'note')}updateWeather();maybeFestival();maybeRandomEvent();partnerAutonomy();if((farm.animals?.chickens||0)>0){const last=farm.animals.lastEggAt||now;const eggs=Math.min(8,Math.floor((now-last)/3600000)*farm.animals.chickens);if(eggs>0){farm.inventory.egg=(farm.inventory.egg||0)+eggs;farm.animals.lastEggAt=now;addLog(`小鸡们留下了鸡蛋 × ${eggs}。`,'note')}}farm.lastVisit=now;save()}
-async function open(){mount();$('#lr-games').classList.add('open');document.body.style.overflow='hidden';view='farm';switchingOwner=true;storageBlocked=false;render();try{farm=await hydrateOwner(activeOwnerId);ensureDailyProgress();settleOffline();render();try{if(navigator.storage?.persist)navigator.storage.persist().then(ok=>console.info('[Farm] persistent storage:',!!ok)).catch(()=>{})}catch(_){}}catch(e){storageBlocked=true;console.error('[Farm] load failed; writes paused to protect existing save:',e);toast('存档读取失败，已暂停写入保护旧数据')}finally{switchingOwner=false;render()}}
-async function retryStorageLoad(){switchingOwner=true;storageBlocked=false;try{farm=await hydrateOwner(activeOwnerId);ensureDailyProgress();settleOffline();storageBlocked=false;await save();toast('存档读取成功')}catch(e){storageBlocked=true;console.error('[Farm] retry load failed:',e);toast('仍无法读取旧存档，请勿清除网站数据')}finally{switchingOwner=false;render()}}
+async function open(){mount();$('#lr-games').classList.add('open');document.body.style.overflow='hidden';view='farm';switchingOwner=true;farmHydrated=false;storageBlocked=false;render();try{farm=await hydrateOwner(activeOwnerId);farmHydrated=true;ensureDailyProgress();settleOffline();render();try{if(navigator.storage?.persist)navigator.storage.persist().then(ok=>console.info('[Farm] persistent storage:',!!ok)).catch(()=>{})}catch(_){}}catch(e){farmHydrated=false;storageBlocked=true;console.error('[Farm] load failed; writes paused to protect existing save:',e);toast('存档读取失败，已暂停写入保护旧数据')}finally{switchingOwner=false;render()}}
+async function retryStorageLoad(){switchingOwner=true;farmHydrated=false;storageBlocked=false;try{farm=await hydrateOwner(activeOwnerId);farmHydrated=true;ensureDailyProgress();settleOffline();storageBlocked=false;await save();toast('存档读取成功')}catch(e){farmHydrated=false;storageBlocked=true;console.error('[Farm] retry load failed:',e);toast('仍无法读取旧存档，请勿清除网站数据')}finally{switchingOwner=false;render()}}
 function close(){save();const r=$('#lr-games');if(r)r.classList.remove('open');document.body.style.overflow=''}
 const css=`#lr-games{position:fixed;inset:0;z-index:100100;background:#f7f0e7;color:#51453d;display:none;flex-direction:column;font-family:inherit}#lr-games.open{display:flex}#lr-games *{box-sizing:border-box}#lr-games .gbar{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;background:#fffaf3;border-bottom:1px solid #e8d9c9;color:#57483d}#lr-games button{font:inherit;color:inherit;border:1px solid #d9c5b0;background:#fffaf3;border-radius:14px;padding:10px 13px;cursor:pointer}#lr-games button.primary{background:#8d9c78;color:white;border-color:#8d9c78}#lr-games button:disabled{opacity:.45}#lr-games .gscroll{overflow:auto;padding:15px 15px 34px;max-width:760px;width:100%;margin:0 auto}#lr-games .gtitle{font-size:27px;margin:4px 0 5px;color:#57483d}#lr-games .gsub{font-size:12px;color:#8d7d6d;line-height:1.8}#lr-games .gcard{background:linear-gradient(155deg,#fffdf8 0%,#fff8ed 100%);border:1px solid #e6d8c8;border-radius:23px;padding:18px;margin:16px 0;box-shadow:0 8px 24px #7b5c3212}#lr-games .ghead{background:radial-gradient(circle at 90% 10%,#ffffff88,transparent 34%),linear-gradient(135deg,#e8efdf 0%,#f8e7d7 100%);border-radius:25px;padding:21px 19px;margin:5px 0 16px;border:1px solid #d5dfc9;box-shadow:inset 0 1px 0 #ffffffaa,0 8px 22px #8d806018}#lr-games .gstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}#lr-games .gstat{background:#ffffffb8;border-radius:13px;padding:9px;text-align:center;font-size:11px;color:#857361}#lr-games .gstat b{display:block;font-size:19px;color:#5c6c4d}#lr-games .gmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:13px;background:linear-gradient(145deg,#e0eacf,#edf0d9);border:1px solid #cbd7b9;border-radius:23px;position:relative;overflow:hidden;box-shadow:inset 0 2px 8px #657a4c12}#lr-games .plot{min-height:104px;border-radius:15px;background:linear-gradient(145deg,#b98b65,#9e704e);border:2px solid #d8b58f;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:5px;color:#fff8ed;text-shadow:0 1px 2px #60452c;font-size:12px}#lr-games .plot.empty{background:linear-gradient(145deg,#c49a75,#a77a54);box-shadow:inset 0 1px 0 #ffffff38,0 3px 8px #6c4a2b20;transition:transform .16s,filter .16s}#lr-games .plot:active{transform:scale(.97);filter:brightness(1.08)}#lr-games .plot.ready{background:linear-gradient(145deg,#9ab77c,#6f9660);border-color:#e1edca;animation:farmGlow 1.8s ease-in-out infinite}#lr-games .plot .cropemoji{font-size:29px;line-height:1.2}#lr-games .plot small{font-size:10px}#lr-games .grow{display:flex;align-items:center;gap:9px;flex-wrap:wrap}#lr-games .gavatar{width:38px;height:38px;border-radius:50%;background:#d9c9b4;display:grid;place-items:center;overflow:hidden;font-size:18px}#lr-games .gavatar img{width:100%;height:100%;object-fit:cover}#lr-games .gseed{display:flex;align-items:center;gap:8px;text-align:left;width:100%;padding:10px!important}#lr-games .gseed.active{border-color:#82966d;background:linear-gradient(135deg,#edf2e5,#f8f5e9);box-shadow:0 0 0 2px #82966d22}#lr-games .gseed .emoji{font-size:25px}#lr-games .gseed small{display:block;color:#8d7d6d;font-size:10px}#lr-games .ggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}#lr-games select,#lr-games input,#lr-games textarea{width:100%;background:#fff;border:1px solid #dfd0bf;color:#57483d;border-radius:12px;padding:11px;font:inherit}#lr-games .gtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;position:sticky;bottom:-1px;background:#fffaf3;padding:9px 0 max(9px,env(safe-area-inset-bottom));border-top:1px solid #e8d9c9;margin-top:14px}#lr-games .gtabs button{font-size:11px;padding:9px 2px;border:0;background:transparent}#lr-games .gtabs button.active{background:#e9efdf;color:#596c4b}#lr-games .gmuted{font-size:11px;color:#988777;line-height:1.7}#lr-games .glog{display:grid;gap:8px}#lr-games .glog p{margin:0;padding:10px 12px;background:#f6efe5;border-radius:12px;font-size:12px;line-height:1.7}#lr-games .gnotice{padding:11px 13px;background:#f1eadf;border-radius:13px;color:#7d6b59;font-size:12px;line-height:1.7}#lr-games .gxp{margin-top:10px;font-size:11px;color:#8d7d6d}#lr-games .gxp i{display:block;height:8px;background:#eee5d8;border-radius:99px;overflow:hidden;margin-top:6px}#lr-games .gxp i b{display:block;height:100%;background:linear-gradient(90deg,#a9bd91,#718b62);border-radius:99px;transition:width .3s}#lr-games .gmap{gap:10px;padding:14px}#lr-games .plot{min-height:104px;border-radius:19px;box-shadow:inset 0 2px 5px #fff4,0 4px 9px #76523820}#lr-games .gcard{padding:17px;margin:15px 0;border-radius:23px}#lr-games .gseed{min-height:70px;border-radius:17px!important}#lr-games .gtabs{box-shadow:0 -5px 18px #6b54300d}#lr-games .gbar{height:62px;min-height:62px}#lr-games .gscroll{padding:18px 16px 30px}#lr-games .gtoast{position:fixed;left:50%;bottom:90px;transform:translate(-50%,12px);opacity:0;transition:.2s;background:#51483d;color:white;padding:10px 15px;border-radius:99px;font-size:12px;pointer-events:none;z-index:3}#lr-games .gtoast.show{opacity:1;transform:translate(-50%,0)}@keyframes farmGlow{50%{filter:brightness(1.12)}}@media(max-width:380px){#lr-games .plot{min-height:86px}#lr-games .gstats{gap:5px}}
 /* V7: farmyard scenes, gentle motion, and non-obstructive navigation */
@@ -1125,14 +1130,14 @@ async function onChange(e){
  switchingOwner=true;const select=e.target;select.disabled=true;
  try{
   const oldId=ownerKey(activeOwnerId);const oldSaved=await save();if(!oldSaved)throw new Error('当前农场未能保存，已取消切换以免覆盖进度');
-  activeOwnerId=nextId;try{localStorage.setItem(ACTIVE_KEY,nextId)}catch(_){}
-  farm=await hydrateOwner(nextId);
+  activeOwnerId=nextId;farmHydrated=false;try{localStorage.setItem(ACTIVE_KEY,nextId)}catch(_){}
+  farm=await hydrateOwner(nextId);farmHydrated=true;
   const person=personFor(nextId);farm.partnerId=nextId==='solo'?'':nextId;farm.partnerName=person?.remark||person?.name||farm.partnerName||'';farm.partnerAvatar=person?.avatar||farm.partnerAvatar||'';
   addLog(person?`已进入 ${farm.partnerName} 的独立农场。`:'已进入个人农场。','note');
   const ok=await save();if(!ok)throw new Error('新农场载入了，但保存失败');
   selectedSeed='carrot';apiMessage='';view='farm';toast(person?'已切换到独立农场':'已切换到个人农场');
  }catch(err){console.error('[Farm] owner switch failed',err);toast(err.message||'切换失败，原农场数据已保留');}
- finally{switchingOwner=false;render()}
+ finally{if(!farmHydrated)storageBlocked=true;switchingOwner=false;render()}
 }
 let furnitureDrag=null;
 function onFurniturePointerDown(e){const b=e.target.closest('[data-drag-furniture]');if(!b||!farm.house.decorMode)return;const stage=b.closest('[data-room-stage]'),wrap=b.closest('.placed-furniture-wrap');if(!stage||!wrap)return;const rect=stage.getBoundingClientRect();furnitureDrag={uid:b.dataset.dragFurniture,room:b.dataset.furnitureRoom,stage,rect,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,left:parseFloat(wrap.style.left)||50,top:parseFloat(wrap.style.top)||50,el:wrap};try{b.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()}
