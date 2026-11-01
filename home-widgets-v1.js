@@ -16,7 +16,7 @@ const definitions=[
  {id:'focus',name:'专注时钟',category:'FOCUS',size:'medium',desc:'25分钟专注计时，支持暂停与重置'},
  {id:'week',name:'一周日历',category:'LIFE',size:'medium',desc:'查看本周日期，自动标记今天'}
 ];
-let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
+let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{},pageFixed:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
 function widgetDbOpen(){return new Promise((resolve,reject)=>{try{const req=indexedDB.open(WIDGET_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(WIDGET_STORE))req.result.createObjectStore(WIDGET_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Widget database open failed'));req.onblocked=()=>reject(new Error('Widget database is blocked'))}catch(err){reject(err)}})}
 async function widgetDbGet(){const db=await widgetDbOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(WIDGET_STORE,'readonly'),req=tx.objectStore(WIDGET_STORE).get(WIDGET_LAYOUT_KEY);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('Widget layout read failed'));tx.oncomplete=()=>db.close();tx.onabort=()=>{db.close();reject(tx.error||new Error('Widget layout read aborted'))}})}
@@ -107,7 +107,7 @@ async function read(){
  let v=null;try{v=await widgetDbGet()}catch(e){console.warn('[LOVE RECORD] dedicated widget DB read failed',e)}
  if(!v){try{if(typeof lrKVGet==='function')v=await lrKVGet('home-widgets-layout-v2')}catch(e){console.warn('[LOVE RECORD] previous widget layout migration read failed',e)}}
  if(!v){try{v=JSON.parse(localStorage.getItem(KEY)||'null')}catch{v=null}}
- if(v&&Number(v.version||0)<8)needsUpgrade=true;
+ if(v&&Number(v.version||0)<9)needsUpgrade=true;
  const cleanItems=arr=>(Array.isArray(arr)?arr:[]).filter(x=>x&&definitions.some(d=>d.id===x.id)).map(x=>({...x,size:x.size==='small'?'small':x.size==='large'?'large':'medium',note:String(x.note||''),waterCount:Math.max(0,Number(x.waterCount)||0),waterDate:String(x.waterDate||''),mood:String(x.mood||''),moodHistory:Array.isArray(x.moodHistory)?x.moodHistory.slice(-7):[],focusRemaining:Math.max(0,Number(x.focusRemaining)||1500),focusUntil:Number(x.focusUntil)||0,focusRunning:!!x.focusRunning}));
  if(v&&Array.isArray(v.items))config.items=cleanItems(v.items);
  if(v&&Array.isArray(v.order))config.order=v.order.filter(x=>['welcome','days','shelf'].includes(x));
@@ -115,11 +115,16 @@ async function read(){
  if(v&&v.positions&&typeof v.positions==='object')config.positions={...v.positions};
  if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
+ if(v&&v.pageFixed&&typeof v.pageFixed==='object')config.pageFixed={...v.pageFixed};
+ // Existing fixed widgets are kept on page 1 only; newly created pages start without them.
+ if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['welcome','days','shelf'])]};
  if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
  activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
  config.items=cleanItems(config.pageItems[String(activePage)]||[]);
  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
  config.positions={...(config.pagePositions[String(activePage)]||config.positions||{})};
+ const fixed=config.pageFixed[String(activePage)]||{hidden:['welcome','days'],order:['shelf']};
+ config.hidden=[...(fixed.hidden||[])];config.order=[...(fixed.order||['shelf'])];
  if(v&&Array.isArray(v.items)&&!await widgetDbHasLayout())await save({silent:true});
 }
 async function widgetDbHasLayout(){try{return !!(await widgetDbGet())}catch{return false}}
@@ -128,7 +133,7 @@ function setEditMode(on){editMode=!!on;launcher.classList.toggle('lr-widgets-edi
 function addEditTools(node,kind){if(!node||node.querySelector(':scope > .lr-edit-tools'))return;const tools=document.createElement('div');tools.className='lr-edit-tools';tools.innerHTML=`<button type="button" data-fixed-remove="${kind}" aria-label="移除组件">×</button>`;node.appendChild(tools)}
 if(welcome)addEditTools(welcome,'welcome');if(daysCard)addEditTools(daysCard,'days');
 let saveSeq=0;
-async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:8};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
+async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),pageFixed:JSON.parse(JSON.stringify(config.pageFixed)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:9};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
 function notify(t){if(typeof window.toast==='function')window.toast(t);else if($('toast')){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}}
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
@@ -194,13 +199,16 @@ async function switchWidgetPage(next){
  const page=Math.max(0,Number(next)||0);if(page===activePage)return;
  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
  config.pagePositions[String(activePage)]={...config.positions};
+ config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};
  activePage=page;
  config.items=(config.pageItems[String(activePage)]||[]).map(x=>({...x}));
  config.positions={...(config.pagePositions[String(activePage)]||{})};
+ const fixed=config.pageFixed[String(activePage)]||{hidden:['welcome','days'],order:['shelf']};
+ config.hidden=[...(fixed.hidden||[])];config.order=[...(fixed.order||['shelf'])];
  await save({silent:true});await render();renderChoices();applyLayout();
 }
 window.addEventListener('lr-launcher-page-change',e=>{switchWidgetPage(e.detail?.page).catch(err=>console.error('[LOVE RECORD] page widget switch failed',err))});
-function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
+function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
 function reorderAt(x,y){if(!dragState)return;if(dragState.scope==='shelf'){dragState.node.style.transform=`translate3d(${x-dragState.startX}px,${y-dragState.startY}px,0) scale(1.025)`;dragState.node.style.zIndex='50';return}const under=document.elementFromPoint(x,y);const target=under?.closest('.launcher-welcome,.launcher-info,#lrWidgetShelf .lr-widget');if(dragState.scope==='board'){if(target===welcome||target===daysCard){const rect=target.getBoundingClientRect();board.insertBefore(dragState.node,y<rect.top+rect.height/2?target:target.nextSibling)}else if(target===shelf){board.insertBefore(dragState.node,shelf)}return}if(dragState.scope==='shelf'){if(target?.classList.contains('lr-widget')&&target!==dragState.node){const rect=target.getBoundingClientRect();const before=y<rect.top+rect.height/2||(Math.abs(y-rect.top-rect.height/2)<rect.height*.28&&x<rect.left+rect.width/2);shelf.insertBefore(dragState.node,before?target:target.nextSibling)}else{const rect=shelf.getBoundingClientRect();if(x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom)shelf.appendChild(dragState.node)}}}
 function startDrag(node,e){if(!editMode||!node)return;dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board',oldPointerEvents:node.style.pointerEvents,startX:e.clientX||0,startY:e.clientY||0,widgetId:node.dataset.widgetId||null,oldPosition:node.dataset.widgetId?{...(config.positions[node.dataset.widgetId]||{row:2,col:1})}:null};try{if(e.pointerId!==undefined)node.setPointerCapture(e.pointerId)}catch{}node.classList.add('is-lr-dragging');node.style.pointerEvents='none';if(e.cancelable)e.preventDefault()}
 document.addEventListener('pointermove',e=>{if(dragState){window.__lrWidgetLastPointer={x:e.clientX,y:e.clientY};reorderAt(e.clientX,e.clientY)}});
