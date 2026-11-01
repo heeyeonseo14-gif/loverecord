@@ -1261,7 +1261,7 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 </main>
 <audio id="lrGlobalAudio" preload="metadata"></audio>
 <main id="chat" class="page chat-page">
-  <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div></div>
+  <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div><button type="button" id="lrOpenChatTheme" class="btn" aria-label="聊天界面自定义">聊天美化</button></div>
   <section id="chatContacts" class="chat-contact-list"></section>
   <section id="chatConversation" class="chat-conversation" hidden>
     <div class="chat-person-head"><button id="chatBackToContacts" class="chat-back" type="button">‹</button><div class="chat-person-avatar" id="chatPersonAvatar">♡</div><div class="chat-person-meta"><strong id="chatPersonName"></strong><span id="chatPersonRole"></span></div></div>
@@ -2934,5 +2934,76 @@ body.lr-external-app-open{overflow:hidden}
 </script>
 
 <script src="./diary-v1.js?v=1"></script>
+
+<style id="lrChatThemeCenterStyle">
+#lrChatThemeModal{position:fixed;inset:0;z-index:100500;display:none;align-items:flex-end;justify-content:center;background:rgba(38,29,45,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px}
+#lrChatThemeModal.show{display:flex}
+#lrChatThemeModal .lrct-panel{width:min(760px,100%);max-height:88dvh;overflow:auto;background:rgba(255,252,255,.97);border:1px solid #fff;border-radius:26px;padding:20px;color:#514657;box-shadow:0 18px 60px #30233b30}
+#lrChatThemeModal h2{font:24px Georgia,"Noto Serif SC",serif;margin:0 0 6px}
+#lrChatThemeModal p{font-size:12px;line-height:1.7;color:#918397;margin:0 0 14px}
+#lrChatThemeModal textarea{display:block;box-sizing:border-box;width:100%;min-height:260px;resize:vertical;border:1px solid #e6dce9;border-radius:17px;padding:13px;background:#fff;color:#514657;font:12px/1.65 ui-monospace,monospace}
+#lrChatThemeModal .lrct-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+#lrChatThemeModal button{min-height:42px;border:1px solid #e5d9e9;border-radius:999px;background:#fff;color:#65536d;padding:8px 13px}
+#lrChatThemeModal .primary{background:#b99fc8;color:#fff;border-color:#b99fc8}
+#lrChatThemeModal .lrct-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+#lrChatThemeModal .lrct-close{width:40px;min-height:40px;padding:0;font-size:22px}
+@media(min-width:700px){#lrChatThemeModal{align-items:center}}
+</style>
+<div id="lrChatThemeModal" aria-hidden="true">
+ <section class="lrct-panel" role="dialog" aria-modal="true" aria-labelledby="lrChatThemeTitle">
+  <div class="lrct-head"><div><div class="eyebrow">CHAT CUSTOMIZATION</div><h2 id="lrChatThemeTitle">聊天界面自定义</h2></div><button type="button" class="lrct-close" id="lrChatThemeClose" aria-label="关闭">×</button></div>
+  <p>统一自定义聊天联系人主页与聊天窗口。样式仅作用于 #chat，不会修改朋友圈（Moments）的独立样式。保存后自动生效。</p>
+  <label for="lrChatThemeCss">CSS 代码</label>
+  <textarea id="lrChatThemeCss" spellcheck="false" placeholder="/* 仅使用 #chat 作用域选择器 */"></textarea>
+  <div class="lrct-actions">
+   <button type="button" id="lrChatThemeExample">填入完整示例 CSS</button>
+   <button type="button" id="lrChatThemeReset">恢复默认样式</button>
+   <button type="button" id="lrChatThemeExport">导出主题</button>
+   <button type="button" id="lrChatThemeImport">导入主题</button>
+   <input type="file" id="lrChatThemeFile" accept="application/json,.json" hidden>
+   <button type="button" id="lrChatThemeSave" class="primary" style="grid-column:1/-1">保存并应用</button>
+  </div>
+ </section>
+</div>
+<script>
+(function(){
+ 'use strict';
+ if(window.__lrChatThemeCenterV1)return;window.__lrChatThemeCenterV1=true;
+ const KEY='loveRecordChatHomeRoomThemeV1';
+ const $=id=>document.getElementById(id);
+ const SAMPLE=`/* 聊天联系人主页 */
+#chat .chat-page-heading h1{color:#59466a!important;letter-spacing:2px!important}
+#chat .chat-contact-list{background:rgba(255,255,255,.35)!important;border-radius:22px!important;padding:8px!important}
+#chat .chat-contact-list .chat-contact-item{border-radius:18px!important}
+/* 聊天窗口 */
+#chat #chatConversation{background:linear-gradient(145deg,#f8f4fc,#eee8f7)!important;border-radius:22px!important}
+#chat #chatMessages{background:transparent!important}
+#chat #chatMessages .chat-message-row.user .chat-bubble{background:rgba(216,194,235,.8)!important;color:#493957!important;border-radius:22px 22px 7px 22px!important}
+#chat #chatMessages .chat-message-row.ai .chat-bubble{background:rgba(255,255,255,.82)!important;color:#493957!important;border-radius:22px 22px 22px 7px!important}
+#chat #chatConversation .chat-compose{background:rgba(255,255,255,.78)!important;border:1px solid #fff!important;border-radius:24px!important}`;
+ function scope(css){
+  // Prefix unscoped simple selectors with #chat. Keep at-rules intact; users can explicitly scope complex rules.
+  return String(css||'').replace(/(^|})\s*([^@}{][^{]*)\{/g,(all,lead,selectors)=>{
+   const scoped=selectors.split(',').map(s=>{s=s.trim();if(!s||s.startsWith('#chat'))return s;return '#chat '+s}).join(', ');
+   return lead+'\n'+scoped+'{';
+  });
+ }
+ function styleNode(){let s=$('lrChatHomeRoomUserStyle');if(!s){s=document.createElement('style');s.id='lrChatHomeRoomUserStyle';document.head.appendChild(s)}return s}
+ function apply(css){styleNode().textContent=scope(css)}
+ function open(){const modal=$('lrChatThemeModal');$('lrChatThemeCss').value=localStorage.getItem(KEY)||'';modal.classList.add('show');modal.setAttribute('aria-hidden','false')}
+ function close(){const modal=$('lrChatThemeModal');modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
+ $('lrOpenChatTheme')?.addEventListener('click',open);$('lrChatThemeClose')?.addEventListener('click',close);
+ $('lrChatThemeModal')?.addEventListener('click',e=>{if(e.target.id==='lrChatThemeModal')close()});
+ $('lrChatThemeExample')?.addEventListener('click',()=>$('lrChatThemeCss').value=SAMPLE);
+ $('lrChatThemeSave')?.addEventListener('click',()=>{const css=$('lrChatThemeCss').value;try{localStorage.setItem(KEY,css);apply(css);close();if(typeof window.toast==='function')window.toast('聊天主题已保存并应用 ♡');}catch(e){alert('保存失败：'+e.message)}});
+ $('lrChatThemeReset')?.addEventListener('click',()=>{if(!confirm('恢复聊天主页与聊天窗口的默认样式？'))return;$('lrChatThemeCss').value='';localStorage.removeItem(KEY);apply('')});
+ $('lrChatThemeExport')?.addEventListener('click',()=>{const data={format:'LOVE_RECORD_CHAT_HOME_ROOM_THEME',version:1,css:$('lrChatThemeCss').value};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='love-record-chat-theme.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
+ $('lrChatThemeImport')?.addEventListener('click',()=>$('lrChatThemeFile').click());
+ $('lrChatThemeFile')?.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const data=JSON.parse(await f.text());const css=typeof data==='string'?data:data.css;if(typeof css!=='string')throw new Error('格式不正确');$('lrChatThemeCss').value=css;}catch(err){alert('主题导入失败：'+err.message)}e.target.value=''});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('lrChatThemeModal')?.classList.contains('show'))close()});
+ try{apply(localStorage.getItem(KEY)||'')}catch(e){console.warn('[LOVE RECORD] chat theme load failed',e)}
+})();
+</script>
+
 </body>
 </html>
