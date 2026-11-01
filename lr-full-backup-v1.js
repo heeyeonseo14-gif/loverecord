@@ -5,7 +5,7 @@
 'use strict';
 if(window.__lrFullBackupV2Installed)return;window.__lrFullBackupV2Installed=true;
 const FORMAT='LOVE_RECORD_FULL_BACKUP',VERSION=2,$=id=>document.getElementById(id);
-const KNOWN_DBS=['love-record-long-chat-v1','love-record-chat-meta-db-v1','love-record-chat-index-v1','love-record-contact-db-v1','love-record-extra-v1','love-record-kv-v1','love-record-chat-files-v1','yanyan-love-v5','love-record-community-db','love-record-appearance-assets-v2','love-record-home-widgets-db','love-record-space-cities-v1','love-record-space-history-v1','love-record-life-apps-v1','love-record-music-v1','love-record-scrapbook-v1','LIVE_LOCAL_DB','lr-farm-save-db-v5','lr-farm-save-db'];
+const KNOWN_DBS=['love-record-long-chat-v1','love-record-chat-meta-db-v1','love-record-chat-index-v1','love-record-contact-db-v1','love-record-extra-v1','love-record-kv-v1','love-record-chat-files-v1','yanyan-love-v5','love-record-community-db','love-record-appearance-assets-v2','love-record-home-widgets-db','love-record-space-history-v1','love-record-life-apps-v1','love-record-music-v1','love-record-scrapbook-v1','LIVE_LOCAL_DB','lr-farm-save-db-v5','lr-farm-save-db'];
 const toast=m=>{if(typeof window.toast==='function')window.toast(m);else alert(m)};
 const b64=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode(...u.subarray(i,Math.min(i+32768,u.length)));return btoa(s)};
 const unb64=s=>{const x=atob(s),u=new Uint8Array(x.length);for(let i=0;i<x.length;i++)u[i]=x.charCodeAt(i);return u.buffer};
@@ -34,44 +34,21 @@ async function unpack(v){
  default:{let o={};for(const k of Object.keys(v))o[k]=await unpack(v[k]);return o}
  }
 }
-const reqP=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error||Error('IndexedDB 读取失败'))});
-function openDB(n){return new Promise((ok,no)=>{let r=indexedDB.open(n);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error||Error('无法打开数据库 '+n));r.onblocked=()=>no(Error('数据库被其他 LOVE RECORD 页面占用：'+n))})}
-async function dbNames(){
- const names=[...KNOWN_DBS];
- if(typeof indexedDB.databases==='function'){
-  try{for(const x of await indexedDB.databases())if(x.name)names.push(x.name)}
-  catch(e){console.warn('[LR backup] IndexedDB enumeration unavailable; checking known databases safely',e)}
- }
- return [...new Set(names)];
-}
-async function openExistingDB(name){
+async function readBackupFile(file){
+ if(file&&typeof file.text==='function')return file.text();
  return new Promise((resolve,reject)=>{
-  let created=false;
-  const req=indexedDB.open(name);
-  req.onupgradeneeded=()=>{
-   if(req.oldVersion===0){
-    created=true;
-    try{req.transaction.abort()}catch(e){}
-   }
-  };
-  req.onsuccess=()=>{
-   const db=req.result;
-   if(created||db.version===0||db.objectStoreNames.length===0){
-    db.close();
-    const del=indexedDB.deleteDatabase(name);
-    del.onsuccess=()=>reject(new Error('数据库不存在（已清理扫描时产生的空占位库）'));
-    del.onerror=()=>reject(new Error('检测到空数据库，但清理占位库失败；请勿手动删除其他数据库'));
-    del.onblocked=()=>reject(new Error('空数据库清理被其他页面占用'));
-    return;
-   }
-   resolve(db);
-  };
-  req.onerror=()=>reject(req.error||Error('无法读取数据库 '+name));
-  req.onblocked=()=>reject(Error('数据库被其他页面占用：'+name));
+  if(typeof FileReader==='undefined')return reject(Error('当前浏览器不支持读取备份文件'));
+  const reader=new FileReader();
+  reader.onload=()=>resolve(String(reader.result||''));
+  reader.onerror=()=>reject(reader.error||Error('备份文件读取失败'));
+  reader.readAsText(file,'UTF-8');
  });
 }
+const reqP=r=>new Promise((ok,no)=>{r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error||Error('IndexedDB 读取失败'))});
+function openDB(n){return new Promise((ok,no)=>{let r=indexedDB.open(n);r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error||Error('无法打开数据库 '+n));r.onblocked=()=>no(Error('数据库被其他 LOVE RECORD 页面占用：'+n))})}
+async function dbNames(){if(!indexedDB.databases)return null;const names=[];for(const x of await indexedDB.databases())if(x.name)names.push(x.name);return [...new Set(names)]}
 async function exportDB(name){
- const db=await openExistingDB(name),stores=[];
+ const db=await openDB(name),stores=[];
  try{for(const sn of [...db.objectStoreNames]){
   const tx=db.transaction(sn,'readonly'),st=tx.objectStore(sn),[keys,vals]=await Promise.all([reqP(st.getAllKeys()),reqP(st.getAll())]);
   const indexes=[...st.indexNames].map(n=>{let x=st.index(n);return {name:n,keyPath:x.keyPath,unique:x.unique,multiEntry:x.multiEntry}});
@@ -90,15 +67,10 @@ async function exportCaches(){
 function storageDump(s){let o={};for(let i=0;i<s.length;i++){let k=s.key(i);o[k]=s.getItem(k)}return o}
 async function makeBackup(){
  const local=storageDump(localStorage),session=storageDump(sessionStorage),databases=[],warnings=[];
- const names=await dbNames();
- for(const n of names){try{const d=await exportDB(n);if(d.stores.length)databases.push(d)}catch(e){
-  if(!String(e?.message||'').includes('数据库不存在'))warnings.push(n+': '+e.message);
- }}
+ const names=await dbNames();if(names===null)warnings.push('当前浏览器不支持 IndexedDB 数据库枚举；为避免创建空数据库，本次未扫描 IndexedDB。请使用支持 indexedDB.databases() 的最新版 Chrome 导出。');
+ for(const n of (names||[])){try{const d=await exportDB(n);if(d.stores.length)databases.push(d)}catch(e){warnings.push(n+': '+e.message)}}
  const cacheStorage=await exportCaches();
- const spaceCityDB=databases.find(d=>d.name==='love-record-space-cities-v1');
- const spaceHistoryDB=databases.find(d=>d.name==='love-record-space-history-v1');
- const spaceIndex=local['love-record-space-cities-v1']||null;
- const payload={format:FORMAT,version:VERSION,createdAt:new Date().toISOString(),origin:location.origin,app:'LOVE RECORD',space:{cityDatabaseIncluded:!!spaceCityDB,historyDatabaseIncluded:!!spaceHistoryDB,cityStoreCount:spaceCityDB?.stores?.length||0,cityRecordCount:spaceCityDB?.stores?.reduce((n,s)=>n+s.records.length,0)||0,historyRecordCount:spaceHistoryDB?.stores?.reduce((n,s)=>n+s.records.length,0)||0,cityDirectoryIncluded:Object.prototype.hasOwnProperty.call(local,'love-record-space-cities-v1'),},coverage:{localStorageKeys:Object.keys(local).length,sessionStorageKeys:Object.keys(session).length,indexedDBs:databases.length,objectStores:databases.reduce((n,d)=>n+d.stores.length,0),indexedDBRecords:databases.reduce((n,d)=>n+d.stores.reduce((a,s)=>a+s.records.length,0),0),cacheBuckets:cacheStorage.length,cacheEntries:cacheStorage.reduce((n,c)=>n+c.items.length,0)},localStorage:local,sessionStorage:session,databases,cacheStorage,warnings};
+ const payload={format:FORMAT,version:VERSION,createdAt:new Date().toISOString(),origin:location.origin,app:'LOVE RECORD',coverage:{localStorageKeys:Object.keys(local).length,sessionStorageKeys:Object.keys(session).length,indexedDBs:databases.length,objectStores:databases.reduce((n,d)=>n+d.stores.length,0),indexedDBRecords:databases.reduce((n,d)=>n+d.stores.reduce((a,s)=>a+s.records.length,0),0),cacheBuckets:cacheStorage.length,cacheEntries:cacheStorage.reduce((n,c)=>n+c.items.length,0)},localStorage:local,sessionStorage:session,databases,cacheStorage,warnings};
  payload.integrity={algorithm:'SHA-256',sha256:await digest(JSON.stringify(payload))};return payload;
 }
 async function digest(s){if(!crypto?.subtle)return 'unavailable';let h=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('')}
@@ -109,18 +81,15 @@ async function exportAll(){
  try{toast('正在逐项读取 LOVE RECORD 数据，请保持页面打开……');const d=await makeBackup(),json=JSON.stringify(d),blob=new Blob([json],{type:'application/json'});
  download(blob,'LOVE_RECORD_FULL_BACKUP_'+dateName()+'.json');
  let c=d.coverage;let msg=`备份已导出：${c.indexedDBs} 个数据库、${c.objectStores} 个数据表、${c.indexedDBRecords} 条数据库记录、${c.localStorageKeys} 项本机设置。`;
- if(d.warnings.length)msg+=' 有 '+d.warnings.length+' 个数据库读取失败，请查看备份报告。';
- const spaceReport=`SPACE：城市数据库${d.space.cityDatabaseIncluded?'已包含':'未找到/未能读取'}，城市记录 ${d.space.cityRecordCount} 条；剧情历史数据库${d.space.historyDatabaseIncluded?'已包含':'未找到/未能读取'}，历史记录 ${d.space.historyRecordCount} 条；城市目录${d.space.cityDirectoryIncluded?'已包含':'未找到'}。`;
- if(!d.space.cityDatabaseIncluded||!d.space.historyDatabaseIncluded)msg+=' 注意：SPACE 数据未能完整确认，请勿将此文件视为完整备份。';
- toast(msg);
- $('lrBackupReport').textContent=msg+'\n'+spaceReport+(d.warnings.length?'\n未能读取：\n'+d.warnings.join('\n'):'')+'\n请确认文件已出现在下载目录，并定期复制到云盘或电脑。';
+ if(d.warnings.length)msg+=' 有 '+d.warnings.length+' 个数据库读取失败，请查看备份报告。';toast(msg);
+ $('lrBackupReport').textContent=msg+(d.warnings.length?'\n未能读取：\n'+d.warnings.join('\n'):'')+'\n请确认文件已出现在下载目录，并定期复制到云盘或电脑。';
  }catch(e){console.error('[LR backup]',e);toast('备份失败：'+e.message);$('lrBackupReport').textContent='备份未完成：'+e.message}
  finally{if(b)b.disabled=false}
 }
 async function verifyFile(d){
- if(d.format!==FORMAT||![1,2].includes(d.version)||!d.localStorage||!Array.isArray(d.databases))throw Error('文件格式不正确或不是 LOVE RECORD 完整备份。');
+ if(d.format!==FORMAT||![1,2,3].includes(d.version)||!d.localStorage||!Array.isArray(d.databases))throw Error('文件格式不正确或不是 LOVE RECORD 完整备份。');
  if(d.origin&&d.origin!==location.origin&&!confirm('这份备份来自另一个网址：'+d.origin+'。当前网址是：'+location.origin+'。不同网址的浏览器数据彼此独立，仍要尝试恢复吗？'))throw Error('已取消跨网址恢复。');
- if(d.version===2&&d.integrity?.sha256&&d.integrity.sha256!=='unavailable'){
+ if(d.version>=2&&d.integrity?.sha256&&d.integrity.sha256!=='unavailable'){
   const copy={...d};delete copy.integrity;const actual=await digest(JSON.stringify(copy));if(actual!==d.integrity.sha256)throw Error('备份完整性校验失败，文件可能损坏或被修改。');
  }
  for(const db of d.databases){if(!db.name||!Array.isArray(db.stores))throw Error('数据库清单不完整。');for(const st of db.stores)if(!st.name||!Array.isArray(st.records))throw Error('数据表清单不完整。')}
@@ -144,7 +113,7 @@ async function restoreCaches(list){
 async function importAll(file){
  const b=$('lrBackupImport');if(b)b.disabled=true;
  try{
-  toast('正在检查备份文件……');const d=JSON.parse(await file.text());await verifyFile(d);
+  toast('正在检查备份文件……');const d=JSON.parse(await readBackupFile(file));await verifyFile(d);
   const c=d.coverage||{},summary=`备份日期：${d.createdAt||'未知'}\n数据库：${d.databases.length} 个\n数据表：${d.databases.reduce((n,x)=>n+x.stores.length,0)} 个\n数据库记录：${c.indexedDBRecords??'旧版备份'} 条\n本机设置：${Object.keys(d.localStorage).length} 项\n来源：${d.origin||'未知'}`;
   $('lrBackupReport').textContent='已通过文件结构检查。\n'+summary+'\n\n恢复会覆盖备份中同名的数据表和本机同名设置。其他未包含的设置会保留。';
   if(!confirm(summary+'\n\n恢复前会先自动下载当前浏览器的现场备份。请确认下载成功后再继续。\n确定恢复吗？'))return;

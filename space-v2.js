@@ -285,7 +285,15 @@
     }else{me.nextSequence=Math.max(Number(me.nextSequence)||1,maxSeq+1);}
     const recoveredCity=currentCity();
     if(recoveredCity&&recoveredCity._spaceRecoveredFromLegacy){
-      toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
+      // This migration notice is informational; do not show it on every
+      // navigation/re-render during the same tab session.
+      const noticeKey='lr-space-legacy-recovery-notice::'+String(recoveredCity.id||'active');
+      let alreadyNotified=false;
+      try{alreadyNotified=sessionStorage.getItem(noticeKey)==='1'}catch(e){}
+      if(!alreadyNotified){
+        toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
+        try{sessionStorage.setItem(noticeKey,'1')}catch(e){}
+      }
       delete recoveredCity._spaceRecoveredFromLegacy;
     }
     save();
