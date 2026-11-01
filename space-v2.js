@@ -46,21 +46,27 @@
   }
   function persistCities(){
     try{
-      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
-      // Keep only the tiny directory index in localStorage; full snapshots live in IndexedDB.
-      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
       const city=cities.find(c=>c&&c.id===activeCityId);
+      let payload=null;
       if(city){
-        const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
+        payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:Date.now(),snapshot:cloneData(city.snapshot||{})};
+        // Write a complete per-city safety copy first. IndexedDB may be unavailable
+        // or restricted in some mobile browsers; never rely on it as the only copy.
+        localStorage.setItem(cityStorageKey(city.id),JSON.stringify(payload));
+      }
+      const index={version:3,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
+      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
+      if(payload){
         cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{cityStorageReady=true}).catch(e=>{
-          console.error('[SPACE] IndexedDB city snapshot save failed',e);
-          toast('SPACE 城市保存失败：浏览器数据库写入失败。现有备份未删除，请先导出城市备份。');
+          console.warn('[SPACE] IndexedDB city snapshot save failed; full localStorage safety copy retained',e);
+          cityStorageReady=false;
+          toast('SPACE 已保存到浏览器本地备用存档；IndexedDB 不可用。请尽快导出全量备份。');
         });
       }
       return true;
     }catch(e){
-      console.error('SPACE city index save failed',e);
-      toast('SPACE 城市目录保存失败：'+(e?.message||'未知存储错误')+'。原有城市不会被覆盖。');
+      console.error('SPACE city snapshot/local index save failed',e);
+      toast('SPACE 保存失败：本地存储空间不足或不可用。当前页面内容仍在，请立即导出备份，不要关闭页面。');
       return false;
     }
   }
@@ -77,9 +83,16 @@
       for(const city of cities){
         if(!city||!city.id)continue;
         let full=byId.get(city.id);
-        if(!full){
-          try{full=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){full=null}
-          if(full&&full.id===city.id){await idbCityPut(full);migrated++}
+        let localFull=null;
+        try{localFull=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){localFull=null}
+        // Prefer whichever complete snapshot is newer. This prevents an older IDB
+        // copy from hiding a more recent browser-local safety snapshot.
+        if(localFull&&localFull.id===city.id&&(!full||(Number(localFull.updatedAt)||0)>(Number(full.updatedAt)||0))){
+          full=localFull;
+          try{await idbCityPut(full);migrated++}catch(writeError){console.warn('[SPACE] local safety snapshot retained; IDB migration skipped',writeError)}
+        }else if(!full&&localFull&&localFull.id===city.id){
+          full=localFull;
+          try{await idbCityPut(full);migrated++}catch(writeError){console.warn('[SPACE] local safety snapshot retained; IDB migration skipped',writeError)}
         }
         if(full&&full.id===city.id){
           city.snapshot=cloneData(full.snapshot||{});

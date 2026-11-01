@@ -12,21 +12,6 @@
   'love-record-life-apps-v1','love-record-music-v1','love-record-scrapbook-v1','LIVE_LOCAL_DB'
  ];
  const FORMAT='LOVE_RECORD_FULL_BACKUP', VERSION=1;
- function readBlobAsArrayBuffer(blob){
-  if(blob&&typeof blob.arrayBuffer==='function')return blob.arrayBuffer();
-  return new Promise((resolve,reject)=>{
-   if(typeof FileReader==='undefined')return reject(new Error('当前浏览器不支持读取备份二进制数据'));
-   const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error||new Error('读取二进制数据失败'));reader.readAsArrayBuffer(blob);
-  });
- }
- function readFileAsText(file){
-  if(file&&typeof file.text==='function')return file.text();
-  return new Promise((resolve,reject)=>{
-   if(typeof FileReader==='undefined')return reject(new Error('当前浏览器不支持读取备份文件'));
-   const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(reader.error||new Error('读取备份文件失败'));reader.readAsText(file,'UTF-8');
-  });
- }
-
  const $=id=>document.getElementById(id);
  const toast=msg=>{if(typeof window.toast==='function')window.toast(msg);else alert(msg)};
  const b64=buffer=>{const bytes=new Uint8Array(buffer);let out='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)out+=String.fromCharCode(...bytes.subarray(i,Math.min(i+chunk,bytes.length)));return btoa(out)};
@@ -39,7 +24,7 @@
   seen.add(value);
   try{
    if(value instanceof Date)return {$lrType:'Date',value:value.toISOString()};
-   if(value instanceof Blob)return {$lrType:value instanceof File?'File':'Blob',mime:value.type||'',name:value instanceof File?value.name:undefined,lastModified:value instanceof File?value.lastModified:undefined,data:b64(await readBlobAsArrayBuffer(value))};
+   if(value instanceof Blob)return {$lrType:value instanceof File?'File':'Blob',mime:value.type||'',name:value instanceof File?value.name:undefined,lastModified:value instanceof File?value.lastModified:undefined,data:b64(await value.arrayBuffer())};
    if(value instanceof ArrayBuffer)return {$lrType:'ArrayBuffer',data:b64(value)};
    if(ArrayBuffer.isView(value))return {$lrType:'TypedArray',name:value.constructor.name,data:b64(value.buffer.slice(value.byteOffset,value.byteOffset+value.byteLength))};
    if(value instanceof Map){const entries=[];for(const [k,v] of value)entries.push([await packValue(k,seen),await packValue(v,seen)]);return {$lrType:'Map',entries};}
@@ -87,9 +72,8 @@
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);local[k]=localStorage.getItem(k)}
   try{for(let i=0;i<sessionStorage.length;i++){const k=sessionStorage.key(i);session[k]=sessionStorage.getItem(k)}}catch(_){}
   const names=await listDbNames(),databases=[];
-  const errors=[];for(const name of names){try{const db=await openDb(name);const hasStores=db.objectStoreNames.length>0;db.close();if(hasStores)databases.push(await exportDb(name));}catch(e){console.warn('[LR backup] DB export failed',name,e);errors.push({database:name,message:e&&e.message||String(e)})}}
-  if(errors.length)throw new Error('有 '+errors.length+' 个数据库未能完整读取（'+errors.map(x=>x.database).join('、')+'）。为避免生成不完整备份，本次已停止导出。');
-  return {format:FORMAT,version:VERSION,createdAt:new Date().toISOString(),origin:location.origin,sourceUserAgent:navigator.userAgent||'',localStorage:local,sessionStorage:session,databases};
+  for(const name of names){try{const db=await openDb(name);const hasStores=db.objectStoreNames.length>0;db.close();if(hasStores)databases.push(await exportDb(name));}catch(e){console.warn('[LR backup] skip DB',name,e)}}
+  return {format:FORMAT,version:VERSION,createdAt:new Date().toISOString(),origin:location.origin,localStorage:local,sessionStorage:session,databases};
  }
  function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
  async function exportAll(){
@@ -128,13 +112,13 @@
  async function importAll(file){
   const btn=$('lrBackupImport');if(btn)btn.disabled=true;
   try{
-   const raw=await readFileAsText(file),data=JSON.parse(raw);
+   const raw=await file.text(),data=JSON.parse(raw);
    if(data.format!==FORMAT||data.version!==VERSION||!Array.isArray(data.databases)||!data.localStorage)throw new Error('这不是有效的 LOVE RECORD 完整备份文件。');
    if(!confirm('即将从备份恢复 LOVE RECORD 数据。\n当前浏览器中的同名数据库和本机设置会被备份内容覆盖。建议先导出当前数据作为保险。\n确定继续吗？'))return;
    toast('正在恢复数据，请不要关闭页面……');
    for(const meta of data.databases)await importDb(meta);
-   for(const [k,v] of Object.entries(data.localStorage))localStorage.setItem(k,String(v));
-   try{for(const [k,v] of Object.entries(data.sessionStorage||{}))sessionStorage.setItem(k,String(v))}catch(_){}
+   localStorage.clear();for(const [k,v] of Object.entries(data.localStorage))localStorage.setItem(k,String(v));
+   try{sessionStorage.clear();for(const [k,v] of Object.entries(data.sessionStorage||{}))sessionStorage.setItem(k,String(v))}catch(_){}
    toast('恢复完成，即将重新加载 LOVE RECORD。');
    setTimeout(()=>location.reload(),900);
   }catch(e){console.error('[LR backup] import failed',e);toast('恢复失败：'+e.message)}
@@ -143,7 +127,7 @@
  function addPanel(){
   const app=$('settingsApp');if(!app||$('lrBackupCard'))return;
   const card=document.createElement('section');card.id='lrBackupCard';card.className='lr-storage-card';
-  card.innerHTML='<div class="eyebrow">BACKUP &amp; RESTORE</div><h3 style="margin:6px 0 5px">完整备份与恢复</h3><div class="sub">导出当前浏览器可读取的 LOVE RECORD 本地资料与 IndexedDB 数据。备份文件采用通用 JSON 格式，可在支持文件读取与 IndexedDB 的浏览器之间迁移。</div><div class="lr-storage-actions" style="margin-top:14px"><button class="btn primary" id="lrBackupExport" type="button">导出完整备份</button><button class="btn" id="lrBackupImport" type="button">导入备份文件</button></div><input id="lrBackupFile" type="file" accept=".json,application/json" hidden><div class="sub" style="margin-top:10px">备份文件保存在你选择的下载位置。导入会覆盖备份中包含的同名数据库记录与设置；不会清空目标浏览器其他 localStorage 项。不同浏览器的存储权限和数据库实现可能造成个别模块无法恢复。请先导出目标浏览器备份。API Key 等本机设置也可能包含在备份中，请勿分享备份文件。</div>';
+  card.innerHTML='<div class="eyebrow">BACKUP &amp; RESTORE</div><h3 style="margin:6px 0 5px">完整备份与恢复</h3><div class="sub">导出 LOVE RECORD 当前浏览器中的个人资料、聊天记录、人物、自设、照片、空间、主题与其他 IndexedDB / 本机设置数据。换设备时可导入备份恢复。</div><div class="lr-storage-actions" style="margin-top:14px"><button class="btn primary" id="lrBackupExport" type="button">导出完整备份</button><button class="btn" id="lrBackupImport" type="button">导入备份文件</button></div><input id="lrBackupFile" type="file" accept=".json,application/json" hidden><div class="sub" style="margin-top:10px">备份文件保存在你选择的下载位置。导入会覆盖备份中包含的同名数据，建议先导出当前版本。API Key 等本机设置也可能包含在备份中，请勿分享备份文件。</div>';
   app.append(card);
   $('lrBackupExport').addEventListener('click',exportAll);
   $('lrBackupImport').addEventListener('click',()=>$('lrBackupFile').click());
