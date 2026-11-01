@@ -46,29 +46,21 @@
   }
   function persistCities(){
     try{
-      const city=cities.find(c=>c&&c.id===activeCityId);
-      // The city directory is deliberately small and remains in localStorage.
-      // Full snapshots belong in IndexedDB; duplicating them in localStorage can
-      // exceed the much smaller Web Storage quota on mobile browsers.
-      const index={version:3,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
+      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
+      // Keep only the tiny directory index in localStorage; full snapshots live in IndexedDB.
       localStorage.setItem(CITIES_KEY,JSON.stringify(index));
+      const city=cities.find(c=>c&&c.id===activeCityId);
       if(city){
         const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
-        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{
-          cityStorageReady=true;
-          return true;
-        }).catch(e=>{
-          cityStorageReady=false;
-          console.error('[SPACE] IndexedDB city snapshot write failed',e);
-          const detail=String(e?.name||e?.message||'UnknownError');
-          toast('SPACE 城市保存失败：'+detail+'。没有清除现有备份。请先导出全量备份，不要删除城市或关闭页面。');
-          return false;
+        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{cityStorageReady=true}).catch(e=>{
+          console.error('[SPACE] IndexedDB city snapshot save failed',e);
+          toast('SPACE 城市保存失败：浏览器数据库写入失败。现有备份未删除，请先导出城市备份。');
         });
       }
       return true;
     }catch(e){
-      console.error('SPACE city directory save failed',e);
-      toast('SPACE 城市目录保存失败：'+String(e?.name||e?.message||'本地存储不可用')+'。现有城市资料未主动删除。');
+      console.error('SPACE city index save failed',e);
+      toast('SPACE 城市目录保存失败：'+(e?.message||'未知存储错误')+'。原有城市不会被覆盖。');
       return false;
     }
   }
@@ -85,16 +77,9 @@
       for(const city of cities){
         if(!city||!city.id)continue;
         let full=byId.get(city.id);
-        let localFull=null,localMigrated=false;
-        try{localFull=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){localFull=null}
-        // A legacy/local safety copy may be newer than the IndexedDB record.
-        // Keep it untouched unless its migration write has actually committed.
-        if(localFull&&localFull.id===city.id&&(!full||(Number(localFull.updatedAt)||0)>(Number(full.updatedAt)||0))){
-          full=localFull;
-          try{await idbCityPut(full);migrated++;localMigrated=true}catch(writeError){console.warn('[SPACE] local city safety copy retained; IDB migration failed',writeError)}
-        }else if(!full&&localFull&&localFull.id===city.id){
-          full=localFull;
-          try{await idbCityPut(full);migrated++;localMigrated=true}catch(writeError){console.warn('[SPACE] local city safety copy retained; IDB migration failed',writeError)}
+        if(!full){
+          try{full=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){full=null}
+          if(full&&full.id===city.id){await idbCityPut(full);migrated++}
         }
         if(full&&full.id===city.id){
           city.snapshot=cloneData(full.snapshot||{});
@@ -105,9 +90,10 @@
           delete city._spaceMissingSnapshot;
         }
       }
-      // Do not delete legacy per-city copies automatically. They may be the only
-      // surviving copy on a browser where IndexedDB writes are restricted.
-
+      // Only remove legacy per-city localStorage copies after every migration write succeeded.
+      for(const city of cities){
+        try{const legacy=localStorage.getItem(cityStorageKey(city.id));if(legacy)localStorage.removeItem(cityStorageKey(city.id))}catch(e){console.warn('[SPACE] legacy city cleanup skipped',e)}
+      }
       const active=cities.find(c=>c.id===activeCityId)||cities[0];
       if(active){
         activeCityId=active.id;
@@ -221,7 +207,7 @@
     try{legacy=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
     try{
       const registry=JSON.parse(localStorage.getItem(CITIES_KEY)||'null');
-      if(registry&&(registry.version===2||registry.version===3)&&Array.isArray(registry.cities)){
+      if(registry&&registry.version===2&&Array.isArray(registry.cities)){
         const restored=[];
         for(const meta of registry.cities){
           if(!meta||!meta.id)continue;
