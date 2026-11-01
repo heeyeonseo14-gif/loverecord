@@ -244,13 +244,9 @@
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
   function apiConfig(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}let st={};try{if(typeof state!=='undefined')st=state||{}}catch(e){}return {base:String(st.apiBase||s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String(st.apiKey||s.apiKey||$('apiKey')?.value||'').trim(),model:String(st.apiModel||s.apiModel||$('apiModel')?.value||'').trim()}}
-  async function callAPI(system,user,loadingText='正在生成回复…',inline=false){
-    if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent='正在连接 AI…';status.hidden=false;}}
+  async function callAPI(system,user,loadingText='正在生成…',inline=false){
     const {base,key,model}=apiConfig();
-    if(!base||!key||!model){
-      if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent='尚未连接 API，请检查 API 设置。';status.hidden=false;}}
-      toast('请先在 LOVE RECORD 的 API 设置里连接模型。');return null
-    }
+    if(!base||!key||!model){toast('请先在 LOVE RECORD 的 API 设置里连接模型。');return null}
     busy=true;
     if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent=loadingText;status.hidden=false;}}
     else setBusy(true,loadingText);
@@ -885,22 +881,23 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     const t=String(text||'');if(!/(去|前往|过去|回到|返回|走到|来到|带你去|一起去|出发去|回家)/.test(t))return null;
     return (data.locations||[]).filter(l=>l.id!==fromId&&l.name&&t.includes(l.name)).sort((a,b)=>b.name.length-a.name.length)[0]||null;
   }
-  async function continueStory(action){if(busy)return;const previousLocation=locationById(data.currentLocation);const requestedDestination=findTravelDestination(action,data.currentLocation);if(requestedDestination){data.currentLocation=requestedDestination.id;save();addActivity('前往新地点',`从${previousLocation?.name||'当前位置'}前往${requestedDestination.name}`,{kind:'travel',locationId:requestedDestination.id});$('lrSpaceStoryPlace').textContent=requestedDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=requestedDestination.name;}const loc=locationById(data.currentLocation);if(!loc)return;const thread=data.activeStoryThread||('thread-'+Date.now());data.activeStoryThread=thread;const system=`你是 LOVE RECORD【空间】的剧情导演。继续当前跨地点连续剧情。只写新的剧情正文，不复述旧剧情。${roleplayPerspectiveInstruction()}${writingStyleInstruction()?'文风要求：'+writingStyleInstruction():''}同行人物可以自然回应。严格遵循已保存事实与约定，跨地点保持连续性。`;
-    const me=data.memoryEngine||{};const selectedPeopleIds=Array.isArray(data.selectedPeople)?data.selectedPeople:[];const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>selectedPeopleIds.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=(data.history||[]).slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,allLocations:(data.locations||[]).map(x=>({id:x.id,name:x.name,type:x.type,description:x.description})),travelRule:'当用户明确提出前往某个已存在地点时，剧情必须承接移动；抵达后地点状态切换到目标地点。用户未提出移动时不得擅自跳转。',people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user,'正在生成回复…',true);if(!out)return false;if(out){const aiDestination=findTravelDestination(out,data.currentLocation);if(aiDestination){data.currentLocation=aiDestination.id;save();addActivity('抵达新地点',`剧情前往${aiDestination.name}`,{kind:'travel',locationId:aiDestination.id});$('lrSpaceStoryPlace').textContent=aiDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=aiDestination.name;}const finalLoc=locationById(data.currentLocation)||loc;await appendHistory(finalLoc.name,out,action);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out);return true}return false}
+  async function continueStory(action){if(busy)return;const previousLocation=locationById(data.currentLocation);const requestedDestination=findTravelDestination(action,data.currentLocation);if(requestedDestination){data.currentLocation=requestedDestination.id;save();addActivity('前往新地点',`从${previousLocation?.name||'当前位置'}前往${requestedDestination.name}`,{kind:'travel',locationId:requestedDestination.id});$('lrSpaceStoryPlace').textContent=requestedDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=requestedDestination.name;}const loc=locationById(data.currentLocation);if(!loc){toast('找不到当前地点，请返回地图重新进入。');return false}const thread=data.activeStoryThread||('thread-'+Date.now());data.activeStoryThread=thread;const system=`你是 LOVE RECORD【空间】的剧情导演。继续当前跨地点连续剧情。只写新的剧情正文，不复述旧剧情。${roleplayPerspectiveInstruction()}${writingStyleInstruction()?'文风要求：'+writingStyleInstruction():''}同行人物可以自然回应。严格遵循已保存事实与约定，跨地点保持连续性。`;
+    const me=data.memoryEngine||{};const relevantCards=(me.cards||[]).filter(m=>!m.archived).filter(m=>(m.locationIds||[]).includes(loc.id)||(m.characterIds||[]).some(id=>data.selectedPeople.includes(id))||(m.threadIds||[]).includes(thread)).slice(-12).map(m=>({type:m.type,title:m.title,content:m.content,status:m.status}));const recent=data.history.slice(-8).map(h=>({at:h.at,place:h.place,userAction:h.userAction||'',text:h.text,threadId:h.threadId}));const user=JSON.stringify({world:worldContext(),location:loc,allLocations:data.locations.map(x=>({id:x.id,name:x.name,type:x.type,description:x.description})),travelRule:'当用户明确提出前往某个已存在地点时，剧情必须承接移动；抵达后地点状态切换到目标地点。用户未提出移动时不得擅自跳转。',people:selectedSummary(),recent,storySummary:(me.summaries||[]).slice(-3).map(x=>x.summary),currentWorldState:me.currentState||'',relevantLongTermMemories:relevantCards,userAction:action});const out=await callAPI(system,user,'正在生成回复…',true);if(!out)return false;if(out){const aiDestination=findTravelDestination(out,data.currentLocation);if(aiDestination){data.currentLocation=aiDestination.id;save();addActivity('抵达新地点',`剧情前往${aiDestination.name}`,{kind:'travel',locationId:aiDestination.id});$('lrSpaceStoryPlace').textContent=aiDestination.name;$('lrSpaceCurrentPlaceTitle').textContent=aiDestination.name;}const finalLoc=locationById(data.currentLocation)||loc;await appendHistory(finalLoc.name,out,action);$('lrSpaceStoryBody').textContent=out;makeStoryActions(out);return true}return false}
   async function sendStory(){
-    const input=$('lrSpaceStoryInput'),status=$('lrSpaceStoryGenerating');
-    const t=String(input?.value||'').trim();
-    if(!t)return;
+    const input=$('lrSpaceStoryInput'),status=$('lrSpaceStoryGenerating'),action=String(input?.value||'').trim();
+    if(!action){toast('先写下你想做的事，再继续剧情。');return}
     if(busy){toast('上一条剧情仍在生成，请稍等。');return}
     if(!data.currentLocation||!locationById(data.currentLocation)){toast('请先进入一个地点，再发送你的行动。');return}
     if(status){status.textContent='正在准备剧情请求…';status.hidden=false;}
     try{
-      const succeeded=await continueStory(t);
-      if(succeeded&&input&&!busy)input.value='';
+      const result=await continueStory(action);
+      if(result===false){if(status){status.textContent='没有生成回复，请检查 API 设置后重试。';status.hidden=false;}return;}
+      if(input)input.value='';
+      if(status){status.textContent='剧情已更新。';status.hidden=false;setTimeout(()=>{status.hidden=true},1400);}
     }catch(err){
       console.error('[LOVE RECORD SPACE sendStory]',err);
-      if(status){status.textContent='生成前发生错误，请查看 API 设置或重试。';status.hidden=false;}
-      toast('剧情请求未能启动：'+(err?.message||'未知错误'));
+      if(status){status.textContent='生成失败：'+(err?.message||'未知错误');status.hidden=false;}
+      toast('剧情生成失败：'+(err?.message||'请检查 API 设置'));
     }
   }
   async function appendHistory(place,text,userAction=''){
@@ -1057,22 +1054,8 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
         return;
       }
     },true);
-    document.addEventListener('keydown',function(e){
-      if(e.target?.id==='lrSpaceStoryInput'&&e.key==='Enter'&&!e.shiftKey){
-        e.preventDefault();e.stopImmediatePropagation();sendStory().catch(err=>{console.error('[SPACE send enter]',err);toast('剧情请求发生异常。');});
-      }
-    },true);
     document.addEventListener('change',function(e){if(e.target?.id==='lrSpaceBackupFile'){const file=e.target.files?.[0];if(file)importSpaceBackupFile(file)}});
     load();installStyles();applyV33HomeStyles();
-    if(!window.__lrSpaceStorySendCaptureBound){
-      window.__lrSpaceStorySendCaptureBound=true;
-      document.addEventListener('click',function(e){
-        const button=e.target.closest?.('#lrSpaceStorySend');
-        if(!button)return;
-        e.preventDefault();e.stopImmediatePropagation();
-        sendStory().catch(err=>{console.error('[SPACE send capture]',err);toast('继续按钮发生异常：'+(err?.message||'未知错误'));});
-      },true);
-    }
     // Global capture-phase routing for the Space dashboard. This runs before legacy
     // document handlers and survives DOM replacement, unlike one-time element binding.
     if(!window.__lrSpaceGlobalTapRouter){
@@ -1154,6 +1137,23 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeStoryReview();closeMemoryArchive();closeHome();closeMissions();closeMissionEditor()}});
     document.addEventListener('change',e=>{if(e.target?.id!=='lrSpaceLocationImage')return;const f=e.target.files?.[0],p=$('lrSpaceLocationPreview');if(f&&p){const r=new FileReader();r.onload=()=>p.innerHTML=`<img src="${esc(String(r.result||''))}" alt="">`;r.readAsDataURL(f)}});
     $('systemAppbarAction')?.addEventListener('click',()=>{if($('space')?.classList.contains('active'))openWorldSettings()});
+  }
+  // Register before init(): even if SPACE data hydration or rendering fails,
+  // the visible Continue control remains live and reports its failure.
+  if(!window.__lrSpaceStorySendEarlyBound){
+    window.__lrSpaceStorySendEarlyBound=true;
+    document.addEventListener('click',function(e){
+      const button=e.target&&e.target.closest?e.target.closest('#lrSpaceStorySend'):null;
+      if(!button)return;
+      e.preventDefault();e.stopImmediatePropagation();
+      const status=$('lrSpaceStoryGenerating');
+      if(status){status.textContent='正在准备剧情请求…';status.hidden=false;}
+      sendStory().catch(function(err){
+        console.error('[SPACE early continue handler]',err);
+        if(status){status.textContent='生成失败：'+(err&&err.message?err.message:'未知错误');status.hidden=false;}
+        toast('继续剧情失败，请检查 API 设置。');
+      });
+    },true);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
