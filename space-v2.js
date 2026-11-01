@@ -24,22 +24,91 @@
   function cityNames(ids){return (ids||[]).map(id=>person(id)?.name).filter(Boolean)}
   function makeCityName(ids){const names=cityNames(ids);return names.length?names.join(' ＆ ')+'的城市':'未命名城市'}
   function cityStorageKey(id){return 'love-record-space-city-v2:'+encodeURIComponent(String(id))}
+  let cityDbPromise=null,cityWriteQueue=Promise.resolve(),cityStorageReady=false;
+  function openCityDB(){
+    if(cityDbPromise)return cityDbPromise;
+    cityDbPromise=new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)){reject(new Error('IndexedDB unavailable'));return}
+      const req=indexedDB.open('love-record-space-cities-v1',1);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('cities'))db.createObjectStore('cities',{keyPath:'id'})};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||new Error('IndexedDB open failed'));
+      req.onblocked=()=>reject(new Error('IndexedDB upgrade blocked'));
+    });
+    return cityDbPromise;
+  }
+  function idbCityPut(payload){
+    return openCityDB().then(db=>new Promise((resolve,reject)=>{
+      const tx=db.transaction('cities','readwrite');
+      tx.objectStore('cities').put(payload);
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('City snapshot write failed'));tx.onabort=()=>reject(tx.error||new Error('City snapshot write aborted'));
+    }));
+  }
   function persistCities(){
     try{
-      // Only write the active city's snapshot. Rewriting every inactive city on
-      // every save needlessly duplicates large JSON writes and can exhaust quota.
+      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
+      // Keep only the tiny directory index in localStorage; full snapshots live in IndexedDB.
+      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
       const city=cities.find(c=>c&&c.id===activeCityId);
       if(city){
         const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
-        localStorage.setItem(cityStorageKey(city.id),JSON.stringify(payload));
+        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{cityStorageReady=true}).catch(e=>{
+          console.error('[SPACE] IndexedDB city snapshot save failed',e);
+          toast('SPACE 城市保存失败：浏览器数据库写入失败。现有备份未删除，请先导出城市备份。');
+        });
       }
-      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
-      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
       return true;
     }catch(e){
-      console.error('SPACE city save failed',e);
-      const quota=!!(e&&(e.name==='QuotaExceededError'||e.code===22||e.code===1014));
-      toast(quota?'SPACE 储存空间不足：未覆盖其他城市。请先导出城市备份，再清理不相关的大文件。':'城市保存失败：'+(e?.message||'未知存储错误')+'。原有城市不会被覆盖。');
+      console.error('SPACE city index save failed',e);
+      toast('SPACE 城市目录保存失败：'+(e?.message||'未知存储错误')+'。原有城市不会被覆盖。');
+      return false;
+    }
+  }
+  async function hydrateCitiesFromIDB(){
+    try{
+      const db=await openCityDB();
+      const stored=await new Promise((resolve,reject)=>{
+        const tx=db.transaction('cities','readonly'),req=tx.objectStore('cities').getAll();
+        req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error||new Error('City snapshot read failed'));
+      });
+      const byId=new Map(stored.filter(x=>x&&x.id).map(x=>[x.id,x]));
+      let migrated=0;
+      // Prefer the IndexedDB copy. If absent, migrate the existing localStorage snapshot.
+      for(const city of cities){
+        if(!city||!city.id)continue;
+        let full=byId.get(city.id);
+        if(!full){
+          try{full=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){full=null}
+          if(full&&full.id===city.id){await idbCityPut(full);migrated++}
+        }
+        if(full&&full.id===city.id){
+          city.snapshot=cloneData(full.snapshot||{});
+          city.peopleIds=[...(full.peopleIds||city.peopleIds||[])];
+          city.name=full.name||city.name;
+          city.createdAt=full.createdAt||city.createdAt;
+          city.updatedAt=full.updatedAt||city.updatedAt;
+          delete city._spaceMissingSnapshot;
+        }
+      }
+      // Only remove legacy per-city localStorage copies after every migration write succeeded.
+      for(const city of cities){
+        try{const legacy=localStorage.getItem(cityStorageKey(city.id));if(legacy)localStorage.removeItem(cityStorageKey(city.id))}catch(e){console.warn('[SPACE] legacy city cleanup skipped',e)}
+      }
+      const active=cities.find(c=>c.id===activeCityId)||cities[0];
+      if(active){
+        activeCityId=active.id;
+        data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})};
+        if(!Array.isArray(data.history))data.history=[];
+      }
+      cityStorageReady=true;
+      // Refresh the small index after successful migration; snapshot writes are queued in IndexedDB.
+      try{localStorage.setItem(CITIES_KEY,JSON.stringify({version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))}))}catch(e){}
+      if(migrated)console.info('[SPACE] migrated city snapshots to IndexedDB:',migrated);
+      return true;
+    }catch(e){
+      cityStorageReady=false;
+      console.error('[SPACE] IndexedDB city migration unavailable; legacy snapshots retained',e);
+      toast('SPACE 数据库暂不可用，原有城市备份已保留，暂未迁移。');
       return false;
     }
   }
@@ -976,7 +1045,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
   }
   function applyV33HomeStyles(){if(document.getElementById('lrSpaceV33HomeFix'))return;const st=document.createElement('style');st.id='lrSpaceV33HomeFix';st.textContent="/* V39 · consolidated direct-bound mobile furniture controls */\n.lr-space-home-viewport{aspect-ratio:4/3;height:auto;max-height:78vw;min-height:0;overflow-x:auto;overflow-y:hidden;touch-action:pan-x}\n.lr-space-home-preview{width:1200px!important;height:900px!important;min-height:900px!important}\n.lr-space-pixel-room{width:1200px!important;height:900px!important}\n.lr-space-pixel-room:before{height:560px!important}.lr-space-pixel-room:after{height:340px!important}.lr-space-room-rug{bottom:105px!important}.lr-space-room-window{top:70px!important}\n.lr-space-room-items{position:absolute!important;inset:0!important;z-index:20!important;pointer-events:none!important}.lr-space-room-items .lr-space-furniture-item{pointer-events:auto!important}.lr-space-furniture-item{width:104px!important;min-width:104px!important;height:92px!important;min-height:92px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;outline:0;touch-action:none!important;cursor:grab;z-index:4}\n.lr-space-furniture-item b{width:100%!important;height:100%!important;display:flex;align-items:center;justify-content:center;filter:drop-shadow(3px 4px 0 rgba(125,91,142,.20))}.lr-space-furniture-item b svg{width:100%!important;height:100%!important;image-rendering:pixelated;overflow:visible}.lr-space-furniture-item span{display:none!important}.lr-space-furniture-item.selected{outline:2px dashed #b37fc0!important;outline-offset:2px}.lr-space-furniture-item.is-dragging{z-index:30;cursor:grabbing;filter:drop-shadow(0 6px 5px rgba(112,72,128,.25))}\n.lr-space-furniture-search{width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:8px;padding:12px;background:#fffaff;color:#705b79;margin:6px 0 10px;font:inherit;font-size:13px}.lr-space-custom-furniture{border:1px solid #ead8e7;border-radius:10px;padding:12px;margin:10px 0;background:#fffaff}.lr-space-custom-furniture-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.8fr) 42px;gap:8px;align-items:center}.lr-space-custom-furniture-row input[type=text],.lr-space-custom-furniture-row select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #dfcbe5;border-radius:7px;padding:10px;background:white;color:#705b79;font:inherit;font-size:12px}.lr-space-custom-furniture-row input[type=color]{width:40px;height:38px;border:0;background:transparent;padding:0}.lr-space-custom-furniture-row button{grid-column:1/-1;border:0;border-radius:8px;padding:12px;background:#c77fa9;color:white;font:inherit}.lr-space-furniture-tray button[hidden]{display:none!important}\n@media(max-width:560px){.lr-space-home-viewport{max-height:none;height:auto;aspect-ratio:4/3}.lr-space-home-preview{height:900px!important}.lr-space-pixel-room{height:900px!important}.lr-space-custom-furniture-row{grid-template-columns:minmax(0,1fr) 42px}.lr-space-custom-furniture-row select{grid-column:1/2}.lr-space-custom-furniture-row input[type=color]{grid-column:2;grid-row:1;justify-self:center}}\n";document.head.appendChild(st)}
   async function open(){
-    load();await hydrateHistoryFromIDB();installStyles();applyV33HomeStyles();
+    load();await hydrateCitiesFromIDB();await hydrateHistoryFromIDB();installStyles();applyV33HomeStyles();
     /* Do not call the legacy nav('space') here. The old Space renderer expects
        the removed legacy DOM (#place, #choices, etc.) and can throw before V2
        finishes opening. Activate the page shell directly instead. */
