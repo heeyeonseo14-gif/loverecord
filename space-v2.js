@@ -45,24 +45,44 @@
     }));
   }
   function persistCities(){
-    try{
-      const index={version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
-      // Keep only the tiny directory index in localStorage; full snapshots live in IndexedDB.
-      localStorage.setItem(CITIES_KEY,JSON.stringify(index));
-      const city=cities.find(c=>c&&c.id===activeCityId);
-      if(city){
-        const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
-        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{cityStorageReady=true}).catch(e=>{
-          console.error('[SPACE] IndexedDB city snapshot save failed',e);
-          toast('SPACE 城市保存失败：浏览器数据库写入失败。现有备份未删除，请先导出城市备份。');
+    const city=cities.find(c=>c&&c.id===activeCityId);
+    const metas=cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}));
+    const registry={id:'__lr_space_registry__',kind:'registry',version:3,activeCityId,cities:metas};
+    // localStorage is only a convenience cache. On mobile browsers it may be full;
+    // failure to update this tiny index must never block the authoritative IndexedDB save.
+    try{localStorage.setItem(CITIES_KEY,JSON.stringify({version:2,activeCityId,cities:metas}))}
+    catch(e){console.warn('[SPACE] localStorage directory cache unavailable; IndexedDB registry will be used',e)}
+    if(city){
+      const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
+      cityWriteQueue=cityWriteQueue.catch(()=>{}).then(async()=>{
+        const db=await openCityDB();
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction('cities','readwrite'),store=tx.objectStore('cities');
+          store.put(payload);
+          store.put(registry);
+          tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('SPACE city save failed'));tx.onabort=()=>reject(tx.error||new Error('SPACE city save aborted'));
         });
-      }
-      return true;
-    }catch(e){
-      console.error('SPACE city index save failed',e);
-      toast('SPACE 城市目录保存失败：'+(e?.message||'未知存储错误')+'。原有城市不会被覆盖。');
-      return false;
+        cityStorageReady=true;
+      }).catch(e=>{
+        cityStorageReady=false;
+        console.error('[SPACE] IndexedDB city snapshot save failed',e);
+        toast('SPACE 保存失败：'+String(e?.name||e?.message||'数据库写入失败')+'。当前资料仍在页面中，请立即导出备份，不要关闭页面。');
+      });
+    }else{
+      // Even when no city is active (e.g. deleting the last city), persist the registry.
+      cityWriteQueue=cityWriteQueue.catch(()=>{}).then(async()=>{
+        const db=await openCityDB();
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction('cities','readwrite'),store=tx.objectStore('cities');
+          store.put(registry);
+          const keep=new Set(metas.map(x=>x.id));
+          const req=store.getAllKeys();
+          req.onsuccess=()=>{for(const key of req.result||[])if(key!=='__lr_space_registry__'&&!keep.has(key))store.delete(key)};
+          tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('SPACE registry save failed'));tx.onabort=()=>reject(tx.error||new Error('SPACE registry save aborted'));
+        });
+      }).catch(e=>{cityStorageReady=false;console.error('[SPACE] registry save failed',e);toast('SPACE 城市目录保存失败：'+String(e?.name||e?.message||'数据库写入失败'))});
     }
+    return true;
   }
   async function hydrateCitiesFromIDB(){
     try{
@@ -71,7 +91,19 @@
         const tx=db.transaction('cities','readonly'),req=tx.objectStore('cities').getAll();
         req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error||new Error('City snapshot read failed'));
       });
-      const byId=new Map(stored.filter(x=>x&&x.id).map(x=>[x.id,x]));
+      const registryRecord=stored.find(x=>x&&x.id==='__lr_space_registry__'&&x.kind==='registry');
+      const cityRecords=stored.filter(x=>x&&x.id&&x.id!=='__lr_space_registry__'&&x.snapshot&&typeof x.snapshot==='object');
+      if((!cities.length||!cities.some(c=>c&&c.id))&&registryRecord&&Array.isArray(registryRecord.cities)){
+        cities=registryRecord.cities.map(meta=>{
+          const full=cityRecords.find(x=>x.id===meta.id);
+          return full?{...meta,...full,snapshot:cloneData(full.snapshot||{})}:{...meta,snapshot:cloneData(EMPTY_DATA),_spaceMissingSnapshot:true};
+        });
+        activeCityId=registryRecord.activeCityId||cities[0]?.id||'';
+      }else if(!cities.length&&cityRecords.length){
+        cities=cityRecords.map(full=>({...full,snapshot:cloneData(full.snapshot||{})}));
+        activeCityId=cities[0]?.id||'';
+      }
+      const byId=new Map(cityRecords.map(x=>[x.id,x]));
       let migrated=0;
       // Prefer the IndexedDB copy. If absent, migrate the existing localStorage snapshot.
       for(const city of cities){
@@ -285,15 +317,7 @@
     }else{me.nextSequence=Math.max(Number(me.nextSequence)||1,maxSeq+1);}
     const recoveredCity=currentCity();
     if(recoveredCity&&recoveredCity._spaceRecoveredFromLegacy){
-      // This migration notice is informational; do not show it on every
-      // navigation/re-render during the same tab session.
-      const noticeKey='lr-space-legacy-recovery-notice::'+String(recoveredCity.id||'active');
-      let alreadyNotified=false;
-      try{alreadyNotified=sessionStorage.getItem(noticeKey)==='1'}catch(e){}
-      if(!alreadyNotified){
-        toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
-        try{sessionStorage.setItem(noticeKey,'1')}catch(e){}
-      }
+      toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
       delete recoveredCity._spaceRecoveredFromLegacy;
     }
     save();
