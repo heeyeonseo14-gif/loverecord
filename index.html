@@ -2847,6 +2847,8 @@ document.addEventListener('click',function(e){
   const pages=Array.from(root.querySelectorAll('.settings-subpage'));
   function showHome(){
     pages.forEach(page=>page.hidden=true);
+    const guide=root.querySelector('#lrUseGuide');
+    if(guide) guide.hidden=false;
     if(menu) menu.hidden=false;
     if(note) note.hidden=false;
     const intro=root.querySelector('#settingsIntro');
@@ -2859,6 +2861,8 @@ document.addEventListener('click',function(e){
   }
   function showPage(page){
     if(!page || !pages.includes(page)) return;
+    const guide=root.querySelector('#lrUseGuide');
+    if(guide) guide.hidden=true;
     pages.forEach(item=>item.hidden=item!==page);
     if(menu) menu.hidden=true;
     if(note) note.hidden=true;
