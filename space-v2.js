@@ -227,8 +227,8 @@
     renderCityDirectory();
     const meta=$('lrSpaceMapMeta');if(meta)meta.textContent='同行者：'+cityNames(ids).join('、');
     show('map');renderMap();renderCreatedList();renderActivity();applySeasonFX();renderMemoryProgress();
-    toast('新城市已添加，之前的城市都已保留。');
-    hydrateHistoryFromIDB().then(()=>seedMap()).catch(()=>seedMap());
+    toast('新城市已创建并保存。你可以先使用空白地图，之后再手动生成初始地点。');
+    hydrateHistoryFromIDB().then(()=>{renderActivity();renderMemoryProgress()}).catch(e=>console.warn('[SPACE] history hydration after city creation failed',e));
   }
   function deleteCity(id){
     const city=cities.find(c=>c.id===id);if(!city)return;
@@ -976,7 +976,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
   function handleInviteAction(btn){const inv=data.invites.find(x=>x.id===btn.dataset.inviteId);if(!inv)return;inv.status=btn.dataset.inviteAction==='accept'?'accepted':'declined';inv.respondedAt=Date.now();addActivity(inv.status==='accepted'?'已接受邀请':'暂不参加邀请',inv.title,{kind:'invite',personId:inv.personId,locationId:inv.locationId,status:inv.status});save();renderActivity();toast(inv.status==='accepted'?'已接受邀请。':'已记录你的选择。')}
   function renderMap(){
     const box=$('lrSpaceMapLocations');if(!box)return;const list=data.locations||[];
-    if(!list.length){box.innerHTML='<div class="lr-space-empty-map"><div><b>这座城市还是空白的</b><div>先创建一个地点，让空间有第一个故事发生。</div></div></div>';return}
+    if(!list.length){box.innerHTML='<div class="lr-space-empty-map"><div><b>这座城市还是空白的</b><div>城市已经独立保存。你可以先手动创建地点，或在网络/API 可用时生成初始地图。</div><button class="lr-space-secondary" type="button" data-space-generate-map>生成初始地图</button></div></div>';return}
     const positions=[[18,30],[50,25],[80,34],[30,58],[63,56],[18,79],[48,78],[78,76],[50,44]];
     box.innerHTML=list.map((l,i)=>{const pos=positions[i%positions.length];return `<button class="lr-space-location" style="left:${pos[0]}%;top:${pos[1]}%" data-space-location="${esc(l.id)}" type="button"><span class="lr-space-location-pin">${l.image?`<img src="${esc(l.image)}" alt="">`:esc(l.icon||'⌂')}</span><b>${esc(l.name)}</b><small>${esc(l.type||l.purpose||'地点')}</small></button>`}).join('');
     $('lrSpaceWorldTitle').textContent=data.worldTitle||data.worldNote||'我们的世界';applySeasonFX();renderActivity();
@@ -1063,12 +1063,33 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
   function show(which){const ids={directory:'lrSpaceV2Directory',map:'lrSpaceV2Map',story:'lrSpaceV2Story',create:'lrSpaceCreate'};Object.entries(ids).forEach(([k,id])=>{const el=$(id);if(!el)return;el.hidden=k!==which;el.classList.toggle('is-current',k===which)});if(which==='create')renderCreatedList();if(which==='directory'){renderCityDirectory();renderPeople()}}
   async function seedMap(){
     if(busy||data.locations.length)return;
+    const requestCityId=activeCityId;
+    const requestData=data;
+    const requestPeople=selectedSummary();
+    const requestWorld=worldContext();
     const system=`你是 LOVE RECORD【空间】的世界地图设计师。根据同行人物与用户已有世界设定，创建一个适合长期剧情的现代虚拟城市/区域地图。只返回 JSON，不要 Markdown。字段：worldName,worldDescription,locations。locations 是数组，生成 6 个地点，每项字段为 name,type,purpose,description,atmosphere,storyHooks,icon。地点之间要有明显差异，例如居住、餐饮、公共空间、自然空间、商业空间、安静空间。icon 只允许一个简单非 emoji 字符。不要加入任何具体人物姓名。`;
-    const out=await callAPI(system,JSON.stringify({people:selectedSummary(),worldNote:data.worldNote||'',context:worldContext()}));
+    toast('正在为当前城市生成初始地图；城市本身已经保存，不受生成结果影响。');
+    const out=await callAPI(system,JSON.stringify({people:requestPeople,worldNote:requestData.worldNote||'',context:requestWorld}));
     if(!out)return;
-    try{const clean=out.replace(/^```json\s*|^```|```$/g,'').trim();const j=JSON.parse(clean);data.worldNote=String(j.worldName||'我们的世界');data.worldTitle=data.worldNote;data.worldDescription=String(j.worldDescription||'');data.locations=(Array.isArray(j.locations)?j.locations:[]).slice(0,8).map((l,i)=>({id:'loc-'+Date.now()+'-'+i,name:String(l.name||('地点 '+(i+1))),type:String(l.type||'地点'),purpose:String(l.purpose||''),description:String(l.description||''),atmosphere:String(l.atmosphere||''),storyHooks:Array.isArray(l.storyHooks)?l.storyHooks:[],icon:String(l.icon||'⌂').slice(0,2)}));save();renderMap();toast('地图已经生成。选一个地方开始剧情。')}catch(e){toast('AI 返回的地图格式不正确，请再试一次。')}
+    // The user may have changed cities while the request was running.
+    // Never let city A's generated map be written into city B.
+    if(activeCityId!==requestCityId||data!==requestData){
+      toast('地图生成已返回，但你已切换城市；为保护城市独立资料，本次结果未写入其他城市。');
+      return;
+    }
+    try{
+      const clean=out.replace(/^```json\s*|^```|```$/g,'').trim();
+      const j=JSON.parse(clean);
+      const locations=(Array.isArray(j.locations)?j.locations:[]).slice(0,8).map((l,i)=>({id:'loc-'+Date.now()+'-'+i,name:String(l.name||('地点 '+(i+1))),type:String(l.type||'地点'),purpose:String(l.purpose||''),description:String(l.description||''),atmosphere:String(l.atmosphere||''),storyHooks:Array.isArray(l.storyHooks)?l.storyHooks:[],icon:String(l.icon||'⌂').slice(0,2)}));
+      if(!locations.length){toast('AI 没有返回有效地点；城市仍然保留，可以稍后重试。');return}
+      requestData.worldNote=String(j.worldName||'我们的世界');
+      requestData.worldTitle=requestData.worldNote;
+      requestData.worldDescription=String(j.worldDescription||'');
+      requestData.locations=locations;
+      save();renderMap();toast('地图已经生成。选一个地方开始剧情。');
+    }catch(e){toast('AI 返回的地图格式不正确；城市仍然保留，可以稍后重试。')}
   }
-  async function enterMap(){if(!data.selectedPeople.length){toast('至少选择一位同行者。');return}save();$('lrSpaceMapMeta').textContent='同行者：'+data.selectedPeople.map(id=>person(id)?.name).filter(Boolean).join('、');show('map');simulateWorld();renderMap();applySeasonFX();renderMemoryProgress();const interrupted=data.memoryEngine?.batches?.find(b=>['pending','running','retrying','ready_to_commit'].includes(b.status));if(interrupted){if(interrupted.status==='ready_to_commit'&&interrupted.result){const records=interrupted.recordIds.map(id=>data.history.find(h=>h.id===id)).filter(Boolean);commitMemoryBatch(interrupted,records)}else if(interrupted.status!=='running'&&!memorySummaryRunning)processMemoryBatch(interrupted.id)}if(!data.locations.length)await seedMap()}
+  async function enterMap(){if(!data.selectedPeople.length){toast('至少选择一位同行者。');return}save();$('lrSpaceMapMeta').textContent='同行者：'+data.selectedPeople.map(id=>person(id)?.name).filter(Boolean).join('、');show('map');simulateWorld();renderMap();applySeasonFX();renderMemoryProgress();const interrupted=data.memoryEngine?.batches?.find(b=>['pending','running','retrying','ready_to_commit'].includes(b.status));if(interrupted){if(interrupted.status==='ready_to_commit'&&interrupted.result){const records=interrupted.recordIds.map(id=>data.history.find(h=>h.id===id)).filter(Boolean);commitMemoryBatch(interrupted,records)}else if(interrupted.status!=='running'&&!memorySummaryRunning)processMemoryBatch(interrupted.id)}}
   function activateSpacePage(){
     document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
     const target=$('space');
@@ -1205,6 +1226,8 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
       if(e.target.closest?.('#lrSpaceCreateCityCancel')){creatingCity=false;cityDraftPeople=[];renderCityDirectory();return}
       if(e.target.closest?.('#lrSpaceCreateCitySave')){createCityFromDraft();return}
       const p=e.target.closest?.('[data-space-person]');if(p){const id=p.dataset.spacePerson;cityDraftPeople=cityDraftPeople.includes(id)?cityDraftPeople.filter(x=>x!==id):[...cityDraftPeople,id];renderPeople();return}
+      const generateMap=e.target.closest?.('[data-space-generate-map]');
+      if(generateMap){seedMap();return}
       const l=e.target.closest?.('[data-space-location]');if(l){if(l.dataset.longPressed==='1'){l.dataset.longPressed='';return}enterLocation(l.dataset.spaceLocation);return}
     });
     document.addEventListener('input',e=>{if(e.target?.id==='lrSpaceFurnitureSearch'){filterHomeFurniture();return}if(e.target?.id==='lrSpaceCustomWallColor'){ if(!data.home)data.home={};data.home.customWall=e.target.value;const room=$('lrSpacePixelRoom');if(room){room.style.backgroundColor=e.target.value;room.querySelector('.lr-space-room-window')?.style.setProperty('background',`linear-gradient(${e.target.value},#fff0f5)`)}save();}});
