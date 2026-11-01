@@ -48,10 +48,10 @@
     const city=cities.find(c=>c&&c.id===activeCityId);
     const metas=cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}));
     const registry={id:'__lr_space_registry__',kind:'registry',version:3,activeCityId,cities:metas};
-    // localStorage is only a convenience cache. On mobile browsers it may be full;
-    // failure to update this tiny index must never block the authoritative IndexedDB save.
-    try{localStorage.setItem(CITIES_KEY,JSON.stringify({version:2,activeCityId,cities:metas}))}
-    catch(e){console.warn('[SPACE] localStorage directory cache unavailable; IndexedDB registry will be used',e)}
+    // The city directory is authoritative in IndexedDB. Do not write CITIES_KEY
+    // to localStorage: mobile Web Storage quotas are small and may already be full.
+    // Keep the old localStorage value read-only as a migration fallback.
+
     if(city){
       const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
       cityWriteQueue=cityWriteQueue.catch(()=>{}).then(async()=>{
@@ -93,15 +93,21 @@
       });
       const registryRecord=stored.find(x=>x&&x.id==='__lr_space_registry__'&&x.kind==='registry');
       const cityRecords=stored.filter(x=>x&&x.id&&x.id!=='__lr_space_registry__'&&x.snapshot&&typeof x.snapshot==='object');
-      if((!cities.length||!cities.some(c=>c&&c.id))&&registryRecord&&Array.isArray(registryRecord.cities)){
+      if(registryRecord&&Array.isArray(registryRecord.cities)){
+        // IndexedDB registry is authoritative. This preserves city identity and
+        // strict per-city separation even when an old localStorage index is stale.
         cities=registryRecord.cities.map(meta=>{
           const full=cityRecords.find(x=>x.id===meta.id);
           return full?{...meta,...full,snapshot:cloneData(full.snapshot||{})}:{...meta,snapshot:cloneData(EMPTY_DATA),_spaceMissingSnapshot:true};
         });
         activeCityId=registryRecord.activeCityId||cities[0]?.id||'';
-      }else if(!cities.length&&cityRecords.length){
-        cities=cityRecords.map(full=>({...full,snapshot:cloneData(full.snapshot||{})}));
-        activeCityId=cities[0]?.id||'';
+      }else if(cityRecords.length){
+        // Legacy DBs may contain city snapshots without a registry record.
+        // Recover each snapshot as its own city; never merge snapshots.
+        const known=new Map(cities.filter(c=>c&&c.id).map(c=>[c.id,c]));
+        for(const full of cityRecords)known.set(full.id,{...(known.get(full.id)||{}),...full,snapshot:cloneData(full.snapshot||{})});
+        cities=[...known.values()];
+        if(!cities.some(c=>c.id===activeCityId))activeCityId=cities[0]?.id||'';
       }
       const byId=new Map(cityRecords.map(x=>[x.id,x]));
       let migrated=0;
@@ -122,10 +128,9 @@
           delete city._spaceMissingSnapshot;
         }
       }
-      // Only remove legacy per-city localStorage copies after every migration write succeeded.
-      for(const city of cities){
-        try{const legacy=localStorage.getItem(cityStorageKey(city.id));if(legacy)localStorage.removeItem(cityStorageKey(city.id))}catch(e){console.warn('[SPACE] legacy city cleanup skipped',e)}
-      }
+      // Keep legacy per-city localStorage copies as recovery material.
+      // They are not authoritative and are never auto-deleted during migration.
+
       const active=cities.find(c=>c.id===activeCityId)||cities[0];
       if(active){
         activeCityId=active.id;
@@ -133,8 +138,9 @@
         if(!Array.isArray(data.history))data.history=[];
       }
       cityStorageReady=true;
-      // Refresh the small index after successful migration; snapshot writes are queued in IndexedDB.
-      try{localStorage.setItem(CITIES_KEY,JSON.stringify({version:2,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))}))}catch(e){}
+      // IndexedDB remains the sole writer for the city directory.
+      // Never mirror the directory into localStorage (quota failure on mobile).
+
       if(migrated)console.info('[SPACE] migrated city snapshots to IndexedDB:',migrated);
       return true;
     }catch(e){
