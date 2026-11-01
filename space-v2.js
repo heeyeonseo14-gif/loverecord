@@ -202,15 +202,60 @@
     renderMap();renderCreatedList();renderActivity();renderMemoryProgress();applySeasonFX();
     hydrateHistoryFromIDB().then(()=>{renderActivity();renderMemoryProgress()}).catch(e=>console.warn('[SPACE] city history load failed',e));
   }
-  function createCityFromDraft(){
+  async function createCityFromDraft(){
+    if(busy)return;
     const ids=[...new Set(cityDraftPeople)];
     if(!ids.length){toast('请至少选择一位同行者。');return}
+    // Save the currently active city first; never switch or mutate it while AI is generating.
     if(!persistActiveCity())return;
+    const peopleForCity=ids.map(id=>person(id)).filter(Boolean).map(p=>({
+      id:p.id,name:p.name,role:p.role||'',personality:p.personality||'',
+      background:p.background||'',speech:p.speech||'',instructions:p.instructions||''
+    }));
+    const cityLabel=makeCityName(ids);
+    const system=`你是 LOVE RECORD SPACE 的城市世界设计师。请为用户新建一座独立城市，并为这座城市生成可长期使用的初始地图。只返回严格 JSON，不要 Markdown，不要代码围栏。结构必须为：{"worldName":"城市名称","worldDescription":"城市整体介绍","locations":[{"name":"地点名称","type":"地点类型","purpose":"用途","description":"详细介绍","atmosphere":"氛围","storyHooks":["故事钩子1","故事钩子2"],"icon":"单个简洁字符"}]}。locations 必须恰好生成 6 个彼此明显不同的地点，涵盖居住、餐饮、公共空间、自然空间、商业空间和安静空间。根据同行者的性格与背景设计城市氛围，但不要擅自添加未提供的人物，也不要把其他城市的地点或剧情带入本城市。`;
+    const user=JSON.stringify({
+      task:'创建一座全新的、与其他城市完全独立的 SPACE 城市',
+      requestedCityLabel:cityLabel,
+      companions:peopleForCity,
+      existingWorldContext:{
+        style:data.atmosphere||'温柔、真实、有生活气息',
+        season:data.season||'none'
+      },
+      constraints:['只生成本次新城市的数据','不要引用或复制其他城市的地图、地点、剧情、记忆','返回恰好6个地点']
+    });
+    const out=await callAPI(system,user,'正在生成新城市与初始地图…',false,90000);
+    if(!out)return; // Keep selected companions and all existing cities intact for retry.
+    let generated;
+    try{
+      const clean=out.replace(/^```json\s*|^```|```$/g,'').trim();
+      generated=JSON.parse(clean);
+      if(!generated||typeof generated!=='object'||!Array.isArray(generated.locations)||generated.locations.length<1){
+        throw new Error('AI 没有返回有效城市和地点资料');
+      }
+    }catch(e){
+      toast('AI 返回的城市资料格式不正确；没有创建半成品城市，请保留同行者选择后重试。');
+      return;
+    }
+    const fresh=makeFreshCityData(ids);
+    fresh.worldTitle=String(generated.worldName||cityLabel+'的城市').trim()||cityLabel+'的城市';
+    fresh.worldNote=fresh.worldTitle;
+    fresh.worldDescription=String(generated.worldDescription||'');
+    fresh.locations=generated.locations.slice(0,8).map((l,i)=>({
+      id:'loc-'+Date.now()+'-'+i+'-'+Math.random().toString(36).slice(2,6),
+      name:String(l.name||('地点 '+(i+1))),
+      type:String(l.type||'地点'),
+      purpose:String(l.purpose||''),
+      description:String(l.description||''),
+      atmosphere:String(l.atmosphere||''),
+      storyHooks:Array.isArray(l.storyHooks)?l.storyHooks.map(x=>String(x)):[],
+      icon:String(l.icon||'⌂').slice(0,2)
+    }));
     const previousActiveId=activeCityId;
     const previousData=cloneData(data);
+    const previousHistoryReady=historyStorageReady;
     const id='city-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
-    const fresh=makeFreshCityData(ids);
-    const created={id,name:makeCityName(ids),peopleIds:ids,createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(fresh)};
+    const created={id,name:fresh.worldTitle,peopleIds:ids,createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(fresh)};
     cities.push(created);
     activeCityId=id;
     data=fresh;
@@ -219,7 +264,9 @@
       cities=cities.filter(c=>c.id!==id);
       activeCityId=previousActiveId;
       data=previousData;
+      historyStorageReady=previousHistoryReady;
       renderCityDirectory();
+      toast('城市资料已生成，但本地保存失败；原有城市未被覆盖，请先导出备份。');
       return;
     }
     cityDraftPeople=[];
@@ -227,7 +274,7 @@
     renderCityDirectory();
     const meta=$('lrSpaceMapMeta');if(meta)meta.textContent='同行者：'+cityNames(ids).join('、');
     show('map');renderMap();renderCreatedList();renderActivity();applySeasonFX();renderMemoryProgress();
-    toast('新城市已创建并保存。你可以先使用空白地图，之后再手动生成初始地点。');
+    toast('新城市与初始地图已生成并独立保存。');
     hydrateHistoryFromIDB().then(()=>{renderActivity();renderMemoryProgress()}).catch(e=>console.warn('[SPACE] history hydration after city creation failed',e));
   }
   function deleteCity(id){
@@ -278,7 +325,6 @@
             active.peopleIds=[...(legacy.selectedPeople||active.peopleIds||[])];
             active.name=makeCityName(active.peopleIds);
             active.updatedAt=Date.now();
-            active._spaceRecoveredFromLegacy=true;
           }
           data={...cloneData(EMPTY_DATA),...cloneData(active.snapshot||{})};
         }else if(legacyHasContent){
@@ -286,7 +332,6 @@
           activeCityId='city-recovered-'+Date.now();
           const recovered={id:activeCityId,name:makeCityName(legacy.selectedPeople||[]),peopleIds:[...(legacy.selectedPeople||[])],createdAt:Date.now(),updatedAt:Date.now(),snapshot:cloneData(data)};
           cities.push(recovered);
-          recovered._spaceRecoveredFromLegacy=true;
           adoptUnscopedLegacyHistory=true;
         }else data={...cloneData(EMPTY_DATA),...legacy};
         // Keep the original legacy KEY untouched until a city snapshot has been
@@ -321,11 +366,9 @@
       // Preserve legacy memory snippets by migrating them into the new archive once.
       (data.memories||[]).forEach((old,i)=>{const content=String(old.text||'').trim();if(!content)return;const title='旧记忆 · '+String(old.place||'世界经历');const source=(data.history||[]).find(h=>h.at===old.at&&(h.place===old.place||!old.place));me.cards.push({id:String(old.id||('legacy-memory-'+i)),dedupeKey:'legacy-'+String(old.id||i),type:'shared',title,content,characterNames:[],characterIds:[],locationNames:old.place?[old.place]:[],locationIds:source?.locationId?[source.locationId]:[],threadIds:source?.threadId?[source.threadId]:[],sourceRecordIds:source?[source.id]:[],emotion:'',status:'active',tags:['旧版迁移'],createdAt:Number(old.at)||Date.now(),updatedAt:Number(old.at)||Date.now(),userEdited:false})});
     }else{me.nextSequence=Math.max(Number(me.nextSequence)||1,maxSeq+1);}
+    // Legacy SPACE data recovery remains silent; original data is retained.
     const recoveredCity=currentCity();
-    if(recoveredCity&&recoveredCity._spaceRecoveredFromLegacy){
-      toast('已发现旧版 SPACE 资料，正在恢复到当前城市；原始资料会保留。');
-      delete recoveredCity._spaceRecoveredFromLegacy;
-    }
+    if(recoveredCity&&recoveredCity._spaceRecoveredFromLegacy)delete recoveredCity._spaceRecoveredFromLegacy;
     save();
   }
   function save(){data.updatedAt=Date.now();try{if(!persistActiveCity())return false;const stored={...data};if(historyStorageReady)stored.history=[];try{localStorage.setItem(KEY,JSON.stringify(stored))}catch(mirrorError){console.warn('[SPACE] legacy mirror skipped; city snapshot is saved',mirrorError)}return true}catch(e){console.error('LOVE RECORD Space storage failed',e);return false}}
@@ -354,13 +397,13 @@
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
   function apiConfig(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}let st={};try{if(typeof state!=='undefined')st=state||{}}catch(e){}return {base:String(st.apiBase||s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String(st.apiKey||s.apiKey||$('apiKey')?.value||'').trim(),model:String(st.apiModel||s.apiModel||$('apiModel')?.value||'').trim()}}
-  async function callAPI(system,user,loadingText='正在生成…',inline=false){
+  async function callAPI(system,user,loadingText='正在生成…',inline=false,timeoutMs=30000){
     const {base,key,model}=apiConfig();
     if(!base||!key||!model){toast('请先在 LOVE RECORD 的 API 设置里连接模型。');return null}
     busy=true;
     if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent=loadingText;status.hidden=false;}}
     else setBusy(true,loadingText);
-    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),30000);
+    const safeTimeout=Math.max(10000,Math.min(120000,Number(timeoutMs)||30000));const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),safeTimeout);
     try{
       const r=await fetch(base+'/chat/completions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:.9,stream:false})});
       const raw=await r.text();if(!r.ok){let d=raw;try{const j=JSON.parse(raw);d=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+' · '+String(d).slice(0,220))}
@@ -369,7 +412,7 @@
       if(Array.isArray(c))c=c.map(x=>x?.text||'').join('');
       if(!String(c).trim())throw new Error('API 返回为空');
       return String(c).trim();
-    }catch(e){toast(e.name==='AbortError'?'API 请求超时（30秒）':'API 请求失败：'+e.message);return null}
+    }catch(e){toast(e.name==='AbortError'?'API 请求超时（'+Math.round(safeTimeout/1000)+'秒），当前城市未创建；可以保留选择后重试。':'API 请求失败：'+e.message);return null}
     finally{clearTimeout(timer);busy=false;if(inline){const status=$('lrSpaceStoryGenerating');if(status)status.hidden=true;}else setBusy(false)}
   }
   function setBusy(on,text='正在生成…'){
@@ -629,7 +672,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
         <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>我的城市</h1><p>每一组同行者，都拥有独立的城市与故事。</p></div></div>
-        <section class="lr-space-v2-panel"><h2 id="lrSpaceCityDirectoryTitle">我的城市</h2><div id="lrSpaceCityList" class="lr-space-city-list"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityToggle" class="lr-space-primary" type="button">＋ 创建新城市</button></div></section>
+        <section class="lr-space-v2-panel"><h2 id="lrSpaceCityDirectoryTitle">我的城市</h2><div id="lrSpaceCityList" class="lr-space-city-list"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityToggle" class="lr-space-primary" type="button">＋ AI 生成新城市</button></div></section>
         <section id="lrSpaceCreateCityPanel" class="lr-space-v2-panel" hidden><h2>选择这座城市的同行者</h2><div class="lr-space-v2-sub">选择一位或多位联系人，保存后会创建全新的城市，不会与其他城市共用地图、地点或剧情。</div><div id="lrSpacePeople" class="lr-space-people"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityCancel" class="lr-space-secondary" type="button">取消</button><button id="lrSpaceCreateCitySave" class="lr-space-primary" type="button" disabled>保存并创建城市</button></div></section>
       </div>
       <div id="lrSpaceV2Map" class="lr-space-v2-screen" hidden>
