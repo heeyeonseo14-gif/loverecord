@@ -221,7 +221,7 @@
     try{legacy=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
     try{
       const registry=JSON.parse(localStorage.getItem(CITIES_KEY)||'null');
-      if(registry&&registry.version===2&&Array.isArray(registry.cities)){
+      if(registry&&(registry.version===2||registry.version===3)&&Array.isArray(registry.cities)){
         const restored=[];
         for(const meta of registry.cities){
           if(!meta||!meta.id)continue;
