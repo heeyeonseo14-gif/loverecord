@@ -47,26 +47,28 @@
   function persistCities(){
     try{
       const city=cities.find(c=>c&&c.id===activeCityId);
-      let payload=null;
-      if(city){
-        payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:Date.now(),snapshot:cloneData(city.snapshot||{})};
-        // Write a complete per-city safety copy first. IndexedDB may be unavailable
-        // or restricted in some mobile browsers; never rely on it as the only copy.
-        localStorage.setItem(cityStorageKey(city.id),JSON.stringify(payload));
-      }
+      // The city directory is deliberately small and remains in localStorage.
+      // Full snapshots belong in IndexedDB; duplicating them in localStorage can
+      // exceed the much smaller Web Storage quota on mobile browsers.
       const index={version:3,activeCityId,cities:cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||0,updatedAt:c.updatedAt||0}))};
       localStorage.setItem(CITIES_KEY,JSON.stringify(index));
-      if(payload){
-        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{cityStorageReady=true}).catch(e=>{
-          console.warn('[SPACE] IndexedDB city snapshot save failed; full localStorage safety copy retained',e);
+      if(city){
+        const payload={id:city.id,name:city.name||makeCityName(city.peopleIds||[]),peopleIds:[...(city.peopleIds||[])],createdAt:city.createdAt||Date.now(),updatedAt:city.updatedAt||Date.now(),snapshot:cloneData(city.snapshot||{})};
+        cityWriteQueue=cityWriteQueue.catch(()=>{}).then(()=>idbCityPut(payload)).then(()=>{
+          cityStorageReady=true;
+          return true;
+        }).catch(e=>{
           cityStorageReady=false;
-          toast('SPACE 已保存到浏览器本地备用存档；IndexedDB 不可用。请尽快导出全量备份。');
+          console.error('[SPACE] IndexedDB city snapshot write failed',e);
+          const detail=String(e?.name||e?.message||'UnknownError');
+          toast('SPACE 城市保存失败：'+detail+'。没有清除现有备份。请先导出全量备份，不要删除城市或关闭页面。');
+          return false;
         });
       }
       return true;
     }catch(e){
-      console.error('SPACE city snapshot/local index save failed',e);
-      toast('SPACE 保存失败：本地存储空间不足或不可用。当前页面内容仍在，请立即导出备份，不要关闭页面。');
+      console.error('SPACE city directory save failed',e);
+      toast('SPACE 城市目录保存失败：'+String(e?.name||e?.message||'本地存储不可用')+'。现有城市资料未主动删除。');
       return false;
     }
   }
@@ -83,16 +85,16 @@
       for(const city of cities){
         if(!city||!city.id)continue;
         let full=byId.get(city.id);
-        let localFull=null;
+        let localFull=null,localMigrated=false;
         try{localFull=JSON.parse(localStorage.getItem(cityStorageKey(city.id))||'null')}catch(e){localFull=null}
-        // Prefer whichever complete snapshot is newer. This prevents an older IDB
-        // copy from hiding a more recent browser-local safety snapshot.
+        // A legacy/local safety copy may be newer than the IndexedDB record.
+        // Keep it untouched unless its migration write has actually committed.
         if(localFull&&localFull.id===city.id&&(!full||(Number(localFull.updatedAt)||0)>(Number(full.updatedAt)||0))){
           full=localFull;
-          try{await idbCityPut(full);migrated++}catch(writeError){console.warn('[SPACE] local safety snapshot retained; IDB migration skipped',writeError)}
+          try{await idbCityPut(full);migrated++;localMigrated=true}catch(writeError){console.warn('[SPACE] local city safety copy retained; IDB migration failed',writeError)}
         }else if(!full&&localFull&&localFull.id===city.id){
           full=localFull;
-          try{await idbCityPut(full);migrated++}catch(writeError){console.warn('[SPACE] local safety snapshot retained; IDB migration skipped',writeError)}
+          try{await idbCityPut(full);migrated++;localMigrated=true}catch(writeError){console.warn('[SPACE] local city safety copy retained; IDB migration failed',writeError)}
         }
         if(full&&full.id===city.id){
           city.snapshot=cloneData(full.snapshot||{});
@@ -103,10 +105,9 @@
           delete city._spaceMissingSnapshot;
         }
       }
-      // Only remove legacy per-city localStorage copies after every migration write succeeded.
-      for(const city of cities){
-        try{const legacy=localStorage.getItem(cityStorageKey(city.id));if(legacy)localStorage.removeItem(cityStorageKey(city.id))}catch(e){console.warn('[SPACE] legacy city cleanup skipped',e)}
-      }
+      // Do not delete legacy per-city copies automatically. They may be the only
+      // surviving copy on a browser where IndexedDB writes are restricted.
+
       const active=cities.find(c=>c.id===activeCityId)||cities[0];
       if(active){
         activeCityId=active.id;
