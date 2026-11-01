@@ -1161,7 +1161,7 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
     <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
-  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-page="0" aria-label="第一页"></button><button type="button" data-launcher-page="1" aria-label="第二页"></button></div>
+  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-add-page="1" aria-label="添加桌面页面" title="添加页面">＋</button></div>
 </main>
 
 
@@ -2391,6 +2391,7 @@ worldBooksReady=restoreWorldBooks();
  const getId=el=>el?.dataset?.dragId,getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
  const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
  const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
+ const MIN_PAGES=2;
  const defaultPage={'app-foodie':1,'app-memories':1,'app-journal':1};
  let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,active=null,timer=null,edgeTimer=null,edgeTarget=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
  const style=document.createElement('style');style.id='lr-launcher-grid-v5';style.textContent=`
@@ -2407,10 +2408,11 @@ worldBooksReady=restoreWorldBooks();
  `;
  document.head.appendChild(style);
  const occupiedKey=(p,r,c)=>`${p}:${r}:${c}`;
- function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:1-page,row:1,col:1}}
+ function pageCount(){return Math.max(MIN_PAGES,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:MIN_PAGES));}
+ function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:page+1,row:1,col:1}}
  function normalize(){
   const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});
-  const used=new Set();ids.forEach(id=>{const p=pageMap[id]===1?1:0;pageMap[id]=p;let cell=cells[id];if(!cell||!Number.isInteger(cell.row)||!Number.isInteger(cell.col)||cell.row<1||cell.row>ROWS||cell.col<1||cell.col>COLS||used.has(occupiedKey(p,cell.row,cell.col))){cell=firstFree(p,used);cells[id]={row:cell.row,col:cell.col}}used.add(occupiedKey(p,cells[id].row,cells[id].col))});
+  const used=new Set();ids.forEach(id=>{const raw=Number(pageMap[id]);const p=Number.isInteger(raw)&&raw>=0?raw:0;pageMap[id]=p;let cell=cells[id];if(!cell||!Number.isInteger(cell.row)||!Number.isInteger(cell.col)||cell.row<1||cell.row>ROWS||cell.col<1||cell.col>COLS||used.has(occupiedKey(p,cell.row,cell.col))){cell=firstFree(p,used);cells[id]={row:cell.row,col:cell.col}}used.add(occupiedKey(p,cells[id].row,cells[id].col))});
  }
  function render(){
   normalize();
@@ -2421,17 +2423,21 @@ worldBooksReady=restoreWorldBooks();
   grid.style.setProperty('grid-template-rows',`repeat(${usedRows}, ${CELL_H}px)`,'important');
   pages.style.marginTop='12px';
   pages.style.padding='0 0 8px';
-  pages.querySelectorAll('button').forEach(b=>{b.classList.toggle('active',Number(b.dataset.launcherPage)===currentPage);b.style.display='block'});
+  const add=pages.querySelector('[data-launcher-add-page]');
+  pages.querySelectorAll('[data-launcher-page]').forEach(b=>b.remove());
+  for(let i=0;i<pageCount();i++){const b=document.createElement('button');b.type='button';b.dataset.launcherPage=String(i);b.setAttribute('aria-label',`第${i+1}页`);b.classList.toggle('active',i===currentPage);pages.insertBefore(b,add)}
+  if(add){add.style.cssText='width:24px;height:24px;min-width:24px;min-height:24px;border:1px solid rgba(168,143,189,.35);border-radius:50%;background:rgba(255,255,255,.65);color:var(--purple,#a88fbd);font-size:18px;line-height:1;padding:0';}
  }
  async function persist(){
   const snap={order:order.slice(),pageMap:{...pageMap},cells:JSON.parse(JSON.stringify(cells)),version:3,updatedAt:Date.now()},seq=++writeSeq;
   try{await lrKVSet(LAYOUT_KV,snap);if(seq===writeSeq)window.dispatchEvent(new CustomEvent('lr-launcher-layout-saved',{detail:snap}))}
   catch(e){console.warn('[LOVE RECORD] launcher grid layout IndexedDB save failed',e);if(typeof toast==='function')toast('图标布局保存失败，请检查浏览器储存权限')}
  }
- function setPage(n){if(!layoutReady)return;currentPage=Math.max(0,Math.min(1,n));render();persist()}
- pages.addEventListener('click',e=>{const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
+ function setPage(n){if(!layoutReady)return;const target=Math.max(0,Math.floor(Number(n)||0));if(target>=pageCount())return;currentPage=target;render();persist()}
+ function addPage(){if(!layoutReady)return;currentPage=pageCount();render();persist();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
+ pages.addEventListener('click',e=>{const add=e.target.closest('[data-launcher-add-page]');if(add){addPage();return}const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
  grid.addEventListener('touchstart',e=>{if(e.target.closest('.launcher-app'))return;const t=e.touches[0];startPoint={x:t.clientX,y:t.clientY}}, {passive:true});
- grid.addEventListener('touchend',e=>{if(!startPoint)return;const t=e.changedTouches[0],dx=t.clientX-startPoint.x,dy=t.clientY-startPoint.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(currentPage+(dx<0?1:-1));startPoint=null},{passive:true});
+ grid.addEventListener('touchend',e=>{if(!startPoint)return;const t=e.changedTouches[0],dx=t.clientX-startPoint.x,dy=t.clientY-startPoint.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(dx<0?currentPage+1:currentPage-1);startPoint=null},{passive:true});
  function cellFromPoint(x,y){
   const r=grid.getBoundingClientRect(),styles=getComputedStyle(grid),gap=parseFloat(styles.columnGap)||10,rowGap=parseFloat(styles.rowGap)||ROW_GAP;
   const colW=(r.width-gap*(COLS-1))/COLS,stepX=colW+gap,stepY=CELL_H+rowGap;
@@ -2450,14 +2456,15 @@ worldBooksReady=restoreWorldBooks();
   if(!active||e.pointerId!==active.pointerId)return;
   if(!dragged)return;
   if(e.cancelable)e.preventDefault();
-  const edge=e.clientX>=window.innerWidth-34?1:(e.clientX<=34?0:null);
-  const wanted=edge!==null&&edge!==currentPage?edge:null;
-  if(wanted===null){clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null}
-  else if(edgeTarget!==wanted){clearTimeout(edgeTimer);edgeTarget=wanted;const px=e.clientX,py=e.clientY;edgeTimer=setTimeout(()=>{
-    if(!active||!dragged||edgeTarget!==wanted||wanted===currentPage)return;
-    const dest=freeCell(wanted);pageMap[active.id]=wanted;cells[active.id]={row:dest.row,col:dest.col};currentPage=wanted;active.currentPage=wanted;active.edgeSwitched=true;render();active.el.classList.add('is-dragging');
+  const edge=e.clientX>=window.innerWidth-34?1:(e.clientX<=34?-1:null);
+  const wanted=edge===null?null:(edge===1?currentPage+1:currentPage-1);
+  const validWanted=wanted!==null&&wanted>=0?wanted:null;
+  if(validWanted===null){clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null}
+  else if(edgeTarget!==validWanted){clearTimeout(edgeTimer);edgeTarget=validWanted;const px=e.clientX,py=e.clientY;edgeTimer=setTimeout(()=>{
+    if(!active||!dragged||edgeTarget!==validWanted)return;
+    const dest=freeCell(validWanted);pageMap[active.id]=validWanted;cells[active.id]={row:dest.row,col:dest.col};currentPage=validWanted;active.currentPage=validWanted;active.edgeSwitched=true;render();active.el.classList.add('is-dragging');
     active.el.style.setProperty('transform',`translate3d(${px-active.x}px,${py-active.y}px,0) scale(1.04)`,'important');
-    if(typeof toast==='function')toast(wanted===1?'已切换到第二页，松开即可放置':'已切换到第一页，松开即可放置');
+    if(typeof toast==='function')toast(`已切换到第${validWanted+1}页，松开即可放置`);
   },520)}
   active.el.style.setProperty('transform',`translate3d(${e.clientX-active.x}px,${e.clientY-active.y}px,0) scale(1.04)`,'important');
  },{passive:false});
