@@ -2387,15 +2387,14 @@ async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((r
 worldBooksReady=restoreWorldBooks();
 // Persistent Android-style multi-page launcher: 4x4 cells, independent positions per page.
 (function(){
- const grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');if(!grid||!pages)return;
+ const launcher=document.getElementById('launcher'),grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');if(!launcher||!grid||!pages)return;
  const getId=el=>el?.dataset?.dragId,getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
  const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
  const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
- const MIN_PAGES=2;
  const defaultPage={'app-foodie':1,'app-memories':1,'app-journal':1};
- let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,active=null,timer=null,edgeTimer=null,edgeTarget=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
+ let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,extraPages=2,active=null,timer=null,edgeTimer=null,edgeTarget=null,dragged=false,startPoint=null,writeSeq=0,layoutReady=false;
  const style=document.createElement('style');style.id='lr-launcher-grid-v5';style.textContent=`
- #launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(${ROWS},${CELL_H}px)!important;grid-auto-rows:${CELL_H}px!important;grid-auto-flow:row!important;column-gap:10px!important;row-gap:${ROW_GAP}px!important;align-content:start!important;position:relative;touch-action:pan-y}
+ #launcher{touch-action:pan-y}\n #launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(${ROWS},${CELL_H}px)!important;grid-auto-rows:${CELL_H}px!important;grid-auto-flow:row!important;column-gap:10px!important;row-gap:${ROW_GAP}px!important;align-content:start!important;position:relative;touch-action:pan-y}
  #launcher.page.active.launcher-page{box-sizing:border-box;height:calc(100dvh - 172px - env(safe-area-inset-bottom));min-height:0;max-height:calc(100dvh - 172px - env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:18px}
  #launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
  #launcher .launcher-grid .launcher-app{min-width:0;min-height:0;position:relative!important;left:auto!important;top:auto!important;transform:none!important;touch-action:none;user-select:none;-webkit-user-select:none;will-change:transform}
@@ -2408,7 +2407,7 @@ worldBooksReady=restoreWorldBooks();
  `;
  document.head.appendChild(style);
  const occupiedKey=(p,r,c)=>`${p}:${r}:${c}`;
- function pageCount(){return Math.max(MIN_PAGES,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:MIN_PAGES));}
+ function pageCount(){return Math.max(2,extraPages,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:2));}
  function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:page+1,row:1,col:1}}
  function normalize(){
   const ids=getApps().map(getId),seen=new Set();order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});
@@ -2426,18 +2425,21 @@ worldBooksReady=restoreWorldBooks();
   const add=pages.querySelector('[data-launcher-add-page]');
   pages.querySelectorAll('[data-launcher-page]').forEach(b=>b.remove());
   for(let i=0;i<pageCount();i++){const b=document.createElement('button');b.type='button';b.dataset.launcherPage=String(i);b.setAttribute('aria-label',`第${i+1}页`);b.classList.toggle('active',i===currentPage);pages.insertBefore(b,add)}
-  if(add){add.style.cssText='width:24px;height:24px;min-width:24px;min-height:24px;border:1px solid rgba(168,143,189,.35);border-radius:50%;background:rgba(255,255,255,.65);color:var(--purple,#a88fbd);font-size:18px;line-height:1;padding:0';}
+  if(add)add.style.cssText='width:24px;height:24px;min-width:24px;min-height:24px;border:1px solid rgba(168,143,189,.35);border-radius:50%;background:rgba(255,255,255,.65);color:var(--purple,#a88fbd);font-size:18px;line-height:1;padding:0';
+  window.__loveRecordLauncherCurrentPage=currentPage;window.dispatchEvent(new CustomEvent('lr-launcher-page-change',{detail:{page:currentPage}}));
  }
  async function persist(){
-  const snap={order:order.slice(),pageMap:{...pageMap},cells:JSON.parse(JSON.stringify(cells)),version:3,updatedAt:Date.now()},seq=++writeSeq;
+  const snap={order:order.slice(),pageMap:{...pageMap},cells:JSON.parse(JSON.stringify(cells)),pageCount:pageCount(),version:4,updatedAt:Date.now()},seq=++writeSeq;
   try{await lrKVSet(LAYOUT_KV,snap);if(seq===writeSeq)window.dispatchEvent(new CustomEvent('lr-launcher-layout-saved',{detail:snap}))}
   catch(e){console.warn('[LOVE RECORD] launcher grid layout IndexedDB save failed',e);if(typeof toast==='function')toast('图标布局保存失败，请检查浏览器储存权限')}
  }
  function setPage(n){if(!layoutReady)return;const target=Math.max(0,Math.floor(Number(n)||0));if(target>=pageCount())return;currentPage=target;render();persist()}
- function addPage(){if(!layoutReady)return;currentPage=pageCount();render();persist();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
- pages.addEventListener('click',e=>{const add=e.target.closest('[data-launcher-add-page]');if(add){addPage();return}const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
- grid.addEventListener('touchstart',e=>{if(e.target.closest('.launcher-app'))return;const t=e.touches[0];startPoint={x:t.clientX,y:t.clientY}}, {passive:true});
- grid.addEventListener('touchend',e=>{if(!startPoint)return;const t=e.changedTouches[0],dx=t.clientX-startPoint.x,dy=t.clientY-startPoint.y;if(Math.abs(dx)>48&&Math.abs(dx)>Math.abs(dy)*1.2)setPage(dx<0?currentPage+1:currentPage-1);startPoint=null},{passive:true});
+ function addPage(){if(!layoutReady)return;currentPage=pageCount();extraPages=currentPage+1;render();persist();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
+ pages.addEventListener('click',e=>{if(e.target.closest('[data-launcher-add-page]')){addPage();return}const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
+ let swipeStart=null;
+ launcher.addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrWidgetOverlay')){swipeStart=null;return}const t=e.touches[0];swipeStart={x:t.clientX,y:t.clientY,time:Date.now()}},{passive:true});
+ launcher.addEventListener('touchend',e=>{if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y,dt=Date.now()-swipeStart.time;if(Math.abs(dx)>46&&Math.abs(dx)>Math.abs(dy)*1.18&&dt<900)setPage(currentPage+(dx<0?1:-1));swipeStart=null},{passive:true});
+ launcher.addEventListener('touchcancel',()=>{swipeStart=null},{passive:true});
  function cellFromPoint(x,y){
   const r=grid.getBoundingClientRect(),styles=getComputedStyle(grid),gap=parseFloat(styles.columnGap)||10,rowGap=parseFloat(styles.rowGap)||ROW_GAP;
   const colW=(r.width-gap*(COLS-1))/COLS,stepX=colW+gap,stepY=CELL_H+rowGap;
@@ -2456,15 +2458,14 @@ worldBooksReady=restoreWorldBooks();
   if(!active||e.pointerId!==active.pointerId)return;
   if(!dragged)return;
   if(e.cancelable)e.preventDefault();
-  const edge=e.clientX>=window.innerWidth-34?1:(e.clientX<=34?-1:null);
-  const wanted=edge===null?null:(edge===1?currentPage+1:currentPage-1);
-  const validWanted=wanted!==null&&wanted>=0?wanted:null;
-  if(validWanted===null){clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null}
-  else if(edgeTarget!==validWanted){clearTimeout(edgeTimer);edgeTarget=validWanted;const px=e.clientX,py=e.clientY;edgeTimer=setTimeout(()=>{
-    if(!active||!dragged||edgeTarget!==validWanted)return;
-    const dest=freeCell(validWanted);pageMap[active.id]=validWanted;cells[active.id]={row:dest.row,col:dest.col};currentPage=validWanted;active.currentPage=validWanted;active.edgeSwitched=true;render();active.el.classList.add('is-dragging');
+  const edge=e.clientX>=window.innerWidth-34?1:(e.clientX<=34?0:null);
+  const wanted=edge!==null&&edge!==currentPage?edge:null;
+  if(wanted===null){clearTimeout(edgeTimer);edgeTimer=null;edgeTarget=null}
+  else if(edgeTarget!==wanted){clearTimeout(edgeTimer);edgeTarget=wanted;const px=e.clientX,py=e.clientY;edgeTimer=setTimeout(()=>{
+    if(!active||!dragged||edgeTarget!==wanted||wanted===currentPage)return;
+    const dest=freeCell(wanted);pageMap[active.id]=wanted;cells[active.id]={row:dest.row,col:dest.col};currentPage=wanted;active.currentPage=wanted;active.edgeSwitched=true;render();active.el.classList.add('is-dragging');
     active.el.style.setProperty('transform',`translate3d(${px-active.x}px,${py-active.y}px,0) scale(1.04)`,'important');
-    if(typeof toast==='function')toast(`已切换到第${validWanted+1}页，松开即可放置`);
+    if(typeof toast==='function')toast(wanted===1?'已切换到第二页，松开即可放置':'已切换到第一页，松开即可放置');
   },520)}
   active.el.style.setProperty('transform',`translate3d(${e.clientX-active.x}px,${e.clientY-active.y}px,0) scale(1.04)`,'important');
  },{passive:false});
@@ -2494,14 +2495,14 @@ worldBooksReady=restoreWorldBooks();
  (async()=>{
   let saved=null;
   try{saved=await lrKVGet(LAYOUT_KV);if(!saved)saved=await lrKVGet(LEGACY_KV)}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}
-  if(saved){if(Array.isArray(saved.order))order=saved.order.slice();if(saved.pageMap&&typeof saved.pageMap==='object')pageMap={...pageMap,...saved.pageMap};if(saved.cells&&typeof saved.cells==='object')cells={...saved.cells}}
+  if(saved){if(Number.isInteger(saved.pageCount)&&saved.pageCount>=2)extraPages=saved.pageCount;if(Array.isArray(saved.order))order=saved.order.slice();if(saved.pageMap&&typeof saved.pageMap==='object')pageMap={...pageMap,...saved.pageMap};if(saved.cells&&typeof saved.cells==='object')cells={...saved.cells}}
   if(!Object.keys(cells).length){
    const byPage={0:0,1:0};
    order.forEach(id=>{if(!pageMap[id])pageMap[id]=0;const p=pageMap[id]===1?1:0,n=byPage[p]++,row=Math.floor(n/COLS)+1,col=n%COLS+1;cells[id]={row,col}});
   }
   normalize();layoutReady=true;render();if(!saved||saved.version!==3)persist();
  })();
- window.__loveRecordLauncherSetPage=setPage;
+ window.__loveRecordLauncherSetPage=setPage;window.__loveRecordLauncherAddPage=addPage;window.__loveRecordLauncherCurrentPage=currentPage;
 })();
 document.addEventListener('click',e=>{
 const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
