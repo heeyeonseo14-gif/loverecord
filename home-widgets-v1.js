@@ -8,15 +8,13 @@ const definitions=[
  {id:'days',name:'在一起的日子',category:'LOVE',size:'small',desc:'纪念日计数与今日寄语'},
  {id:'photo',name:'我们的照片',category:'MEMORY',size:'medium',desc:'读取 MEMORY 全部照片，点击切换'},
  {id:'daily',name:'今日寄语',category:'AI',size:'small',desc:'展示主页今日文字'},
- {id:'message',name:'最近一条消息',category:'AI',size:'medium',desc:'读取最近聊天记录'},
  {id:'music',name:'音乐播放器',category:'MUSIC',size:'medium',desc:'显示当前播放歌曲与控制'},
  {id:'calendar',name:'今日日历',category:'LIFE',size:'small',desc:'日期、星期与月份'},
  {id:'note',name:'快速便笺',category:'LIFE',size:'medium',desc:'随手记录，自动保存'},
- {id:'memory',name:'随机回忆',category:'MEMORY',size:'medium',desc:'从 MEMORY 照片中随机切换'},
- {id:'clock',name:'精致时钟',category:'LIFE',size:'small',desc:'显示当前时间与日期'},
- {id:'countdown',name:'纪念日计数',category:'LOVE',size:'small',desc:'记录你们相伴的天数'},
- {id:'checklist',name:'今日清单',category:'LIFE',size:'medium',desc:'可勾选的每日小任务'},
- {id:'quote',name:'每日灵感',category:'MOOD',size:'medium',desc:'每天一句温柔的小句子'}
+ {id:'water',name:'饮水记录',category:'WELLNESS',size:'medium',desc:'记录今日饮水杯数，随手加减'},
+ {id:'mood',name:'心情日记',category:'JOURNAL',size:'medium',desc:'记录今天的心情与感受'},
+ {id:'focus',name:'专注时钟',category:'FOCUS',size:'medium',desc:'25分钟专注计时，支持暂停与重置'},
+ {id:'week',name:'一周日历',category:'LIFE',size:'medium',desc:'查看本周日期，自动标记今天'}
 ];
 let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
@@ -54,7 +52,8 @@ const style=document.createElement('style');style.id='lr-home-widgets-style';sty
 .lr-widget-music-meta{min-width:0;flex:1}
 .lr-widget-music-meta strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lr-widget-music-meta small{display:block;font-size:10px;opacity:.65;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lr-widget-checklist{display:grid;gap:7px;margin:7px 0}.lr-widget-checklist label{display:flex;align-items:center;gap:8px;font-size:11px}.lr-widget-checklist input{accent-color:#a88fbd}.lr-widget-add-check{border:1px solid rgba(168,143,189,.3);border-radius:14px;background:#ffffff80;color:#826b91;padding:5px 10px;font-size:10px}\n.lr-widget-note{width:100%;min-height:64px;border:0;outline:0;resize:vertical;background:transparent;color:inherit;font:inherit;font-size:12px}
+.lr-widget-checklist{display:grid;gap:7px;margin:7px 0}.lr-widget-checklist label{display:flex;align-items:center;gap:8px;font-size:11px}.lr-widget-checklist input{accent-color:#a88fbd}.lr-widget-add-check{border:1px solid rgba(168,143,189,.3);border-radius:14px;background:#ffffff80;color:#826b91;padding:5px 10px;font-size:10px}\n.lr-widget-water{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.lr-widget-water strong{font-size:25px;font-weight:500;color:#80698f}.lr-widget-water small{font-size:10px;color:#988aa0}.lr-widget-step{width:30px;height:30px;border:1px solid rgba(168,143,189,.35);border-radius:50%;background:#ffffffa8;color:#8e75a0;font-size:17px}.lr-widget-moods{display:flex;justify-content:space-between;gap:4px;margin:10px 0 6px}.lr-widget-moods button{width:34px;height:34px;border:1px solid transparent;border-radius:12px;background:#ffffff80;font-size:17px;opacity:.72}.lr-widget-moods button.active{border-color:#a98cbb;background:#eadff0;opacity:1;transform:translateY(-2px)}.lr-widget-focus{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.lr-widget-focus-time{font-size:26px;letter-spacing:1px;color:#80698f;font-variant-numeric:tabular-nums}.lr-widget-focus button{border:0;border-radius:20px;padding:7px 12px;background:#b69bc5;color:white;font-size:11px}.lr-widget-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}.lr-widget-week span{display:flex;flex-direction:column;align-items:center;gap:6px;padding:7px 0;border-radius:14px;color:#92859a;font-size:9px}.lr-widget-week b{font-size:12px;font-weight:500;color:#5d5264}.lr-widget-week span.today{background:#b69bc5;color:white}.lr-widget-week span.today b{color:white}
+.lr-widget-note{width:100%;min-height:64px;border:0;outline:0;resize:vertical;background:transparent;color:inherit;font:inherit;font-size:12px}
 .lr-widget-audio{display:flex;align-items:center;gap:7px;margin-top:5px}
 .lr-widget-play{width:30px;height:30px;border:0;border-radius:50%;background:#b99bc9;color:white;font-size:15px}
 #lrWidgetOverlay{position:fixed;inset:0;z-index:100050;display:none;align-items:flex-end;justify-content:center;background:rgba(42,31,51,.28);backdrop-filter:blur(7px);padding:12px}
@@ -108,15 +107,18 @@ async function read(){
  let v=null;try{v=await widgetDbGet()}catch(e){console.warn('[LOVE RECORD] dedicated widget DB read failed',e)}
  if(!v){try{if(typeof lrKVGet==='function')v=await lrKVGet('home-widgets-layout-v2')}catch(e){console.warn('[LOVE RECORD] previous widget layout migration read failed',e)}}
  if(!v){try{v=JSON.parse(localStorage.getItem(KEY)||'null')}catch{v=null}}
- if(v&&Array.isArray(v.items))config.items=v.items.filter(x=>definitions.some(d=>d.id===x.id)).map(x=>({...x,size:x.size==='small'?'small':x.size==='large'?'large':'medium',note:String(x.note||''),checks:Array.isArray(x.checks)?x.checks:[]}));
+ if(v&&Number(v.version||0)<8)needsUpgrade=true;
+ const cleanItems=arr=>(Array.isArray(arr)?arr:[]).filter(x=>x&&definitions.some(d=>d.id===x.id)).map(x=>({...x,size:x.size==='small'?'small':x.size==='large'?'large':'medium',note:String(x.note||''),waterCount:Math.max(0,Number(x.waterCount)||0),waterDate:String(x.waterDate||''),mood:String(x.mood||''),moodHistory:Array.isArray(x.moodHistory)?x.moodHistory.slice(-7):[],focusRemaining:Math.max(0,Number(x.focusRemaining)||1500),focusUntil:Number(x.focusUntil)||0,focusRunning:!!x.focusRunning}));
+ if(v&&Array.isArray(v.items))config.items=cleanItems(v.items);
  if(v&&Array.isArray(v.order))config.order=v.order.filter(x=>['welcome','days','shelf'].includes(x));
  if(v&&Array.isArray(v.hidden))config.hidden=v.hidden.filter(x=>['welcome','days'].includes(x));
  if(v&&v.positions&&typeof v.positions==='object')config.positions={...v.positions};
- if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems={...v.pageItems};
+ if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
  if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
  activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
- config.items=(config.pageItems[String(activePage)]||[]).map(x=>({...x}));
+ config.items=cleanItems(config.pageItems[String(activePage)]||[]);
+ config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
  config.positions={...(config.pagePositions[String(activePage)]||config.positions||{})};
  if(v&&Array.isArray(v.items)&&!await widgetDbHasLayout())await save({silent:true});
 }
@@ -126,10 +128,11 @@ function setEditMode(on){editMode=!!on;launcher.classList.toggle('lr-widgets-edi
 function addEditTools(node,kind){if(!node||node.querySelector(':scope > .lr-edit-tools'))return;const tools=document.createElement('div');tools.className='lr-edit-tools';tools.innerHTML=`<button type="button" data-fixed-remove="${kind}" aria-label="移除组件">×</button>`;node.appendChild(tools)}
 if(welcome)addEditTools(welcome,'welcome');if(daysCard)addEditTools(daysCard,'days');
 let saveSeq=0;
-async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:7};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
+async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:8};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
 function notify(t){if(typeof window.toast==='function')window.toast(t);else if($('toast')){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}}
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
+function localDateKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`}
 function latestMessage(){const threads=localJSON('love-record-chat-threads-v2');if(!threads)return null;let all=[];if(Array.isArray(threads))all=threads;else if(typeof threads==='object')Object.values(threads).forEach(v=>{if(Array.isArray(v))all.push(...v);else if(Array.isArray(v?.messages))all.push(...v.messages)});return all.filter(x=>x&&typeof x==='object'&&(x.text||x.content||x.message)).sort((a,b)=>new Date(b.createdAt||b.time||b.timestamp||0)-new Date(a.createdAt||a.time||a.timestamp||0))[0]||null}
 function photosFromDB(type='memory'){return new Promise(resolve=>{try{const req=indexedDB.open('yanyan-love-v5',1);req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('images')){db.close();resolve([]);return}let tx;try{tx=db.transaction('images','readonly')}catch(e){db.close();resolve([]);return}const store=tx.objectStore('images');if(!store.indexNames.contains('type')){db.close();resolve([]);return}const r=store.index('type').getAll(type);r.onsuccess=()=>{const arr=(r.result||[]).filter(x=>x&&x.blob).sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));db.close();resolve(arr)};r.onerror=()=>{db.close();resolve([])};tx.onabort=()=>{db.close();resolve([])}};req.onerror=()=>resolve([]);req.onblocked=()=>resolve([])}catch{resolve([])}})}
 const photoWidgetData=new Map();
@@ -149,6 +152,26 @@ function widgetHTML(item){const d=definitions.find(x=>x.id===item.id);const size
  if(item.id==='checklist'){const checks=Array.isArray(item.checks)&&item.checks.length?item.checks:[{text:'喝一杯水',done:false},{text:'听一首喜欢的歌',done:false},{text:'好好休息',done:false}];body=`<div class="lr-widget-checklist">${checks.map((c,i)=>`<label><input type="checkbox" data-check-index="${i}" ${c.done?'checked':''}><span>${escape(c.text)}</span></label>`).join('')}</div><button type="button" class="lr-widget-add-check" data-check-add>＋ 添加事项</button>`}
  if(item.id==='quote'){const quotes=['慢慢来，也是一种前进。','今天也值得被温柔对待。','把喜欢的日子，过成喜欢的样子。','不必每一步都很快，重要的是一直向前。'];body=`<div class="lr-widget-main" style="font-size:15px;line-height:1.65">“${quotes[new Date().getDate()%quotes.length]}”</div><div class="lr-widget-sub">TODAY’S LITTLE INSPIRATION</div>`}
 
+
+ if(item.id==='water'){
+  const today=localDateKey();if(item.waterDate!==today){item.waterDate=today;item.waterCount=0}
+  body=`<div class="lr-widget-sub">TODAY · 每一杯都是小小照顾</div><div class="lr-widget-water"><div><strong>${item.waterCount||0}</strong><small> / 8 杯</small></div><div style="display:flex;gap:6px"><button type="button" class="lr-widget-step" data-water-minus aria-label="减少一杯">−</button><button type="button" class="lr-widget-step" data-water-plus aria-label="增加一杯">＋</button></div></div><div class="lr-widget-sub">今日饮水记录</div>`;
+ }
+ if(item.id==='mood'){
+  const moods=[['😊','开心'],['🥰','幸福'],['😌','平静'],['🥺','低落'],['😴','疲惫']];
+  body=`<div class="lr-widget-sub">今天的你，感觉怎么样？</div><div class="lr-widget-moods">${moods.map(([emoji,label])=>`<button type="button" data-mood="${label}" aria-label="${label}" class="${item.mood===label?'active':''}">${emoji}</button>`).join('')}</div><div class="lr-widget-sub">${item.mood?`今天：${item.mood} · 已为你收藏`:'选一个最接近此刻的心情'}</div>`;
+ }
+ if(item.id==='focus'){
+  const remaining=item.focusRunning&&item.focusUntil?Math.max(0,Math.ceil((item.focusUntil-Date.now())/1000)):Math.max(0,Number(item.focusRemaining)||1500);
+  if(item.focusRunning&&remaining===0){item.focusRunning=false;item.focusUntil=0;item.focusRemaining=1500}
+  const mm=String(Math.floor(remaining/60)).padStart(2,'0'),ss=String(remaining%60).padStart(2,'0');
+  body=`<div class="lr-widget-sub">FOCUS SESSION · 25 MINUTES</div><div class="lr-widget-focus"><strong class="lr-widget-focus-time" data-focus-time>${mm}:${ss}</strong><div style="display:flex;gap:5px"><button type="button" data-focus-toggle>${item.focusRunning?'暂停':'开始'}</button><button type="button" data-focus-reset style="background:#ffffffa8;color:#8e75a0">重置</button></div></div><div class="lr-widget-sub">给自己一点不被打扰的时间。</div>`;
+ }
+ if(item.id==='week'){
+  const now=new Date(),day=(now.getDay()+6)%7,monday=new Date(now);monday.setDate(now.getDate()-day);const labels=['一','二','三','四','五','六','日'];
+  body=`<div class="lr-widget-sub">${now.getFullYear()}年${now.getMonth()+1}月 · THIS WEEK</div><div class="lr-widget-week">${labels.map((label,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return `<span class="${d.toDateString()===now.toDateString()?'today':''}"><small>${label}</small><b>${d.getDate()}</b></span>`}).join('')}</div>`;
+ }
+
  return `<article class="lr-widget ${sizeClass}${(item.id==='photo'||item.id==='memory')?' lr-widget-memory-widget':''}" data-widget-id="${item.id}"><div class="lr-widget-tools"><button type="button" data-widget-size title="切换大小">↔</button><button type="button" data-widget-remove title="移除组件">×</button></div><div class="lr-widget-kicker">${d.category} · LOVE RECORD</div><div class="lr-widget-title">${d.name}</div>${body}</article>`;
 }
 function widgetSpan(item){return {cols:item.size==='small'?1:2,rows:(item.id==='photo'||item.id==='memory')?2:(item.size==='large'?2:1)}}
@@ -161,7 +184,7 @@ window.addEventListener('lr-music-state-change',refreshMusicWidget);
 function openChooser(){if(opening)return;opening=true;renderChoices();overlay.classList.add('show');setEditMode(true)}
 function closeChooser(){opening=false;overlay.classList.remove('show')}
 function renderChoices(){const list=$('lrWidgetList');if(!list)return;const fixed=[{id:'welcome',name:'我们的小宇宙',category:'HOME',desc:'主页标题与欢迎区域',hidden:config.hidden.includes('welcome')},{id:'days',name:'Days Together',category:'LOVE',desc:'纪念日与主页照片卡片',hidden:config.hidden.includes('days')}];list.innerHTML=fixed.map(d=>`<button type="button" class="lr-widget-choice" data-widget-restore="${d.id}" ${!d.hidden?'disabled':''}><strong>${d.name}${d.hidden?' · 点击恢复':' · 已显示'}</strong><small>${d.category} · ${d.desc}</small></button>`).join('')+definitions.map(d=>{const exists=config.items.some(x=>x.id===d.id);return `<button type="button" class="lr-widget-choice" data-widget-add="${d.id}" ${exists?'disabled':''}><strong>${d.name}${exists?' · 已添加':''}</strong><small>${d.category} · ${d.desc}</small></button>`}).join('')}
-function add(id){if(config.items.some(x=>x.id===id))return;const d=definitions.find(x=>x.id===id);if(!d)return;config.items.push({id,size:d.size,note:''});render().then(()=>save());renderChoices();notify('已添加 '+d.name+' ♡')}
+function add(id){if(config.items.some(x=>x.id===id))return;const d=definitions.find(x=>x.id===id);if(!d)return;config.items.push({id,size:d.size,note:'',waterCount:0,waterDate:'',mood:'',moodHistory:[],focusRemaining:1500,focusUntil:0,focusRunning:false});render().then(()=>save());renderChoices();notify('已添加 '+d.name+' ♡')}
 function restoreFixed(id){config.hidden=config.hidden.filter(x=>x!==id);save();applyLayout();renderChoices();notify('已恢复组件 ♡')}
 editBar.addEventListener('click',e=>{if(e.target.closest('[data-widget-open-chooser]'))openChooser();if(e.target.closest('[data-widget-finish]')){closeChooser();setEditMode(false);notify('桌面布局已保存 ♡')}});
 overlay.querySelector('.lr-widget-close').addEventListener('click',closeChooser);
@@ -200,10 +223,16 @@ launcher.addEventListener('click',e=>{
  if(e.target.closest('[data-widget-remove]')){config.items=config.items.filter(x=>x.id!==id);save();render();renderChoices();return}
  if(e.target.closest('[data-widget-size]')){const item=config.items.find(x=>x.id===id);if(item){item.size=item.size==='small'?'medium':item.size==='medium'?'large':'small';layoutWidgetPositions();save();render()}return}
  if(e.target.closest('[data-widget-play]')){const audio=$('lrGlobalAudio');if(audio){if(audio.paused)audio.play().catch(()=>notify('请先在音乐页面选择歌曲。'));else audio.pause()}else notify('请先在音乐页面选择歌曲。')}
+ const item=config.items.find(x=>x.id===id);if(!item)return;
+ if(e.target.closest('[data-water-plus]')||e.target.closest('[data-water-minus]')){const today=localDateKey();if(item.waterDate!==today){item.waterDate=today;item.waterCount=0}item.waterCount=Math.max(0,Math.min(99,(item.waterCount||0)+(e.target.closest('[data-water-plus]')?1:-1)));render().then(()=>save());return}
+ const mood=e.target.closest('[data-mood]');if(mood){item.mood=mood.dataset.mood;item.moodHistory=[...(item.moodHistory||[]),{date:localDateKey(),mood:item.mood}].slice(-7);render().then(()=>save());return}
+ if(e.target.closest('[data-focus-toggle]')){const now=Date.now();if(item.focusRunning){item.focusRemaining=Math.max(0,Math.ceil((item.focusUntil-now)/1000));item.focusRunning=false;item.focusUntil=0}else{if(!item.focusRemaining)item.focusRemaining=1500;item.focusRunning=true;item.focusUntil=now+item.focusRemaining*1000}render().then(()=>save({silent:true}));return}
+ if(e.target.closest('[data-focus-reset]')){item.focusRunning=false;item.focusUntil=0;item.focusRemaining=1500;render().then(()=>save());return}
 });
 shelf.addEventListener('input',e=>{if(!e.target.matches('[data-widget-note]'))return;const card=e.target.closest('[data-widget-id]'),item=config.items.find(x=>x.id===card?.dataset.widgetId);if(item){item.note=e.target.value;save()}});
 shelf.addEventListener('change',e=>{if(!e.target.matches('[data-check-index]'))return;const card=e.target.closest('[data-widget-id]'),item=config.items.find(x=>x.id===card?.dataset.widgetId);if(!item)return;const labels=[...card.querySelectorAll('.lr-widget-checklist label span')].map(n=>n.textContent);item.checks=labels.map((text,i)=>({text,done:!!card.querySelector(`[data-check-index="${i}"]`)?.checked}));save()});
 shelf.addEventListener('click',e=>{const btn=e.target.closest('[data-check-add]');if(!btn)return;const card=btn.closest('[data-widget-id]'),item=config.items.find(x=>x.id===card?.dataset.widgetId);if(!item)return;const text=prompt('写下一个小任务');if(text&&text.trim()){const existing=[...card.querySelectorAll('.lr-widget-checklist label span')].map((n,i)=>({text:n.textContent,done:!!card.querySelector(`[data-check-index="${i}"]`)?.checked}));existing.push({text:text.trim(),done:false});item.checks=existing;render().then(()=>save())}});
+setInterval(()=>{const card=shelf.querySelector('[data-widget-id="focus"]');if(!card)return;const item=config.items.find(x=>x.id==='focus');if(!item||!item.focusRunning)return;const left=Math.max(0,Math.ceil((item.focusUntil-Date.now())/1000));const node=card.querySelector('[data-focus-time]');if(node)node.textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;if(left===0){item.focusRunning=false;item.focusUntil=0;item.focusRemaining=1500;save({silent:true});notify('专注时间结束啦，休息一下吧 ♡');render()}},1000);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&opening)closeChooser();else if(e.key==='Escape'&&editMode)setEditMode(false)});
 window.addEventListener('storage',e=>{if(e.key===KEY){read();render();renderChoices()}});
 window.addEventListener('lr-home-widgets-refresh',()=>{render()});
