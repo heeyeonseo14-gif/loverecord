@@ -42,13 +42,23 @@ function loadOwner(ownerId){
 const DB_NAME='lr-farm-save-db-v5',DB_VERSION=1,DB_STORE='profiles';let dbPromise=null,saveChain=Promise.resolve(),saveError='';
 function openFarmDB(){
  if(!('indexedDB' in window))return Promise.reject(new Error('当前浏览器不支持 IndexedDB'));
- if(!dbPromise)dbPromise=new Promise((resolve,reject)=>{
-  let req;try{req=indexedDB.open(DB_NAME,DB_VERSION)}catch(e){reject(e);return}
-  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'id'})};
-  req.onsuccess=()=>{const db=req.result;db.onversionchange=()=>{db.close();dbPromise=null};resolve(db)};
-  req.onerror=()=>{dbPromise=null;reject(req.error||new Error('IndexedDB 打开失败'))};
-  req.onblocked=()=>{dbPromise=null;reject(new Error('数据库被旧页面占用，请关闭其他 LOVE RECORD 页面后重试'))};
- });return dbPromise;
+ if(!dbPromise)dbPromise=(async()=>{
+  const open=(version)=>new Promise((resolve,reject)=>{
+   let req;try{req=version==null?indexedDB.open(DB_NAME):indexedDB.open(DB_NAME,version)}catch(e){reject(e);return}
+   req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains(DB_STORE))d.createObjectStore(DB_STORE,{keyPath:'id'})};
+   req.onsuccess=()=>resolve(req.result);
+   req.onerror=()=>reject(req.error||new Error('IndexedDB 打开失败'));
+   req.onblocked=()=>reject(new Error('数据库被旧页面占用，请关闭其他 LOVE RECORD 页面后重试'));
+  });
+  let db=await open(null);
+  if(!db.objectStoreNames.contains(DB_STORE)){
+   const next=(Number(db.version)||0)+1;db.close();db=await open(next);
+  }
+  if(!db.objectStoreNames.contains(DB_STORE)){db.close();throw new Error('农场数据库缺少 profiles 数据表，自动修复未完成')}
+  db.onversionchange=()=>{db.close();dbPromise=null};
+  return db;
+ })().catch(e=>{dbPromise=null;throw e});
+ return dbPromise;
 }
 function idbGet(id){return openFarmDB().then(db=>new Promise((resolve,reject)=>{let tx;try{tx=db.transaction(DB_STORE,'readonly');const r=tx.objectStore(DB_STORE).get(ownerKey(id));r.onsuccess=()=>resolve(r.result?.data||null);r.onerror=()=>reject(r.error||new Error('读取农场存档失败'));}catch(e){reject(e)}}))}
 function legacyIdbGet(id){return new Promise(resolve=>{

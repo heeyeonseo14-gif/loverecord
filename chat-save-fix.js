@@ -5,7 +5,7 @@
   const PROMPT_STORE = 'assets';
   function openPromptDB() {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open(PROMPT_DB, 1);
+      const request = indexedDB.open(PROMPT_DB);
       request.onupgradeneeded = () => {
         if (!request.result.objectStoreNames.contains(PROMPT_STORE)) {
           request.result.createObjectStore(PROMPT_STORE, { keyPath: 'key' });

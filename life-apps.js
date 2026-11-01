@@ -6,7 +6,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const money=n=>'￥'+(Number(n)||0).toFixed(2);
 let db, app='food', tab='home', cartKind='food', selectedContactIds=[], activeRoom=null, searchQuery='';
 const id=()=>`${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`;
-function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id'});s.createIndex('kind','kind',{unique:false})}};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id'});s.createIndex('kind','kind',{unique:false})}};r.onsuccess=()=>{db=r.result;resolve(db)};r.onerror=()=>reject(r.error)})}
 function all(kind){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('kind').getAll(kind);r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error)})}
 function put(o){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(o);r.onsuccess=()=>resolve(o);r.onerror=()=>reject(r.error)})}
 function del(id){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error)})}

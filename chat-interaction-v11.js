@@ -38,7 +38,7 @@
   function db() {
     if (dbPromise) return dbPromise;
     dbPromise = new Promise((resolve, reject) => {
-      const req = indexedDB.open(DB_NAME, 1);
+      const req = indexedDB.open(DB_NAME);
       req.onupgradeneeded = () => { if (!req.result.objectStoreNames.contains(STORE)) req.result.createObjectStore(STORE, {keyPath:'id', autoIncrement:true}); };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error || new Error('图片储存初始化失败'));

@@ -6,7 +6,7 @@ const MUSIC_API='https://music-api.gdstudio.xyz/api.php';
 let db,audio,tracks=[],current=null,queue=[],history=[],objectUrl=null,onlineResults=[],coverData='',lyricsLines=[],activeLyricIndex=-1,togetherIds=[];
 const $=id=>document.getElementById(id);
 function req(r){return new Promise((res,rej)=>{r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});if(!d.objectStoreNames.contains(META))d.createObjectStore(META,{keyPath:'key'})};r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:'id'});if(!d.objectStoreNames.contains(META))d.createObjectStore(META,{keyPath:'key'})};r.onsuccess=()=>{db=r.result;res()};r.onerror=()=>rej(r.error)})}
 async function all(){tracks=await req(db.transaction(STORE).objectStore(STORE).getAll());tracks.sort((a,b)=>b.added-a.added);renderLocal()}
 async function put(t){await req(db.transaction(STORE,'readwrite').objectStore(STORE).put(t))}
 async function del(id){await req(db.transaction(STORE,'readwrite').objectStore(STORE).delete(id));if(current?.id===id){audio.pause();audio.removeAttribute('src');current=null;updateLabels(null);saveState()}await all()}

@@ -19,7 +19,7 @@ let contactDBPromise=null;
 function openContactDB(){
  if(contactDBPromise)return contactDBPromise;
  contactDBPromise=new Promise((resolve,reject)=>{
-  const req=indexedDB.open(CONTACT_DB_NAME,1);
+  const req=indexedDB.open(CONTACT_DB_NAME);
   req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(CONTACT_DB_STORE))db.createObjectStore(CONTACT_DB_STORE,{keyPath:'id'})};
   req.onsuccess=()=>resolve(req.result);
   req.onerror=()=>reject(req.error||new Error('联系人数据库打开失败'));
@@ -86,7 +86,7 @@ state.people=(Array.isArray(state.people)?state.people:[]).filter(p=>!isInvalidC
 save();
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>$('toast').classList.remove('show'),1800)}
-function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME,1);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});s.createIndex('type','type')}};r.onsuccess=e=>{db=e.target.result;resolve()};r.onerror=()=>reject(r.error)})}
+function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB_NAME);r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains(STORE)){const s=d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});s.createIndex('type','type')}};r.onsuccess=e=>{db=e.target.result;resolve()};r.onerror=()=>reject(r.error)})}
 function getImages(type){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).index('type').getAll(type);r.onsuccess=()=>resolve(r.result.reverse());r.onerror=()=>reject(r.error)})}
 function addImage(type,blob,note){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).add({type,blob,note,date:new Date().toLocaleDateString('en-CA')});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
 function deleteImage(id){return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);r.onsuccess=resolve;r.onerror=()=>reject(r.error)})}
@@ -112,7 +112,7 @@ function chatShownName(p){return chatMeta(p.id).remark||p.name||'未命名联系
 function chatAvatarMarkup(p,small=false){const meta=chatMeta(p.id),name=chatShownName(p);return meta.avatar?`<img src="${esc(meta.avatar)}" alt="${esc(name)}">`:esc((name||'♡').slice(0,1))}
 const CHAT_CONTACT_DB='love-record-chat-index-v1', CHAT_CONTACT_STORE='state';
 let chatContactIdsCache=[];
-function openChatContactIndexDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(CHAT_CONTACT_DB,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(CHAT_CONTACT_STORE))req.result.createObjectStore(CHAT_CONTACT_STORE,{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('聊天联系人索引数据库打开失败'))})}
+function openChatContactIndexDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(CHAT_CONTACT_DB);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(CHAT_CONTACT_STORE))req.result.createObjectStore(CHAT_CONTACT_STORE,{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('聊天联系人索引数据库打开失败'))})}
 async function saveChatContactIdsIndexedDB(ids){const db=await openChatContactIndexDB();const value=[...new Set((ids||[]).map(String))];return new Promise((resolve,reject)=>{const tx=db.transaction(CHAT_CONTACT_STORE,'readwrite');tx.objectStore(CHAT_CONTACT_STORE).put({id:'chat-contact-ids',ids:value,updatedAt:Date.now()});tx.oncomplete=()=>resolve(value);tx.onerror=()=>reject(tx.error||new Error('聊天联系人索引保存失败'));tx.onabort=()=>reject(tx.error||new Error('聊天联系人索引保存中断'))})}
 async function loadChatContactIdsIndexedDB(){const db=await openChatContactIndexDB();return new Promise((resolve,reject)=>{const req=db.transaction(CHAT_CONTACT_STORE,'readonly').objectStore(CHAT_CONTACT_STORE).get('chat-contact-ids');req.onsuccess=()=>resolve(Array.isArray(req.result?.ids)?req.result.ids.map(String):[]);req.onerror=()=>reject(req.error||new Error('聊天联系人索引读取失败'))})}
 function readChatContacts(){let a=[...chatContactIdsCache];try{const x=JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]');if(Array.isArray(x))a.push(...x)}catch{}try{const b=JSON.parse(localStorage.getItem('love-record-chat-contacts-recovery-v1')||'[]');if(Array.isArray(b))a.push(...b)}catch{}return [...new Set(a.map(String))]}
@@ -656,7 +656,7 @@ applyAppearance();
 
 // Durable small settings store: keep API presets and launcher layout out of quota-limited localStorage.
 const LR_KV_DB='love-record-kv-v1',LR_KV_STORE='settings';
-function lrKVOpen(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open(LR_KV_DB,1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(LR_KV_STORE))r.result.createObjectStore(LR_KV_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('IndexedDB open failed'))}catch(e){reject(e)}})}
+function lrKVOpen(){return new Promise((resolve,reject)=>{try{const r=indexedDB.open(LR_KV_DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(LR_KV_STORE))r.result.createObjectStore(LR_KV_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('IndexedDB open failed'))}catch(e){reject(e)}})}
 async function lrKVGet(key){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const r=d.transaction(LR_KV_STORE,'readonly').objectStore(LR_KV_STORE).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('IndexedDB read failed'))})}
 async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const tx=d.transaction(LR_KV_STORE,'readwrite');tx.objectStore(LR_KV_STORE).put(value,key);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('IndexedDB write failed'));tx.onabort=()=>reject(tx.error||new Error('IndexedDB write aborted'))})}
 // Persistent multi-page phone launcher. Long-press to drag; swipe horizontally to switch pages.

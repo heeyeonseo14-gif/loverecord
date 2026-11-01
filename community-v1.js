@@ -52,7 +52,7 @@
 
   function openDatabase() {
     return new Promise((resolve,reject) => {
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      const req = indexedDB.open(DB_NAME);
       req.onupgradeneeded = () => {
         const d = req.result;
         if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id'});
