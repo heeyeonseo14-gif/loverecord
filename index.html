@@ -2401,6 +2401,7 @@ worldBooksReady=restoreWorldBooks();
  #launcher .launcher-grid.lr-edge-target:after{content:'→';position:fixed;right:10px;top:48%;z-index:1000;font-size:28px;color:#9e7bb5;pointer-events:none}
  #launcher .launcher-grid.lr-edge-target.lr-edge-left:after{content:'←';right:auto;left:10px}
  #launcher .launcher-grid .launcher-app .app-icon{pointer-events:none}
+ #launcher .launcher-grid{will-change:transform;transform:translate3d(0,0,0);backface-visibility:hidden}
  #launcher .launcher-pages button{width:12px;height:12px;min-width:12px;min-height:12px;padding:0;border-radius:50%}
  #launcher .launcher-pages button.active{width:24px}
  `;
@@ -2435,10 +2436,28 @@ worldBooksReady=restoreWorldBooks();
  function setPage(n){if(!layoutReady)return;const target=Math.max(0,Math.floor(Number(n)||0));if(target>=pageCount())return;currentPage=target;render();persist()}
  function addPage(){if(!layoutReady)return;currentPage=pageCount();extraPages=currentPage+1;render();persist();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
  pages.addEventListener('click',e=>{if(e.target.closest('[data-launcher-add-page]')){addPage();return}const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage))});
- let swipeStart=null;
- launcher.addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrWidgetOverlay')){swipeStart=null;return}const t=e.touches[0];swipeStart={x:t.clientX,y:t.clientY,time:Date.now()}},{passive:true});
- launcher.addEventListener('touchend',e=>{if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y,dt=Date.now()-swipeStart.time;if(Math.abs(dx)>46&&Math.abs(dx)>Math.abs(dy)*1.18&&dt<900)setPage(currentPage+(dx<0?1:-1));swipeStart=null},{passive:true});
- launcher.addEventListener('touchcancel',()=>{swipeStart=null},{passive:true});
+ let swipeStart=null,swipeAxis=null,swipeFrame=0;
+ const resetSwipeVisual=()=>{cancelAnimationFrame(swipeFrame);grid.style.transition='transform 180ms cubic-bezier(.22,.75,.25,1)';grid.style.transform='translate3d(0,0,0)';swipeFrame=requestAnimationFrame(()=>{grid.style.transition='';});};
+ launcher.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrWidgetOverlay')){swipeStart=null;swipeAxis=null;return}
+  const t=e.touches[0];swipeStart={x:t.clientX,y:t.clientY,time:Date.now()};swipeAxis=null;grid.style.transition='none';
+ },{passive:true});
+ launcher.addEventListener('touchmove',e=>{
+  if(!swipeStart||e.touches.length!==1)return;const t=e.touches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y;
+  if(!swipeAxis&&Math.max(Math.abs(dx),Math.abs(dy))>7)swipeAxis=Math.abs(dx)>Math.abs(dy)*1.12?'x':'y';
+  if(swipeAxis==='x'){if(e.cancelable)e.preventDefault();const atStart=currentPage===0&&dx>0,atEnd=currentPage>=pageCount()-1&&dx<0;const damped=(atStart||atEnd)?dx*.28:dx;grid.style.transform=`translate3d(${damped}px,0,0)`;}
+ },{passive:false});
+ launcher.addEventListener('touchend',e=>{
+  if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y,dt=Date.now()-swipeStart.time;
+  const valid=swipeAxis==='x'&&Math.abs(dx)>Math.max(42,window.innerWidth*.13)&&Math.abs(dx)>Math.abs(dy)*1.18&&dt<1200;
+  if(valid){const target=currentPage+(dx<0?1:-1);if(target>=0&&target<pageCount()){
+    const width=Math.max(grid.getBoundingClientRect().width,window.innerWidth);grid.style.transition='transform 145ms cubic-bezier(.22,.75,.25,1)';grid.style.transform=`translate3d(${dx<0?-width:width}px,0,0)`;
+    window.setTimeout(()=>{setPage(target);grid.style.transition='none';grid.style.transform=`translate3d(${dx<0?width:-width}px,0,0)`;void grid.offsetWidth;requestAnimationFrame(()=>{grid.style.transition='transform 230ms cubic-bezier(.18,.72,.25,1)';grid.style.transform='translate3d(0,0,0)';requestAnimationFrame(()=>{setTimeout(()=>{grid.style.transition='';},240);});});},150);
+   }else resetSwipeVisual();
+  }else resetSwipeVisual();
+  swipeStart=null;swipeAxis=null;
+ },{passive:true});
+ launcher.addEventListener('touchcancel',()=>{swipeStart=null;swipeAxis=null;resetSwipeVisual();},{passive:true});
  function cellFromPoint(x,y){
   const r=grid.getBoundingClientRect(),styles=getComputedStyle(grid),gap=parseFloat(styles.columnGap)||10,rowGap=parseFloat(styles.rowGap)||ROW_GAP;
   const colW=(r.width-gap*(COLS-1))/COLS,stepX=colW+gap,stepY=CELL_H+rowGap;

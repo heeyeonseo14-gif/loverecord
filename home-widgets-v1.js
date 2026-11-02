@@ -116,8 +116,10 @@ async function read(){
  if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
  if(v&&v.pageFixed&&typeof v.pageFixed==='object')config.pageFixed={...v.pageFixed};
+ // Fresh installs start with an app-only home screen. Existing saved layouts are never overwritten.
+ if(!v){config.hidden=['welcome','days'];config.order=['shelf'];}
  // Existing fixed widgets are kept on page 1 only; newly created pages start without them.
- if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['welcome','days','shelf'])]};
+ if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['shelf'])]};
  if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
  activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
  config.items=cleanItems(config.pageItems[String(activePage)]||[]);
