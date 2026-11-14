@@ -1,11 +1,11 @@
-/* LOVE RECORD · Home widgets v2 · INS editorial widgets
+/* LOVE RECORD · Home widgets v1
    In-app launcher widgets. Layout is persisted and shared across launcher sessions/tabs. */
 (()=>{'use strict';
 const KEY='love-record-home-widgets-v1';
 const launcher=document.getElementById('launcher');
 if(!launcher||document.getElementById('lrWidgetShelf'))return;
 const definitions=[
- {id:'days',name:'Days Together',category:'LOVE',size:'medium',desc:'可移动的纪念日与今日寄语组件'},
+ {id:'days',name:'在一起的日子',category:'LOVE',size:'small',desc:'纪念日计数与今日寄语'},
  {id:'photo',name:'我们的照片',category:'MEMORY',size:'medium',desc:'读取 MEMORY 全部照片，点击切换'},
  {id:'daily',name:'今日寄语',category:'AI',size:'small',desc:'展示主页今日文字'},
  {id:'music',name:'音乐播放器',category:'MUSIC',size:'medium',desc:'显示当前播放歌曲与控制'},
@@ -16,7 +16,7 @@ const definitions=[
  {id:'focus',name:'专注时钟',category:'FOCUS',size:'medium',desc:'25分钟专注计时，支持暂停与重置'},
  {id:'week',name:'一周日历',category:'LIFE',size:'medium',desc:'查看本周日期，自动标记今天'}
 ];
-let config={items:[],order:['shelf'],hidden:['welcome','days'],positions:{},pageItems:{},pagePositions:{},pageFixed:{},homeOnlyApps:true},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
+let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{},pageFixed:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
 function widgetDbOpen(){return new Promise((resolve,reject)=>{try{const req=indexedDB.open(WIDGET_DB);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(WIDGET_STORE))req.result.createObjectStore(WIDGET_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Widget database open failed'));req.onblocked=()=>reject(new Error('Widget database is blocked'))}catch(err){reject(err)}})}
 async function widgetDbGet(){const db=await widgetDbOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(WIDGET_STORE,'readonly'),req=tx.objectStore(WIDGET_STORE).get(WIDGET_LAYOUT_KEY);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('Widget layout read failed'));tx.oncomplete=()=>db.close();tx.onabort=()=>{db.close();reject(tx.error||new Error('Widget layout read aborted'))}})}
@@ -98,16 +98,16 @@ const welcome=launcher.querySelector('.launcher-welcome');
 const daysCard=launcher.querySelector('.launcher-info');
 const board=document.createElement('div');board.id='lrWidgetBoard';board.setAttribute('aria-label','可编辑桌面组件');
 const editBar=document.createElement('div');editBar.id='lrWidgetEditBar';editBar.innerHTML='<button type="button" data-widget-open-chooser>＋ 添加组件</button><button type="button" data-widget-finish>完成</button>';
-if(welcome&&daysCard&&grid){launcher.insertBefore(editBar,welcome);launcher.insertBefore(board,welcome);board.append(welcome,shelf);daysCard.hidden=true;daysCard.setAttribute('aria-hidden','true');}
+if(welcome&&daysCard&&grid){launcher.insertBefore(editBar,welcome);launcher.insertBefore(board,welcome);board.append(welcome,daysCard,shelf);}
 else if(grid)launcher.insertBefore(shelf,grid);
-const overlay=document.createElement('div');overlay.id='lrWidgetOverlay';overlay.innerHTML=`<section class="lr-widget-sheet" role="dialog" aria-modal="true" aria-labelledby="lrWidgetSheetTitle"><div class="lr-widget-sheet-head"><div><h2 id="lrWidgetSheetTitle">桌面组件</h2><p>选择桌面组件，长按组件可移动位置</p></div><button class="lr-widget-close" type="button" aria-label="关闭">×</button></div><div class="lr-widget-list" id="lrWidgetList"></div><div class="lr-widget-sheet-foot">Days Together、音乐、照片与便笺都可作为普通桌面组件添加、移动、调整大小或移除。布局保存在当前设备。</div></section>`;
+const overlay=document.createElement('div');overlay.id='lrWidgetOverlay';overlay.innerHTML=`<section class="lr-widget-sheet" role="dialog" aria-modal="true" aria-labelledby="lrWidgetSheetTitle"><div class="lr-widget-sheet-head"><div><h2 id="lrWidgetSheetTitle">桌面组件</h2><p>可恢复已移除的固定组件，也可以添加新组件</p></div><button class="lr-widget-close" type="button" aria-label="关闭">×</button></div><div class="lr-widget-list" id="lrWidgetList"></div><div class="lr-widget-sheet-foot">长按组件进入编辑模式，再次拖动即可调整位置；点击 × 可移除。布局保存在当前设备。</div></section>`;
 document.body.appendChild(overlay);
 const $=id=>document.getElementById(id);
 async function read(){
  let v=null;try{v=await widgetDbGet()}catch(e){console.warn('[LOVE RECORD] dedicated widget DB read failed',e)}
  if(!v){try{if(typeof lrKVGet==='function')v=await lrKVGet('home-widgets-layout-v2')}catch(e){console.warn('[LOVE RECORD] previous widget layout migration read failed',e)}}
  if(!v){try{v=JSON.parse(localStorage.getItem(KEY)||'null')}catch{v=null}}
- if(!v||Number(v.version||0)<10)needsUpgrade=true;
+ if(v&&Number(v.version||0)<9)needsUpgrade=true;
  const cleanItems=arr=>(Array.isArray(arr)?arr:[]).filter(x=>x&&definitions.some(d=>d.id===x.id)).map(x=>({...x,size:x.size==='small'?'small':x.size==='large'?'large':'medium',note:String(x.note||''),waterCount:Math.max(0,Number(x.waterCount)||0),waterDate:String(x.waterDate||''),mood:String(x.mood||''),moodHistory:Array.isArray(x.moodHistory)?x.moodHistory.slice(-7):[],focusRemaining:Math.max(0,Number(x.focusRemaining)||1500),focusUntil:Number(x.focusUntil)||0,focusRunning:!!x.focusRunning}));
  if(v&&Array.isArray(v.items))config.items=cleanItems(v.items);
  if(v&&Array.isArray(v.order))config.order=v.order.filter(x=>['welcome','days','shelf'].includes(x));
@@ -116,44 +116,26 @@ async function read(){
  if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
  if(v&&v.pageFixed&&typeof v.pageFixed==='object')config.pageFixed={...v.pageFixed};
- // APP-ONLY HOME: remove the previous automatically seeded cards once.
- // Widgets remain available in the chooser and appear only after the user adds them.
- const firstInstall=!v||v.homeOnlyApps!==true;
- if(firstInstall){
-  config.pageItems=Object.fromEntries(Object.keys(config.pageItems||{}).map(k=>[k,[]]));
-  config.pageItems['0']=[];
-  config.pageItems[String(activePage)]=[];
-  config.items=[];
-  config.pagePositions={};
-  config.positions={};
-  config.pageFixed['0']={hidden:['welcome','days'],order:['shelf']};
-  config.pageFixed[String(activePage)]={hidden:['welcome','days'],order:['shelf']};
-  config.hidden=['welcome','days'];
-  config.order=['shelf'];
-  config.homeOnlyApps=true;
-  needsUpgrade=true;
- }else{
-  config.homeOnlyApps=true;
-  config.pageItems['0']=config.pageItems['0']||[];
-  config.pagePositions['0']=config.pagePositions['0']||{};
-  config.pageFixed['0']=config.pageFixed['0']||{hidden:['welcome','days'],order:['shelf']};
-  config.pageFixed['0'].hidden=[...new Set([...(config.pageFixed['0'].hidden||[]),'welcome','days'])];
-  config.pageFixed['0'].order=['shelf'];
-  config.items=cleanItems(config.pageItems[String(activePage)]||[]);
-  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
-  config.positions={...(config.pagePositions[String(activePage)]||{})};
-  config.hidden=['welcome','days'];
-  config.order=['shelf'];
- }
- if(firstInstall|| (v&&Array.isArray(v.items)&&!await widgetDbHasLayout()))await save({silent:true});
+ // Fresh installs start with an app-only home screen. Existing saved layouts are never overwritten.
+ if(!v){config.hidden=['welcome','days'];config.order=['shelf'];}
+ // Existing fixed widgets are kept on page 1 only; newly created pages start without them.
+ if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['shelf'])]};
+ if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
+ activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
+ config.items=cleanItems(config.pageItems[String(activePage)]||[]);
+ config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
+ config.positions={...(config.pagePositions[String(activePage)]||config.positions||{})};
+ const fixed=config.pageFixed[String(activePage)]||{hidden:['welcome','days'],order:['shelf']};
+ config.hidden=[...(fixed.hidden||[])];config.order=[...(fixed.order||['shelf'])];
+ if(v&&Array.isArray(v.items)&&!await widgetDbHasLayout())await save({silent:true});
 }
 async function widgetDbHasLayout(){try{return !!(await widgetDbGet())}catch{return false}}
-function applyLayout(){const map={welcome,shelf};config.order.filter(id=>id!=='days').forEach(id=>{const node=map[id];if(node&&node.parentElement===board)board.appendChild(node)});if(welcome)welcome.hidden=config.hidden.includes('welcome');if(daysCard){daysCard.hidden=true;daysCard.setAttribute('aria-hidden','true')}if(shelf)shelf.hidden=!config.items.length&&!editMode;}
+function applyLayout(){const map={welcome,days:daysCard,shelf};config.order.forEach(id=>{const node=map[id];if(node&&node.parentElement===board)board.appendChild(node)});if(welcome)welcome.hidden=config.hidden.includes('welcome');if(daysCard)daysCard.hidden=config.hidden.includes('days');if(shelf)shelf.hidden=!config.items.length&&!editMode;}
 function setEditMode(on){editMode=!!on;launcher.classList.toggle('lr-widgets-editing',editMode);if(!editMode)dragState=null;renderChoices();applyLayout();}
 function addEditTools(node,kind){if(!node||node.querySelector(':scope > .lr-edit-tools'))return;const tools=document.createElement('div');tools.className='lr-edit-tools';tools.innerHTML=`<button type="button" data-fixed-remove="${kind}" aria-label="移除组件">×</button>`;node.appendChild(tools)}
-if(welcome)addEditTools(welcome,'welcome');if(daysCard){daysCard.hidden=true;daysCard.setAttribute('aria-hidden','true')}
+if(welcome)addEditTools(welcome,'welcome');if(daysCard)addEditTools(daysCard,'days');
 let saveSeq=0;
-async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),pageFixed:JSON.parse(JSON.stringify(config.pageFixed)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:10};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
+async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),pageFixed:JSON.parse(JSON.stringify(config.pageFixed)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:9};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
 function notify(t){if(typeof window.toast==='function')window.toast(t);else if($('toast')){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}}
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
@@ -161,43 +143,10 @@ function localDateKey(date=new Date()){return `${date.getFullYear()}-${String(da
 function latestMessage(){const threads=localJSON('love-record-chat-threads-v2');if(!threads)return null;let all=[];if(Array.isArray(threads))all=threads;else if(typeof threads==='object')Object.values(threads).forEach(v=>{if(Array.isArray(v))all.push(...v);else if(Array.isArray(v?.messages))all.push(...v.messages)});return all.filter(x=>x&&typeof x==='object'&&(x.text||x.content||x.message)).sort((a,b)=>new Date(b.createdAt||b.time||b.timestamp||0)-new Date(a.createdAt||a.time||a.timestamp||0))[0]||null}
 function photosFromDB(type='memory'){return new Promise(resolve=>{try{const req=indexedDB.open('yanyan-love-v5');req.onsuccess=()=>{const db=req.result;if(!db.objectStoreNames.contains('images')){db.close();resolve([]);return}let tx;try{tx=db.transaction('images','readonly')}catch(e){db.close();resolve([]);return}const store=tx.objectStore('images');if(!store.indexNames.contains('type')){db.close();resolve([]);return}const r=store.index('type').getAll(type);r.onsuccess=()=>{const arr=(r.result||[]).filter(x=>x&&x.blob).sort((a,b)=>(Number(b.id)||0)-(Number(a.id)||0));db.close();resolve(arr)};r.onerror=()=>{db.close();resolve([])};tx.onabort=()=>{db.close();resolve([])}};req.onerror=()=>resolve([]);req.onblocked=()=>resolve([])}catch{resolve([])}})}
 const photoWidgetData=new Map();
-async function renderPhotoWidget(widgetId){
- const card=shelf.querySelector(`[data-widget-id="${widgetId}"]`),view=card?.querySelector(`[data-memory-view="${widgetId}"]`);
- if(!view)return;
- let data=photoWidgetData.get(widgetId);
- if(!data||!data.loaded){const records=await photosFromDB('memory');data={loaded:true,records,index:0,urls:new Map()};photoWidgetData.set(widgetId,data)}
- const records=data.records;
- if(!records.length){view.innerHTML='<div class="lr-widget-memory-empty">MEMORY 里还没有照片 · ADD A LITTLE MOMENT</div>';return}
- data.index=((data.index%records.length)+records.length)%records.length;
- const count=Math.min(3,records.length),tiles=[];
- for(let offset=0;offset<count;offset++){
-  const index=(data.index+offset)%records.length,record=records[index];
-  let url=data.urls.get(record.id);if(!url){url=URL.createObjectURL(record.blob);data.urls.set(record.id,url)}
-  tiles.push(`<button type="button" class="lr-widget-memory-image lr-widget-collage-tile tile-${offset+1}" data-memory-next="${widgetId}" aria-label="切换 MEMORY 照片"><img class="lr-widget-photo-square" src="${url}" alt="${escape(String(record.note||'A little moment.'))}"></button>`);
- }
- const current=records[data.index],note=String(current.note||'A little moment.'),date=String(current.date||'');
- view.innerHTML=`<div class="lr-widget-photo-collage">${tiles.join('')}</div><div class="lr-widget-memory-meta"><span>${escape(date||note)}</span><span>MEMORY · ${data.index+1}/${records.length}</span></div>`;
-}
+async function renderPhotoWidget(widgetId){const card=shelf.querySelector(`[data-widget-id="${widgetId}"]`),view=card?.querySelector(`[data-memory-view="${widgetId}"]`);if(!view)return;let data=photoWidgetData.get(widgetId);if(!data||!data.loaded){const records=await photosFromDB('memory');data={loaded:true,records,index:0,urls:new Map()};photoWidgetData.set(widgetId,data)}const records=data.records;if(!records.length){view.innerHTML='<div class="lr-widget-memory-empty">MEMORY 里还没有照片 ♡</div>';return}data.index=((data.index%records.length)+records.length)%records.length;const record=records[data.index];let url=data.urls.get(record.id);if(!url){url=URL.createObjectURL(record.blob);data.urls.set(record.id,url)}const note=String(record.note||'A little moment.');const date=String(record.date||'');view.innerHTML=`<button type="button" class="lr-widget-memory-image" data-memory-next="${widgetId}" aria-label="切换 MEMORY 照片"><img class="lr-widget-photo-square" src="${url}" alt="${escape(note)}"></button><div class="lr-widget-memory-meta"><span>${escape(date||note)}</span><span>${data.index+1} / ${records.length}　›</span></div>`}
 function cyclePhotoWidget(widgetId){const data=photoWidgetData.get(widgetId);if(!data||data.records.length<2)return;data.index=widgetId==='memory'?(data.index+1+Math.floor(Math.random()*(data.records.length-1)))%data.records.length:(data.index+1)%data.records.length;renderPhotoWidget(widgetId)}
 function widgetHTML(item){const d=definitions.find(x=>x.id===item.id);const sizeClass=item.size==='large'?'large':item.size==='medium'?'medium':'small';let body='';
- if(item.id==='days'){
-  const days=$('launcherDays')?.textContent||'0';
-  const today=$('launcherToday')?.textContent||'把今天也留在这里。';
-  const homeImage=$('homePhoto')?.querySelector('img')?.src||'';
-  body=`<div class="lr-widget-days-layout">
-    <div class="lr-widget-days-copy">
-      <div class="lr-widget-days-overline">EVERY DAY, A LITTLE MORE</div>
-      <div class="lr-widget-main lr-widget-days-count">${escape(days)} <span>DAYS TOGETHER</span></div>
-      <div class="lr-widget-days-today"><span>TODAY'S MOMENT</span><strong>${escape(today)}</strong></div>
-    </div>
-    <div class="lr-widget-days-polaroid">
-      <button type="button" class="lr-widget-days-stamp" data-home-photo-trigger aria-label="更换主页照片">
-       ${homeImage?`<img src="${escape(homeImage)}" alt="">`:'<span class="lr-widget-days-photo-empty">＋</span>'}
-       <span class="lr-widget-days-stamp-caption">LOVE</span>
-      </button>
-      ${homeImage?'<button type="button" class="lr-widget-days-photo-clear" data-home-photo-clear aria-label="移除主页照片">×</button>':''}
-    </div>
-  </div>`}
+ if(item.id==='days'){const days=$('launcherDays')?.textContent||'0';body=`<div class="lr-widget-main">${escape(days)} <span style="font-size:11px;font-weight:500">DAYS</span></div><div class="lr-widget-sub">${escape($('launcherToday')?.textContent||'把今天也留在这里。')}</div>`}
  if(item.id==='daily'){body=`<div class="lr-widget-main" style="font-size:16px">“${escape($('launcherToday')?.textContent||'把今天也留在这里。')}”</div><div class="lr-widget-sub">把今天也好好收藏起来。</div>`}
  if(item.id==='photo'||item.id==='memory'){body=`<div class="lr-widget-memory-view" data-memory-view="${item.id}"><div class="lr-widget-sub">正在读取 MEMORY 照片…</div></div>`}
  if(item.id==='message'){const m=latestMessage();const content=m?(m.text||m.content||m.message):'还没有聊天记录';body=`<div class="lr-widget-main" style="font-size:14px">${escape(content).slice(0,120)}</div><div class="lr-widget-sub">${m?escape(m.senderName||m.name||'最近的对话'):'开始一段对话，让这里留下你们的消息。'}</div>`}
@@ -232,7 +181,7 @@ function widgetHTML(item){const d=definitions.find(x=>x.id===item.id);const size
 
  return `<article class="lr-widget ${sizeClass}${(item.id==='photo'||item.id==='memory')?' lr-widget-memory-widget':''}" data-widget-id="${item.id}"><div class="lr-widget-tools"><button type="button" data-widget-size title="切换大小">↔</button><button type="button" data-widget-remove title="移除组件">×</button></div><div class="lr-widget-kicker">${d.category} · LOVE RECORD</div><div class="lr-widget-title">${d.name}</div>${body}</article>`;
 }
-function widgetSpan(item){return {cols:item.id==='days'?2:(item.size==='small'?1:2),rows:(item.id==='photo'||item.id==='memory')?2:(item.size==='large'?2:1)}}
+function widgetSpan(item){return {cols:item.size==='small'?1:2,rows:(item.id==='photo'||item.id==='memory')?2:(item.size==='large'?2:1)}}
 function widgetCells(pos,item){const sp=widgetSpan(item),cells=[];for(let r=pos.row;r<pos.row+sp.rows;r++)for(let c=pos.col;c<pos.col+sp.cols;c++)cells.push(`${r}:${c}`);return cells}
 function layoutWidgetPositions(preferredId=null,preferred=null){const used=new Set(),ordered=preferredId?[...config.items.filter(x=>x.id===preferredId),...config.items.filter(x=>x.id!==preferredId)]:config.items.slice();for(const item of ordered){const sp=widgetSpan(item);let pos=item.id===preferredId&&preferred?{row:Math.max(2,preferred.row),col:sp.cols===2?1:Math.max(1,Math.min(2,preferred.col))}:config.positions[item.id];const valid=p=>p&&Number.isInteger(p.row)&&p.row>=2&&p.row<40&&Number.isInteger(p.col)&&p.col>=1&&p.col<=3-sp.cols&&widgetCells(p,item).every(k=>!used.has(k));if(!valid(pos)){pos=null;for(let row=2;row<40&&!pos;row++)for(let col=1;col<=3-sp.cols;col++){const candidate={row,col};if(valid(candidate)){pos=candidate;break}}}if(!pos)pos={row:40+ordered.indexOf(item),col:1};config.positions[item.id]=pos;widgetCells(pos,item).forEach(k=>used.add(k));const node=shelf.querySelector(`[data-widget-id="${item.id}"]`);if(node){node.style.gridColumn=`${pos.col} / span ${sp.cols}`;node.style.gridRow=`${pos.row} / span ${sp.rows}`}}}
 function commitWidgetDrop(id,x,y){const item=config.items.find(v=>v.id===id);if(!item)return;const rect=shelf.getBoundingClientRect();if(x<rect.left-20||x>rect.right+20||y<rect.top||y>rect.bottom+80)return;const st=getComputedStyle(shelf),gap=parseFloat(st.rowGap)||8,rowH=parseFloat(st.gridAutoRows)||120;const localY=Math.max(20,y-rect.top);const row=Math.max(2,Math.floor((localY-20)/(rowH+gap))+2);const col=widgetSpan(item).cols===2?1:(x<rect.left+rect.width/2?1:2);layoutWidgetPositions(id,{row,col});}
@@ -241,13 +190,13 @@ function refreshMusicWidget(){const card=shelf.querySelector('[data-widget-id="m
 window.addEventListener('lr-music-state-change',refreshMusicWidget);
 function openChooser(){if(opening)return;opening=true;renderChoices();overlay.classList.add('show');setEditMode(true)}
 function closeChooser(){opening=false;overlay.classList.remove('show')}
-function renderChoices(){const list=$('lrWidgetList');if(!list)return;const fixed=[{id:'welcome',name:'首页刊头',category:'HOME',desc:'杂志式主页标题与欢迎区域',hidden:config.hidden.includes('welcome')}];list.innerHTML=fixed.map(d=>`<button type="button" class="lr-widget-choice" data-widget-restore="${d.id}" ${!d.hidden?'disabled':''}><strong>${d.name}${d.hidden?' · 点击恢复':' · 已显示'}</strong><small>${d.category} · ${d.desc}</small></button>`).join('')+definitions.map(d=>{const exists=config.items.some(x=>x.id===d.id);return `<button type="button" class="lr-widget-choice" data-widget-add="${d.id}" ${exists?'disabled':''}><strong>${d.name}${exists?' · 已添加':''}</strong><small>${d.category} · ${d.desc}</small></button>`}).join('')}
+function renderChoices(){const list=$('lrWidgetList');if(!list)return;const fixed=[{id:'welcome',name:'我们的小宇宙',category:'HOME',desc:'主页标题与欢迎区域',hidden:config.hidden.includes('welcome')},{id:'days',name:'Days Together',category:'LOVE',desc:'纪念日与主页照片卡片',hidden:config.hidden.includes('days')}];list.innerHTML=fixed.map(d=>`<button type="button" class="lr-widget-choice" data-widget-restore="${d.id}" ${!d.hidden?'disabled':''}><strong>${d.name}${d.hidden?' · 点击恢复':' · 已显示'}</strong><small>${d.category} · ${d.desc}</small></button>`).join('')+definitions.map(d=>{const exists=config.items.some(x=>x.id===d.id);return `<button type="button" class="lr-widget-choice" data-widget-add="${d.id}" ${exists?'disabled':''}><strong>${d.name}${exists?' · 已添加':''}</strong><small>${d.category} · ${d.desc}</small></button>`}).join('')}
 function add(id){if(config.items.some(x=>x.id===id))return;const d=definitions.find(x=>x.id===id);if(!d)return;config.items.push({id,size:d.size,note:'',waterCount:0,waterDate:'',mood:'',moodHistory:[],focusRemaining:1500,focusUntil:0,focusRunning:false});render().then(()=>save());renderChoices();notify('已添加 '+d.name+' ♡')}
 function restoreFixed(id){config.hidden=config.hidden.filter(x=>x!==id);save();applyLayout();renderChoices();notify('已恢复组件 ♡')}
 editBar.addEventListener('click',e=>{if(e.target.closest('[data-widget-open-chooser]'))openChooser();if(e.target.closest('[data-widget-finish]')){closeChooser();setEditMode(false);notify('桌面布局已保存 ♡')}});
 overlay.querySelector('.lr-widget-close').addEventListener('click',closeChooser);
 overlay.addEventListener('click',e=>{if(e.target===overlay)closeChooser();const restore=e.target.closest('[data-widget-restore]');if(restore&&!restore.disabled){restoreFixed(restore.dataset.widgetRestore);return}const addBtn=e.target.closest('[data-widget-add]');if(addBtn&&!addBtn.disabled)add(addBtn.dataset.widgetAdd)});
-function itemNode(target){return target.closest('.launcher-welcome,.lr-widget')}
+function itemNode(target){return target.closest('.launcher-welcome,.launcher-info,.lr-widget')}
 async function switchWidgetPage(next){
  const page=Math.max(0,Number(next)||0);if(page===activePage)return;
  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
@@ -256,12 +205,12 @@ async function switchWidgetPage(next){
  activePage=page;
  config.items=(config.pageItems[String(activePage)]||[]).map(x=>({...x}));
  config.positions={...(config.pagePositions[String(activePage)]||{})};
- const fixed=config.pageFixed[String(activePage)]||{hidden:['days'],order:['welcome','shelf']};
- config.hidden=[...new Set([...(fixed.hidden||[]),'days'])];config.order=(fixed.order||['welcome','shelf']).filter(x=>x!=='days');
+ const fixed=config.pageFixed[String(activePage)]||{hidden:['welcome','days'],order:['shelf']};
+ config.hidden=[...(fixed.hidden||[])];config.order=[...(fixed.order||['shelf'])];
  await save({silent:true});await render();renderChoices();applyLayout();
 }
 window.addEventListener('lr-launcher-page-change',e=>{switchWidgetPage(e.detail?.page).catch(err=>console.error('[LOVE RECORD] page widget switch failed',err))});
-function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===shelf).map(n=>n===welcome?'welcome':'shelf');config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
+function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
 function reorderAt(x,y){if(!dragState)return;if(dragState.scope==='shelf'){dragState.node.style.transform=`translate3d(${x-dragState.startX}px,${y-dragState.startY}px,0) scale(1.025)`;dragState.node.style.zIndex='50';return}const under=document.elementFromPoint(x,y);const target=under?.closest('.launcher-welcome,.launcher-info,#lrWidgetShelf .lr-widget');if(dragState.scope==='board'){if(target===welcome||target===daysCard){const rect=target.getBoundingClientRect();board.insertBefore(dragState.node,y<rect.top+rect.height/2?target:target.nextSibling)}else if(target===shelf){board.insertBefore(dragState.node,shelf)}return}if(dragState.scope==='shelf'){if(target?.classList.contains('lr-widget')&&target!==dragState.node){const rect=target.getBoundingClientRect();const before=y<rect.top+rect.height/2||(Math.abs(y-rect.top-rect.height/2)<rect.height*.28&&x<rect.left+rect.width/2);shelf.insertBefore(dragState.node,before?target:target.nextSibling)}else{const rect=shelf.getBoundingClientRect();if(x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom)shelf.appendChild(dragState.node)}}}
 function startDrag(node,e){if(!editMode||!node)return;dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board',oldPointerEvents:node.style.pointerEvents,startX:e.clientX||0,startY:e.clientY||0,widgetId:node.dataset.widgetId||null,oldPosition:node.dataset.widgetId?{...(config.positions[node.dataset.widgetId]||{row:2,col:1})}:null};try{if(e.pointerId!==undefined)node.setPointerCapture(e.pointerId)}catch{}node.classList.add('is-lr-dragging');node.style.pointerEvents='none';if(e.cancelable)e.preventDefault()}
 document.addEventListener('pointermove',e=>{if(dragState){window.__lrWidgetLastPointer={x:e.clientX,y:e.clientY};reorderAt(e.clientX,e.clientY)}});
@@ -277,10 +226,6 @@ launcher.addEventListener('pointerdown',e=>{
 });
 ['pointerup','pointercancel','pointerleave'].forEach(type=>launcher.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null}));
 launcher.addEventListener('click',e=>{
- const homePhotoTrigger=e.target.closest('[data-home-photo-trigger]');
- if(homePhotoTrigger){e.preventDefault();e.stopPropagation();$('homeFile')?.click();return}
- const homePhotoClear=e.target.closest('[data-home-photo-clear]');
- if(homePhotoClear){e.preventDefault();e.stopPropagation();$('homeClear')?.click();return}
  const memoryNext=e.target.closest('[data-memory-next]');if(memoryNext){e.preventDefault();e.stopPropagation();cyclePhotoWidget(memoryNext.dataset.memoryNext);return}
  const remove=e.target.closest('[data-fixed-remove]');
  if(remove){const id=remove.dataset.fixedRemove;if(!config.hidden.includes(id))config.hidden.push(id);save();applyLayout();renderChoices();return}
