@@ -42,7 +42,31 @@ function loadPhone(p){selected=p;data=readJSON(storeKey(p.id),emptyData());$('pe
 function save(){if(selected)try{localStorage.setItem(storeKey(selected.id),JSON.stringify(data))}catch(e){toast('手机数据保存失败：浏览器储存空间不足')}}
 function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2200)}
 function show(view){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));const el=$(view+'View');if(el)el.classList.add('active');if(!el)return;const head=el.querySelector('.backline');if(!head)return;let action=head.querySelector('.checkin-generate');if(view==='contacts'||view==='home'){action?.remove();return}if(!action){action=document.createElement('button');action.className='checkin-generate';action.type='button';action.title='调用主页 API 生成内容';action.setAttribute('aria-label','生成内容');action.innerHTML='✧';head.appendChild(action);action.addEventListener('click',()=>generateForApp(view,action))}}
-async function renderContacts(){const box=$('contactPicker');box.innerHTML='<div class="empty">正在同步联系人…</div>';const people=await getPeople();if(!people.length){box.innerHTML='<div class="empty">暂时没有读取到联系人。请确认 LOVE RECORD 联系人已保存，然后重新进入查岗。</div>';return}box.innerHTML=people.map(p=>`<button class="list-item" data-contact-id="${esc(p.id)}" style="width:100%;background:none;text-align:left"><span class="list-avatar">${esc((p.name||'?').trim().charAt(0))}</span><span class="list-main"><b>${esc(p.name)}</b><p>${esc(p.role||'AI 联系人')} · 独立手机空间</p></span><span style="color:#ad9a85">›</span></button>`).join('');box.querySelectorAll('[data-contact-id]').forEach(b=>b.addEventListener('click',()=>{const p=people.find(x=>String(x.id)===b.dataset.contactId);if(p)loadPhone(p)}))}
+async function renderContacts(){
+ const box=$('contactPicker');
+ if(!box)return;
+ box.innerHTML='<div class="empty">正在同步联系人…</div>';
+ const people=await getPeople();
+ if(!people.length){
+  box.innerHTML='<div class="empty">暂时没有读取到联系人。请确认 LOVE RECORD 联系人已保存，然后重新进入查岗。</div>';
+  return;
+ }
+ box.innerHTML=people.map(p=>`<button type="button" class="list-item checkin-contact-button" data-contact-id="${esc(p.id)}" style="width:100%;background:none;text-align:left;position:relative;z-index:2;pointer-events:auto;touch-action:manipulation"><span class="list-avatar">${esc((p.name||'?').trim().charAt(0))}</span><span class="list-main"><b>${esc(p.name)}</b><p>${esc(p.role||'AI 联系人')} · 独立手机空间</p></span><span style="color:#ad9a85">›</span></button>`).join('');
+ // Delegate from the stable container so replacing list markup never loses the tap handler.
+ box.onclick=(event)=>{
+  const button=event.target.closest('[data-contact-id]');
+  if(!button||!box.contains(button))return;
+  event.preventDefault();
+  event.stopPropagation();
+  const person=people.find(x=>String(x.id)===String(button.dataset.contactId));
+  if(person)loadPhone(person);
+ };
+ box.querySelectorAll('[data-contact-id]').forEach(button=>{
+  button.addEventListener('keydown',event=>{
+   if(event.key==='Enter'||event.key===' '){event.preventDefault();button.click()}
+  });
+ });
+}
 function row(icon,title,detail,time){return `<div class="list-item"><div class="list-avatar">${esc(icon)}</div><div class="list-main"><b>${esc(title)}</b><p>${esc(detail||'')}</p></div><time>${esc(time||'')}</time></div>`}
 function activityMarkup(items){return items.length?items.map(a=>`<div class="activity-row"><div class="activity-dot">${esc(a.icon||'◦')}</div><div class="activity-copy"><b>${esc(a.title)}</b><p>${esc(a.detail||'')}</p><time>${esc(a.time||'')}</time></div></div>`).join(''):'<div class="empty">暂无活动记录。可以在主页 API 配置完成后生成活动。</div>'}
 function renderData(){

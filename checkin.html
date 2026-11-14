@@ -27,7 +27,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 .empty{padding:32px 16px;text-align:center;color:#a18e79;font-size:11px}
 .toast{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);background:#655542;color:white;padding:9px 14px;border-radius:30px;font-size:10px;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}.toast.show{opacity:1}
 .checkin-generate{margin-left:auto;flex:0 0 38px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(255,252,246,.86);border:1px solid rgba(255,255,255,.98);box-shadow:0 5px 15px rgba(92,72,48,.10);color:#8a755b;font-size:21px;line-height:1;transition:transform .2s,background .2s}.checkin-generate:active{transform:scale(.92)}.checkin-generate.loading{animation:checkinPulse 1s ease-in-out infinite}@keyframes checkinPulse{50%{opacity:.45;transform:scale(.92)}}\n@media(max-width:760px){.topbar{height:50px;padding:0 14px}.shell{display:block;padding:0 10px 25px}.phone{width:100%;min-height:calc(100dvh - 65px);border-radius:29px}.screen{min-height:calc(100dvh - 99px)}.side{display:none}.hello h1{font-size:34px}.app-grid{gap:17px 8px}.app-icon{width:57px;height:57px}}
-</style>
+#contactPicker{position:relative;z-index:3;pointer-events:auto}#contactPicker .checkin-contact-button{cursor:pointer;pointer-events:auto;position:relative;z-index:4}#contactsView{position:relative;z-index:1;pointer-events:auto}</style>
 </head>
 <body>
 <header class="topbar"><div class="brand">LOVE RECORD <span style="opacity:.45">/</span> CHECK IN</div><div class="top-actions"><button class="icon-btn" id="backHome" aria-label="返回主页">⌂</button></div></header>
@@ -76,5 +76,5 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 </div></div>
 
 </div>
-<script src="./checkin-v1.js?v=6"></script>
+<script src="./checkin-v1.js?v=7"></script>
 </body></html>
