@@ -1159,7 +1159,7 @@ body.launcher-open .system-appbar{display:none!important}
     <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
-  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"><button type="button" data-launcher-add-page="1" aria-label="添加桌面页面" title="添加页面">＋</button></div>
+  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
 </main>
 
 
@@ -2418,7 +2418,7 @@ worldBooksReady=restoreWorldBooks();
  `;
  document.head.appendChild(style);
  const occupiedKey=(p,r,c)=>`${p}:${r}:${c}`;
- function pageCount(){return Math.max(2,extraPages,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:2));}
+ function pageCount(){return Math.max(1,extraPages,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:2));}
  function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:page+1,row:1,col:1}}
  function normalize(){
   const ids=getApps().map(getId),seen=new Set();
@@ -2443,13 +2443,11 @@ worldBooksReady=restoreWorldBooks();
   const visibleRows=getApps().filter(el=>pageMap[getId(el)]===currentPage).map(el=>cells[getId(el)].row);
   const usedRows=Math.max(1,...visibleRows);
   grid.style.setProperty('grid-template-rows',`repeat(${usedRows}, ${CELL_H}px)`,'important');
-  const add=pages.querySelector('[data-launcher-add-page]');
-  pages.querySelectorAll('[data-launcher-page]').forEach(b=>b.remove());
+  pages.querySelectorAll('[data-launcher-add-page],[data-launcher-page]').forEach(b=>b.remove());
   for(let i=0;i<pageCount();i++){
    const b=document.createElement('button');b.type='button';b.dataset.launcherPage=String(i);
-   b.setAttribute('aria-label',`第${i+1}页`);b.classList.toggle('active',i===currentPage);pages.insertBefore(b,add);
+   b.setAttribute('aria-label',`第${i+1}页`);b.classList.toggle('active',i===currentPage);pages.appendChild(b);
   }
-  if(add)add.style.cssText='width:27px;height:27px;min-width:27px;min-height:27px;border:1px solid rgba(41,41,39,.16);border-radius:50%;background:rgba(255,255,255,.92);color:#292927;font-size:18px;line-height:1;padding:0';
   window.__loveRecordLauncherCurrentPage=currentPage;
   window.dispatchEvent(new CustomEvent('lr-launcher-page-change',{detail:{page:currentPage}}));
  }
@@ -2459,9 +2457,47 @@ worldBooksReady=restoreWorldBooks();
   catch(e){console.warn('[LOVE RECORD] launcher layout IndexedDB save failed',e);if(typeof toast==='function')toast('图标布局保存失败，请检查浏览器储存权限')}
  }
  function setPage(n){if(!layoutReady)return;const target=Math.max(0,Math.floor(Number(n)||0));if(target>=pageCount()||target===currentPage)return;currentPage=target;render();persist()}
- function addPage(){if(!layoutReady)return;currentPage=pageCount();extraPages=currentPage+1;render();persist();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
+ function addPage(){if(!layoutReady)return;currentPage=pageCount();extraPages=currentPage+1;render();persist();closePageManager();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
+ function deleteCurrentPage(){
+  if(!layoutReady||pageCount()<=1){if(typeof toast==='function')toast('至少保留两个桌面页面 ♡');closePageManager();return}
+  const removed=currentPage,fallback=Math.max(0,removed-1);
+  getApps().forEach(el=>{
+   const id=getId(el),p=Number(pageMap[id]||0);
+   if(p===removed&&fallback!==removed){const spot=freeCell(fallback);pageMap[id]=fallback;cells[id]={row:spot.row,col:spot.col};}
+   else if(p>removed)pageMap[id]=p-1;
+  });
+  extraPages=Math.max(1,pageCount()-1);currentPage=fallback;
+  normalize();render();persist();closePageManager();
+  if(typeof toast==='function')toast('已删除当前页面，图标已整理 ♡');
+ }
+ let pageManager=null,pageManagerTimer=null,pageManagerLong=false,pageManagerStart=null;
+ function ensurePageManager(){
+  if(pageManager)return pageManager;
+  pageManager=document.createElement('div');pageManager.id='lrLauncherPageManager';
+  pageManager.innerHTML='<div class="lr-page-manager-card"><div class="lr-page-manager-title">桌面页面管理</div><button type="button" data-page-manager-add>＋ 添加页面</button><button type="button" data-page-manager-delete>－ 删除当前页面</button><button type="button" data-page-manager-close>完成</button></div>';
+  document.body.appendChild(pageManager);
+  pageManager.addEventListener('click',e=>{
+   if(e.target===pageManager||e.target.closest('[data-page-manager-close]'))closePageManager();
+   else if(e.target.closest('[data-page-manager-add]'))addPage();
+   else if(e.target.closest('[data-page-manager-delete]'))deleteCurrentPage();
+  });
+  return pageManager;
+ }
+ function openPageManager(){const panel=ensurePageManager();panel.classList.add('show');const del=panel.querySelector('[data-page-manager-delete]');del.disabled=pageCount()<=1;pageManagerLong=true;}
+ function closePageManager(){if(pageManager)pageManager.classList.remove('show');}
+ pages.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  clearTimeout(pageManagerTimer);pageManagerLong=false;pageManagerStart={x:e.clientX,y:e.clientY,pointerId:e.pointerId};
+  pageManagerTimer=setTimeout(()=>{openPageManager();},480);
+ });
+ document.addEventListener('pointermove',e=>{
+  if(!pageManagerStart||e.pointerId!==pageManagerStart.pointerId)return;
+  if(Math.hypot(e.clientX-pageManagerStart.x,e.clientY-pageManagerStart.y)>10){clearTimeout(pageManagerTimer);pageManagerTimer=null;}
+ },{passive:true});
+ ['pointerup','pointercancel'].forEach(type=>document.addEventListener(type,()=>{clearTimeout(pageManagerTimer);pageManagerTimer=null;pageManagerStart=null;}));
+ pages.addEventListener('contextmenu',e=>e.preventDefault());
  pages.addEventListener('click',e=>{
-  if(e.target.closest('[data-launcher-add-page]')){addPage();return}
+  if(pageManagerLong){e.preventDefault();e.stopPropagation();pageManagerLong=false;return}
   const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage));
  });
  let swipeStart=null,swipeAxis=null,swipeFrame=0;
@@ -2532,8 +2568,11 @@ worldBooksReady=restoreWorldBooks();
   if(dragFrame){cancelAnimationFrame(dragFrame);dragFrame=0;}
   if(active&&dragged){
    const el=active.el,id=active.id,x=Number.isFinite(e?.clientX)?e.clientX:active.lastX,y=Number.isFinite(e?.clientY)?e.clientY:active.lastY;
-   const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null;
-   for(const dot of dots){const r=dot.getBoundingClientRect();if(x>=r.left-24&&x<=r.right+24&&y>=r.top-24&&y<=r.bottom+24){targetPage=Number(dot.dataset.launcherPage);break}}
+   const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null,bestDotDistance=Infinity;
+   for(const dot of dots){
+    const r=dot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dist=Math.hypot(x-cx,y-cy);
+    if(dist<bestDotDistance&&dist<=58){bestDotDistance=dist;targetPage=Number(dot.dataset.launcherPage)}
+   }
    let dest;
    if(targetPage!==null){dest=targetPage===active.originPage?{...active.originCell}:freeCell(targetPage)}
    else{
@@ -2557,7 +2596,7 @@ worldBooksReady=restoreWorldBooks();
  (async()=>{
   let saved=null;try{saved=await lrKVGet(LAYOUT_KV);if(!saved)saved=await lrKVGet(LEGACY_KV)}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}
   if(saved){
-   if(Number.isInteger(saved.pageCount)&&saved.pageCount>=2)extraPages=saved.pageCount;
+   if(Number.isInteger(saved.pageCount)&&saved.pageCount>=1)extraPages=saved.pageCount;
    if(Array.isArray(saved.order))order=saved.order.slice();
    if(saved.pageMap&&typeof saved.pageMap==='object')pageMap={...pageMap,...saved.pageMap};
    if(saved.cells&&typeof saved.cells==='object')cells={...saved.cells};
@@ -2897,7 +2936,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=101"></script>
+<script src="./home-widgets-v1.js?v=103"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3074,5 +3113,23 @@ body.lr-external-app-open{overflow:hidden}
   <script src="./welcome-tour-v1.js?v=1"></script>
   <script src="./use-guide-v1.js?v=2"></script>
   <script src="./lr-full-backup-v1.js?v=3"></script>
+
+<style id="lr-page-manager-v2">
+#launcher .launcher-pages [data-launcher-add-page]{display:none!important}
+#lrLauncherPageManager{position:fixed;inset:0;z-index:12000;display:none;align-items:flex-end;justify-content:center;padding:18px 18px calc(112px + env(safe-area-inset-bottom));background:rgba(28,26,30,.18);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#lrLauncherPageManager.show{display:flex}
+#lrLauncherPageManager .lr-page-manager-card{width:min(420px,100%);padding:20px;border:1px solid rgba(255,255,255,.85);border-radius:26px;background:rgba(255,255,255,.96);box-shadow:0 18px 55px rgba(30,25,35,.18);display:grid;gap:10px}
+#lrLauncherPageManager .lr-page-manager-title{font:600 16px/1.4 Georgia,"Noto Serif SC",serif;color:#292927;padding:0 3px 5px}
+#lrLauncherPageManager button{min-height:48px;border:1px solid rgba(41,41,39,.10);border-radius:15px;background:#f5f4f1;color:#292927;font:500 14px/1.3 Arial,"Noto Sans SC",sans-serif}
+#lrLauncherPageManager button:disabled{opacity:.38}
+#lrLauncherPageManager [data-page-manager-close]{background:#292927;color:#fff}
+</style>
+
+<style id="lr-page-dots-touch-v1">
+#launcher .launcher-pages{touch-action:none!important;user-select:none;-webkit-user-select:none}
+#launcher .launcher-pages [data-launcher-page]{touch-action:none!important;min-width:14px!important;min-height:14px!important}
+#launcher .launcher-grid .launcher-app{touch-action:none!important}
+#lrWidgetShelf .lr-widget,#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none!important;user-select:none;-webkit-user-select:none}
+</style>
 </body>
 </html>
