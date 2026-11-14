@@ -1126,9 +1126,9 @@ body.launcher-open .system-appbar{display:none!important}
 
 <main id="launcher" class="page active launcher-page">
   <section class="launcher-welcome">
-    <div class="launcher-kicker">LOVE RECORD</div>
+    <div class="launcher-kicker">LOVE RECORD · THE EVERYDAY EDITION</div>
     <div class="launcher-greeting">我们的小宇宙</div>
-    <div class="launcher-sub">A LITTLE WORLD OF OUR OWN</div>
+    <div class="launcher-sub">A LITTLE WORLD OF OUR OWN · MADE OF MOMENTS</div>
   </section>
   <section class="launcher-info" aria-label="我们的纪念日" data-drag-id="days-widget">
     <div class="launcher-info-copy">
@@ -2846,7 +2846,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=99"></script>
+<script src="./home-widgets-v1.js?v=100"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3023,5 +3023,324 @@ body.lr-external-app-open{overflow:hidden}
   <script src="./welcome-tour-v1.js?v=1"></script>
   <script src="./use-guide-v1.js?v=2"></script>
   <script src="./lr-full-backup-v1.js?v=3"></script>
+
+<style id="lr-soft-monochrome-home-v1">
+/* LOVE RECORD — Soft Monochrome / INS-inspired homepage only.
+   Custom uploaded app icons remain image-based and are never recolored or filtered. */
+:root{
+  --bg:#f7f6f3;
+  --card:#ffffff;
+  --ink:#292927;
+  --muted:#898781;
+  --line:rgba(41,41,39,.10);
+  --soft:#eeede9;
+  --purple:#292927;
+  --dock-bg:rgba(255,255,255,.94);
+}
+html,body{background:#f7f6f3;color:#292927}
+body{padding-bottom:calc(116px + env(safe-area-inset-bottom))!important}
+body.launcher-open #lr-home-background-fix-layer{background-color:#f7f6f3}
+body.launcher-open .app{background:transparent}
+body.launcher-open #launcher{
+  background:transparent!important;
+  color:#292927;
+}
+body.launcher-open #launcher.page.active.launcher-page{
+  height:calc(100dvh - 154px - env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 154px - env(safe-area-inset-bottom))!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:18px 0 28px!important;
+  scrollbar-width:none;
+  overscroll-behavior:contain;
+}
+body.launcher-open #launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
+
+/* Editorial masthead */
+body.launcher-open #launcher .launcher-welcome{
+  position:relative;
+  padding:14px 7px 22px!important;
+  margin:0 0 13px;
+  border-bottom:1px solid rgba(41,41,39,.12);
+  text-shadow:none!important;
+}
+body.launcher-open #launcher .launcher-kicker{
+  color:#77756f!important;
+  font:600 8px/1.4 Arial,sans-serif!important;
+  letter-spacing:2.7px!important;
+  text-transform:uppercase;
+}
+body.launcher-open #launcher .launcher-greeting{
+  margin-top:15px!important;
+  color:#252523!important;
+  font-family:Georgia,"Noto Serif SC",serif!important;
+  font-size:clamp(27px,7vw,34px)!important;
+  font-weight:400!important;
+  letter-spacing:1.2px!important;
+  line-height:1.18!important;
+}
+body.launcher-open #launcher .launcher-sub{
+  margin-top:8px!important;
+  color:#8d8b85!important;
+  font:500 8px/1.5 Arial,sans-serif!important;
+  letter-spacing:1.65px!important;
+}
+body.launcher-open #launcher .launcher-welcome::after{
+  content:"VOL. 01  /  OUR LITTLE WORLD";
+  display:block;
+  margin-top:15px;
+  color:#aaa8a1;
+  font:8px/1.4 Arial,sans-serif;
+  letter-spacing:2px;
+}
+
+/* Couple-day / photo feature card */
+body.launcher-open #launcher .launcher-info{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 104px!important;
+  align-items:center!important;
+  gap:16px!important;
+  margin:0 1px 23px!important;
+  padding:19px 17px!important;
+  min-height:158px;
+  border:1px solid rgba(41,41,39,.08)!important;
+  border-radius:25px!important;
+  background:linear-gradient(145deg,#fff 0%,#f0efeb 100%)!important;
+  box-shadow:0 12px 30px rgba(35,34,31,.055)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.launcher-open #launcher .launcher-info-copy{
+  gap:12px!important;
+}
+body.launcher-open #launcher .launcher-info-copy::before{
+  content:"THE DAYS WE KEEP";
+  color:#8c8982;
+  font:600 8px/1.4 Arial,sans-serif;
+  letter-spacing:2.2px;
+}
+body.launcher-open #launcher .launcher-days{gap:7px!important;align-items:baseline}
+body.launcher-open #launcher .launcher-days strong{
+  color:#252523!important;
+  font:400 clamp(39px,11vw,52px)/.95 Georgia,"Times New Roman",serif!important;
+  letter-spacing:-1.8px;
+}
+body.launcher-open #launcher .launcher-days span{
+  color:#77756f!important;
+  font:600 8px/1.3 Arial,sans-serif!important;
+  letter-spacing:1.5px!important;
+}
+body.launcher-open #launcher .launcher-today{
+  align-items:flex-start!important;
+  flex-direction:column!important;
+  gap:5px!important;
+}
+body.launcher-open #launcher .launcher-today-label{
+  color:#9b9891!important;
+  font:600 8px/1.2 Arial,sans-serif!important;
+  letter-spacing:2px!important;
+}
+body.launcher-open #launcher #launcherToday{
+  color:#55534e!important;
+  font:13px/1.6 Georgia,"Noto Serif SC",serif!important;
+}
+body.launcher-open #launcher .home-moment-mini{
+  width:100px!important;
+  padding:6px 6px 8px!important;
+  border:1px solid rgba(41,41,39,.08)!important;
+  border-radius:3px!important;
+  background:#fff!important;
+  box-shadow:0 8px 20px rgba(35,34,31,.13)!important;
+  transform:rotate(1.2deg)!important;
+}
+body.launcher-open #launcher .home-moment-mini .polaroid-photo{
+  width:100%!important;
+  aspect-ratio:4/5!important;
+  border-radius:1px!important;
+  background:#eeede9!important;
+}
+body.launcher-open #launcher .home-moment-mini .polaroid-caption{
+  color:#77756f!important;
+  font:7px Georgia,serif!important;
+  letter-spacing:2px!important;
+}
+body.launcher-open #launcher .home-moment-mini .polaroid-add{
+  border:1px solid #d8d6d0!important;
+  background:#fff!important;
+  color:#292927!important;
+}
+
+/* Solid black app tiles; uploaded custom images are deliberately untouched. */
+body.launcher-open #launcher .launcher-grid{
+  column-gap:10px!important;
+  row-gap:22px!important;
+  padding:5px 1px 22px!important;
+}
+body.launcher-open #launcher .launcher-grid .launcher-app{
+  color:#55534e!important;
+  font:500 10px/1.35 Arial,"Noto Sans SC",sans-serif!important;
+  letter-spacing:1.2px!important;
+  gap:9px!important;
+}
+body.launcher-open #launcher .launcher-grid .app-icon:not(.has-custom-icon){
+  width:clamp(58px,17vw,72px)!important;
+  height:clamp(58px,17vw,72px)!important;
+  border-radius:20px!important;
+  background:#292927!important;
+  background-image:none!important;
+  border:1px solid #292927!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(30,30,28,.13)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  font-size:27px!important;
+  font-weight:500!important;
+}
+body.launcher-open #launcher .launcher-grid .app-icon.has-custom-icon{
+  padding:0!important;
+  overflow:hidden!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  border:1px solid rgba(41,41,39,.12)!important;
+  box-shadow:0 8px 18px rgba(30,30,28,.10)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+body.launcher-open #launcher .launcher-grid .app-icon.has-custom-icon>img{
+  width:100%!important;height:100%!important;object-fit:cover!important;
+  filter:none!important;-webkit-filter:none!important;
+}
+body.launcher-open #launcher .launcher-app:active .app-icon{
+  transform:scale(.95)!important;
+}
+
+/* Desktop page dots */
+body.launcher-open #launcher .launcher-pages{
+  margin-top:13px!important;
+  padding:0 0 15px!important;
+}
+body.launcher-open #launcher .launcher-pages button{
+  width:7px!important;height:7px!important;min-width:7px!important;min-height:7px!important;
+  padding:0!important;border:0!important;border-radius:50%!important;
+  background:#d6d4ce!important;color:#292927!important;
+}
+body.launcher-open #launcher .launcher-pages button.active{
+  width:22px!important;border-radius:8px!important;background:#292927!important;
+}
+body.launcher-open #launcher .launcher-pages [data-launcher-add-page]{
+  width:25px!important;height:25px!important;min-width:25px!important;min-height:25px!important;
+  border:1px solid #d5d3cd!important;background:#fff!important;color:#292927!important;
+}
+
+/* User-added home widgets: editorial cards with the same warm monochrome language. */
+body.launcher-open #launcher #lrWidgetShelf{
+  gap:10px!important;
+  margin:3px 0 15px!important;
+  padding:0 1px!important;
+}
+body.launcher-open #launcher .lr-widget{
+  color:#292927!important;
+  border:1px solid rgba(41,41,39,.09)!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,#fff,#f1f0ec)!important;
+  box-shadow:0 10px 26px rgba(35,34,31,.055)!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  padding:14px!important;
+}
+body.launcher-open #launcher .lr-widget-kicker{
+  color:#89867f!important;opacity:1!important;
+  font:600 8px/1.4 Arial,sans-serif!important;letter-spacing:1.8px!important;
+}
+body.launcher-open #launcher .lr-widget-title{
+  color:#292927!important;font:600 11px/1.4 Arial,sans-serif!important;
+  letter-spacing:.4px!important;
+}
+body.launcher-open #launcher .lr-widget-main{
+  color:#292927!important;font-family:Georgia,"Noto Serif SC",serif!important;
+}
+body.launcher-open #launcher .lr-widget-sub{
+  color:#77756f!important;opacity:1!important;
+}
+body.launcher-open #launcher .lr-widget-music-cover{
+  width:52px!important;height:52px!important;border-radius:3px!important;
+  background:#e9e8e3!important;
+}
+body.launcher-open #launcher .lr-widget-music-meta strong{color:#292927!important;font-size:14px!important}
+body.launcher-open #launcher .lr-widget-music-meta small{color:#85827b!important;opacity:1!important}
+body.launcher-open #launcher .lr-widget-play{
+  width:38px!important;height:38px!important;
+  border-radius:50%!important;background:#292927!important;color:#fff!important;
+}
+body.launcher-open #launcher .lr-widget-memory-image{
+  border-radius:3px!important;background:#e9e8e3!important;
+}
+body.launcher-open #launcher .lr-widget-memory-meta{color:#77756f!important;opacity:1!important}
+body.launcher-open #launcher .lr-widget-note{
+  color:#292927!important;background:transparent!important;
+}
+body.launcher-open #launcher .lr-widget-water strong,
+body.launcher-open #launcher .lr-widget-focus-time{color:#292927!important}
+body.launcher-open #launcher .lr-widget-step,
+body.launcher-open #launcher .lr-widget-moods button,
+body.launcher-open #launcher .lr-widget-add-check{
+  border:1px solid rgba(41,41,39,.14)!important;
+  background:#fff!important;color:#292927!important;
+}
+body.launcher-open #launcher .lr-widget-moods button.active{
+  background:#292927!important;color:#fff!important;
+}
+body.launcher-open #launcher .lr-widget-focus button{
+  background:#292927!important;color:#fff!important;
+}
+body.launcher-open #launcher .lr-widget-tools button,
+body.launcher-open #launcher .lr-edit-tools button{
+  border:1px solid rgba(41,41,39,.12)!important;background:#fff!important;color:#292927!important;
+}
+
+/* Fixed bottom dock: always anchored to the viewport, with safe-area spacing. */
+.nav{
+  position:fixed!important;
+  z-index:1000!important;
+  left:12px!important;right:12px!important;
+  bottom:calc(8px + env(safe-area-inset-bottom))!important;
+  width:auto!important;max-width:760px!important;
+  margin:0 auto!important;
+  transform:none!important;
+  border:1px solid rgba(41,41,39,.08)!important;
+  border-radius:24px!important;
+  background:rgba(255,255,255,.94)!important;
+  box-shadow:0 10px 32px rgba(35,34,31,.10)!important;
+  backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;
+  padding:9px 10px calc(9px + env(safe-area-inset-bottom))!important;
+}
+.nav-inner{max-width:600px!important;gap:5px!important}
+.nav-btn{
+  color:#8b8982!important;border-radius:17px!important;
+  min-height:57px!important;background:transparent!important;
+}
+.nav-btn.active{background:#f0efeb!important;color:#292927!important}
+.nav-btn .dock-icon-svg{stroke:currentColor!important}
+.nav-btn span:last-child{
+  color:inherit!important;font:500 9px/1.35 Arial,"Noto Sans SC",sans-serif!important;
+  letter-spacing:1px!important;
+}
+body.launcher-open .page{padding-bottom:36px!important}
+body.launcher-open .nav{display:block!important}
+@media(max-width:420px){
+  body.launcher-open #launcher .launcher-info{
+    grid-template-columns:minmax(0,1fr) 88px!important;
+    gap:12px!important;padding:16px 13px!important;
+  }
+  body.launcher-open #launcher .home-moment-mini{width:86px!important}
+  body.launcher-open #launcher .launcher-days strong{font-size:40px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.launcher-open #launcher .app-icon,
+  body.launcher-open #launcher .lr-widget{transition:none!important}
+}
+</style>
+
 </body>
 </html>
