@@ -2538,11 +2538,13 @@ worldBooksReady=restoreWorldBooks();
    originPage:pageMap[getId(el)]??0,originCell:{...(cells[getId(el)]||{row:1,col:1})}};
   dragged=false;
   timer=setTimeout(()=>{
-   if(!active)return;dragged=true;
-   try{el.setPointerCapture(e.pointerId)}catch{}
+   if(!active)return;
+   dragged=true;
+   try{el.setPointerCapture(e.pointerId)}catch(err){console.debug('[LOVE RECORD] launcher pointer capture unavailable',err)}
    el.classList.add('is-dragging');
    if(navigator.vibrate)navigator.vibrate(12);
-  },380);
+   queueDragVisual(active.lastX,active.lastY);
+  },260);
  }
  function queueDragVisual(x,y){
   pendingPoint={x,y};
@@ -2558,7 +2560,7 @@ worldBooksReady=restoreWorldBooks();
   if(!active||e.pointerId!==active.pointerId)return;
   active.lastX=e.clientX;active.lastY=e.clientY;
   if(!dragged){
-   if(Math.hypot(e.clientX-active.x,e.clientY-active.y)>11){clearTimeout(timer);timer=null;active=null;}
+   if(Math.hypot(e.clientX-active.x,e.clientY-active.y)>30){clearTimeout(timer);timer=null;active=null;}
    return;
   }
   if(e.cancelable)e.preventDefault();queueDragVisual(e.clientX,e.clientY);
@@ -2569,9 +2571,11 @@ worldBooksReady=restoreWorldBooks();
   if(active&&dragged){
    const el=active.el,id=active.id,x=Number.isFinite(e?.clientX)?e.clientX:active.lastX,y=Number.isFinite(e?.clientY)?e.clientY:active.lastY;
    const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null,bestDotDistance=Infinity;
+   const pageRect=pages.getBoundingClientRect();
+   const overPageBar=x>=pageRect.left-24&&x<=pageRect.right+24&&y>=pageRect.top-30&&y<=pageRect.bottom+30;
    for(const dot of dots){
     const r=dot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dist=Math.hypot(x-cx,y-cy);
-    if(dist<bestDotDistance&&dist<=58){bestDotDistance=dist;targetPage=Number(dot.dataset.launcherPage)}
+    if(dist<bestDotDistance&&dist<=(overPageBar?110:72)){bestDotDistance=dist;targetPage=Number(dot.dataset.launcherPage)}
    }
    let dest;
    if(targetPage!==null){dest=targetPage===active.originPage?{...active.originCell}:freeCell(targetPage)}
@@ -2936,7 +2940,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=103"></script>
+<script src="./home-widgets-v1.js?v=105"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3131,5 +3135,24 @@ body.lr-external-app-open{overflow:hidden}
 #launcher .launcher-grid .launcher-app{touch-action:none!important}
 #lrWidgetShelf .lr-widget,#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none!important;user-select:none;-webkit-user-select:none}
 </style>
+
+<style id="lr-launcher-drag-repair-v7">
+#launcher .launcher-grid .launcher-app,
+#launcher .launcher-grid .launcher-app *{
+  touch-action:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+}
+#launcher .launcher-grid .launcher-app .app-icon{pointer-events:none!important}
+#launcher .launcher-grid .launcher-app.is-dragging{
+  z-index:999!important;
+  opacity:.96!important;
+  transition:none!important;
+  cursor:grabbing!important;
+}
+#launcher .launcher-pages{touch-action:none!important}
+</style>
+
 </body>
 </html>

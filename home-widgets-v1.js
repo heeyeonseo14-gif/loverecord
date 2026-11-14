@@ -263,19 +263,20 @@ function startDrag(node,e){
   pointerId:e.pointerId,startX:Number(e.clientX)||0,startY:Number(e.clientY)||0,lastX:Number(e.clientX)||0,lastY:Number(e.clientY)||0,
   widgetId:node.dataset.widgetId||null,oldPosition:node.dataset.widgetId?{...(config.positions[node.dataset.widgetId]||{row:2,col:1})}:null};
  node.classList.add('is-lr-dragging');node.style.pointerEvents='none';node.style.willChange='transform';
+ try{if(e.pointerId!==undefined&&node.setPointerCapture)node.setPointerCapture(e.pointerId)}catch(err){console.debug('[LOVE RECORD] widget pointer capture unavailable',err)}
  if(e.cancelable)e.preventDefault();
 }
 function nearestLauncherPage(x,y){
  const dots=[...document.querySelectorAll('#launcherPages [data-launcher-page]')];let best=null,bestD=Infinity;
- for(const dot of dots){const r=dot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,d=Math.hypot(x-cx,y-cy);if(d<bestD&&d<=58){bestD=d;best=Number(dot.dataset.launcherPage)}}
+ for(const dot of dots){const r=dot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,d=Math.hypot(x-cx,y-cy);if(d<bestD&&d<=84){bestD=d;best=Number(dot.dataset.launcherPage)}}
  return best;
 }
 document.addEventListener('pointermove',e=>{
- if(pendingWidgetPress&&e.pointerId===pendingWidgetPress.pointerId&&Math.hypot(e.clientX-pendingWidgetPress.x,e.clientY-pendingWidgetPress.y)>10){clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null;}
+ if(pendingWidgetPress&&e.pointerId===pendingWidgetPress.pointerId&&Math.hypot(e.clientX-pendingWidgetPress.x,e.clientY-pendingWidgetPress.y)>28){clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null;}
  if(dragState){dragState.lastX=e.clientX;dragState.lastY=e.clientY;window.__lrWidgetLastPointer={x:e.clientX,y:e.clientY};reorderAt(e.clientX,e.clientY)}
 },{passive:true});
 document.addEventListener('pointerup',e=>{
- if(!dragState)return;
+ if(!dragState|| (dragState.pointerId!==undefined&&e.pointerId!==dragState.pointerId))return;
  if(widgetDragFrame){cancelAnimationFrame(widgetDragFrame);widgetDragFrame=0;}
  if(widgetPendingPoint){const p=widgetPendingPoint;widgetPendingPoint=null;dragState.node.style.transform=`translate3d(${p.x-dragState.startX}px,${p.y-dragState.startY}px,0) scale(1.025)`;}
  const state=dragState,node=state.node;
@@ -313,7 +314,7 @@ launcher.addEventListener('pointerdown',e=>{
  const node=itemNode(e.target);
  if(editMode&&node&&!e.target.closest('button,input,textarea')){startDrag(node,e);return}
  if(e.target.closest('button,a,input,textarea,select,#lrWidgetOverlay'))return;
- if(node){const downEvent=e;pendingWidgetPress={pointerId:e.pointerId,x:e.clientX,y:e.clientY,node};pressTimer=setTimeout(()=>{pressTimer=null;pendingWidgetPress=null;setEditMode(true);startDrag(node,{pointerId:downEvent.pointerId,cancelable:false,clientX:downEvent.clientX,clientY:downEvent.clientY});notify('正在移动组件，松开即可放置。')},480);return}
+ if(node){const downEvent=e;pendingWidgetPress={pointerId:e.pointerId,x:e.clientX,y:e.clientY,node};pressTimer=setTimeout(()=>{pressTimer=null;pendingWidgetPress=null;setEditMode(true);startDrag(node,{pointerId:downEvent.pointerId,cancelable:false,clientX:downEvent.clientX,clientY:downEvent.clientY});notify('正在移动组件，松开即可放置。')},320);return}
  if(e.target===launcher||e.target.closest('.launcher-pages')||e.target.id==='lrWidgetShelf'||(e.target.classList&&e.target.classList.contains('launcher-grid'))){pressTimer=setTimeout(()=>{pressTimer=null;openChooser()},560)}
 });
 ['pointerup','pointercancel','pointerleave'].forEach(type=>launcher.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null}));
