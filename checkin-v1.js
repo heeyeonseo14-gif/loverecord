@@ -5,7 +5,37 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const emptyData=()=>({activities:[],messages:[],contacts:[],songs:[],notes:[],calendar:[],photos:[],browserHistory:[],xhsNotes:[]});
 let selected=null,data=emptyData();
 function readJSON(k,fallback){try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??fallback}catch{return fallback}}
-async function getPeople(){const state=readJSON(SETTINGS_KEY,{});let people=Array.isArray(state.people)?state.people:[];try{const recovered=readJSON('love-record-people-recovery-v1',[]);if(Array.isArray(recovered)&&recovered.length){const map=new Map(people.filter(p=>p&&p.id).map(p=>[String(p.id),p]));recovered.forEach(p=>{if(p&&p.id)map.set(String(p.id),p)});people=[...map.values()]}}catch{}try{const db=await new Promise((resolve,reject)=>{const req=indexedDB.open('love-record-contact-db-v1');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);req.onupgradeneeded=()=>{}});if(db.objectStoreNames.contains('people')){const rows=await new Promise((resolve,reject)=>{const req=db.transaction('people','readonly').objectStore('people').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});const map=new Map(people.filter(p=>p&&p.id).map(p=>[String(p.id),p]));rows.forEach(p=>{if(p&&p.id)map.set(String(p.id),p)});people=[...map.values()]}}catch(e){console.warn('[CHECK IN] IndexedDB contacts unavailable',e)}return people.filter(p=>p&&p.id&&String(p.name||'').trim())}
+async function getPeople(){
+ const merge=(base,extra)=>{const map=new Map();[...(Array.isArray(extra)?extra:[]),...(Array.isArray(base)?base:[])].forEach(p=>{if(p&&p.id)map.set(String(p.id),p)});return [...map.values()]};
+ let state=readJSON(SETTINGS_KEY,{});
+ let people=Array.isArray(state.people)?state.people:[];
+ try{people=merge(people,readJSON('love-record-people-recovery-v1',[]))}catch{}
+ // LOVE RECORD's canonical durable state store.
+ try{
+  const kv=await new Promise((resolve,reject)=>{
+   const req=indexedDB.open('love-record-kv-v1');
+   req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('settings'))req.result.createObjectStore('settings')};
+   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
+  if(kv.objectStoreNames.contains('settings')){
+   const full=await new Promise((resolve,reject)=>{const req=kv.transaction('settings','readonly').objectStore('settings').get('love-record-full-state-v1');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});
+   if(full&&Array.isArray(full.people))people=merge(people,full.people);
+  }
+ }catch(e){console.warn('[CHECK IN] LOVE RECORD full-state fallback unavailable',e)}
+ // Dedicated contact database, using the exact DB/store names from the homepage.
+ try{
+  const db=await new Promise((resolve,reject)=>{
+   const req=indexedDB.open('love-record-contact-db-v1');
+   req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('people'))req.result.createObjectStore('people',{keyPath:'id'})};
+   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
+  if(db.objectStoreNames.contains('people')){
+   const rows=await new Promise((resolve,reject)=>{const req=db.transaction('people','readonly').objectStore('people').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});
+   people=merge(people,rows);
+  }
+ }catch(e){console.warn('[CHECK IN] contact database unavailable',e)}
+ return people.filter(p=>p&&p.id&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan');
+}
 function getApi(){let c=readJSON(API_KEY,null);if(c&&c.apiBase&&c.apiKey&&c.apiModel)return c;c=readJSON(LEGACY_API_KEY,null);if(c&&c.apiBase&&c.apiKey&&c.apiModel)return c;const s=readJSON(SETTINGS_KEY,{});return s.apiBase&&s.apiKey&&s.apiModel?{apiBase:s.apiBase,apiKey:s.apiKey,apiModel:s.apiModel}:null}
 function storeKey(id){return 'love-record-checkin-v1:'+encodeURIComponent(String(id))}
 function loadPhone(p){selected=p;data=readJSON(storeKey(p.id),emptyData());$('personName').textContent=(p.name||'联系人')+' 的手机';$('sideName').textContent=(p.name||'联系人')+' 的手机';$('deviceName').textContent=p.name+' 的手机';$('personAvatar').textContent=(p.name||'?').trim().charAt(0);$('apiState').textContent=getApi()?'API 已连接':'请先配置主页 API';renderData();show('home')}
@@ -33,7 +63,7 @@ document.querySelectorAll('[data-home]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-contacts]').forEach(b=>b.addEventListener('click',()=>{renderContacts();show('contacts')}));
 $('backHome').addEventListener('click',()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}location.replace('./index.html')});
 
-$('playMusic').addEventListener('click',()=>toast('此版本展示播放记录，尚未接入音频播放。'));
+$('playMusic')?.addEventListener('click',()=>toast('此版本展示播放记录，尚未接入音频播放。'));
 
 renderContacts();show('contacts');
 window.__LOVE_RECORD_CHECKIN={getSelected:()=>selected,getData:()=>data,refreshContacts:renderContacts};
