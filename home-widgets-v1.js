@@ -5,16 +5,12 @@ const KEY='love-record-home-widgets-v1';
 const launcher=document.getElementById('launcher');
 if(!launcher||document.getElementById('lrWidgetShelf'))return;
 const definitions=[
- {id:'days',name:'在一起的日子',category:'LOVE',size:'small',desc:'纪念日计数与今日寄语'},
- {id:'photo',name:'我们的照片',category:'MEMORY',size:'medium',desc:'读取 MEMORY 全部照片，点击切换'},
- {id:'daily',name:'今日寄语',category:'AI',size:'small',desc:'展示主页今日文字'},
- {id:'music',name:'音乐播放器',category:'MUSIC',size:'medium',desc:'显示当前播放歌曲与控制'},
- {id:'calendar',name:'今日日历',category:'LIFE',size:'small',desc:'日期、星期与月份'},
- {id:'note',name:'快速便笺',category:'LIFE',size:'medium',desc:'随手记录，自动保存'},
- {id:'water',name:'饮水记录',category:'WELLNESS',size:'medium',desc:'记录今日饮水杯数，随手加减'},
- {id:'mood',name:'心情日记',category:'JOURNAL',size:'medium',desc:'记录今天的心情与感受'},
- {id:'focus',name:'专注时钟',category:'FOCUS',size:'medium',desc:'25分钟专注计时，支持暂停与重置'},
- {id:'week',name:'一周日历',category:'LIFE',size:'medium',desc:'查看本周日期，自动标记今天'}
+ {id:'clock',name:'时光时钟',category:'DAILY',size:'small',desc:'极简时间与日期 · 黑白杂志排版',preview:'09:41'},
+ {id:'photo',name:'照片日记',category:'MEMORY',size:'medium',desc:'一张照片，收藏今天的瞬间',preview:'A MOMENT'},
+ {id:'music',name:'正在播放',category:'MUSIC',size:'medium',desc:'唱片封面、歌曲与播放控制',preview:'NOW PLAYING'},
+ {id:'quote',name:'每日短句',category:'EDITORIAL',size:'small',desc:'留给今天的一句话',preview:'A LITTLE NOTE'},
+ {id:'calendar',name:'日期日历',category:'DAILY',size:'small',desc:'日期、星期与月份',preview:'14'},
+ {id:'note',name:'随手便笺',category:'NOTES',size:'medium',desc:'极简便笺 · 自动保存在本机',preview:'WRITE IT DOWN'}
 ];
 let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{},pageFixed:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,pendingWidgetPress=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
@@ -23,84 +19,70 @@ async function widgetDbGet(){const db=await widgetDbOpen();return new Promise((r
 async function widgetDbSet(value){const db=await widgetDbOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(WIDGET_STORE,'readwrite');tx.objectStore(WIDGET_STORE).put(value,WIDGET_LAYOUT_KEY);tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>reject(tx.error||new Error('Widget layout write failed'));tx.onabort=()=>reject(tx.error||new Error('Widget layout write aborted'))})}
 
 const style=document.createElement('style');style.id='lr-home-widgets-style';style.textContent=`
-#lrWidgetShelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:20px;grid-auto-rows:120px;grid-auto-flow:row;align-items:stretch;gap:8px;margin:0 0 10px;padding:0 2px;width:100%;min-width:0}
-.lr-widget{grid-column:span 1;width:100%;position:relative;min-width:0;min-height:88px;padding:10px 11px;touch-action:none;border:1px solid rgba(255,255,255,.78);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(239,229,247,.68));box-shadow:0 10px 28px rgba(105,78,128,.09),inset 0 1px 0 rgba(255,255,255,.9);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:#574a62;overflow:hidden}
-.lr-widget.medium{grid-column:1/-1;min-height:112px}
+#launcher .launcher-welcome,#launcher .launcher-info{display:none!important}
+#lrWidgetBoard{display:block;position:relative;margin:0 0 20px}
+#lrWidgetShelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:132px;grid-auto-flow:row;align-items:stretch;gap:10px;margin:0 0 12px;padding:0 2px;width:100%;min-width:0}
+.lr-widget{grid-column:span 1;width:100%;position:relative;min-width:0;min-height:104px;padding:13px 14px;touch-action:none;border:1px solid rgba(35,35,35,.10);border-radius:5px;background:rgba(255,255,255,.88);box-shadow:0 8px 24px rgba(0,0,0,.045);color:#252525;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.lr-widget.medium{grid-column:1/-1;min-height:132px}
 .lr-widget.large{grid-column:1/-1;min-height:248px}
-.lr-widget.small{grid-column:span 1;min-height:88px}
-.lr-widget.small .lr-widget-main{font-size:18px}
-.lr-widget.medium .lr-widget-photo{height:72px}
-.lr-widget.large .lr-widget-photo{height:150px}
-.lr-widget-kicker{font-size:8px;letter-spacing:1.4px;opacity:.58;margin-bottom:4px}
-.lr-widget-title{font-size:11px;font-weight:650;margin-bottom:4px}
-.lr-widget-main{font-size:22px;line-height:1.2;font-weight:650;overflow-wrap:anywhere}
-.lr-widget-sub{font-size:11px;line-height:1.55;opacity:.7;margin-top:5px;overflow-wrap:anywhere}
-.lr-widget-tools{position:absolute;right:8px;top:8px;display:flex;gap:5px;opacity:0;transition:opacity .15s}
-#launcher.lr-widgets-editing .lr-widget-tools{opacity:1}
-.lr-widget-tools button{width:25px;height:25px;border:1px solid #fff9;border-radius:50%;background:#fff9;color:#74617f;font-size:13px}
-.lr-widget-photo{width:100%;height:72px;object-fit:cover;border-radius:11px;display:block}
+.lr-widget.small{grid-column:span 1;min-height:104px}
+.lr-widget-kicker{font-family:Arial,sans-serif;font-size:8px;letter-spacing:2.4px;color:#858585;margin-bottom:9px}
+.lr-widget-title{font-family:Georgia,"Noto Serif SC",serif;font-size:13px;font-weight:500;letter-spacing:.4px;color:#252525;margin-bottom:7px}
+.lr-widget-main{font-family:Georgia,"Times New Roman","Noto Serif SC",serif;font-size:27px;line-height:1.12;font-weight:400;color:#202020;overflow-wrap:anywhere}
+.lr-widget-sub{font-family:Arial,"Noto Sans SC",sans-serif;font-size:10px;line-height:1.55;color:#858585;margin-top:7px;overflow-wrap:anywhere}
+.lr-widget-tools{position:absolute;right:8px;top:8px;display:none;gap:5px;z-index:5}
+#launcher.lr-widgets-editing .lr-widget-tools{display:flex}
+.lr-widget-tools button{width:25px;height:25px;border:1px solid rgba(30,30,30,.12);border-radius:50%;background:rgba(255,255,255,.96);color:#252525;font-size:13px}
+.lr-widget-photo{width:100%;height:76px;object-fit:cover;border-radius:2px;display:block}
 .lr-widget-memory-widget{min-height:248px;grid-row:span 2}
-.lr-widget-memory-view{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%;min-width:0}
-.lr-widget-memory-image{display:block;width:min(100%,190px);aspect-ratio:1/1;padding:0;border:0;border-radius:15px;overflow:hidden;background:rgba(183,155,199,.13);cursor:pointer}
-.lr-widget-photo-square{display:block;width:100%;height:100%;aspect-ratio:1/1;object-fit:cover}
-.lr-widget-memory-meta{display:flex;justify-content:space-between;gap:8px;width:min(100%,190px);font-size:9px;line-height:1.35;opacity:.62;white-space:nowrap;overflow:hidden}
+.lr-widget-memory-view{display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;min-width:0}
+.lr-widget-memory-image{display:block;width:100%;height:148px;padding:0;border:0;border-radius:2px;overflow:hidden;background:#eee;cursor:pointer}
+.lr-widget-photo-square{display:block;width:100%;height:100%;object-fit:cover}
+.lr-widget-memory-meta{display:flex;justify-content:space-between;gap:8px;width:100%;font-family:Arial,sans-serif;font-size:8px;letter-spacing:1.4px;color:#888;white-space:nowrap;overflow:hidden}
 .lr-widget-memory-meta span:first-child{overflow:hidden;text-overflow:ellipsis}
-.lr-widget-memory-empty{width:100%;padding:18px 8px;text-align:center;font-size:11px;opacity:.65}
-
-.lr-widget-music-row{display:flex;align-items:center;gap:11px;min-width:0}
-.lr-widget-music-cover{width:42px;height:42px;flex:0 0 42px;object-fit:cover;border-radius:12px;background:rgba(183,155,199,.2)}
+.lr-widget-memory-empty{width:100%;padding:22px 8px;text-align:center;font-family:Georgia,serif;font-size:11px;letter-spacing:1px;color:#888}
+.lr-widget-music-row{display:flex;align-items:center;gap:12px;min-width:0;margin-top:10px}
+.lr-widget-music-cover{width:58px;height:58px;flex:0 0 58px;object-fit:cover;border-radius:2px;background:#eee}
 .lr-widget-music-meta{min-width:0;flex:1}
-.lr-widget-music-meta strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lr-widget-music-meta small{display:block;font-size:10px;opacity:.65;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lr-widget-checklist{display:grid;gap:7px;margin:7px 0}.lr-widget-checklist label{display:flex;align-items:center;gap:8px;font-size:11px}.lr-widget-checklist input{accent-color:#a88fbd}.lr-widget-add-check{border:1px solid rgba(168,143,189,.3);border-radius:14px;background:#ffffff80;color:#826b91;padding:5px 10px;font-size:10px}\n.lr-widget-water{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.lr-widget-water strong{font-size:25px;font-weight:500;color:#80698f}.lr-widget-water small{font-size:10px;color:#988aa0}.lr-widget-step{width:30px;height:30px;border:1px solid rgba(168,143,189,.35);border-radius:50%;background:#ffffffa8;color:#8e75a0;font-size:17px}.lr-widget-moods{display:flex;justify-content:space-between;gap:4px;margin:10px 0 6px}.lr-widget-moods button{width:34px;height:34px;border:1px solid transparent;border-radius:12px;background:#ffffff80;font-size:17px;opacity:.72}.lr-widget-moods button.active{border-color:#a98cbb;background:#eadff0;opacity:1;transform:translateY(-2px)}.lr-widget-focus{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}.lr-widget-focus-time{font-size:26px;letter-spacing:1px;color:#80698f;font-variant-numeric:tabular-nums}.lr-widget-focus button{border:0;border-radius:20px;padding:7px 12px;background:#b69bc5;color:white;font-size:11px}.lr-widget-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px}.lr-widget-week span{display:flex;flex-direction:column;align-items:center;gap:6px;padding:7px 0;border-radius:14px;color:#92859a;font-size:9px}.lr-widget-week b{font-size:12px;font-weight:500;color:#5d5264}.lr-widget-week span.today{background:#b69bc5;color:white}.lr-widget-week span.today b{color:white}
-.lr-widget-note{width:100%;min-height:64px;border:0;outline:0;resize:vertical;background:transparent;color:inherit;font:inherit;font-size:12px}
+.lr-widget-music-meta strong{display:block;font-family:Georgia,"Noto Serif SC",serif;font-size:15px;font-weight:500;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-widget-music-meta small{display:block;font-family:Arial,sans-serif;font-size:9px;letter-spacing:1px;color:#888;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lr-widget-play{width:32px;height:32px;border:1px solid #222;border-radius:50%;background:#222;color:white;font-size:13px}
+.lr-widget-note{width:100%;min-height:70px;border:0;border-bottom:1px solid rgba(0,0,0,.15);outline:0;resize:vertical;background:transparent;color:#222;font-family:Georgia,"Noto Serif SC",serif;font-size:13px;padding:5px 0}
 .lr-widget-audio{display:flex;align-items:center;gap:7px;margin-top:5px}
-.lr-widget-play{width:30px;height:30px;border:0;border-radius:50%;background:#b99bc9;color:white;font-size:15px}
-#lrWidgetOverlay{position:fixed;inset:0;z-index:100050;display:none;align-items:flex-end;justify-content:center;background:rgba(42,31,51,.28);backdrop-filter:blur(7px);padding:12px}
-#lrWidgetOverlay.show{display:flex}
-.lr-widget-sheet{width:min(100%,560px);max-height:min(82dvh,720px);overflow:auto;border:1px solid #ffffffc9;border-radius:28px;background:linear-gradient(145deg,#fbf8fd,#eee5f3);box-shadow:0 22px 70px #34243f40;padding:18px;color:#574a62}
-.lr-widget-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
-.lr-widget-sheet-head h2{font-size:18px;margin:0}.lr-widget-sheet-head p{font-size:11px;opacity:.65;margin:3px 0 0}
-.lr-widget-close{border:0;background:#fff9;border-radius:50%;width:34px;height:34px;font-size:20px;color:inherit}
-.lr-widget-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.lr-widget-choice{border:1px solid #d9c9e3;border-radius:17px;padding:12px;background:#fff9;color:inherit;text-align:left;min-height:88px}
-.lr-widget-choice:disabled{opacity:.42}
-.lr-widget-choice strong{display:block;font-size:12px}.lr-widget-choice small{display:block;font-size:10px;opacity:.66;margin-top:5px;line-height:1.4}
-.lr-widget-sheet-foot{font-size:10px;opacity:.6;line-height:1.5;margin:13px 2px 2px}
-#launcher.lr-widgets-editing #lrWidgetShelf{outline:none}
-#launcher.lr-widgets-editing .lr-widget{outline:1px dashed #b99bc9;outline-offset:2px}
-#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none}
-#launcher.lr-widgets-editing .lr-widget{box-shadow:0 0 0 1px #b99bc9,0 10px 28px #694e8018}
-#launcher.lr-widgets-editing .lr-widget.is-lr-dragging{opacity:.55;transform:scale(.98)}
-
-#lrWidgetBoard{display:flex;flex-direction:column;gap:0;position:relative}
-#lrWidgetEditBar{display:none;position:sticky;top:40px;z-index:90;justify-content:flex-end;gap:8px;margin:0 4px 10px}
-#launcher.lr-widgets-editing #lrWidgetEditBar{display:flex}
-#lrWidgetEditBar button{border:1px solid #ffffffc9;border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.88);color:#705d7e;font:inherit;font-size:11px;box-shadow:0 5px 15px #57436618;backdrop-filter:blur(14px)}
-
-.lr-edit-tools{position:absolute;right:9px;top:9px;z-index:8;display:none;gap:6px}
-#launcher.lr-widgets-editing .lr-edit-tools{display:flex}
-.lr-edit-tools button{width:27px;height:27px;border:1px solid #fff;border-radius:50%;background:rgba(255,255,255,.94);color:#8c6fa0;font-size:16px;line-height:1;box-shadow:0 3px 10px #57436620}
-#launcher.lr-widgets-editing .launcher-welcome,#launcher.lr-widgets-editing .launcher-info,#launcher.lr-widgets-editing .lr-widget{outline:1px dashed rgba(169,137,190,.9);outline-offset:2px;position:relative;cursor:grab;touch-action:none}
-#launcher.lr-widgets-editing .launcher-welcome{border-radius:16px;background:rgba(255,255,255,.15)}
-#launcher.lr-widgets-editing .is-lr-dragging{opacity:.38;transform:scale(.98)}
-#launcher.lr-widgets-editing .lr-drop-target{outline:2px solid #ad8bc4;outline-offset:3px}
 #lrWidgetShelf:empty{display:none}
-.lr-widget-drag-hint{grid-column:1/-1;grid-row:1;font-size:9px;opacity:.55;text-align:center;margin:0;display:none}
-#launcher.lr-widgets-editing .lr-widget-drag-hint{display:block}
-.lr-widget[hidden],.launcher-info[hidden],.launcher-welcome[hidden],#lrWidgetShelf[hidden]{display:none!important}
-
-@media(max-width:360px){#lrWidgetShelf{gap:6px;grid-auto-rows:112px}.lr-widget{padding:9px}.lr-widget-main{font-size:18px}.lr-widget.medium{min-height:104px}}
+.lr-widget[hidden],#lrWidgetShelf[hidden]{display:none!important}
+#launcher.lr-widgets-editing .lr-widget{outline:1px dashed rgba(30,30,30,.55);outline-offset:2px;cursor:grab}
+#launcher.lr-widgets-editing .lr-widget.is-lr-dragging{opacity:.65;transform:scale(.99);z-index:200!important;box-shadow:0 18px 35px rgba(0,0,0,.16)}
+#launcher.lr-widgets-editing .lr-drop-target{outline:2px solid #222;outline-offset:3px}
+#lrWidgetEditBar{display:none;position:relative;z-index:90;justify-content:flex-end;gap:8px;margin:0 4px 10px}
+#launcher.lr-widgets-editing #lrWidgetEditBar{display:flex}
+#lrWidgetEditBar button{border:1px solid rgba(0,0,0,.13);border-radius:999px;padding:8px 14px;background:rgba(255,255,255,.94);color:#222;font-family:Arial,sans-serif;font-size:10px;letter-spacing:1px;box-shadow:0 5px 15px rgba(0,0,0,.05)}
+#lrWidgetOverlay{position:fixed;inset:0;z-index:100050;display:none;align-items:flex-end;justify-content:center;background:rgba(15,15,15,.28);backdrop-filter:blur(8px);padding:12px}
+#lrWidgetOverlay.show{display:flex}
+.lr-widget-sheet{width:min(100%,560px);max-height:min(82dvh,720px);overflow:auto;border:1px solid rgba(0,0,0,.12);border-radius:22px 22px 8px 8px;background:#f8f8f6;box-shadow:0 22px 70px rgba(0,0,0,.22);padding:19px;color:#222}
+.lr-widget-sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:17px;padding-bottom:14px;border-bottom:1px solid rgba(0,0,0,.12)}
+.lr-widget-sheet-head h2{font-family:Georgia,"Noto Serif SC",serif;font-size:22px;font-weight:400;letter-spacing:1px;margin:0;color:#222}
+.lr-widget-sheet-head p{font-family:Arial,sans-serif;font-size:9px;letter-spacing:1.5px;color:#888;margin:6px 0 0}
+.lr-widget-close{border:1px solid rgba(0,0,0,.12);background:white;border-radius:50%;width:34px;height:34px;font-size:20px;color:#222}
+.lr-widget-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.lr-widget-choice{position:relative;border:1px solid rgba(0,0,0,.14);border-radius:5px;padding:12px;background:white;color:#222;text-align:left;min-height:114px;display:flex;flex-direction:column;justify-content:space-between}
+.lr-widget-choice:disabled{opacity:.4}
+.lr-widget-choice strong{display:block;font-family:Georgia,"Noto Serif SC",serif;font-size:13px;font-weight:500}
+.lr-widget-choice small{display:block;font-family:Arial,sans-serif;font-size:8px;letter-spacing:1px;color:#888;margin-top:6px;line-height:1.5}
+.lr-widget-choice-preview{display:block;font-family:Georgia,serif;font-size:20px;letter-spacing:1px;color:#222;border-top:1px solid rgba(0,0,0,.10);padding-top:9px;margin-top:12px}
+.lr-widget-sheet-foot{font-family:Arial,sans-serif;font-size:9px;letter-spacing:.6px;color:#888;line-height:1.6;margin:13px 2px 2px}
+@media(max-width:360px){#lrWidgetShelf{gap:7px;grid-auto-rows:124px}.lr-widget{padding:10px}.lr-widget.medium{min-height:118px}}
 `;document.head.appendChild(style);
 const shelf=document.createElement('section');shelf.id='lrWidgetShelf';shelf.setAttribute('aria-label','桌面小组件');
 const grid=launcher.querySelector('.launcher-grid');
 const welcome=launcher.querySelector('.launcher-welcome');
 const daysCard=launcher.querySelector('.launcher-info');
-const board=document.createElement('div');board.id='lrWidgetBoard';board.setAttribute('aria-label','可编辑桌面组件');
+const board=document.createElement('div');board.id='lrWidgetBoard';board.setAttribute('aria-label','INS 风格桌面组件');
 const editBar=document.createElement('div');editBar.id='lrWidgetEditBar';editBar.innerHTML='<button type="button" data-widget-open-chooser>＋ 添加组件</button><button type="button" data-widget-finish>完成</button>';
-if(welcome&&daysCard&&grid){launcher.insertBefore(editBar,welcome);launcher.insertBefore(board,welcome);board.append(welcome,daysCard,shelf);}
-else if(grid)launcher.insertBefore(shelf,grid);
-const overlay=document.createElement('div');overlay.id='lrWidgetOverlay';overlay.innerHTML=`<section class="lr-widget-sheet" role="dialog" aria-modal="true" aria-labelledby="lrWidgetSheetTitle"><div class="lr-widget-sheet-head"><div><h2 id="lrWidgetSheetTitle">桌面组件</h2><p>可恢复已移除的固定组件，也可以添加新组件</p></div><button class="lr-widget-close" type="button" aria-label="关闭">×</button></div><div class="lr-widget-list" id="lrWidgetList"></div><div class="lr-widget-sheet-foot">长按组件进入编辑模式，再次拖动即可调整位置；点击 × 可移除。布局保存在当前设备。</div></section>`;
+if(grid){launcher.insertBefore(editBar,grid);launcher.insertBefore(board,grid);board.append(shelf);}
+if(welcome)welcome.hidden=true;
+if(daysCard)daysCard.hidden=true;
+const overlay=document.createElement('div');overlay.id='lrWidgetOverlay';overlay.innerHTML=`<section class="lr-widget-sheet" role="dialog" aria-modal="true" aria-labelledby="lrWidgetSheetTitle"><div class="lr-widget-sheet-head"><div><h2 id="lrWidgetSheetTitle">DESKTOP WIDGETS</h2><p>INSPIRED BY EVERYDAY MOMENTS · INS 风格组件</p></div><button class="lr-widget-close" type="button" aria-label="关闭">×</button></div><div class="lr-widget-list" id="lrWidgetList"></div><div class="lr-widget-sheet-foot">长按桌面空白处打开组件库；长按组件进入编辑模式，可自由拖动和调整位置。布局保存在本机。</div></section>`;
 document.body.appendChild(overlay);
 const $=id=>document.getElementById(id);
 async function read(){
@@ -116,26 +98,28 @@ async function read(){
  if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
  if(v&&v.pageFixed&&typeof v.pageFixed==='object')config.pageFixed={...v.pageFixed};
- // Fresh installs start with an app-only home screen. Existing saved layouts are never overwritten.
- if(!v){config.hidden=['welcome','days'];config.order=['shelf'];}
- // Existing fixed widgets are kept on page 1 only; newly created pages start without them.
- if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['shelf'])]};
- if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
+ // V10 is a clean break from the old widget shelf: remove legacy fixed cards and old widget placements on every page.
+ if(!v||Number(v.version||0)<10){
+  config.items=[];config.positions={};config.pageItems={};config.pagePositions={};
+  config.hidden=['welcome','days'];config.order=['shelf'];
+  config.pageFixed={'0':{hidden:['welcome','days'],order:['shelf']}};
+ }
+ const allWidgetPages=new Set(['0',...Object.keys(config.pageItems||{}),...Object.keys(config.pageFixed||{})]);
+ for(const page of allWidgetPages)config.pageFixed[page]={hidden:['welcome','days'],order:['shelf']};
  activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
  config.items=cleanItems(config.pageItems[String(activePage)]||[]);
  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
- config.positions={...(config.pagePositions[String(activePage)]||config.positions||{})};
- const fixed=config.pageFixed[String(activePage)]||{hidden:['welcome','days'],order:['shelf']};
- config.hidden=[...(fixed.hidden||[])];config.order=[...(fixed.order||['shelf'])];
- if(v&&Array.isArray(v.items)&&!await widgetDbHasLayout())await save({silent:true});
+ config.positions={...(config.pagePositions[String(activePage)]||{})};
+ config.hidden=['welcome','days'];config.order=['shelf'];
+ await save({silent:true});
 }
 async function widgetDbHasLayout(){try{return !!(await widgetDbGet())}catch{return false}}
-function applyLayout(){const map={welcome,days:daysCard,shelf};config.order.forEach(id=>{const node=map[id];if(node&&node.parentElement===board)board.appendChild(node)});if(welcome)welcome.hidden=config.hidden.includes('welcome');if(daysCard)daysCard.hidden=config.hidden.includes('days');if(shelf)shelf.hidden=!config.items.length&&!editMode;}
+function applyLayout(){if(shelf&&shelf.parentElement===board)board.appendChild(shelf);if(welcome)welcome.hidden=true;if(daysCard)daysCard.hidden=true;shelf.hidden=!config.items.length&&!editMode;}
 function setEditMode(on){editMode=!!on;launcher.classList.toggle('lr-widgets-editing',editMode);if(!editMode)dragState=null;renderChoices();applyLayout();}
 function addEditTools(node,kind){if(!node||node.querySelector(':scope > .lr-edit-tools'))return;const tools=document.createElement('div');tools.className='lr-edit-tools';tools.innerHTML=`<button type="button" data-fixed-remove="${kind}" aria-label="移除组件">×</button>`;node.appendChild(tools)}
 if(welcome)addEditTools(welcome,'welcome');if(daysCard)addEditTools(daysCard,'days');
 let saveSeq=0;
-async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),pageFixed:JSON.parse(JSON.stringify(config.pageFixed)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:9};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
+async function save(options={}){const seq=++saveSeq;config.pageItems[String(activePage)]=config.items.map(x=>({...x}));config.pagePositions[String(activePage)]={...config.positions};config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};const payload={...config,items:config.items.map(x=>({...x})),positions:{...config.positions},pageItems:JSON.parse(JSON.stringify(config.pageItems)),pagePositions:JSON.parse(JSON.stringify(config.pagePositions)),pageFixed:JSON.parse(JSON.stringify(config.pageFixed)),itemOrder:config.items.map(x=>x.id),updatedAt:Date.now(),version:10};try{await widgetDbSet(payload);if(seq===saveSeq){window.dispatchEvent(new CustomEvent('lr-home-widgets-changed',{detail:payload}));if(!options.silent)notify('组件布局已保存 ♡')}}catch(e){console.error('[LOVE RECORD] dedicated widget DB save failed',e);if(seq===saveSeq)notify('组件保存失败：独立组件数据库写入失败，请刷新后重试。')}}
 function notify(t){if(typeof window.toast==='function')window.toast(t);else if($('toast')){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}}
 function escape(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function localJSON(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}}
@@ -183,20 +167,19 @@ function widgetHTML(item){const d=definitions.find(x=>x.id===item.id);const size
 }
 function widgetSpan(item){return {cols:item.size==='small'?1:2,rows:(item.id==='photo'||item.id==='memory')?2:(item.size==='large'?2:1)}}
 function widgetCells(pos,item){const sp=widgetSpan(item),cells=[];for(let r=pos.row;r<pos.row+sp.rows;r++)for(let c=pos.col;c<pos.col+sp.cols;c++)cells.push(`${r}:${c}`);return cells}
-function layoutWidgetPositions(preferredId=null,preferred=null){const used=new Set(),ordered=preferredId?[...config.items.filter(x=>x.id===preferredId),...config.items.filter(x=>x.id!==preferredId)]:config.items.slice();for(const item of ordered){const sp=widgetSpan(item);let pos=item.id===preferredId&&preferred?{row:Math.max(2,preferred.row),col:sp.cols===2?1:Math.max(1,Math.min(2,preferred.col))}:config.positions[item.id];const valid=p=>p&&Number.isInteger(p.row)&&p.row>=2&&p.row<40&&Number.isInteger(p.col)&&p.col>=1&&p.col<=3-sp.cols&&widgetCells(p,item).every(k=>!used.has(k));if(!valid(pos)){pos=null;for(let row=2;row<40&&!pos;row++)for(let col=1;col<=3-sp.cols;col++){const candidate={row,col};if(valid(candidate)){pos=candidate;break}}}if(!pos)pos={row:40+ordered.indexOf(item),col:1};config.positions[item.id]=pos;widgetCells(pos,item).forEach(k=>used.add(k));const node=shelf.querySelector(`[data-widget-id="${item.id}"]`);if(node){node.style.gridColumn=`${pos.col} / span ${sp.cols}`;node.style.gridRow=`${pos.row} / span ${sp.rows}`}}}
-function commitWidgetDrop(id,x,y){const item=config.items.find(v=>v.id===id);if(!item)return;const rect=shelf.getBoundingClientRect();if(x<rect.left-20||x>rect.right+20||y<rect.top||y>rect.bottom+80)return;const st=getComputedStyle(shelf),gap=parseFloat(st.rowGap)||8,rowH=parseFloat(st.gridAutoRows)||120;const localY=Math.max(20,y-rect.top);const row=Math.max(2,Math.floor((localY-20)/(rowH+gap))+2);const col=widgetSpan(item).cols===2?1:(x<rect.left+rect.width/2?1:2);layoutWidgetPositions(id,{row,col});}
-async function render(){shelf.innerHTML=config.items.map(widgetHTML).join('');if(config.items.length&&!shelf.querySelector('.lr-widget-drag-hint'))shelf.insertAdjacentHTML('afterbegin','<div class="lr-widget-drag-hint">长按组件可移动 · × 移除</div>');layoutWidgetPositions();applyLayout();for(const item of config.items.filter(x=>x.id==='photo'||x.id==='memory'))await renderPhotoWidget(item.id)}
+function layoutWidgetPositions(preferredId=null,preferred=null){const used=new Set(),ordered=preferredId?[...config.items.filter(x=>x.id===preferredId),...config.items.filter(x=>x.id!==preferredId)]:config.items.slice();for(const item of ordered){const sp=widgetSpan(item);let pos=item.id===preferredId&&preferred?{row:Math.max(1,preferred.row),col:sp.cols===2?1:Math.max(1,Math.min(2,preferred.col))}:config.positions[item.id];const valid=p=>p&&Number.isInteger(p.row)&&p.row>=1&&p.row<40&&Number.isInteger(p.col)&&p.col>=1&&p.col<=3-sp.cols&&widgetCells(p,item).every(k=>!used.has(k));if(!valid(pos)){pos=null;for(let row=1;row<40&&!pos;row++)for(let col=1;col<=3-sp.cols;col++){const candidate={row,col};if(valid(candidate)){pos=candidate;break}}}if(!pos)pos={row:40+ordered.indexOf(item),col:1};config.positions[item.id]=pos;widgetCells(pos,item).forEach(k=>used.add(k));const node=shelf.querySelector(`[data-widget-id="${item.id}"]`);if(node){node.style.gridColumn=`${pos.col} / span ${sp.cols}`;node.style.gridRow=`${pos.row} / span ${sp.rows}`}}}
+function commitWidgetDrop(id,x,y){const item=config.items.find(v=>v.id===id);if(!item)return;const rect=shelf.getBoundingClientRect();if(x<rect.left-20||x>rect.right+20||y<rect.top||y>rect.bottom+80)return;const st=getComputedStyle(shelf),gap=parseFloat(st.rowGap)||10,rowH=parseFloat(st.gridAutoRows)||132;const localY=Math.max(0,y-rect.top);const row=Math.max(1,Math.floor(localY/(rowH+gap))+1);const col=widgetSpan(item).cols===2?1:(x<rect.left+rect.width/2?1:2);layoutWidgetPositions(id,{row,col});}
+async function render(){shelf.innerHTML=config.items.map(widgetHTML).join('');layoutWidgetPositions();applyLayout();for(const item of config.items.filter(x=>x.id==='photo'||x.id==='memory'))await renderPhotoWidget(item.id)}
 function refreshMusicWidget(){const card=shelf.querySelector('[data-widget-id="music"]');if(!card)return;const snap=window.LRMusicSnapshot||{},title=card.querySelector('[data-widget-music-title]'),artist=card.querySelector('[data-widget-music-artist]'),cover=card.querySelector('[data-widget-music-cover]'),play=card.querySelector('[data-widget-play]');if(title)title.textContent=snap.title||$('musicNowTitle')?.textContent||'打开音乐，播放喜欢的歌';if(artist)artist.textContent=snap.artist||$('musicNowArtist')?.textContent||'LOVE RECORD · MUSIC';if(cover){const src=snap.cover||$('musicMainCover')?.src||'';if(src&&src!=='about:blank')cover.src=src;else cover.removeAttribute('src')}if(play)play.textContent=snap.playing?'Ⅱ':'▶'}
 window.addEventListener('lr-music-state-change',refreshMusicWidget);
 function openChooser(){if(opening)return;opening=true;renderChoices();overlay.classList.add('show');setEditMode(true)}
 function closeChooser(){opening=false;overlay.classList.remove('show')}
-function renderChoices(){const list=$('lrWidgetList');if(!list)return;const fixed=[{id:'welcome',name:'我们的小宇宙',category:'HOME',desc:'主页标题与欢迎区域',hidden:config.hidden.includes('welcome')},{id:'days',name:'Days Together',category:'LOVE',desc:'纪念日与主页照片卡片',hidden:config.hidden.includes('days')}];list.innerHTML=fixed.map(d=>`<button type="button" class="lr-widget-choice" data-widget-restore="${d.id}" ${!d.hidden?'disabled':''}><strong>${d.name}${d.hidden?' · 点击恢复':' · 已显示'}</strong><small>${d.category} · ${d.desc}</small></button>`).join('')+definitions.map(d=>{const exists=config.items.some(x=>x.id===d.id);return `<button type="button" class="lr-widget-choice" data-widget-add="${d.id}" ${exists?'disabled':''}><strong>${d.name}${exists?' · 已添加':''}</strong><small>${d.category} · ${d.desc}</small></button>`}).join('')}
+function renderChoices(){const list=$('lrWidgetList');if(!list)return;list.innerHTML=definitions.map(d=>{const exists=config.items.some(x=>x.id===d.id);return `<button type="button" class="lr-widget-choice" data-widget-add="${d.id}" ${exists?'disabled':''}><span><strong>${d.name}${exists?' · 已添加':''}</strong><small>${d.category} · ${d.desc}</small></span><span class="lr-widget-choice-preview">${d.preview}</span></button>`}).join('')}
 function add(id){if(config.items.some(x=>x.id===id))return;const d=definitions.find(x=>x.id===id);if(!d)return;config.items.push({id,size:d.size,note:'',waterCount:0,waterDate:'',mood:'',moodHistory:[],focusRemaining:1500,focusUntil:0,focusRunning:false});render().then(()=>save());renderChoices();notify('已添加 '+d.name+' ♡')}
-function restoreFixed(id){config.hidden=config.hidden.filter(x=>x!==id);save();applyLayout();renderChoices();notify('已恢复组件 ♡')}
 editBar.addEventListener('click',e=>{if(e.target.closest('[data-widget-open-chooser]'))openChooser();if(e.target.closest('[data-widget-finish]')){closeChooser();setEditMode(false);notify('桌面布局已保存 ♡')}});
 overlay.querySelector('.lr-widget-close').addEventListener('click',closeChooser);
-overlay.addEventListener('click',e=>{if(e.target===overlay)closeChooser();const restore=e.target.closest('[data-widget-restore]');if(restore&&!restore.disabled){restoreFixed(restore.dataset.widgetRestore);return}const addBtn=e.target.closest('[data-widget-add]');if(addBtn&&!addBtn.disabled)add(addBtn.dataset.widgetAdd)});
-function itemNode(target){return target.closest('.launcher-welcome,.launcher-info,.lr-widget')}
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeChooser();const addBtn=e.target.closest('[data-widget-add]');if(addBtn&&!addBtn.disabled)add(addBtn.dataset.widgetAdd)});
+function itemNode(target){return target.closest('.lr-widget')}
 async function switchWidgetPage(next){
  const page=Math.max(0,Number(next)||0);if(page===activePage)return;
  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
@@ -210,7 +193,7 @@ async function switchWidgetPage(next){
  await save({silent:true});await render();renderChoices();applyLayout();
 }
 window.addEventListener('lr-launcher-page-change',e=>{switchWidgetPage(e.detail?.page).catch(err=>console.error('[LOVE RECORD] page widget switch failed',err))});
-function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
+function saveOrder(){config.order=['shelf'];config.hidden=['welcome','days'];config.pageFixed[String(activePage)]={hidden:['welcome','days'],order:['shelf']};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
 async function moveWidgetToPage(id,targetPage){
  const item=config.items.find(x=>x.id===id);if(!item||targetPage===activePage)return false;
  const from=String(activePage),to=String(targetPage);
@@ -290,12 +273,12 @@ document.addEventListener('pointerup',e=>{
    moveWidgetToPage(state.widgetId,targetPage).then(moved=>{if(!moved)commitWidgetDrop(state.widgetId,releaseX,releaseY)}).catch(err=>console.error('[LOVE RECORD] widget page move failed',err));
   }else commitWidgetDrop(state.widgetId,releaseX,releaseY);
  }else if(state.scope==='board'){
-  const fixedId=node===welcome?'welcome':node===daysCard?'days':null;
+  const fixedId=null;
   node.style.transform='';node.style.zIndex='';node.style.willChange='';
   if(fixedId&&targetPage!==null&&Number.isInteger(targetPage)&&targetPage>=0&&targetPage!==activePage){
    moveFixedWidgetToPage(fixedId,targetPage).catch(err=>console.error('[LOVE RECORD] fixed widget page move failed',err));
   }else{
-   const target=releaseUnder?.closest('.launcher-welcome,.launcher-info,#lrWidgetShelf');
+   const target=releaseUnder?.closest('#lrWidgetShelf');
    if(target&&target!==node){const rect=target.getBoundingClientRect();board.insertBefore(node,(state.lastY||e.clientY)<rect.top+rect.height/2?target:target.nextSibling);}
   }
  }
@@ -309,16 +292,35 @@ document.addEventListener('pointercancel',()=>{
  widgetPendingPoint=null;
  if(dragState){dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';dragState.node.style.transform='';dragState.node.style.zIndex='';dragState.node.style.willChange='';dragState=null;}
 });
+let blankPress=null,blankPressTimer=null,blankPressOpened=false;
 launcher.addEventListener('pointerdown',e=>{
- if(e.target.closest('.launcher-app'))return; // app icons have their own multi-page drag controller
+ if(e.target.closest('.launcher-app'))return;
  const node=itemNode(e.target);
  if(editMode&&node&&!e.target.closest('button,input,textarea')){startDrag(node,e);return}
- if(e.target.closest('button,a,input,textarea,select,#lrWidgetOverlay'))return;
- if(node){const downEvent=e;pendingWidgetPress={pointerId:e.pointerId,x:e.clientX,y:e.clientY,node};pressTimer=setTimeout(()=>{pressTimer=null;pendingWidgetPress=null;setEditMode(true);startDrag(node,{pointerId:downEvent.pointerId,cancelable:false,clientX:downEvent.clientX,clientY:downEvent.clientY});notify('正在移动组件，松开即可放置。')},320);return}
- if(e.target===launcher||e.target.closest('.launcher-pages')||e.target.id==='lrWidgetShelf'||(e.target.classList&&e.target.classList.contains('launcher-grid'))){pressTimer=setTimeout(()=>{pressTimer=null;openChooser()},560)}
+ if(e.target.closest('button,a,input,textarea,select,#lrWidgetOverlay,.nav,.nav-btn'))return;
+ if(node){
+  const downEvent=e;pendingWidgetPress={pointerId:e.pointerId,x:e.clientX,y:e.clientY,node};
+  pressTimer=setTimeout(()=>{pressTimer=null;pendingWidgetPress=null;setEditMode(true);startDrag(node,{pointerId:downEvent.pointerId,cancelable:false,clientX:downEvent.clientX,clientY:downEvent.clientY});notify('正在移动组件，松开即可放置。')},320);
+  return;
+ }
+ if(e.target.closest('#launcher')){
+  clearTimeout(blankPressTimer);blankPressOpened=false;
+  blankPress={pointerId:e.pointerId,x:e.clientX,y:e.clientY};
+  blankPressTimer=setTimeout(()=>{blankPressTimer=null;blankPressOpened=true;blankPress=null;openChooser()},520);
+ }
+},{capture:true});
+document.addEventListener('pointermove',e=>{
+ if(blankPress&&e.pointerId===blankPress.pointerId&&Math.hypot(e.clientX-blankPress.x,e.clientY-blankPress.y)>18){clearTimeout(blankPressTimer);blankPressTimer=null;blankPress=null;}
+ if(pendingWidgetPress&&e.pointerId===pendingWidgetPress.pointerId&&Math.hypot(e.clientX-pendingWidgetPress.x,e.clientY-pendingWidgetPress.y)>28){clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null;}
+},{passive:true});
+document.addEventListener('pointerup',e=>{
+ if(blankPress&&e.pointerId===blankPress.pointerId){clearTimeout(blankPressTimer);blankPressTimer=null;blankPress=null;}
 });
-['pointerup','pointercancel','pointerleave'].forEach(type=>launcher.addEventListener(type,()=>{clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null}));
+document.addEventListener('pointercancel',()=>{clearTimeout(blankPressTimer);blankPressTimer=null;blankPress=null;});
+document.addEventListener('pointerup',()=>{clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null;});document.addEventListener('pointercancel',()=>{clearTimeout(pressTimer);pressTimer=null;pendingWidgetPress=null;});
 launcher.addEventListener('click',e=>{
+ if(blankPressOpened){blankPressOpened=false;e.preventDefault();e.stopPropagation();return}
+
  if(window.__lrWidgetJustDragged&&Date.now()-window.__lrWidgetJustDragged<700){e.preventDefault();e.stopPropagation();return}
  const memoryNext=e.target.closest('[data-memory-next]');if(memoryNext){e.preventDefault();e.stopPropagation();cyclePhotoWidget(memoryNext.dataset.memoryNext);return}
  const remove=e.target.closest('[data-fixed-remove]');
