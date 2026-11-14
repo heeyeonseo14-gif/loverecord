@@ -32,16 +32,31 @@ body{background:linear-gradient(145deg,#f8f9fb,#edf0f4)!important;color:#42464d}
 <section class="panel"><h2>ACCENT COLOR · 强调色</h2><div class="hint">按钮、重点和小圆点都会跟着变。</div><div class="swatches" id="swatches"></div><div class="actions"><input type="color" id="customAccent" value="#b79bc7"><button class="action" id="useAccent">使用自定义颜色</button></div></section>
 <section class="panel"><h2>HOME BACKGROUND · 主页背景</h2><div class="grid" id="backgroundGrid"></div><label for="bgFile">BACKGROUND PHOTO · 背景照片</label><input id="bgFile" type="file" accept="image/*"><div class="hint">此处仅设置主页背景；各 APP 可在下方独立设置背景，聊天背景仍由聊天内原有功能管理。</div><button class="action" id="clearPhoto" style="width:100%;margin-top:10px">移除自定义背景照片</button></section>
 
+<style>
+.app-bg-targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 14px}
+.app-bg-choice{display:flex!important;align-items:center;gap:9px;margin:0!important;padding:11px 12px;border:1px solid rgba(190,190,200,.28);border-radius:14px;background:rgba(255,255,255,.64);font-size:13px!important;letter-spacing:0!important;color:var(--ink)!important}
+.app-bg-choice input{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#8e929b}
+.app-bg-choice:has(input:checked){background:rgba(224,227,232,.7);border-color:rgba(150,155,165,.5)}
+@media(min-width:560px){.app-bg-targets{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
 <section class="panel" id="appBackgroundStudio">
  <h2>APP BACKGROUND STUDIO · 应用背景工作室</h2>
  <p class="hint">为每个 APP 单独设置背景图。聊天界面不在此管理，继续使用聊天自己的背景设置。</p>
- <label for="appBgTarget">选择 APP</label>
- <select id="appBgTarget" class="opt" style="width:100%;text-align:left">
-  <option value="launcher">主页</option><option value="music">音乐</option><option value="memories">拾忆 / 回忆</option>
-  <option value="space">空间</option><option value="community">社区</option><option value="journal">日记</option>
-  <option value="food">外卖</option><option value="shopping">购物</option><option value="games">游戏</option>
-  <option value="live">LIVE</option><option value="shiyi">查岗</option>
- </select>
+ <label>选择一个或多个 APP（可同时应用同一张背景）</label>
+ <div id="appBgTargets" class="app-bg-targets" role="group" aria-label="选择要应用背景的 APP">
+  <label class="app-bg-choice"><input type="checkbox" value="launcher" data-app-bg-target checked><span>主页</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="appearance" data-app-bg-target><span>美化</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="music" data-app-bg-target><span>音乐</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="shiyi" data-app-bg-target><span>拾忆</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="memories" data-app-bg-target><span>回忆</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="space" data-app-bg-target><span>空间</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="community" data-app-bg-target><span>社区</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="journal" data-app-bg-target><span>日记</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="food" data-app-bg-target><span>外卖</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="shopping" data-app-bg-target><span>购物</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="games" data-app-bg-target><span>游戏</span></label>
+  <label class="app-bg-choice"><input type="checkbox" value="live" data-app-bg-target><span>LIVE</span></label>
+ </div>
  <label for="appBgFile">上传背景图片</label><input id="appBgFile" type="file" accept="image/*">
  <div class="hint">图片会自动缩放并压缩为 WebP / JPEG 后保存到本机 IndexedDB，不会上传服务器。</div>
  <div id="appBgPreview" style="margin-top:12px;min-height:170px;border:1px solid rgba(255,255,255,.9);border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#f7f8fa,#e9edf2);display:grid;place-items:center;position:relative">
@@ -161,19 +176,24 @@ $('saveBack').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}
 $('backHome').onclick=(e)=>{if(window.parent!==window){e.preventDefault();window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}};
 
 const APP_BG_KEY='lr-app-background:',APP_BG_APPS=[
- ['launcher','主页'],['music','音乐'],['memories','拾忆 / 回忆'],['space','空间'],['community','社区'],
- ['journal','日记'],['food','外卖'],['shopping','购物'],['games','游戏'],['live','LIVE'],['shiyi','查岗']
+ ['launcher','主页'],['appearance','美化'],['music','音乐'],['shiyi','拾忆'],['memories','回忆'],['space','空间'],['community','社区'],
+ ['journal','日记'],['food','外卖'],['shopping','购物'],['games','游戏'],['live','LIVE']
 ];
-let appBgDraft=null,appBgOriginal=null;
+let appBgDraft=null,appBgOriginal=null,appBgDirty=false;
 function appBgStorageKey(id){return APP_BG_KEY+id}
+function notifyAppBg(id,data){
+ window.dispatchEvent(new CustomEvent('lr-app-background-updated',{detail:{app:id,data}}));
+ try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'LR_APP_BACKGROUND_UPDATED',app:id,data},location.origin)}catch(e){}
+}
+function appBgSelected(){return [...document.querySelectorAll('[data-app-bg-target]:checked')].map(x=>x.value)}
 function compressAppBg(file){
  return new Promise((resolve,reject)=>{
   const reader=new FileReader();reader.onerror=()=>reject(reader.error||new Error('图片读取失败'));
   reader.onload=()=>{const img=new Image();img.onerror=()=>reject(new Error('无法识别图片'));img.onload=()=>{
-   const max=1800,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+   const max=1600,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
    const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));
    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-   let out=c.toDataURL('image/webp',.82);if(!out.startsWith('data:image/webp'))out=c.toDataURL('image/jpeg',.84);
+   let out=c.toDataURL('image/webp',.80);if(!out.startsWith('data:image/webp'))out=c.toDataURL('image/jpeg',.82);
    resolve(out);
   };img.src=reader.result};reader.readAsDataURL(file)
  })
@@ -183,39 +203,45 @@ function appBgPreview(data){
  p.style.backgroundSize=data?'cover':'auto';p.style.backgroundPosition='center';
 }
 async function appBgLoad(){
- const id=$('appBgTarget').value;appBgOriginal=await assetGet(appBgStorageKey(id));appBgDraft=appBgOriginal;appBgPreview(appBgDraft);
- $('appBgFile').value='';await appBgUpdateStorage()
+ const ids=appBgSelected();
+ if(!appBgDirty){appBgOriginal=ids.length?await assetGet(appBgStorageKey(ids[0])):null;appBgDraft=appBgOriginal;appBgPreview(appBgDraft)}
+ $('appBgFile').value='';await appBgUpdateStorage();
 }
 async function appBgUpdateStorage(){
  let total=0,count=0;
- for(const [id] of APP_BG_APPS){const v=await assetGet(appBgStorageKey(id));if(v){total+=String(v).length*.75;count++}}
+ for(const [id] of APP_BG_APPS){const v=await assetGet(appBgStorageKey(id));if(v){total+=Math.ceil(String(v).length*.75);count++}}
  const fmt=n=>n<1024?Math.round(n)+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB';
  $('appBgStorage').textContent=`已保存 ${count}/${APP_BG_APPS.length} 个 APP 背景 · 约占用 ${fmt(total)}（本机浏览器储存）`;
 }
-$('appBgTarget').addEventListener('change',appBgLoad);
+$('appBgTargets').addEventListener('change',appBgLoad);
 $('appBgFile').addEventListener('change',async e=>{
  const f=e.target.files?.[0];if(!f)return;
  if(f.size>20*1024*1024){alert('图片原文件超过 20MB，请先选择较小的图片。');e.target.value='';return}
- try{appBgDraft=await compressAppBg(f);appBgPreview(appBgDraft);showSaved('预览已更新，确认后才会保存')}
+ try{appBgDraft=await compressAppBg(f);appBgDirty=true;appBgPreview(appBgDraft);showSaved('预览已更新，确认后才会保存')}
  catch(err){alert('图片处理失败：'+(err?.message||'未知错误'))}
  finally{e.target.value=''}
 });
-$('appBgCancel').onclick=()=>{appBgDraft=appBgOriginal;appBgPreview(appBgDraft);showSaved('已取消预览')};
+$('appBgCancel').onclick=()=>{appBgDraft=appBgOriginal;appBgDirty=false;appBgPreview(appBgDraft);showSaved('已取消预览')};
 $('appBgSave').onclick=async()=>{
- const id=$('appBgTarget').value;
- try{if(appBgDraft)await assetPut(appBgStorageKey(id),appBgDraft);else await assetDelete(appBgStorageKey(id));
- appBgOriginal=appBgDraft;window.dispatchEvent(new CustomEvent('lr-app-background-updated',{detail:{app:id,data:appBgDraft}}));
- await appBgUpdateStorage();showSaved('APP 背景已保存')}
- catch(err){alert('保存失败：'+(err?.message||'本地储存空间不足'))}
+ const ids=appBgSelected();if(!ids.length){alert('请至少选择一个 APP。');return}
+ try{
+  for(const id of ids){if(appBgDraft)await assetPut(appBgStorageKey(id),appBgDraft);else await assetDelete(appBgStorageKey(id));}
+  appBgOriginal=appBgDraft;appBgDirty=false;
+  for(const id of ids)notifyAppBg(id,appBgDraft);
+  await appBgUpdateStorage();showSaved(`已为 ${ids.length} 个 APP 保存背景`)
+ }catch(err){alert('保存失败：'+(err?.message||'本地储存空间不足'))}
 };
 $('appBgRemove').onclick=async()=>{
- const id=$('appBgTarget').value;
- try{await assetDelete(appBgStorageKey(id));appBgDraft=appBgOriginal=null;appBgPreview(null);
- window.dispatchEvent(new CustomEvent('lr-app-background-updated',{detail:{app:id,data:null}}));
- await appBgUpdateStorage();showSaved('已恢复默认背景')}
- catch(err){alert('删除失败：'+(err?.message||'未知错误'))}
+ const ids=appBgSelected();if(!ids.length){alert('请至少选择一个 APP。');return}
+ try{
+  for(const id of ids){await assetDelete(appBgStorageKey(id));notifyAppBg(id,null)}
+  appBgDraft=appBgOriginal=null;appBgDirty=false;appBgPreview(null);await appBgUpdateStorage();showSaved(`已为 ${ids.length} 个 APP 恢复默认背景`)
+ }catch(err){alert('删除失败：'+(err?.message||'未知错误'))}
 };
 
-async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};normalizeTheme();bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply();await appBgLoad().catch(()=>{})}
+async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};normalizeTheme();bgData=await assetGet('homepage-background');
+const ownAppBg=await assetGet(appBgStorageKey('appearance'));
+if(ownAppBg){document.body.style.backgroundImage='linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),url("'+ownAppBg+'")';document.body.style.backgroundSize='cover';document.body.style.backgroundPosition='center'}
+if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply();await appBgLoad().catch(()=>{})}
 init();
 </script></body></html>

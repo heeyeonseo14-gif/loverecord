@@ -513,7 +513,7 @@ body{padding-top:0!important;padding-bottom:calc(104px + env(safe-area-inset-bot
 .nav-btn.active{background:rgba(255,255,255,.75);color:#51475a}
 .nav-btn span:last-child{font-size:10px;letter-spacing:1px}
 .dock-icon{font-size:22px;line-height:1;color:#a28bb3}
-.system-appbar{position:fixed;z-index:85;top:34px;left:0;right:0;height:43px;padding:0 18px;display:none;align-items:center;gap:13px;background:rgba(247,244,249,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(150,138,160,.12);font-size:11px;letter-spacing:2px;color:#766b7d}
+.system-appbar{position:fixed;z-index:85;top:0;left:0;right:0;height:43px;padding:0 18px;display:none;align-items:center;gap:13px;background:rgba(247,244,249,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(150,138,160,.12);font-size:11px;letter-spacing:2px;color:#766b7d}
 .system-appbar.show{display:flex}
 .system-back{width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.8);color:#7d6b8b;font-size:27px;line-height:20px;padding:0}
 .system-appbar-mark{margin-left:auto;color:#ad96be;border:0;background:transparent;font-size:23px;line-height:1;padding:3px 7px}
@@ -3069,7 +3069,7 @@ body.lr-external-app-open{overflow:hidden}
  const map={
   launcher:'#launcher',music:'#music',memories:'#memories',space:'#space',
   community:'#moduleModal',journal:'#moduleModal',food:'#moduleModal',shopping:'#moduleModal',
-  games:'#moduleModal',live:'#lrLiveShell',shiyi:'#moduleModal'
+  games:'#moduleModal',live:'#lrLiveShell'
  };
  let current='launcher', cache={};
  function db(){return new Promise((ok,no)=>{const r=indexedDB.open(DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
@@ -3087,9 +3087,35 @@ body.lr-external-app-open{overflow:hidden}
  },true);
  const mo=new MutationObserver(()=>detect());mo.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
  window.addEventListener('lr-app-background-updated',e=>{if(e.detail?.app&&e.detail.app!=='chat'){cache[e.detail.app]=e.detail.data||null;apply(e.detail.app)}});
+ window.addEventListener('message',e=>{const d=e.data;if(e.origin!==location.origin||d?.type!=='LR_APP_BACKGROUND_UPDATED'||!d.app||d.app==='chat')return;cache[d.app]=d.data||null;apply(d.app)});
  load();setTimeout(detect,300);
 })();
 </script>
+
+
+
+<style id="lr-liquid-glass-layout-fixes">
+/* The native Android status bar remains outside the page. Keep the in-app title/back bar directly below it. */
+.system-appbar{top:0!important;left:0!important;right:0!important;height:52px!important;padding:0 18px!important;z-index:120!important}
+body:not(.launcher-open) .app{padding-top:52px!important}
+body:not(.launcher-open) .page{padding-top:14px!important}
+.system-appbar .system-back{width:36px!important;height:36px!important;display:grid!important;place-items:center!important;flex:0 0 36px!important}
+.system-appbar #systemAppTitle{font-size:11px!important;letter-spacing:2.5px!important;line-height:1.2!important}
+#launcher .launcher-grid>.launcher-app,
+#launcher .launcher-grid>.launcher-app:focus,
+#launcher .launcher-grid>.launcher-app:focus-visible,
+#launcher .launcher-grid>.launcher-app:active{
+ background:transparent!important;background-color:transparent!important;
+ border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ outline:none!important;filter:none!important;
+}
+#launcher .launcher-grid>.launcher-app::before,
+#launcher .launcher-grid>.launcher-app::after{content:none!important;display:none!important}
+#launcher .launcher-grid>.launcher-app>.app-icon{
+ display:grid!important;overflow:hidden!important;isolation:isolate;
+ background-clip:padding-box!important;outline:0!important;
+}
+</style>
 
 </body>
 </html>
