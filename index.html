@@ -1111,6 +1111,71 @@ body.launcher-open .system-appbar{display:none!important}
 #lrLiveBar{position:sticky;top:0;z-index:20;flex:none}
 </style>
 
+
+<style id="lr-world-contacts-editorial-v3">
+/* Dedicated monochrome editorial screens for World Book and Contacts */
+#moduleModal.lr-library-fullscreen{align-items:stretch!important;justify-content:center!important;padding:0!important;background:rgba(15,15,16,.28)!important;backdrop-filter:blur(18px) saturate(125%)!important;-webkit-backdrop-filter:blur(18px) saturate(125%)!important;z-index:10040!important}
+#moduleModal.lr-library-fullscreen .module-sheet{width:100%!important;max-width:900px!important;height:100dvh!important;max-height:100dvh!important;margin:0 auto!important;padding:calc(24px + env(safe-area-inset-top)) 22px calc(26px + env(safe-area-inset-bottom))!important;border-radius:0!important;overflow-y:auto!important;overscroll-behavior:contain!important;box-sizing:border-box!important;background:linear-gradient(145deg,rgba(250,250,248,.96),rgba(226,226,224,.88) 52%,rgba(248,248,246,.94))!important;border:1px solid rgba(255,255,255,.82)!important;box-shadow:0 20px 80px rgba(0,0,0,.12)!important;backdrop-filter:blur(34px) saturate(135%)!important;-webkit-backdrop-filter:blur(34px) saturate(135%)!important}
+#moduleModal.lr-library-fullscreen .module-head{align-items:center;padding-bottom:20px;border-bottom:1px solid rgba(35,35,35,.14);margin-bottom:20px}
+#moduleModal.lr-library-fullscreen .module-head .eyebrow{font-size:10px;letter-spacing:.34em;color:#777;margin-bottom:8px}
+#moduleModal.lr-library-fullscreen .module-head h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(28px,7vw,40px);font-weight:400;letter-spacing:-.035em;color:#202020;margin:0}
+#moduleModal.lr-library-fullscreen .module-close{width:46px;height:46px;border:1px solid rgba(35,35,35,.18);background:rgba(255,255,255,.58);color:#222;font-size:22px;backdrop-filter:blur(18px)}
+#moduleModal.lr-library-fullscreen #moduleBody{max-width:760px;margin:0 auto}
+.lr-library-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;padding:22px 2px 28px}
+.lr-library-intro>div:first-child>span,.lr-section-label,.lr-detail-top>span{font-size:9px;letter-spacing:.25em;color:#858582}
+.lr-library-intro h3{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:clamp(23px,5.5vw,31px);line-height:1.2;max-width:470px;margin:13px 0 9px;color:#252525}
+.lr-library-intro p{font-size:12px;line-height:1.8;color:#777;margin:0}
+.lr-library-count{font-family:Georgia,serif;font-size:42px;line-height:1;color:#292929;text-align:right;flex:0 0 auto}
+.lr-library-count small{display:block;font:9px/1.5 Arial,sans-serif;letter-spacing:.2em;color:#858582}
+.lr-library-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:0 0 22px;padding:13px 0;border-top:1px solid rgba(35,35,35,.13);border-bottom:1px solid rgba(35,35,35,.13)}
+.lr-library-search{display:flex;align-items:center;gap:9px;min-width:0;flex:1;color:#777;font-size:24px}
+.lr-library-search input{width:100%;min-width:0;border:0!important;background:transparent!important;outline:none!important;box-shadow:none!important;padding:8px 0!important;font-size:12px!important;color:#252525!important}
+.lr-library-search input::placeholder{color:#92928f}
+.lr-library-note{font:9px Arial,sans-serif;letter-spacing:.18em;color:#858582}.lr-library-note span{font-size:16px;margin-left:6px}
+.lr-add-button,.lr-outline-button{border-radius:999px;padding:12px 17px;border:1px solid #242424;background:#242424;color:#fff;font-size:11px;letter-spacing:.04em;white-space:nowrap}
+.lr-outline-button{background:rgba(255,255,255,.48);border-color:rgba(35,35,35,.2);color:#333}
+.lr-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.lr-person-card{position:relative;min-height:245px;padding:18px 16px 14px;border:1px solid rgba(255,255,255,.92);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.74),rgba(224,224,222,.45));box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(0,0,0,.045);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);cursor:pointer;display:flex;flex-direction:column;overflow:hidden}
+.lr-person-card:active,.lr-world-card:active{transform:scale(.985)}
+.lr-card-index{font:8px Arial,sans-serif;letter-spacing:.2em;color:#8c8c89}.lr-card-index span{float:right}
+.lr-person-monogram{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:22px auto 13px;background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(210,210,208,.65));border:1px solid rgba(255,255,255,.95);box-shadow:0 8px 22px rgba(0,0,0,.07);font:27px Georgia,serif;color:#333}
+.lr-person-card h3{font:22px Georgia,"Times New Roman",serif;font-weight:400;text-align:center;margin:0;color:#222}
+.lr-person-role{text-align:center;font:8px Arial,sans-serif;letter-spacing:.17em;color:#858582;margin-top:6px;text-transform:uppercase}
+.lr-person-card p{font-size:10px;line-height:1.7;color:#777;text-align:center;margin:13px 0 16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lr-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid rgba(35,35,35,.12);font:8px Arial,sans-serif;letter-spacing:.16em;color:#777}
+.lr-world-list{display:grid;gap:14px}
+.lr-world-card{display:grid;grid-template-columns:112px minmax(0,1fr);gap:17px;padding:13px;border:1px solid rgba(255,255,255,.92);border-radius:23px;background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(225,225,222,.45));box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 10px 28px rgba(0,0,0,.045);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);cursor:pointer}
+.lr-world-cover{min-height:145px;border-radius:15px;background:linear-gradient(145deg,#333,#777 58%,#c9c9c6);color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:12px;overflow:hidden}
+.lr-world-cover span{font:7px Arial,sans-serif;letter-spacing:.18em;opacity:.72}.lr-world-cover b{font:36px Georgia,serif;font-weight:400}.lr-world-cover i{font-style:normal;font-size:18px;align-self:flex-end}
+.lr-world-info{min-width:0;display:flex;flex-direction:column;padding:5px 2px}
+.lr-world-meta{font:8px Arial,sans-serif;letter-spacing:.13em;color:#888}.lr-world-meta span{padding:0 4px}
+.lr-world-info h3{font:23px Georgia,serif;font-weight:400;line-height:1.2;margin:12px 0 8px;color:#242424;overflow-wrap:anywhere}
+.lr-world-info p{font-size:10px;line-height:1.7;color:#777;margin:0 0 12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lr-empty-state{grid-column:1/-1;text-align:center;padding:54px 20px;border:1px solid rgba(255,255,255,.9);border-radius:24px;background:rgba(255,255,255,.45)}
+.lr-empty-state>span{font:9px Arial,sans-serif;letter-spacing:.2em;color:#888}.lr-empty-state h3{font:25px Georgia,serif;font-weight:400;margin:18px 0 8px}.lr-empty-state p{font-size:11px;line-height:1.8;color:#777;margin:0 auto 20px;max-width:300px}
+.lr-detail-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:5px 0 20px}
+.lr-back-button{border:0;background:transparent;color:#333;font-size:11px;padding:10px 0}
+.lr-profile-hero,.lr-world-detail-hero{padding:34px 23px 27px;text-align:center;border:1px solid rgba(255,255,255,.95);border-radius:26px;background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(220,220,218,.5));box-shadow:inset 0 1px 0 #fff,0 14px 36px rgba(0,0,0,.055);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px)}
+.lr-profile-orbit{width:94px;height:94px;border-radius:50%;display:grid;place-items:center;margin:0 auto 22px;background:linear-gradient(145deg,#fff,#d6d6d3);border:1px solid #fff;box-shadow:0 12px 28px rgba(0,0,0,.1);font:42px Georgia,serif;color:#333}
+.lr-profile-kicker{font:8px Arial,sans-serif;letter-spacing:.24em;color:#888}
+.lr-profile-hero h2,.lr-world-detail-hero h2{font:36px Georgia,serif;font-weight:400;margin:12px 0 6px;color:#222}
+.lr-profile-hero>p,.lr-world-detail-hero>p{font-size:11px;line-height:1.8;color:#777;margin:0 auto;max-width:420px}
+.lr-profile-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:23px}
+.lr-detail-sections{display:grid;gap:13px;margin-top:20px}
+.lr-detail-section,.lr-world-entry-card{padding:21px;border:1px solid rgba(255,255,255,.9);border-radius:20px;background:rgba(255,255,255,.5);backdrop-filter:blur(18px)}
+.lr-detail-section h3{font:21px Georgia,serif;font-weight:400;margin:10px 0;color:#292929}
+.lr-detail-section p,.lr-world-entry-card p{font-size:12px;line-height:1.9;color:#666;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+.lr-world-detail-mark{display:inline-block;padding:10px 17px;margin-bottom:25px;border:1px solid rgba(40,40,40,.2);font:9px/1.8 Arial,sans-serif;letter-spacing:.17em;color:#555}
+.lr-section-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px}
+.lr-section-heading h3{font:24px Georgia,serif;font-weight:400;margin:8px 0 0}
+.lr-world-entry-card{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px}
+.lr-entry-number{font:22px Georgia,serif;color:#999}
+.lr-world-entry-card p{margin-top:8px}
+.lr-empty-inline{padding:25px;text-align:center;color:#888;font-size:12px;border:1px dashed rgba(50,50,50,.2);border-radius:18px}
+.lr-detail-footnote{text-align:center;padding:18px 0 5px;font:8px Arial,sans-serif;letter-spacing:.2em;color:#999}
+@media(max-width:380px){.lr-directory-grid{gap:9px}.lr-person-card{padding:15px 12px;min-height:230px}.lr-world-card{grid-template-columns:92px minmax(0,1fr);gap:12px}.lr-world-cover{min-height:135px}.lr-world-info h3{font-size:20px}.lr-library-toolbar{align-items:flex-start}.lr-library-note{font-size:8px;line-height:1.7}}
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -2102,22 +2167,36 @@ function ensureWorldData(){
   if(changed)save();
 }
 let editingPersonId='',editingWorldId='',editingForumPostId='';
-function openModule(name){const modal=$('moduleModal');modal.classList.toggle('journal-fullscreen',name==='journal');modal.dataset.module=name;modal.classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
-function closeModule(){ const modal=$('moduleModal');modal.classList.remove('show','journal-fullscreen');delete modal.dataset.module;document.body.style.overflow=''}
+function openModule(name){const modal=$('moduleModal');modal.classList.toggle('journal-fullscreen',name==='journal');modal.classList.toggle('lr-library-fullscreen',name==='world'||name==='people');modal.dataset.module=name;modal.classList.add('show');document.body.style.overflow='hidden';renderModule(name)}
+function closeModule(){ const modal=$('moduleModal');modal.classList.remove('show','journal-fullscreen','lr-library-fullscreen');delete modal.dataset.module;document.body.style.overflow=''}
 function renderModule(name){
  const titles={people:['CONTACTS','MY CONTACTS'],forum:['COMMUNITY','AI COMMUNITY'],world:['WORLD','YOUR WORLDS'],journal:['JOURNAL','LITTLE JOURNAL']};
  $('moduleEyebrow').textContent=titles[name][0];$('moduleTitle').textContent=titles[name][1];
  const b=$('moduleBody');
  if(name==='people'){
-   b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-person">+ NEW PERSON</button></div><div class="module-list">'+(state.people.length?state.people.map(p=>`<div class="module-item"><div class="module-item-head"><div><h3>${esc(p.name)}</h3><div class="module-meta">${esc(p.role||'AI character')}<br>${esc(p.personality||'')}</div></div></div><div class="mini-actions"><button class="mini-btn" data-action="edit-person" data-id="${esc(p.id)}">EDIT</button><button class="mini-btn danger" data-action="delete-person" data-id="${esc(p.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">还没有人物。先建立一个吧。</div>')+'</div>';
+   const people=Array.isArray(state.people)?state.people:[];
+   b.innerHTML=`<div class="lr-library-intro"><div><span>YOUR CAST · PRIVATE DIRECTORY</span><h3>每一个故事，都有自己的主角。</h3><p>收藏你想带进聊天与 SPACE 的人物。</p></div><div class="lr-library-count">${people.length.toString().padStart(2,'0')}<small>PEOPLE</small></div></div><div class="lr-library-toolbar"><div class="lr-library-search"><span>⌕</span><input id="lrPeopleSearch" type="search" placeholder="搜索名字、身份或关键词…"></div><button class="lr-add-button" data-action="new-person">＋ 新建联系人</button></div><div class="lr-directory-grid">${people.length?people.map((p,i)=>`<article class="lr-person-card" data-action="open-person-detail" data-id="${esc(p.id)}"><div class="lr-card-index">${String(i+1).padStart(2,'0')} <span>CONTACT</span></div><div class="lr-person-monogram">${esc((p.name||'♡').trim().slice(0,1))}</div><h3>${esc(p.name||'未命名联系人')}</h3><div class="lr-person-role">${esc(p.role||'PERSONAL PROFILE')}</div><p>${esc((p.personality||p.background||'还没有添加人物简介。').slice(0,100))}</p><div class="lr-card-footer"><span>VIEW PROFILE ↗</span><span>•••</span></div></article>`).join(''):'<div class="lr-empty-state"><span>01 / YOUR PEOPLE</span><h3>故事还在等待第一位角色。</h3><p>创建联系人后，他们就可以继续参与聊天与 SPACE。</p><button class="lr-add-button" data-action="new-person">＋ 创建第一位联系人</button></div>'}</div>`;
  }else if(name==='world'){
-   b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-world">＋ 添加新世界书</button></div><div class="module-list">'+(state.worlds.length?state.worlds.map(w=>{const es=worldEntriesFor(w);const summary=es.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean).join('\n');return `<div class="module-item"><h3>${esc(w.name||'未命名世界书')}</h3><div class="module-meta worldbook-card-summary">${esc(summary||w.description||'还没有条目内容。')}</div><div class="module-meta">${es.length} 条目</div><div class="mini-actions"><button class="mini-btn" data-action="edit-world" data-id="${esc(w.id)}">编辑</button><button class="mini-btn danger" data-action="delete-world" data-id="${esc(w.id)}">删除</button></div></div>`}).join(''):'<div class="module-empty">还没有世界书。添加条目后，聊天和 SPACE 就能共用这些设定。</div>')+'</div>';
+   const worlds=Array.isArray(state.worlds)?state.worlds:[];
+   b.innerHTML=`<div class="lr-library-intro lr-world-intro"><div><span>WORLD BUILDING · YOUR PRIVATE ARCHIVE</span><h3>把故事发生的地方，认真收藏起来。</h3><p>世界书内容会继续供聊天与 SPACE 共用。</p></div><div class="lr-library-count">${worlds.length.toString().padStart(2,'0')}<small>BOOKS</small></div></div><div class="lr-library-toolbar"><div class="lr-library-note">A PLACE FOR EVERY DETAIL <span>✳</span></div><button class="lr-add-button" data-action="new-world">＋ 新建世界书</button></div><div class="lr-world-list">${worlds.length?worlds.map((w,i)=>{const es=worldEntriesFor(w);const summary=es.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean).join(' · ');return `<article class="lr-world-card" data-action="open-world-detail" data-id="${esc(w.id)}"><div class="lr-world-cover"><span>WORLD ARCHIVE</span><b>${String(i+1).padStart(2,'0')}</b><i>✳</i></div><div class="lr-world-info"><div class="lr-world-meta">${es.length} ENTRIES <span>·</span> PRIVATE BOOK</div><h3>${esc(w.name||'未命名世界书')}</h3><p>${esc((summary||w.description||'为这个世界添加第一条设定。').slice(0,125))}</p><div class="lr-card-footer"><span>OPEN WORLD BOOK ↗</span><span>•••</span></div></div></article>`}).join(''):'<div class="lr-empty-state"><span>01 / WORLD ARCHIVE</span><h3>还没有收藏任何世界。</h3><p>从一条设定开始，慢慢搭建你的故事宇宙。</p><button class="lr-add-button" data-action="new-world">＋ 创建第一本世界书</button></div>'}</div>`;
  }else if(name==='journal'){
    b.innerHTML='<div class="actions"><button class="btn primary" data-action="new-journal">+ NEW ENTRY</button></div><div class="module-list">'+(state.journal.length?state.journal.slice().reverse().map(j=>`<div class="module-item"><div class="module-meta">${esc(j.date)} · ${esc(j.mood||'')}</div><h3 style="margin-top:5px">${esc(j.title||'Untitled')}</h3><div class="module-meta">${esc(j.note||'')}</div><div class="mini-actions"><button class="mini-btn danger" data-action="delete-journal" data-id="${esc(j.id)}">DELETE</button></div></div>`).join(''):'<div class="module-empty">把今天留下一点点。</div>')+'</div>';
  }else if(name==='forum'){
    const people=state.people;
    b.innerHTML=`<div class="card" style="margin-top:15px;padding:17px"><h3>AI GENERATOR</h3><div class="sub">AI 会根据主题和你建立的人物，生成一个自然的论坛。评论区则完全开放，由 AI 自由创造网友和参与者。</div><label>TOPIC</label><input id="forumTopic" placeholder="例如：今天最想做的事情"><label>AI PARTICIPANTS</label><div class="check-grid">${people.map(p=>`<label class="check-pill"><input type="checkbox" data-forum-person value="${esc(p.id)}" ${p.id==='p-yanhuan'?'checked':''}>${esc(p.name)}</label>`).join('')}</div><label>HOW MANY POSTS</label><input id="forumCount" type="number" min="1" max="6" value="3"><div class="actions"><button class="btn primary" data-action="generate-forum">✦ GENERATE WITH API</button><button class="btn" data-action="manual-forum">+ MANUAL POST</button></div><div id="forumStatus" class="sub" style="margin-top:10px"></div></div><div class="module-list">${renderForumPosts()}</div>`;
  }}
+
+function renderPersonDetail(id){
+ const p=(state.people||[]).find(x=>String(x.id)===String(id));if(!p){renderModule('people');return}
+ const initials=esc((p.name||'♡').trim().slice(0,1));
+ $('moduleBody').innerHTML=`<div class="lr-detail-top"><button class="lr-back-button" data-action="back-to-people">← 联系人列表</button><span>PERSONAL ARCHIVE / PROFILE</span></div><section class="lr-profile-hero"><div class="lr-profile-orbit">${initials}</div><div class="lr-profile-kicker">A PERSON IN YOUR WORLD</div><h2>${esc(p.name||'未命名联系人')}</h2><p>${esc(p.role||'PERSONAL PROFILE')}</p><div class="lr-profile-actions"><button class="lr-add-button" data-action="edit-person" data-id="${esc(p.id)}">编辑资料</button><button class="lr-outline-button" data-action="delete-person" data-id="${esc(p.id)}">删除联系人</button></div></section><div class="lr-detail-sections"><section class="lr-detail-section"><div class="lr-section-label">01 / PERSONALITY</div><h3>人物设定</h3><p>${esc(p.personality||'暂未填写人物设定。')}</p></section><section class="lr-detail-section"><div class="lr-section-label">02 / BACKGROUND</div><h3>背景故事</h3><p>${esc(p.background||'暂未填写背景故事。')}</p></section><div class="lr-detail-footnote">CONTACT PROFILE · LOVE RECORD</div></div>`;
+}
+function renderWorldDetail(id){
+ const w=(state.worlds||[]).find(x=>String(x.id)===String(id));if(!w){renderModule('world');return}
+ const entries=worldEntriesFor(w);
+ $('moduleBody').innerHTML=`<div class="lr-detail-top"><button class="lr-back-button" data-action="back-to-worlds">← 世界书列表</button><span>WORLD ARCHIVE / DETAILS</span></div><section class="lr-world-detail-hero"><div class="lr-world-detail-mark">WORLD<br>NO. ${String((state.worlds||[]).indexOf(w)+1).padStart(2,'0')}</div><div class="lr-section-label">A WORLD OF YOUR OWN</div><h2>${esc(w.name||'未命名世界书')}</h2><p>这本世界书包含 ${entries.length} 条设定，并继续与聊天及 SPACE 共用。</p><div class="lr-profile-actions"><button class="lr-add-button" data-action="edit-world" data-id="${esc(w.id)}">编辑世界书</button><button class="lr-outline-button" data-action="delete-world" data-id="${esc(w.id)}">删除</button></div></section><div class="lr-detail-sections"><div class="lr-section-heading"><div><div class="lr-section-label">CONTENTS / ${String(entries.length).padStart(2,'0')} ENTRIES</div><h3>世界设定</h3></div><button class="lr-outline-button" data-action="edit-world" data-id="${esc(w.id)}">＋ 管理条目</button></div>${entries.length?entries.map((e,i)=>`<section class="lr-world-entry-card"><div class="lr-entry-number">${String(i+1).padStart(2,'0')}</div><div><div class="lr-section-label">${esc(e.note||'WORLD NOTE')}</div><p>${esc(e.content||'')}</p></div></section>`).join(''):'<div class="lr-empty-inline">这本世界书还没有条目内容。</div>'}<div class="lr-detail-footnote">WORLD BOOK · SHARED WITH CHAT & SPACE</div></div>`;
+}
+
 function forumLikeCount(p){
  const n=Number.isFinite(Number(p.likes))?Number(p.likes):0;
  return Math.max(0,Math.round(n));
@@ -2596,7 +2675,8 @@ worldBooksReady=restoreWorldBooks();
  }
  document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
  window.addEventListener('pagehide',()=>{if(layoutReady)persist()});
- document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<750&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
+ document.addEventListener('input',e=>{if(e.target?.id==='lrPeopleSearch'){const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#moduleBody .lr-person-card').forEach(card=>{card.hidden=!card.textContent.toLowerCase().includes(q)})}});
+document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<750&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
  (async()=>{
   let saved=null;try{saved=await lrKVGet(LAYOUT_KV);if(!saved)saved=await lrKVGet(LEGACY_KV)}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}
   if(saved){
@@ -2727,7 +2807,7 @@ if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound
  const open=e.target.closest('[data-open-module]');if(open){openModule(open.dataset.openModule);return}
  const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
  const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;
- if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return}
+ if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return} if(a==='open-person-detail'){renderPersonDetail(id);return} if(a==='back-to-people'){renderModule('people');return} if(a==='open-world-detail'){renderWorldDetail(id);return} if(a==='back-to-worlds'){renderModule('world');return}
  if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();removePersonFromIndexedDB(id).catch(e=>console.warn(e));persistPeopleRecovery();renderModule('people');toast('人物已删除')}return}
  if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
  if(a==='delete-world'){if(confirm('删除这个世界？')){(async()=>{try{await worldBooksReady;state.worlds=state.worlds.filter(x=>String(x.id)!==String(id));await persistWorldBooks(state.worlds);save();window.dispatchEvent(new CustomEvent('lr-worldbooks-updated'));renderModule('world');toast('世界书已删除')}catch(err){console.error('[LOVE RECORD] worldbook delete failed',err);toast('删除失败：储存写入失败')}})()}return}
