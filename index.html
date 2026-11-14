@@ -487,19 +487,8 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
   --dock-bg:rgba(255,255,255,.70);
 }
 html,body{min-height:100%;background:var(--bg)}
-body{padding-top:34px;padding-bottom:calc(104px + env(safe-area-inset-bottom));}
-.system-statusbar{
-  position:fixed;z-index:120;top:0;left:0;right:0;height:34px;
-  padding:0 22px;display:flex;align-items:center;justify-content:space-between;
-  color:#3d3942;background:rgba(247,244,249,.82);
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  font-size:12px;font-weight:600;letter-spacing:.2px;
-}
-.system-status-right{display:flex;align-items:center;gap:7px;font-size:10px;color:#514b56}
-.system-status-network{font-size:8px;letter-spacing:1px}
-.system-battery{width:22px;height:11px;border:1.4px solid currentColor;border-radius:3px;display:inline-flex;align-items:center;padding:1px;position:relative}
-.system-battery:after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:currentColor;border-radius:0 2px 2px 0}
-.system-battery i{display:block;width:76%;height:100%;background:currentColor;border-radius:1px}
+body{padding-top:0!important;padding-bottom:calc(104px + env(safe-area-inset-bottom));}
+
 .app{max-width:760px;margin:auto;padding:0 19px}
 .page{min-height:calc(100dvh - 150px);padding:24px 0 42px}
 .launcher-page{padding-top:23px;min-height:calc(100dvh - 140px);position:relative}
@@ -1108,6 +1097,58 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
 #musicTogetherActive{align-content:center!important}
 </style>
 
+
+<style id="lr-liquid-glass-refresh">
+:root{
+ --bg:#f7f8fa!important;--card:rgba(255,255,255,.66)!important;--ink:#34363b!important;
+ --muted:#858990!important;--line:rgba(255,255,255,.78)!important;
+ --soft:rgba(255,255,255,.54)!important;--purple:#a6a9b1!important;
+ --dock-bg:rgba(255,255,255,.68)!important;
+ --lr-glass-bg:rgba(255,255,255,.58);
+ --lr-glass-border:rgba(255,255,255,.82);
+ --lr-glass-shadow:0 12px 38px rgba(80,88,100,.09),inset 0 1px 0 rgba(255,255,255,.92);
+}
+html,body{background-color:#f7f8fa;color:#34363b}
+body{padding-top:0!important}
+.app{padding-top:0!important}
+#launcher .launcher-app .app-icon,
+#launcher .launcher-pages button,
+#launcher .launcher-dock,
+#launcher .dock,
+#launcher .launcher-widget,
+#launcher .launcher-info,
+#launcher .launcher-card,
+.page .card,.page .panel,.page .sheet,.page .section-card,
+.modal-content,.modal-sheet,.settings-card,.setting-card,
+#systemAppbar{
+ background:var(--lr-glass-bg)!important;
+ border:1px solid var(--lr-glass-border)!important;
+ box-shadow:var(--lr-glass-shadow)!important;
+ backdrop-filter:blur(26px) saturate(155%)!important;
+ -webkit-backdrop-filter:blur(26px) saturate(155%)!important;
+}
+#launcher .launcher-app .app-icon{border-radius:25px!important}
+#launcher .launcher-dock,.launcher-dock,.dock{
+ background:rgba(255,255,255,.72)!important;border:1px solid rgba(255,255,255,.9)!important;
+ box-shadow:0 14px 40px rgba(70,78,90,.10),inset 0 1px 0 #fff!important;
+ backdrop-filter:blur(30px) saturate(165%)!important;-webkit-backdrop-filter:blur(30px) saturate(165%)!important;
+}
+button,.action,.opt,input,textarea,select{
+ -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+button:not(.launcher-app):not(.app-icon),.action,.opt{
+ border-color:rgba(255,255,255,.82)!important;
+}
+.page{color:#34363b}
+.page h1,.page h2,.page h3,.page .title{color:#34363b}
+#launcher .launcher-app{color:#555a62!important}
+#launcher .launcher-pages button.active{background:rgba(255,255,255,.86)!important}
+#launcher .launcher-greeting,#launcher .launcher-kicker{color:#555a62!important}
+/* The welcome animation and onboarding tour intentionally retain their lavender identity. */
+.love-intro,.love-intro *,#welcomeTour,#welcomeTour *,
+.welcome-tour,.welcome-tour *,[data-welcome-tour],[data-welcome-tour] *{ }
+</style>
+
 </head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
@@ -1117,10 +1158,6 @@ body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-sh
     <div class="love-intro-line"></div>
     <div class="love-intro-author">Author by Lxing.</div>
   </div>
-</div>
-<div class="system-statusbar">
-  <span id="systemTime">10:08</span>
-  <span class="system-status-right"><span class="system-status-network">●●●</span><span>Wi-Fi</span><span class="system-battery"><i></i></span></span>
 </div>
 
 <div id="lr-home-background-fix-layer" aria-hidden="true"></div>
@@ -2658,11 +2695,6 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
 
-function updateSystemTime(){
- const el=document.getElementById('systemTime');if(!el)return;
- el.textContent=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
-}
-updateSystemTime();setInterval(updateSystemTime,30000);
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=6',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
@@ -3030,5 +3062,34 @@ body.lr-external-app-open{overflow:hidden}
   <script src="./welcome-tour-v1.js?v=1"></script>
   <script src="./use-guide-v1.js?v=2"></script>
   <script src="./lr-full-backup-v1.js?v=3"></script>
+
+<script id="lr-app-background-controller">
+(()=>{'use strict';
+ const DB='love-record-appearance-assets-v2',STORE='assets',KEY='lr-app-background:';
+ const map={
+  launcher:'#launcher',music:'#music',memories:'#memories',space:'#space',
+  community:'#moduleModal',journal:'#moduleModal',food:'#moduleModal',shopping:'#moduleModal',
+  games:'#moduleModal',live:'#lrLiveShell',shiyi:'#moduleModal'
+ };
+ let current='launcher', cache={};
+ function db(){return new Promise((ok,no)=>{const r=indexedDB.open(DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+ async function get(k){const d=await db();return new Promise((ok,no)=>{const r=d.transaction(STORE,'readonly').objectStore(STORE).get(k);r.onsuccess=()=>{d.close();ok(r.result||null)};r.onerror=()=>{d.close();no(r.error)}})}
+ function targetFor(app){if(app==='chat')return null;return document.querySelector(map[app]||'#moduleModal')}
+ function apply(app){if(app==='chat')return;const el=targetFor(app);if(!el)return;const data=cache[app];el.style.backgroundImage=data?`linear-gradient(rgba(255,255,255,.18),rgba(255,255,255,.18)),url("${data}")`:'';el.style.backgroundSize=data?'cover':'';el.style.backgroundPosition=data?'center center':'';el.style.backgroundRepeat='no-repeat';el.classList.toggle('lr-has-app-background',!!data)}
+ async function load(){const apps=Object.keys(map);for(const app of apps){try{cache[app]=await get(KEY+app)}catch(e){cache[app]=null}}apply(current)}
+ function detect(){const active=document.querySelector('.page.active');if(!active)return;const id=active.id;if(id==='chat')return;const app=id==='launcher'?'launcher':id;current=app;apply(app)}
+ document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-launch-page],[data-launch-module],[data-launch-life],[data-launch-app],[data-launch-game]');
+  if(!b)return;
+  if(b.dataset.launchPage==='chat'){current='chat';return}
+  const app=b.dataset.launchPage||b.dataset.launchModule||b.dataset.launchLife||b.dataset.launchApp||b.dataset.launchGame||'moduleModal';
+  current=app;setTimeout(()=>{if(app!=='chat')apply(app)},80);
+ },true);
+ const mo=new MutationObserver(()=>detect());mo.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
+ window.addEventListener('lr-app-background-updated',e=>{if(e.detail?.app&&e.detail.app!=='chat'){cache[e.detail.app]=e.detail.data||null;apply(e.detail.app)}});
+ load();setTimeout(detect,300);
+})();
+</script>
+
 </body>
 </html>
