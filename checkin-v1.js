@@ -2,7 +2,7 @@
 const $=id=>document.getElementById(id);
 const SETTINGS_KEY='yanyan-love-settings-v5', API_KEY='love-record-api-active-v1', LEGACY_API_KEY='love-record-api-settings-v1';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const emptyData=()=>({activities:[],messages:[],moments:[],contacts:[],songs:[],notes:[],calendar:[],notifications:[],photos:[]});
+const emptyData=()=>({activities:[],messages:[],contacts:[],songs:[],notes:[],calendar:[],photos:[],browserHistory:[],xhsNotes:[]});
 let selected=null,data=emptyData();
 function readJSON(k,fallback){try{const v=JSON.parse(localStorage.getItem(k)||'null');return v??fallback}catch{return fallback}}
 function getPeople(){const state=readJSON(SETTINGS_KEY,{});return (Array.isArray(state.people)?state.people:[]).filter(p=>p&&p.id&&String(p.id)!=='p-yanyan'&&String(p.name||'').trim())}
@@ -21,8 +21,6 @@ function renderData(){
  $('messageList').innerHTML=data.messages.map(x=>row('▤',x.name||'聊天',x.text,x.time)).join('')||'<div class="empty">暂无聊天记录。</div>';
  $('contactList').innerHTML=data.contacts.map(x=>row('♙',x.name,x.note,x.time)).join('')||'<div class="empty">暂无手机联系人。</div>';
  $('musicList').innerHTML=data.songs.map(x=>row('♫',x.name,x.artist,'')).join('')||'<div class="empty">暂无播放记录。</div>';
- $('notificationList').innerHTML=data.notifications.map(x=>row('♧',x.name,x.text,x.time)).join('')||'<div class="empty">暂无通知。</div>';
- $('momentList').innerHTML=data.moments.map(x=>`<article class="glass note"><div class="eyebrow">${esc(x.time)}</div><b>${esc(x.title)}</b><p>${esc(x.detail||'')}</p></article>`).join('')||'<div class="empty">暂无动态。</div>';
  $('noteList').innerHTML=data.notes.map(x=>`<article class="glass note"><div class="eyebrow">${esc(x.time)}</div><b>${esc(x.title)}</b><p>${esc(x.body)}</p></article>`).join('')||'<div class="empty">暂无备忘录。</div>';
  $('calendarList').innerHTML=data.calendar.map(x=>`<article class="glass note"><div class="eyebrow">${esc(x.time)}</div><b>${esc(x.title)}</b><p>${esc(x.detail)}</p></article>`).join('')||'<div class="empty">暂无日程。</div>';
  $('songTitle').textContent=data.songs[0]?.name||'暂无播放记录';$('songArtist').textContent=data.songs[0]?.artist||'';
@@ -45,11 +43,16 @@ async function generateActivity(){
  }catch(e){toast('生成失败：'+(e.message||'请检查主页 API 配置'))}
  finally{btn.disabled=false;btn.textContent='✦ 生成手机活动'}
 }
+function renderBrowser(){const list=$('browserHistory');if(!list)return;list.innerHTML=data.browserHistory.length?data.browserHistory.map(x=>row('⌕',x.title,x.url,x.time)).join(''):'<div class="empty">暂无浏览记录。</div>'}
+function renderXhs(){const box=$('xhsFeed');if(!box)return;box.innerHTML=data.xhsNotes.length?data.xhsNotes.map(x=>`<article class="glass note"><div class="eyebrow">${esc(x.time||'')}</div><b>${esc(x.title||'笔记')}</b><p>${esc(x.body||'')}</p></article>`).join(''):'<div class="empty">暂无笔记内容。</div>'}
+function addBrowserSearch(){const input=$('browserSearch'),q=(input?.value||'').trim();if(!q){toast('请输入搜索内容或网址');return}const url=(q.startsWith('http://')||q.startsWith('https://'))?q:'https://www.google.com/search?q='+encodeURIComponent(q);data.browserHistory.unshift({title:q,url,time:new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})});data.browserHistory=data.browserHistory.slice(0,40);save();renderBrowser();window.open(url,'_blank','noopener');}
+$('browserGo')?.addEventListener('click',addBrowserSearch);$('browserSearch')?.addEventListener('keydown',e=>{if(e.key==='Enter')addBrowserSearch()});
+renderBrowser();renderXhs();
 const now=new Date();$('statusTime').textContent=now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});$('todayDate').textContent=now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'2-digit'}).toUpperCase();
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
 document.querySelectorAll('[data-home]').forEach(b=>b.addEventListener('click',()=>show('home')));
 document.querySelectorAll('[data-contacts]').forEach(b=>b.addEventListener('click',()=>{renderContacts();show('contacts')}));
-$('backHome').addEventListener('click',()=>location.href='./index.html');$('phoneSettings').addEventListener('click',()=>show('settings'));
+$('backHome').addEventListener('click',()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}location.replace('./index.html')});
 $('generateActivity').addEventListener('click',generateActivity);
 $('playMusic').addEventListener('click',()=>toast('此版本展示播放记录，尚未接入音频播放。'));
 $('apiStatus').textContent=getApi()?'已读取主页 API 配置':'主页尚未配置完整 API';

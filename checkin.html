@@ -30,7 +30,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 </style>
 </head>
 <body>
-<header class="topbar"><div class="brand">LOVE RECORD <span style="opacity:.45">/</span> CHECK IN</div><div class="top-actions"><button class="icon-btn" id="backHome" aria-label="返回主页">⌂</button><button class="icon-btn" id="phoneSettings" aria-label="手机设置">⚙</button></div></header>
+<header class="topbar"><div class="brand">LOVE RECORD <span style="opacity:.45">/</span> CHECK IN</div><div class="top-actions"><button class="icon-btn" id="backHome" aria-label="返回主页">⌂</button></div></header>
 <div class="shell">
 <div class="phone-wrap"><div class="phone">
 <div class="status"><span id="statusTime">20:31</span><span class="status-icons">◔ ◉ ▰</span></div>
@@ -43,16 +43,18 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 <section id="homeView" class="view">
 <div class="hello"><div><div class="eyebrow">A LITTLE WINDOW INTO THEIR WORLD</div><h1 id="personName">手机</h1><p>一些不在聊天框里的日常。</p></div><div class="avatar" id="personAvatar">H</div></div>
 <div class="glass" style="padding:9px 12px;margin:-5px 0 12px;font-size:10px;color:#9a8976">界面预览 · 当前展示为示例内容，AI 自主活动与双向记忆将在下一阶段接入。</div><div class="glass overview"><div class="overview-head"><span class="tiny-label">TODAY AT A GLANCE</span><span class="date" id="todayDate">SATURDAY · NOV 14</span></div><div class="stats"><div class="stat"><strong id="statActivities">06</strong><span>手机活动</span></div><div class="stat"><strong id="statUnread">03</strong><span>未读消息</span></div><div class="stat"><strong id="statPhotos">12</strong><span>照片收藏</span></div></div></div>
-<div class="section-head"><h2>Their apps</h2><span class="tiny-label">APPLICATIONS</span></div>
+
 <div class="app-grid">
 <button class="app" data-view="messages"><span class="app-icon">▤</span><span>聊天</span></button>
-<button class="app" data-view="moments"><span class="app-icon">◌</span><span>动态</span></button>
+
 <button class="app" data-view="photos"><span class="app-icon">▧</span><span>相册</span></button>
 <button class="app" data-view="music"><span class="app-icon">♫</span><span>音乐</span></button>
 <button class="app" data-view="contactsApp"><span class="app-icon">♙</span><span>联系人</span></button>
 <button class="app" data-view="calendar"><span class="app-icon">▦</span><span>日历</span></button>
 <button class="app" data-view="notes"><span class="app-icon">✎</span><span>备忘录</span></button>
-<button class="app" data-view="notifications"><span class="app-icon">♧</span><span>通知</span></button>
+<button class="app" data-view="browser"><span class="app-icon">⌕</span><span>浏览器</span></button>
+<button class="app" data-view="xiaohongshu"><span class="app-icon">📕</span><span>小红书</span></button>
+
 </div>
 <div class="section-head"><h2>Now playing</h2><span class="tiny-label">RECENTLY</span></div>
 <div class="glass music"><div class="cover">♫</div><div class="music-info"><b id="songTitle">A quiet little moment</b><small id="songArtist">Recently played</small></div><button class="play" id="playMusic">▶</button></div>
@@ -61,22 +63,24 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 <div class="glass activity" id="activityPreview"></div>
 </section>
 <section id="messagesView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Messages</h2><div class="subline">聊天记录</div></div></div><div class="glass list-card" id="messageList"></div></section>
-<section id="momentsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Moments</h2><div class="subline">社交动态</div></div></div><div id="momentList"></div></section>
+
 <section id="photosView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Gallery</h2><div class="subline">相册 · 最近保存</div></div></div><div class="photo-grid" id="photoGrid"><div class="photo">A slow afternoon</div><div class="photo">Little details</div><div class="photo">On the way home</div><div class="photo">A saved moment</div></div></section>
 <section id="musicView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Music</h2><div class="subline">最近播放与收藏</div></div></div><div class="glass list-card" id="musicList"></div></section>
 <section id="contactsAppView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Contacts</h2><div class="subline">手机联系人</div></div></div><div class="glass list-card" id="contactList"></div></section>
 <section id="calendarView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Calendar</h2><div class="subline">日程安排</div></div></div><div id="calendarList"></div></section>
 <section id="notesView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Notes</h2><div class="subline">私人备忘录</div></div></div><div id="noteList"></div></section>
-<section id="notificationsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Notifications</h2><div class="subline">最近通知</div></div></div><div class="glass list-card" id="notificationList"></div></section>
+
+<section id="browserView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Browser</h2><div class="subline">浏览器 · 搜索与浏览记录</div></div></div><div class="glass" style="padding:13px;margin-bottom:12px"><div style="display:flex;gap:8px;align-items:center"><span style="color:#9b8873">⌕</span><input id="browserSearch" placeholder="搜索或输入网址" style="flex:1;min-width:0;border:0;background:transparent;outline:none;color:#514538;font:12px inherit"><button id="browserGo" class="text-btn">搜索</button></div></div><div class="glass list-card" id="browserHistory"><div class="empty">暂无浏览记录。</div></div></section>
+<section id="xiaohongshuView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">小红书</h2><div class="subline">发现生活灵感</div></div></div><div class="glass" style="padding:14px;margin-bottom:12px"><div class="eyebrow">FOR YOU</div><p style="font-size:11px;color:#9a8976;line-height:1.7;margin:8px 0 0">这里展示当前联系人的笔记、收藏与浏览动态。</p></div><div id="xhsFeed"><div class="empty">暂无笔记内容。</div></div></section>
 <section id="activityView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Activity</h2><div class="subline">今日手机活动</div></div></div><div class="glass activity" id="activityAll"></div></section>
-<section id="settingsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Phone settings</h2><div class="subline">手机信息</div></div></div><div class="glass list-card"><div class="list-item"><div class="list-main"><b>设备名称</b><p id="deviceName">手机设备</p></div></div><div class="list-item"><div class="list-main"><b>主题</b><p>奶油白 · 燕麦米 · 浅褐色</p></div></div><div class="list-item"><div class="list-main"><b>数据同步</b><p>沿用 LOVE RECORD 当前角色与主页 API</p></div></div><div class="list-item"><div class="list-main"><b>AI 活动生成</b><p id="apiStatus">正在读取主页 API 配置…</p></div></div></div></section>
+
 </div>
 <nav class="dock"><button data-contacts aria-label="切换联系人">♙</button><button data-home aria-label="桌面">⌂</button><button data-view="messages" aria-label="聊天">▤</button><button data-view="photos" aria-label="相册">▧</button><button data-view="music" aria-label="音乐">♫</button></nav>
 <div class="toast" id="toast"></div>
 </div></div>
 <aside class="side">
 <div class="glass side-card"><div class="eyebrow">PERSONAL DEVICE</div><h3 id="sideName">联系人手机</h3><p>一台属于当前 LOVE RECORD 角色的私人手机。这里的日常会随着你们的故事慢慢累积。</p><div class="status-pill"><i class="green-dot"></i> 本地手机空间已建立</div></div>
-<div class="glass side-card"><div class="eyebrow">QUICK ACCESS</div><button class="side-link" data-view="activity">今日活动记录 <span>↗</span></button><button class="side-link" data-view="notifications">通知中心 <span>↗</span></button><button class="side-link" data-view="notes">私人备忘录 <span>↗</span></button><button class="side-link" data-view="settings">手机信息 <span>↗</span></button></div>
+<div class="glass side-card"><div class="eyebrow">QUICK ACCESS</div><button class="side-link" data-view="activity">今日活动记录 <span>↗</span></button><button class="side-link" data-view="notifications">通知中心 <span>↗</span></button><button class="side-link" data-view="notes">私人备忘录 <span>↗</span></button></div>
 <div class="glass side-card"><div class="eyebrow">A NOTE</div><p>手机里的内容会被保存。查看已有内容不会重复调用 AI；需要生成新活动时，才会使用 LOVE RECORD 主页配置的 API。</p></div>
 </aside>
 </div>
