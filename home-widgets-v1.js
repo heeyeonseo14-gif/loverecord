@@ -16,7 +16,7 @@ const definitions=[
  {id:'focus',name:'专注时钟',category:'FOCUS',size:'medium',desc:'25分钟专注计时，支持暂停与重置'},
  {id:'week',name:'一周日历',category:'LIFE',size:'medium',desc:'查看本周日期，自动标记今天'}
 ];
-let config={items:[],order:['welcome','days','shelf'],hidden:[],positions:{},pageItems:{},pagePositions:{},pageFixed:{}},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
+let config={items:[],order:['shelf'],hidden:['welcome','days'],positions:{},pageItems:{},pagePositions:{},pageFixed:{},homeOnlyApps:true},activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0),pressTimer=null,pressStart=null,opening=false,editMode=false,dragState=null,needsUpgrade=false;
 const WIDGET_DB='love-record-home-widgets-db',WIDGET_STORE='layout',WIDGET_LAYOUT_KEY='desktop-layout-v1';
 function widgetDbOpen(){return new Promise((resolve,reject)=>{try{const req=indexedDB.open(WIDGET_DB);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(WIDGET_STORE))req.result.createObjectStore(WIDGET_STORE)};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Widget database open failed'));req.onblocked=()=>reject(new Error('Widget database is blocked'))}catch(err){reject(err)}})}
 async function widgetDbGet(){const db=await widgetDbOpen();return new Promise((resolve,reject)=>{const tx=db.transaction(WIDGET_STORE,'readonly'),req=tx.objectStore(WIDGET_STORE).get(WIDGET_LAYOUT_KEY);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('Widget layout read failed'));tx.oncomplete=()=>db.close();tx.onabort=()=>{db.close();reject(tx.error||new Error('Widget layout read aborted'))}})}
@@ -116,37 +116,36 @@ async function read(){
  if(v&&v.pageItems&&typeof v.pageItems==='object')config.pageItems=Object.fromEntries(Object.entries(v.pageItems).map(([k,a])=>[k,cleanItems(a)]));
  if(v&&v.pagePositions&&typeof v.pagePositions==='object')config.pagePositions={...v.pagePositions};
  if(v&&v.pageFixed&&typeof v.pageFixed==='object')config.pageFixed={...v.pageFixed};
- // Preserve existing widgets, but migrate the old pinned Days card into the movable widget shelf.
- if(!Object.keys(config.pageFixed).length)config.pageFixed['0']={hidden:[...(config.hidden||[])],order:[...(config.order||['shelf'])]};
- if(!Object.keys(config.pageItems).length)config.pageItems['0']=config.items.map(x=>({...x}));
- activePage=Math.max(0,Number(window.__loveRecordLauncherCurrentPage)||0);
- const hasAnySavedWidgets=Object.values(config.pageItems).some(arr=>Array.isArray(arr)&&arr.length>0);
- let firstPageItems=cleanItems(config.pageItems['0']||[]);
- if(!hasAnySavedWidgets){
-  firstPageItems=[
-   {id:'days',size:'medium'},
-   {id:'music',size:'medium'},
-   {id:'photo',size:'medium'},
-   {id:'daily',size:'small'}
-  ].map(x=>({note:'',waterCount:0,waterDate:'',mood:'',moodHistory:[],focusRemaining:1500,focusUntil:0,focusRunning:false,...x}));
+ // APP-ONLY HOME: remove the previous automatically seeded cards once.
+ // Widgets remain available in the chooser and appear only after the user adds them.
+ const firstInstall=!v||v.homeOnlyApps!==true;
+ if(firstInstall){
+  config.pageItems=Object.fromEntries(Object.keys(config.pageItems||{}).map(k=>[k,[]]));
+  config.pageItems['0']=[];
+  config.pageItems[String(activePage)]=[];
+  config.items=[];
+  config.pagePositions={};
+  config.positions={};
+  config.pageFixed['0']={hidden:['welcome','days'],order:['shelf']};
+  config.pageFixed[String(activePage)]={hidden:['welcome','days'],order:['shelf']};
+  config.hidden=['welcome','days'];
+  config.order=['shelf'];
+  config.homeOnlyApps=true;
+  needsUpgrade=true;
+ }else{
+  config.homeOnlyApps=true;
+  config.pageItems['0']=config.pageItems['0']||[];
+  config.pagePositions['0']=config.pagePositions['0']||{};
+  config.pageFixed['0']=config.pageFixed['0']||{hidden:['welcome','days'],order:['shelf']};
+  config.pageFixed['0'].hidden=[...new Set([...(config.pageFixed['0'].hidden||[]),'welcome','days'])];
+  config.pageFixed['0'].order=['shelf'];
+  config.items=cleanItems(config.pageItems[String(activePage)]||[]);
+  config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
+  config.positions={...(config.pagePositions[String(activePage)]||{})};
+  config.hidden=['welcome','days'];
+  config.order=['shelf'];
  }
- if(!firstPageItems.some(x=>x.id==='days')){
-  firstPageItems.unshift({id:'days',size:'medium',note:'',waterCount:0,waterDate:'',mood:'',moodHistory:[],focusRemaining:1500,focusUntil:0,focusRunning:false});
- }
- config.pageItems['0']=firstPageItems;
- for(const pageItems of Object.values(config.pageItems))for(const item of (Array.isArray(pageItems)?pageItems:[]))if(item.id==='days')item.size='medium';
- config.pagePositions['0']=config.pagePositions['0']||{};
- config.pageFixed['0']=config.pageFixed['0']||{hidden:[],order:['welcome','shelf']};
- config.pageFixed['0'].hidden=[...new Set([...(config.pageFixed['0'].hidden||[]).filter(x=>x!=='welcome'),'days'])];
- config.pageFixed['0'].order=(config.pageFixed['0'].order||['welcome','shelf']).filter(x=>x!=='days');
- config.items=cleanItems(config.pageItems[String(activePage)]||[]);
- config.pageItems[String(activePage)]=config.items.map(x=>({...x}));
- config.positions={...(config.pagePositions[String(activePage)]||config.positions||{})};
- const fixed=config.pageFixed[String(activePage)]||{hidden:['days'],order:['welcome','shelf']};
- config.hidden=[...new Set([...(fixed.hidden||[]),'days'])];
- config.order=(fixed.order||['welcome','shelf']).filter(x=>x!=='days');
- if(activePage===0)config.items=cleanItems(config.pageItems['0']);
- if(v&&Array.isArray(v.items)&&!await widgetDbHasLayout())await save({silent:true});
+ if(firstInstall|| (v&&Array.isArray(v.items)&&!await widgetDbHasLayout()))await save({silent:true});
 }
 async function widgetDbHasLayout(){try{return !!(await widgetDbGet())}catch{return false}}
 function applyLayout(){const map={welcome,shelf};config.order.filter(id=>id!=='days').forEach(id=>{const node=map[id];if(node&&node.parentElement===board)board.appendChild(node)});if(welcome)welcome.hidden=config.hidden.includes('welcome');if(daysCard){daysCard.hidden=true;daysCard.setAttribute('aria-hidden','true')}if(shelf)shelf.hidden=!config.items.length&&!editMode;}

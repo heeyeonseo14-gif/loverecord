@@ -1125,12 +1125,7 @@ body.launcher-open .system-appbar{display:none!important}
 <div class="app">
 
 <main id="launcher" class="page active launcher-page">
-  <section class="launcher-welcome">
-    <div class="launcher-kicker">LOVE RECORD · THE EVERYDAY EDITION</div>
-    <div class="launcher-greeting">我们的小宇宙</div>
-    <div class="launcher-sub">A LITTLE WORLD OF OUR OWN · MADE OF MOMENTS</div>
-  </section>
-  <section class="launcher-info" aria-label="我们的纪念日" data-drag-id="days-widget">
+  <section class="launcher-info" aria-label="我们的纪念日数据源" data-drag-id="days-widget" hidden aria-hidden="true">
     <div class="launcher-info-copy">
       <div class="launcher-days"><strong id="launcherDays">0</strong><span>DAYS TOGETHER</span></div>
       <div class="launcher-today"><span class="launcher-today-label">TODAY</span><span id="launcherToday">把今天也留在这里。</span></div>
@@ -1145,7 +1140,6 @@ body.launcher-open .system-appbar{display:none!important}
       <input id="homeFile" type="file" accept="image/*" hidden>
     </div>
   </section>
-  <div class="launcher-section-heading">THE LITTLE THINGS WE KEEP <span>01 / APPLICATIONS</span></div>
   <section class="launcher-grid" aria-label="应用">
     <button class="launcher-app" type="button" data-shiyi-launch data-drag-id="app-shiyi"><span class="app-icon" style="background:linear-gradient(145deg,rgba(250,246,255,.96),rgba(218,202,239,.86));color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.14)">✧</span><span>拾忆</span></button>
     <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
@@ -3046,7 +3040,7 @@ body.launcher-open #launcher{
 body.launcher-open #launcher.page.active.launcher-page{
  box-sizing:border-box;height:calc(100dvh - 108px - env(safe-area-inset-bottom))!important;
  min-height:0!important;max-height:calc(100dvh - 108px - env(safe-area-inset-bottom))!important;
- overflow-y:auto!important;overflow-x:hidden!important;padding:14px 0 34px!important;
+ overflow-y:auto!important;overflow-x:hidden!important;padding:28px 0 120px!important;
  scrollbar-width:none;overscroll-behavior:contain;
 }
 body.launcher-open #launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
@@ -3354,6 +3348,13 @@ body.launcher-open .page{padding-bottom:34px!important}
 }
 </style>
 
+
+
+<style id="lr-home-app-icons-only-v1">
+body.launcher-open #launcher .launcher-info[hidden]{display:none!important}
+body.launcher-open #launcher .launcher-grid{margin-top:0!important}
+body.launcher-open #launcher .launcher-pages{padding-bottom:28px!important}
+</style>
 
 </body>
 </html>
