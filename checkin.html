@@ -8,8 +8,8 @@
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:radial-gradient(ellipse at 12% 0%,#fffaf1 0,transparent 42%),linear-gradient(145deg,#eee8de,#e7dfd3 58%,#f4eee5);-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{outline:2px solid #a98e6c;outline-offset:3px}
 .topbar{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;max-width:1100px;margin:auto}.brand{font-size:12px;letter-spacing:.22em;font-weight:700;color:#8d7962}.top-actions{display:flex;gap:8px}.icon-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.52);border:1px solid var(--line);display:grid;place-items:center;color:var(--brown)}
-.shell{max-width:1100px;margin:0 auto;padding:10px 18px 42px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px}
-.phone-wrap{display:flex;justify-content:center}.phone{width:min(100%,440px);min-height:760px;border:1px solid rgba(255,255,255,.88);border-radius:34px;background:linear-gradient(155deg,rgba(255,253,248,.94),rgba(242,235,224,.88));box-shadow:0 28px 80px rgba(82,65,45,.17),inset 0 1px 0 white;overflow:hidden;position:relative}
+.shell{max-width:760px;margin:0 auto;padding:10px 18px 42px;display:block}
+.phone-wrap{display:flex;justify-content:center}.phone{width:100%;min-height:760px;border:1px solid rgba(255,255,255,.88);border-radius:34px;background:linear-gradient(155deg,rgba(255,253,248,.94),rgba(242,235,224,.88));box-shadow:0 28px 80px rgba(82,65,45,.17),inset 0 1px 0 white;overflow:hidden;position:relative}
 .status{height:34px;padding:11px 23px 0;display:flex;justify-content:space-between;font-size:10px;color:#897965;letter-spacing:.04em}.status-icons{display:flex;gap:6px}
 .screen{padding:18px 20px 94px;min-height:710px}.hello{display:flex;justify-content:space-between;align-items:flex-start;margin:4px 0 19px}.eyebrow{font-size:9px;letter-spacing:.2em;color:#a28d75;font-weight:700}.hello h1{font-family:Georgia,serif;font-size:36px;font-weight:400;letter-spacing:-.04em;margin:8px 0 4px;color:#554839}.hello p{margin:0;color:#9c8b77;font-size:11px}.avatar{width:52px;height:52px;border-radius:18px;background:linear-gradient(145deg,#e9dece,#cdbba3);display:grid;place-items:center;color:#806c55;font-family:Georgia,serif;font-size:21px;border:1px solid #fff;box-shadow:0 7px 18px #8b74501a}
 .glass{background:var(--card);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:22px}
@@ -74,11 +74,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{o
 
 <div class="toast" id="toast"></div>
 </div></div>
-<aside class="side">
-<div class="glass side-card"><div class="eyebrow">PERSONAL DEVICE</div><h3 id="sideName">联系人手机</h3><p>一台属于当前 LOVE RECORD 角色的私人手机。这里的日常会随着你们的故事慢慢累积。</p><div class="status-pill"><i class="green-dot"></i> 本地手机空间已建立</div></div>
-<div class="glass side-card"><div class="eyebrow">QUICK ACCESS</div><button class="side-link" data-view="activity">今日活动记录 <span>↗</span></button><button class="side-link" data-view="notifications">通知中心 <span>↗</span></button><button class="side-link" data-view="notes">私人备忘录 <span>↗</span></button></div>
-<div class="glass side-card"><div class="eyebrow">A NOTE</div><p>手机里的内容会被保存。查看已有内容不会重复调用 AI；需要生成新活动时，才会使用 LOVE RECORD 主页配置的 API。</p></div>
-</aside>
+
 </div>
-<script src="./checkin-v1.js?v=1"></script>
+<script src="./checkin-v1.js?v=5"></script>
 </body></html>
