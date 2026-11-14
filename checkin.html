@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eee7dc"><title>查岗 · CHECK IN</title>
+<style>
+:root{--bg:#eee8de;--paper:#f8f4ed;--card:rgba(255,252,246,.78);--line:rgba(119,96,70,.14);--ink:#514538;--muted:#9a8976;--brown:#806b54;--accent:#b49a79;--shadow:0 16px 42px rgba(92,72,48,.10)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink);background:radial-gradient(ellipse at 12% 0%,#fffaf1 0,transparent 42%),linear-gradient(145deg,#eee8de,#e7dfd3 58%,#f4eee5);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;cursor:pointer}button:focus-visible{outline:2px solid #a98e6c;outline-offset:3px}
+.topbar{height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;max-width:1100px;margin:auto}.brand{font-size:12px;letter-spacing:.22em;font-weight:700;color:#8d7962}.top-actions{display:flex;gap:8px}.icon-btn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.52);border:1px solid var(--line);display:grid;place-items:center;color:var(--brown)}
+.shell{max-width:1100px;margin:0 auto;padding:10px 18px 42px;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:22px}
+.phone-wrap{display:flex;justify-content:center}.phone{width:min(100%,440px);min-height:760px;border:1px solid rgba(255,255,255,.88);border-radius:34px;background:linear-gradient(155deg,rgba(255,253,248,.94),rgba(242,235,224,.88));box-shadow:0 28px 80px rgba(82,65,45,.17),inset 0 1px 0 white;overflow:hidden;position:relative}
+.status{height:34px;padding:11px 23px 0;display:flex;justify-content:space-between;font-size:10px;color:#897965;letter-spacing:.04em}.status-icons{display:flex;gap:6px}
+.screen{padding:18px 20px 94px;min-height:710px}.hello{display:flex;justify-content:space-between;align-items:flex-start;margin:4px 0 19px}.eyebrow{font-size:9px;letter-spacing:.2em;color:#a28d75;font-weight:700}.hello h1{font-family:Georgia,serif;font-size:36px;font-weight:400;letter-spacing:-.04em;margin:8px 0 4px;color:#554839}.hello p{margin:0;color:#9c8b77;font-size:11px}.avatar{width:52px;height:52px;border-radius:18px;background:linear-gradient(145deg,#e9dece,#cdbba3);display:grid;place-items:center;color:#806c55;font-family:Georgia,serif;font-size:21px;border:1px solid #fff;box-shadow:0 7px 18px #8b74501a}
+.glass{background:var(--card);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:22px}
+.overview{padding:16px 17px;margin-bottom:17px;position:relative;overflow:hidden}.overview:after{content:"";position:absolute;width:130px;height:130px;border-radius:50%;right:-40px;top:-55px;background:radial-gradient(circle,#d9c7ac88,transparent 70%)}.overview-head{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}.tiny-label{font-size:9px;letter-spacing:.15em;color:#a08c75;font-weight:700}.date{font-size:10px;color:#a18e79}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:17px;position:relative;z-index:1}.stat strong{display:block;font:26px Georgia,serif;color:#655441;font-weight:400}.stat span{font-size:10px;color:#a18e7b}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:20px 2px 11px}.section-head h2{font:20px Georgia,serif;font-weight:400;margin:0;color:#5e4e3d}.text-btn{background:none;color:#a18868;font-size:10px;padding:5px}
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px 8px;padding:9px 2px 13px}.app{background:none;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}.app-icon{width:55px;height:55px;border-radius:18px;background:linear-gradient(145deg,#fffdf8,#e8dece);border:1px solid white;box-shadow:0 7px 17px rgba(101,79,51,.10),inset 0 1px 0 white;display:grid;place-items:center;color:#89765e;font-size:22px;transition:transform .18s}.app:active .app-icon{transform:scale(.94)}.app span:last-child{font-size:10px;color:#776653}
+.music{padding:13px;display:flex;align-items:center;gap:12px;margin-top:7px}.cover{width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,#d9c7ac,#a88e6e);display:grid;place-items:center;color:#fff;font-size:20px}.music-info{flex:1;min-width:0}.music-info b{display:block;font-size:11px;font-weight:600}.music-info small{display:block;color:#a08e7a;font-size:9px;margin-top:4px}.play{width:30px;height:30px;border-radius:50%;background:#8d785e;color:#fff}
+.activity{padding:13px 14px}.activity-row{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}.activity-row:last-child{border:0}.activity-dot{width:30px;height:30px;border-radius:11px;background:#eee5d8;display:grid;place-items:center;color:#8c775d;flex-shrink:0}.activity-copy{flex:1}.activity-copy b{font-size:10px;font-weight:600;display:block}.activity-copy p{font-size:10px;color:#9b8a77;margin:4px 0 0;line-height:1.5}.activity-copy time{font-size:9px;color:#b2a18e}
+.dock{position:absolute;bottom:17px;left:20px;right:20px;padding:11px 14px;border-radius:23px;background:rgba(255,252,246,.78);border:1px solid white;box-shadow:0 10px 30px rgba(87,67,43,.12);display:flex;justify-content:space-around;backdrop-filter:blur(20px)}.dock button{background:none;color:#8c795f;font-size:20px;width:40px;height:38px}
+.side{padding-top:18px}.side-card{padding:19px;margin-bottom:14px}.side-card h3{font:20px Georgia,serif;font-weight:400;margin:5px 0 8px}.side-card p{font-size:11px;color:#9a8976;line-height:1.7;margin:0}.status-pill{display:inline-flex;align-items:center;gap:6px;background:#edf0e7;color:#77816b;border-radius:99px;padding:6px 10px;font-size:9px;margin-top:13px}.green-dot{width:5px;height:5px;border-radius:50%;background:#8c9b78}.side-link{width:100%;background:transparent;display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:11px;text-align:left}.side-link:last-child{border:0}.side-link span:last-child{color:#b09a7c}
+.view{display:none}.view.active{display:block}.backline{display:flex;align-items:center;gap:10px;margin:3px 0 18px}.back{background:#fff9;border:1px solid white;width:34px;height:34px;border-radius:50%;font-size:19px;color:#8a765d}.view-title{font:26px Georgia,serif;font-weight:400;margin:0}.subline{font-size:10px;color:#a18e79;margin:6px 0 18px}
+.list-card{padding:14px;margin:9px 0}.list-item{display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.list-item:last-child{border:0}.list-avatar{width:39px;height:39px;border-radius:14px;background:#e8dece;display:grid;place-items:center;color:#806b54}.list-main{flex:1;min-width:0}.list-main b{font-size:11px;display:block}.list-main p{font-size:10px;color:#a08e7a;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.list-item time{font-size:9px;color:#ad9a85}
+.photo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.photo{aspect-ratio:1/1;border-radius:18px;background:linear-gradient(145deg,#e6dac8,#bca88e);display:flex;align-items:flex-end;padding:11px;color:#fff;font-size:10px;box-shadow:inset 0 -50px 50px -40px #59452e66}.photo:nth-child(2){background:linear-gradient(145deg,#d6d0c1,#9c927e)}.photo:nth-child(3){background:linear-gradient(145deg,#eadfcf,#c4a98b)}.photo:nth-child(4){background:linear-gradient(145deg,#d9c8b2,#a48e72)}
+.note{padding:15px;margin-bottom:10px}.note b{font:16px Georgia,serif;font-weight:400}.note p{font-size:10px;color:#978571;line-height:1.7;margin:7px 0 0}
+.empty{padding:32px 16px;text-align:center;color:#a18e79;font-size:11px}
+.toast{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);background:#655542;color:white;padding:9px 14px;border-radius:30px;font-size:10px;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap}.toast.show{opacity:1}
+@media(max-width:760px){.topbar{height:50px;padding:0 14px}.shell{display:block;padding:0 10px 25px}.phone{width:100%;min-height:calc(100dvh - 65px);border-radius:29px}.screen{min-height:calc(100dvh - 99px)}.side{display:none}.hello h1{font-size:34px}.app-grid{gap:17px 8px}.app-icon{width:57px;height:57px}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand">LOVE RECORD <span style="opacity:.45">/</span> CHECK IN</div><div class="top-actions"><button class="icon-btn" id="backHome" aria-label="返回主页">⌂</button><button class="icon-btn" id="phoneSettings" aria-label="手机设置">⚙</button></div></header>
+<div class="shell">
+<div class="phone-wrap"><div class="phone">
+<div class="status"><span id="statusTime">20:31</span><span class="status-icons">◔ ◉ ▰</span></div>
+<div class="screen">
+<section id="homeView" class="view active">
+<div class="hello"><div><div class="eyebrow">A LITTLE WINDOW INTO HIS WORLD</div><h1 id="personName">His phone.</h1><p>一些不在聊天框里的日常。</p></div><div class="avatar" id="personAvatar">H</div></div>
+<div class="glass" style="padding:9px 12px;margin:-5px 0 12px;font-size:10px;color:#9a8976">界面预览 · 当前展示为示例内容，AI 自主活动与双向记忆将在下一阶段接入。</div><div class="glass overview"><div class="overview-head"><span class="tiny-label">TODAY AT A GLANCE</span><span class="date" id="todayDate">SATURDAY · NOV 14</span></div><div class="stats"><div class="stat"><strong id="statActivities">06</strong><span>手机活动</span></div><div class="stat"><strong id="statUnread">03</strong><span>未读消息</span></div><div class="stat"><strong id="statPhotos">12</strong><span>照片收藏</span></div></div></div>
+<div class="section-head"><h2>His little apps</h2><span class="tiny-label">APPLICATIONS</span></div>
+<div class="app-grid">
+<button class="app" data-view="messages"><span class="app-icon">▤</span><span>聊天</span></button>
+<button class="app" data-view="moments"><span class="app-icon">◌</span><span>动态</span></button>
+<button class="app" data-view="photos"><span class="app-icon">▧</span><span>相册</span></button>
+<button class="app" data-view="music"><span class="app-icon">♫</span><span>音乐</span></button>
+<button class="app" data-view="contacts"><span class="app-icon">♙</span><span>联系人</span></button>
+<button class="app" data-view="calendar"><span class="app-icon">▦</span><span>日历</span></button>
+<button class="app" data-view="notes"><span class="app-icon">✎</span><span>备忘录</span></button>
+<button class="app" data-view="notifications"><span class="app-icon">♧</span><span>通知</span></button>
+</div>
+<div class="section-head"><h2>Now playing</h2><span class="tiny-label">RECENTLY</span></div>
+<div class="glass music"><div class="cover">♫</div><div class="music-info"><b id="songTitle">A quiet little moment</b><small id="songArtist">Recently played</small></div><button class="play" id="playMusic">▶</button></div>
+<div class="section-head"><h2>Recent activity</h2><button class="text-btn" data-view="activity">VIEW ALL ↗</button></div>
+<div class="glass activity" id="activityPreview"></div>
+</section>
+<section id="messagesView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Messages</h2><div class="subline">聊天记录</div></div></div><div class="glass list-card" id="messageList"></div></section>
+<section id="momentsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Moments</h2><div class="subline">社交动态</div></div></div><div id="momentList"></div></section>
+<section id="photosView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Gallery</h2><div class="subline">相册 · 最近保存</div></div></div><div class="photo-grid" id="photoGrid"><div class="photo">A slow afternoon</div><div class="photo">Little details</div><div class="photo">On the way home</div><div class="photo">A saved moment</div></div></section>
+<section id="musicView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Music</h2><div class="subline">最近播放与收藏</div></div></div><div class="glass list-card" id="musicList"></div></section>
+<section id="contactsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Contacts</h2><div class="subline">联系人</div></div></div><div class="glass list-card" id="contactList"></div></section>
+<section id="calendarView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Calendar</h2><div class="subline">日程安排</div></div></div><div id="calendarList"></div></section>
+<section id="notesView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Notes</h2><div class="subline">私人备忘录</div></div></div><div id="noteList"></div></section>
+<section id="notificationsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Notifications</h2><div class="subline">最近通知</div></div></div><div class="glass list-card" id="notificationList"></div></section>
+<section id="activityView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Activity</h2><div class="subline">今日手机活动</div></div></div><div class="glass activity" id="activityAll"></div></section>
+<section id="settingsView" class="view"><div class="backline"><button class="back" data-home>‹</button><div><h2 class="view-title">Phone settings</h2><div class="subline">手机信息</div></div></div><div class="glass list-card"><div class="list-item"><div class="list-main"><b>设备名称</b><p id="deviceName">His phone</p></div></div><div class="list-item"><div class="list-main"><b>主题</b><p>奶油白 · 燕麦米 · 浅褐色</p></div></div><div class="list-item"><div class="list-main"><b>数据同步</b><p>沿用 LOVE RECORD 当前角色与主页 API</p></div></div><div class="list-item"><div class="list-main"><b>AI 活动生成</b><p id="apiStatus">正在读取主页 API 配置…</p></div></div></div></section>
+</div>
+<nav class="dock"><button data-home aria-label="桌面">⌂</button><button data-view="messages" aria-label="聊天">▤</button><button data-view="photos" aria-label="相册">▧</button><button data-view="music" aria-label="音乐">♫</button></nav>
+<div class="toast" id="toast"></div>
+</div></div>
+<aside class="side">
+<div class="glass side-card"><div class="eyebrow">PERSONAL DEVICE</div><h3 id="sideName">His phone</h3><p>一台属于当前 LOVE RECORD 角色的私人手机。这里的日常会随着你们的故事慢慢累积。</p><div class="status-pill"><i class="green-dot"></i> 本地手机空间已建立</div></div>
+<div class="glass side-card"><div class="eyebrow">QUICK ACCESS</div><button class="side-link" data-view="activity">今日活动记录 <span>↗</span></button><button class="side-link" data-view="notifications">通知中心 <span>↗</span></button><button class="side-link" data-view="notes">私人备忘录 <span>↗</span></button><button class="side-link" data-view="settings">手机信息 <span>↗</span></button></div>
+<div class="glass side-card"><div class="eyebrow">A NOTE</div><p>手机里的内容会被保存。查看已有内容不会重复调用 AI；需要生成新活动时，才会使用 LOVE RECORD 主页配置的 API。</p></div>
+</aside>
+</div>
+<script src="./checkin-v1.js?v=1"></script>
+</body></html>

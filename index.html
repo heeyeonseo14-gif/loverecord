@@ -2396,7 +2396,7 @@ const homeIconBindings=[
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
  {id:'app-games',symbol:'🎮'},{id:'app-live',symbol:'✦'},{id:'app-checkin',symbol:'◉'}
 ];
-document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>toast('查岗功能将在周末开放，先把图标留在这里啦。'));
+document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>{location.href='./checkin.html';});
 async function loadHomeCustomIcons(){
  for(const item of homeIconBindings){
   try{
