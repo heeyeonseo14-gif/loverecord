@@ -2503,7 +2503,7 @@ worldBooksReady=restoreWorldBooks();
  let swipeStart=null,swipeAxis=null,swipeFrame=0;
  const resetSwipeVisual=()=>{cancelAnimationFrame(swipeFrame);grid.style.transition='transform 180ms cubic-bezier(.22,.75,.25,1)';grid.style.transform='translate3d(0,0,0)';swipeFrame=requestAnimationFrame(()=>{grid.style.transition='';});};
  launcher.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrWidgetOverlay,.lr-widget')){swipeStart=null;swipeAxis=null;return}
+  if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrwStudioOverlay,.lrw-card')){swipeStart=null;swipeAxis=null;return}
   const t=e.touches[0];swipeStart={x:t.clientX,y:t.clientY,time:Date.now()};swipeAxis=null;grid.style.transition='none';
  },{passive:true});
  launcher.addEventListener('touchmove',e=>{
@@ -2940,7 +2940,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=106"></script>
+<script src="./home-widgets-v1.js?v=107"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3133,7 +3133,7 @@ body.lr-external-app-open{overflow:hidden}
 #launcher .launcher-pages{touch-action:none!important;user-select:none;-webkit-user-select:none}
 #launcher .launcher-pages [data-launcher-page]{touch-action:none!important;min-width:14px!important;min-height:14px!important}
 #launcher .launcher-grid .launcher-app{touch-action:none!important}
-#lrWidgetShelf .lr-widget,#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none!important;user-select:none;-webkit-user-select:none}
+#lrWidgetShelf .lrw-card,#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none!important;user-select:none;-webkit-user-select:none}
 </style>
 
 <style id="lr-launcher-drag-repair-v7">
