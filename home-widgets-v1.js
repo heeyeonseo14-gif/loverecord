@@ -211,11 +211,74 @@ async function switchWidgetPage(next){
 }
 window.addEventListener('lr-launcher-page-change',e=>{switchWidgetPage(e.detail?.page).catch(err=>console.error('[LOVE RECORD] page widget switch failed',err))});
 function saveOrder(){config.order=[...board.children].filter(n=>n===welcome||n===daysCard||n===shelf).map(n=>n===welcome?'welcome':n===daysCard?'days':'shelf');config.pageFixed[String(activePage)]={hidden:[...config.hidden],order:[...config.order]};config.items=[...shelf.querySelectorAll('.lr-widget')].map(n=>config.items.find(x=>x.id===n.dataset.widgetId)).filter(Boolean);save()}
-function reorderAt(x,y){if(!dragState)return;if(dragState.scope==='shelf'){dragState.node.style.transform=`translate3d(${x-dragState.startX}px,${y-dragState.startY}px,0) scale(1.025)`;dragState.node.style.zIndex='50';return}const under=document.elementFromPoint(x,y);const target=under?.closest('.launcher-welcome,.launcher-info,#lrWidgetShelf .lr-widget');if(dragState.scope==='board'){if(target===welcome||target===daysCard){const rect=target.getBoundingClientRect();board.insertBefore(dragState.node,y<rect.top+rect.height/2?target:target.nextSibling)}else if(target===shelf){board.insertBefore(dragState.node,shelf)}return}if(dragState.scope==='shelf'){if(target?.classList.contains('lr-widget')&&target!==dragState.node){const rect=target.getBoundingClientRect();const before=y<rect.top+rect.height/2||(Math.abs(y-rect.top-rect.height/2)<rect.height*.28&&x<rect.left+rect.width/2);shelf.insertBefore(dragState.node,before?target:target.nextSibling)}else{const rect=shelf.getBoundingClientRect();if(x>=rect.left&&x<=rect.right&&y>=rect.top&&y<=rect.bottom)shelf.appendChild(dragState.node)}}}
-function startDrag(node,e){if(!editMode||!node)return;dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board',oldPointerEvents:node.style.pointerEvents,startX:e.clientX||0,startY:e.clientY||0,widgetId:node.dataset.widgetId||null,oldPosition:node.dataset.widgetId?{...(config.positions[node.dataset.widgetId]||{row:2,col:1})}:null};try{if(e.pointerId!==undefined)node.setPointerCapture(e.pointerId)}catch{}node.classList.add('is-lr-dragging');node.style.pointerEvents='none';if(e.cancelable)e.preventDefault()}
-document.addEventListener('pointermove',e=>{if(dragState){window.__lrWidgetLastPointer={x:e.clientX,y:e.clientY};reorderAt(e.clientX,e.clientY)}});
-document.addEventListener('pointerup',e=>{if(!dragState)return;dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';if(dragState.scope==='shelf'&&dragState.widgetId){const r=dragState.node.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;dragState.node.style.transform='';dragState.node.style.zIndex='';commitWidgetDrop(dragState.widgetId,cx,cy)}dragState=null;saveOrder();renderChoices()});
-document.addEventListener('pointercancel',()=>{if(dragState){dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';dragState=null}});
+async function moveWidgetToPage(id,targetPage){
+ const item=config.items.find(x=>x.id===id);if(!item||targetPage===activePage)return false;
+ const from=String(activePage),to=String(targetPage);
+ const targetItems=(config.pageItems[to]||[]).map(x=>({...x}));
+ if(targetItems.some(x=>x.id===id))return false;
+ config.pageItems[from]=config.items.filter(x=>x.id!==id).map(x=>({...x}));
+ config.pageItems[to]=[...targetItems,{...item}];
+ const nextPositions={...(config.pagePositions[to]||{})};delete nextPositions[id];config.pagePositions[to]=nextPositions;
+ config.items=config.pageItems[from].map(x=>({...x}));
+ delete config.positions[id];
+ await save({silent:true});
+ if(typeof window.__loveRecordLauncherSetPage==='function')window.__loveRecordLauncherSetPage(targetPage);
+ notify('组件已移动到第 '+(targetPage+1)+' 页 ♡');
+ return true;
+}
+let widgetDragFrame=0,widgetPendingPoint=null;
+function reorderAt(x,y){
+ if(!dragState)return;
+ dragState.lastX=x;dragState.lastY=y;
+ widgetPendingPoint={x,y};
+ if(widgetDragFrame)return;
+ widgetDragFrame=requestAnimationFrame(()=>{
+  widgetDragFrame=0;if(!dragState||!widgetPendingPoint)return;
+  const p=widgetPendingPoint;widgetPendingPoint=null;
+  dragState.node.style.transform=`translate3d(${p.x-dragState.startX}px,${p.y-dragState.startY}px,0) scale(1.025)`;
+  dragState.node.style.zIndex='150';
+ });
+}
+function startDrag(node,e){
+ if(!editMode||!node)return;
+ dragState={node,scope:node.classList.contains('lr-widget')?'shelf':'board',oldPointerEvents:node.style.pointerEvents,
+  startX:e.clientX||0,startY:e.clientY||0,lastX:e.clientX||0,lastY:e.clientY||0,
+  widgetId:node.dataset.widgetId||null,oldPosition:node.dataset.widgetId?{...(config.positions[node.dataset.widgetId]||{row:2,col:1})}:null};
+ try{if(e.pointerId!==undefined)node.setPointerCapture(e.pointerId)}catch{}
+ node.classList.add('is-lr-dragging');node.style.pointerEvents='none';node.style.willChange='transform';
+ if(e.cancelable)e.preventDefault();
+}
+document.addEventListener('pointermove',e=>{if(dragState){window.__lrWidgetLastPointer={x:e.clientX,y:e.clientY};reorderAt(e.clientX,e.clientY)}},{passive:true});
+document.addEventListener('pointerup',e=>{
+ if(!dragState)return;
+ if(widgetDragFrame){cancelAnimationFrame(widgetDragFrame);widgetDragFrame=0;}
+ if(widgetPendingPoint){const p=widgetPendingPoint;widgetPendingPoint=null;dragState.node.style.transform=`translate3d(${p.x-dragState.startX}px,${p.y-dragState.startY}px,0) scale(1.025)`;}
+ const state=dragState,node=state.node;
+ node.classList.remove('is-lr-dragging');
+ const releaseX=Number.isFinite(e.clientX)?e.clientX:state.lastX,releaseY=Number.isFinite(e.clientY)?e.clientY:state.lastY;
+ const releaseUnder=document.elementFromPoint(releaseX,releaseY);
+ const pageDot=releaseUnder?.closest('[data-launcher-page]');
+ const targetPage=pageDot?Number(pageDot.dataset.launcherPage):null;
+ if(state.scope==='shelf'&&state.widgetId){
+  const r=node.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  node.style.transform='';node.style.zIndex='';node.style.willChange='';
+  if(targetPage!==null&&Number.isInteger(targetPage)&&targetPage>=0&&targetPage!==activePage){
+   moveWidgetToPage(state.widgetId,targetPage).then(moved=>{if(!moved)commitWidgetDrop(state.widgetId,cx,cy)}).catch(err=>console.error('[LOVE RECORD] widget page move failed',err));
+  }else commitWidgetDrop(state.widgetId,cx,cy);
+ }else if(state.scope==='board'){
+  const target=releaseUnder?.closest('.launcher-welcome,.launcher-info,#lrWidgetShelf');
+  if(target&&target!==node){const rect=target.getBoundingClientRect();board.insertBefore(node,(state.lastY||e.clientY)<rect.top+rect.height/2?target:target.nextSibling);}
+  node.style.transform='';node.style.zIndex='';node.style.willChange='';
+ }
+ const wasPageDrop=state.scope==='shelf'&&state.widgetId&&targetPage!==null&&targetPage!==activePage;
+ node.style.pointerEvents=state.oldPointerEvents||'';
+ dragState=null;if(!wasPageDrop)saveOrder();renderChoices();
+});
+document.addEventListener('pointercancel',()=>{
+ if(widgetDragFrame){cancelAnimationFrame(widgetDragFrame);widgetDragFrame=0;}
+ widgetPendingPoint=null;
+ if(dragState){dragState.node.classList.remove('is-lr-dragging');dragState.node.style.pointerEvents=dragState.oldPointerEvents||'';dragState.node.style.transform='';dragState.node.style.zIndex='';dragState.node.style.willChange='';dragState=null;}
+});
 launcher.addEventListener('pointerdown',e=>{
  if(e.target.closest('.launcher-app'))return; // app icons have their own multi-page drag controller
  const node=itemNode(e.target);
