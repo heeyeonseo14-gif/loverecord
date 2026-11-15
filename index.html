@@ -3040,6 +3040,7 @@ document.addEventListener('click',function(e){
 },true);
 window.__LOVE_RECORD_OPEN_STAR_ASSISTANT=open;
 window.__LOVE_RECORD_CLOSE_STAR_ASSISTANT=close;
+window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===frame.contentWindow&&e.data&&e.data.type==='LR_STAR_ASSISTANT_CLOSE')close()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
 })();
 </script>

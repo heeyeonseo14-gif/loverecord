@@ -8,8 +8,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function toast(s){const t=$('toast');t.textContent=s;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2400)}
 function savedEnabled(){try{return localStorage.getItem(SAVE_KEY)==='1'}catch{return false}}
 function setView(next){view=next;$('homeView').hidden=next!=='home';$('chatView').hidden=next!=='chat';$('historyView').hidden=next!=='history';$('historyBtn').hidden=next==='history';if(next==='history')renderHistory()}
-function close(){try{parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin)}catch{history.back()}}
-$('backBtn').addEventListener('click',()=>view==='chat'?setView('home'):close());
+function close(){try{if(parent&&typeof parent.__LOVE_RECORD_CLOSE_STAR_ASSISTANT==='function'){parent.__LOVE_RECORD_CLOSE_STAR_ASSISTANT();return}parent.postMessage({type:'LR_STAR_ASSISTANT_CLOSE'},location.origin)}catch{history.back()}}
+$('backBtn').addEventListener('click',()=>{if(view!=='home')setView('home');else close()});
 $('historyBtn').addEventListener('click',()=>setView('history'));
 $('historyBack').addEventListener('click',()=>setView('home'));
 document.querySelectorAll('[data-prompt]').forEach(b=>b.addEventListener('click',()=>startPrompt(b.dataset.prompt)));
