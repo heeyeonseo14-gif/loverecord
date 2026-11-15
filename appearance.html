@@ -9,6 +9,7 @@ body.photo-bg{background-size:cover;background-position:center;background-attach
 .home-icon-main{width:100%;display:flex;align-items:center;gap:10px;padding:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
 .home-icon-preview{width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;overflow:hidden;border-radius:17px;border:1px solid rgba(255,255,255,.95);background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(220,204,237,.78));color:#8f72b5;font-size:25px;box-shadow:0 8px 18px rgba(132,103,169,.13),inset 0 1px 0 white}
 .home-icon-preview img{display:block;width:100%;height:100%;object-fit:cover}
+.home-icon-card[data-home-icon-card="app-companion"] .home-icon-preview{background:linear-gradient(145deg,#8f2949,#3f0d22);color:#f4d6b0;border:1px solid rgba(229,185,165,.45);box-shadow:0 8px 20px rgba(91,18,43,.2),inset 0 1px 0 rgba(255,230,220,.22)}
 .home-icon-name{font-size:13px;font-weight:600;line-height:1.4}
 .home-icon-note{font-size:10px;opacity:.62;margin-top:3px}
 .home-icon-actions{display:flex;gap:6px;margin-top:10px}
@@ -72,7 +73,7 @@ const homeIconDefs=[
  {id:'app-appearance',name:'美化',symbol:'✧'},
  {id:'app-foodie',name:'生活集市',symbol:'♨'},
  {id:'app-games',name:'游戏',symbol:'🎮'},
- {id:'app-live',name:'LIVE',symbol:'✦'},
+ {id:'app-companion',name:'陪伴',symbol:'🌹'},
  {id:'app-checkin',name:'查岗',symbol:'◉'}
 ];
 function iconAssetKey(id){return 'home-icon:'+id}
