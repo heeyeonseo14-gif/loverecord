@@ -110,6 +110,60 @@ function renderData(){
  const pg=$('photoGrid');if(pg)pg.innerHTML=data.photos.length?data.photos.map(p=>`<div class="photo">${esc(p.title||'照片')}</div>`).join(''):'<div class="empty" style="grid-column:1/-1">暂无照片。</div>';
  renderBrowser();renderXhs();
 }
+async function getCharacterMemoryContext(){
+ if(!selected)return '';
+ const parts=[];
+ // Current profile and selected character settings are shared with the homepage.
+ const profile=[
+  ['角色身份',selected.role],['性格',selected.personality],['外貌',selected.appearance],
+  ['说话方式',selected.speech],['背景',selected.background],['角色规则',selected.instructions]
+ ];
+ profile.forEach(([k,v])=>{if(v&&String(v).trim())parts.push(k+'：'+String(v).trim())});
+ // Chat settings are stored IndexedDB-first; read the same database/store as the homepage.
+ let meta={};
+ try{
+  const db=await new Promise((resolve,reject)=>{
+   const req=indexedDB.open('love-record-chat-meta-db-v1');
+   req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+  });
+  if(db.objectStoreNames.contains('contactMeta')){
+   const row=await new Promise((resolve,reject)=>{
+    const req=db.transaction('contactMeta','readonly').objectStore('contactMeta').get(String(selected.id));
+    req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);
+   });
+   meta=row?.data||{};
+  }
+  db.close();
+ }catch(e){console.warn('[CHECK IN] character memory DB read skipped',e)}
+ // Older builds may still have the legacy metadata in localStorage.
+ if(!Object.keys(meta).length){
+  try{const all=JSON.parse(localStorage.getItem('love-record-chat-meta-v1')||localStorage.getItem('love-record-chat-meta-v2')||'{}');meta=all[String(selected.id)]||{}}catch{}
+ }
+ const memoryFields=[
+  ['角色长期记忆',meta.longTermMemory],['角色记忆补充',meta.memory],['角色备注',meta.remark],
+  ['角色背景补充',meta.characterMemory],['关系与重要约定',meta.relationshipMemory]
+ ];
+ memoryFields.forEach(([k,v])=>{if(v&&String(v).trim())parts.push(k+'：'+String(v).trim())});
+ // Sync the character's selected worldbook only (not every unrelated worldbook).
+ try{
+  const state=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');
+  const world=(Array.isArray(state.worlds)?state.worlds:[]).find(w=>String(w.id)===String(meta.worldId));
+  if(world){
+   const entries=Array.isArray(world.entries)?world.entries:[];
+   const body=entries.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean).join('\n')||
+    [world.description,world.locations,world.rules].filter(Boolean).join('\n');
+   if(body)parts.push('角色当前启用的世界书《'+(world.name||'未命名')+'》：'+body.slice(0,9000));
+  }
+ }catch(e){console.warn('[CHECK IN] worldbook context read skipped',e)}
+ // Include recent real chat history so generated phone conversations continue established facts and relationships.
+ try{
+  const threads=JSON.parse(localStorage.getItem('love-record-chat-threads-v2')||'{}');
+  const history=Array.isArray(threads[String(selected.id)])?threads[String(selected.id)]:[];
+  const recent=history.slice(-24).map(m=>(m.role==='assistant'?'角色':'用户')+'：'+String(m.text||'').trim()).filter(x=>x.length>3);
+  if(recent.length)parts.push('最近真实聊天记录（用于保持连续性，不要照抄）：\n'+recent.join('\n').slice(-7000));
+ }catch(e){console.warn('[CHECK IN] recent chat context read skipped',e)}
+ return parts.join('\n\n').slice(0,14000);
+}
 async function generateForApp(view,button){
  if(!selected){toast('请先选择联系人');return}
  const cfg=getApi();if(!cfg){toast('请先在 LOVE RECORD 主页配置 API');return}
@@ -117,12 +171,13 @@ async function generateForApp(view,button){
  const label=labels[view]||'手机内容';
  button.disabled=true;button.classList.add('loading');button.innerHTML='…';toast('正在生成....');
  const isChat=view==='messages';
+ const characterMemory=await getCharacterMemoryContext();
  const prompt=isChat
- ?`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7个【其他联系人】的聊天会话。绝对不要把手机主人自己列为联系人，也不要把聊天内容写成主人单方面自言自语。每个联系人生成2-4条有来有回的消息，sender只能是联系人名字或“${selected.name||'我'}”，并用fromMe布尔值标记是否由手机主人发送。返回JSON数组，每项格式：{"contactName":"对方姓名","preview":"最近一条消息摘要","messages":[{"sender":"对方姓名","fromMe":false,"text":"消息"},{"sender":"${selected.name||'我'}","fromMe":true,"text":"回复"}]}。对话自然、有上下文、符合人物设定。`
- :`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7条不同的${label}内容。必须符合角色设定，不要把手机主人自己当作通讯录联系人。只返回JSON数组。${view==='contactsApp'?'每项字段：name（其他人的姓名）、number（随机但格式合理的电话号码）、note（关系或备注）。禁止生成角色本人姓名或本人号码。':''}${view==='browser'?'每项字段：title（搜索标题）、url（网址或域名）、detail（简短浏览摘要）。':''}${view==='xiaohongshu'?'每项字段：author（博主昵称）、title（笔记标题）、body（笔记正文，具体自然）、tags（标签数组）。':''}${view==='photos'?'每项字段：title、detail。':''}${view==='music'?'每项字段：title、artist。':''}${view==='calendar'?'每项字段：title、time、detail。':''}${view==='notes'?'每项字段：title、time、body。':''}${view==='activity'?'每项字段：title、time、detail。':''}避免重复已有内容。角色身份：${selected.role||''}；角色设定：${selected.persona||selected.personality||''}；背景：${selected.background||''}；指令：${selected.instructions||''}。`;
+ ?`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7个【其他联系人】的聊天会话。绝对不要把手机主人自己列为联系人，也不要把聊天内容写成主人单方面自言自语。每个联系人生成4-6条有来有回的消息，sender只能是联系人名字或“${selected.name||'我'}”，并用fromMe布尔值标记是否由手机主人发送。返回JSON数组，每项格式：{"contactName":"对方姓名","preview":"最近一条消息摘要","messages":[{"sender":"对方姓名","fromMe":false,"text":"消息"},{"sender":"${selected.name||'我'}","fromMe":true,"text":"回复"}]}。对话自然、有上下文、符合人物设定。必须参考以下角色记忆、设定和近期聊天上下文，不能违背已发生的事情，也不能把用户与角色的关系、称呼、共同经历随意改写：\n${characterMemory||'暂无额外记忆资料'}。`
+ :`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7条不同的${label}内容。必须符合角色设定，不要把手机主人自己当作通讯录联系人。只返回JSON数组。${view==='contactsApp'?'每项字段：name（其他人的姓名）、number（随机但格式合理的电话号码）、note（关系或备注）。禁止生成角色本人姓名或本人号码。':''}${view==='browser'?'每项字段：title（搜索标题）、url（网址或域名）、detail（简短浏览摘要）。':''}${view==='xiaohongshu'?'每项字段：author（博主昵称）、title（笔记标题）、body（笔记正文，具体自然）、tags（标签数组）。':''}${view==='photos'?'每项字段：title、detail。':''}${view==='music'?'每项字段：title、artist。':''}${view==='calendar'?'每项字段：title、time、detail。':''}${view==='notes'?'每项字段：title、time、body。':''}${view==='activity'?'每项字段：title、time、detail。':''}避免重复已有内容。角色身份：${selected.role||''}；角色设定：${selected.persona||selected.personality||''}；背景：${selected.background||''}；指令：${selected.instructions||''}。以下是必须参考的角色记忆、设定和近期聊天上下文：\n${characterMemory||'暂无额外记忆资料'}。`;
  try{
   const base=String(cfg.apiBase).replace(/\/+$/,'');
-  const res=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.apiModel,messages:[{role:'system',content:'你是 LOVE RECORD 查岗手机内容生成器。严格只输出有效 JSON 数组，不要 Markdown 代码块、解释或数组以外的文字。'}, {role:'user',content:prompt}],temperature:.85,max_tokens:3000,stream:false})});
+  const res=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.apiModel,messages:[{role:'system',content:'你是 LOVE RECORD 查岗手机内容生成器。严格只输出有效 JSON 数组，不要 Markdown 代码块、解释或数组以外的文字。'}, {role:'user',content:prompt}],temperature:.85,max_tokens:5000,stream:false})});
   const raw=await res.text();if(!res.ok)throw new Error('HTTP '+res.status);
   const obj=JSON.parse(raw);let content=obj.choices?.[0]?.message?.content||'';
   if(Array.isArray(content))content=content.map(x=>x.text||'').join('');
@@ -132,7 +187,7 @@ async function generateForApp(view,button){
   const stamp=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
   const add=(arr,items)=>{data[arr]=[...items,...(data[arr]||[])].slice(0,100)};
   if(isChat){
-   const chats=rows.slice(0,7).map((x,i)=>({contactName:String(x.contactName||x.name||`联系人${i+1}`),preview:String(x.preview||x.messages?.at?.(-1)?.text||'新消息'),messages:(Array.isArray(x.messages)?x.messages:[]).slice(0,8).map(m=>({sender:String(m.sender||x.contactName||'联系人'),fromMe:!!m.fromMe,text:String(m.text||'')}))}));
+   const chats=rows.slice(0,7).map((x,i)=>({contactName:String(x.contactName||x.name||`联系人${i+1}`),preview:String(x.preview||x.messages?.at?.(-1)?.text||'新消息'),messages:(Array.isArray(x.messages)?x.messages:[]).slice(0,6).map(m=>({sender:String(m.sender||x.contactName||'联系人'),fromMe:!!m.fromMe,text:String(m.text||'')}))}));
    add('messages',chats);
   }else if(view==='photos')add('photos',rows.slice(0,7).map(x=>({title:x.title||'新照片',detail:x.detail||x.body||'',time:stamp})));
   else if(view==='music')add('songs',rows.slice(0,7).map(x=>({name:x.title||x.name||'新曲目',artist:x.artist||x.detail||''})));
