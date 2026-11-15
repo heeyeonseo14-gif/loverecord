@@ -1,33 +1,29 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#4b1025"><title>陪伴 · ROSE ÉTERNELLE</title><link rel="stylesheet" href="./companion.css"></head>
 <body><div class="app">
-<header class="topbar"><button id="backHome" class="back">‹ 返回 LOVE RECORD</button><div class="brand">ROSE ÉTERNELLE <span>COMPANION</span></div><button id="openSettings" class="iconbtn" aria-label="设置">⚙</button></header>
+<header class="topbar"><button id="backHome" class="back">‹ 返回 LOVE RECORD</button><div class="brand">ROSE ÉTERNELLE <span>COMPANION</span></div></header>
 <main id="appMain">
 <section id="chooseView" class="view active">
 <div class="intro"><div class="eyebrow">A LITTLE WORLD OF US</div><h1>与你珍藏的<br><em>每一个瞬间</em></h1><p>选择一位联系人，进入你们专属的陪伴空间。</p></div>
 <div id="peopleGrid" class="people-grid"></div><div class="footnote">每一段关系，都有独属于它的记忆。</div>
 </section>
 <section id="spaceView" class="view">
-<div class="cover-card">
+<div class="cover-card" id="coverCard">
 <div class="cover-glow"></div><div class="cover-top"><button id="changeContact" class="textbtn">‹ 联系人</button><span class="cover-label">OUR STORY · EST.</span></div>
-<div class="couple"><div class="avatar" id="personAvatar">♡</div><div class="heart">♥</div><div class="avatar self-avatar">✧</div></div>
+<div class="couple"><button class="avatar avatar-upload" id="personAvatar" type="button" aria-label="更换联系人照片">♡</button><div class="heart">♥</div><button class="avatar self-avatar avatar-upload" id="selfAvatar" type="button" aria-label="更换自己的照片">✧</button><input id="personPhotoInput" type="file" accept="image/*" hidden><input id="selfPhotoInput" type="file" accept="image/*" hidden></div>
 <div class="couple-names"><strong id="personName">TA</strong><span>&</span><strong id="selfName">YOU</strong></div>
 <div class="days"><strong id="daysCount">—</strong><span> DAYS TOGETHER</span></div><div class="anniversary" id="anniversaryText">设置你们的纪念日，让每一天都有意义</div>
-<div class="cover-actions"><button id="setAnniversary" class="goldbtn">设置纪念日</button><button id="editCover" class="ghostbtn">编辑关系卡片</button></div>
+<div class="cover-actions"><button id="setAnniversary" class="goldbtn">设置纪念日</button><button id="editCover" class="ghostbtn">编辑关系卡片</button><button id="goChat" class="ghostbtn">进入聊天 ↗</button></div>
 </div>
-<section class="today-card"><div class="section-kicker">A MOMENT FOR TODAY</div><div class="today-head"><h2>今日陪伴</h2><span id="todayDate"></span></div><div id="todayContent" class="today-content">今天，也为彼此留一点时间。</div><div class="today-actions"><button data-generate="daily">✦ 生成今日陪伴</button><button id="goChat">进入聊天 ↗</button></div></section>
 <div class="section-title"><div><span class="section-kicker">KEEP OUR LITTLE THINGS</span><h2>我们的故事</h2></div><span class="rose-mark">✿</span></div>
 <div class="feature-grid">
 <button class="feature" data-feature="letters"><span class="feature-icon">✉</span><b>私人信箱</b><small>把想说的话留下</small></button>
 <button class="feature" data-feature="memories"><span class="feature-icon">▧</span><b>双人回忆册</b><small>珍藏共同经历</small></button>
 <button class="feature" data-feature="events"><span class="feature-icon">♧</span><b>纪念日与约定</b><small>记住重要的日子</small></button>
-<button class="feature" data-feature="activities"><span class="feature-icon">♡</span><b>双人活动</b><small>一起完成小挑战</small></button>
 <button class="feature" data-feature="moods"><span class="feature-icon">☾</span><b>心情日记</b><small>听听彼此的心情</small></button>
-<button class="feature" data-feature="companion"><span class="feature-icon">✧</span><b>日常陪伴</b><small>让想念自然发生</small></button>
 </div>
-<section class="recent-card"><div class="section-title compact"><div><span class="section-kicker">LITTLE MEMORIES</span><h2>最近的珍藏</h2></div></div><div id="recentList" class="recent-list"><div class="empty">还没有珍藏的内容，创造你们的第一个瞬间吧。</div></div></section>
 </section>
 <section id="detailView" class="view"><div class="detail-head"><button id="detailBack" class="textbtn">‹ 返回</button><span class="detail-kicker">ROSE ÉTERNELLE</span></div><div id="detailContent"></div></section>
 </main>
 <div id="toast" class="toast"></div><div id="modal" class="modal"><div class="modal-sheet"><button id="modalClose" class="modal-close">×</button><div id="modalContent"></div></div></div>
-</div><script src="./companion.js?v=1"></script></body></html>
+</div><script src="./companion.js?v=2"></script></body></html>
