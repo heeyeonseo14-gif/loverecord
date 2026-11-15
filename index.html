@@ -1210,7 +1210,7 @@ body.launcher-open .system-appbar{display:none!important}
   </section>
   <section class="launcher-grid" aria-label="应用">
     <button class="launcher-app" type="button" data-shiyi-launch data-drag-id="app-shiyi"><span class="app-icon" style="background:linear-gradient(145deg,rgba(250,246,255,.96),rgba(218,202,239,.86));color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.14)">✧</span><span>拾忆</span></button>
-    <button class="launcher-app" data-launch-page="memories" data-drag-id="app-memories" type="button"><span class="app-icon icon-memory">▧</span><span>回忆</span></button>
+    <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
     <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
     <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
@@ -1340,11 +1340,7 @@ body.launcher-open .system-appbar{display:none!important}
 
 
 
-<main id="memories" class="page">
-  <div class="eyebrow">MEMORIES</div><h1>OUR LITTLE ARCHIVE</h1>
-  <div class="card"><h3>Add a memory</h3><label>PHOTO</label><input id="memoryFile" type="file" accept="image/*"><label>NOTE</label><textarea id="memoryNote" placeholder="写一点关于这一刻的话……"></textarea><button class="btn primary" id="addMemory" type="button" style="margin-top:15px">SAVE MEMORY</button></div>
-  <div id="memoryGrid" class="memory-grid"></div>
-</main>
+
 
 <main id="space" class="page space-redesign">
   <!-- DIRECTORY: choose a character, then choose or create a shared space -->
@@ -1580,6 +1576,7 @@ window.__LOVE_RECORD_GET_API_CONFIG=()=>{
  return cfg;
 };
 window.__LOVE_RECORD_GET_PEOPLE=()=>Array.isArray(state.people)?state.people:[];
+window.__LOVE_RECORD_GET_RUNTIME_INFO=()=>({version:String(state.version||state.appVersion||state.buildVersion||'20261116-v68'),page:'星星助手'});
 // Contact-save recovery store: protects contacts if the main settings blob hits storage quota.
 const CONTACT_RECOVERY_KEY='love-record-people-recovery-v1';
 try {
@@ -2054,7 +2051,7 @@ function applyLanguage(){
  
  document.querySelectorAll('.nav-btn').forEach(b=>{const sp=b.querySelector('span');if(sp)sp.textContent=t(b.dataset.page)});
  const home=$('home');if(home){const h=home.querySelector('h1');if(h)h.textContent=t('littleUniverse');const es=home.querySelectorAll('.eyebrow');if(es[0])es[0].textContent='LOVE RECORD';if(es[1])es[1].textContent=t('today');if(es[2])es[2].textContent=t('moment');if(es[3])es[3].textContent=t('yourWorld');const st=home.querySelector('.status');if(st)st.textContent=t('private');const hp=$('homePhoto');if(hp&&!hp.querySelector('img'))hp.textContent=t('yourPhoto');const bs=home.querySelectorAll('.btn');if(bs[0])bs[0].textContent=t('addPhoto');if(bs[1])bs[1].textContent=t('clear');const sub=home.querySelector('.world-grid')?.parentElement?.querySelector('.sub');if(sub)sub.textContent=t('worldSub')}
- const mem=$('memories');if(mem){const es=mem.querySelectorAll('.eyebrow');if(es[0])es[0].textContent=t('memories');const h=mem.querySelector('h1');if(h)h.textContent=t('archive');const h3=mem.querySelector('h3');if(h3)h3.textContent=t('addMemory');const labs=mem.querySelectorAll('label');if(labs[0])labs[0].textContent=t('photo');if(labs[1])labs[1].textContent=t('note');const b=$('addMemory');if(b)b.textContent=t('saveMemory')}
+ 
  const sp=$('space');if(sp){const spe=$('spacePeopleEyebrow');if(spe)spe.textContent=currentLang()==='zh'?'角色 CHARACTER':'THE CHARACTERS';const sps=$('spacePeopleSub');if(sps&&!activeSpaceId)sps.textContent=t('selectPersonSub');const title=$('spaceTitleEyebrow');if(title)title.textContent=currentLang()==='zh'?'我们的私人宇宙':'OUR PRIVATE UNIVERSE';const what=$('spaceWhatWill');if(what)what.textContent=currentLang()==='zh'?'此刻 · 03':'THE PRESENT · 03';const nm=$('newMomentEyebrow');if(nm)nm.textContent=currentLang()==='zh'?'新的瞬间 · 05':'A NEW MOMENT · 05';const h=sp.querySelector('h1');if(h)h.textContent='OUR SPACE';const ai=$('aiState');if(ai)ai.textContent=t('homeAlive');const send=$('sendFree');if(send)send.textContent=t('send');const sur=$('surprise');if(sur)sur.setAttribute('aria-label',t('surprise'));const sub=$('surprise')?.closest('.surprise-feature')?.querySelector('.sub');if(sub)sub.textContent=t('surpriseSub')}
  const st=$('settings');if(st){const es=st.querySelectorAll('.eyebrow');if(es[0])es[0].textContent=t('settings');const h=st.querySelector('h1');if(h)h.textContent=t('ourSpace');const install=st.querySelector('#installBox');if(install){const b=install.querySelector('b');if(b)b.textContent=t('installTitle');const sub=install.querySelector('.sub');if(sub)sub.textContent=t('installSub');if($('installBtn'))$('installBtn').textContent=t('add')}const us=$('settings').querySelector('#usCard h3');if(us)us.textContent=t('us');const labels=$('settings').querySelectorAll('#usCard label');if(labels[0])labels[0].textContent='开始日期';if(labels[1])labels[1].textContent='今天的文字';if($('saveSettings'))$('saveSettings').textContent=t('saveChanges');setText('selfPersonaTitle','selfPersona');setText('selfPersonaSub','selfPersonaSub');setText('addSelfPersona','addSelfPersona');setText('appearanceTitle','appearance');setText('appearanceSub','appearanceSub');if($('openAppearance'))$('openAppearance').textContent=t('customize');setText('apiTitle','api');if($('installHelp'))$('installHelp').textContent=t('howToAdd');renderSelfPersonas()}
  state.language='zh';
@@ -2401,7 +2398,7 @@ function closeAppearance(){ $('appearanceModal').classList.remove('show');docume
 function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},appearanceDefaults,presetChoices[k]);appearance.preset=k;delete appearance.bgData;applyAppearance();renderAppearanceControls();toast('已切换：'+presetChoices[k].name)}
 
 const homeIconBindings=[
- {id:'app-shiyi',symbol:'✧'},{id:'app-memories',symbol:'▧'},{id:'app-space',symbol:'♡'},
+ {id:'app-shiyi',symbol:'✧'},{id:'app-star-assistant',symbol:'✦'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},{id:'app-journal',symbol:'▤'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
  {id:'app-games',symbol:'🎮'},{id:'app-companion',symbol:'🌹'},{id:'app-checkin',symbol:'◉'}
@@ -2709,7 +2706,7 @@ const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(
 const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
 const launchAppearance=e.target.closest('[data-launch-appearance]');if(launchAppearance){openAppearance();return}
 const launchHome=e.target.closest('[data-launch-home]');if(launchHome){nav('launcher');return}
-const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{renderMemories();toast('Memory deleted')});return}});
+const n=e.target.closest('.nav-btn');if(n){nav(n.dataset.page);return}const c=e.target.closest('[data-choice]');if(c){handleChoice(c.dataset.choiceText||'');return}const d=e.target.closest('[data-delete]');if(d){deleteImage(+d.dataset.delete).then(()=>{if(typeof renderMemories==='function')renderMemories();toast('Memory deleted')});return}});
 
 // API presets are stored in IndexedDB first, so full localStorage does not block saving.
 const API_PRESETS_KEY='love-record-api-presets-v1',API_PRESETS_KV='api-presets-v1';let apiPresetCache=[];
@@ -2793,7 +2790,7 @@ $('chatSettingsBack').onclick=closeChatSettings;$('chatSaveSettings').onclick=sa
 $('homeUpload').onclick=()=>$('homeFile').click();
 $('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
 $('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
-$('addMemory').onclick=async()=>{const f=$('memoryFile').files[0];if(!f){toast('先选照片');return}await addImage('memory',f,$('memoryNote').value.trim());$('memoryFile').value='';$('memoryNote').value='';renderMemories();toast('Memory saved')};
+
 $('saveSettings').onclick=()=>{state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;state.language='zh';const ok=save();renderHome();renderScene();if(typeof window.refreshLoveRecordListeningRoom==='function')window.refreshLoveRecordListeningRoom();toast(ok?'已保存修改 ♡':'保存失败：浏览器储存空间不足')};
 
 $('connectApi').onclick=async()=>{state.apiBase=$('apiBase').value.trim().replace(/\/+$/,'');state.apiKey=$('apiKey').value.trim();save();await loadModels()}
@@ -3023,6 +3020,22 @@ if(loveIntro){
 </style>
 <script>
 (()=>{const shell=document.getElementById('lrCompanionShell');const frame=document.getElementById('lrCompanionFrame');function openCompanion(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_COMPANION_OPEN'},location.origin)}catch(e){}}function closeCompanion(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-companion]').forEach(b=>b.addEventListener('click',openCompanion));window.__LOVE_RECORD_CLOSE_COMPANION=closeCompanion;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeCompanion()});})();
+<div id="lrStarAssistantShell" aria-label="星星助手"><iframe id="lrStarAssistantFrame" title="星星助手" src="./star-assistant.html"></iframe></div>
+<style>
+#lrStarAssistantShell{position:fixed;inset:0;z-index:100000;background:#fff8fc;display:none;padding-top:env(safe-area-inset-top)}
+#lrStarAssistantShell.show{display:block}
+#lrStarAssistantFrame{display:block;width:100%;height:100%;border:0;background:#fff8fc}
+</style>
+<script>
+(()=>{const shell=document.getElementById('lrStarAssistantShell'),frame=document.getElementById('lrStarAssistantFrame');
+function open(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_STAR_ASSISTANT_OPEN'},location.origin)}catch(e){}}
+function close(){shell.classList.remove('show');document.body.style.overflow='';}
+document.querySelectorAll('[data-launch-star-assistant]').forEach(b=>b.addEventListener('click',open));
+window.__LOVE_RECORD_CLOSE_STAR_ASSISTANT=close;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
+})();
+</script>
+
 </script>
 <script src="./moments-v1.js?v=99"></script>
 

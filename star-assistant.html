@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff7fb"><title>星星助手 · LOVE RECORD</title>
+<link rel="stylesheet" href="./star-assistant.css?v=1">
+</head>
+<body>
+<div class="star-app">
+<header class="topbar">
+<button class="back" id="backBtn" aria-label="返回">‹</button>
+<div class="brand"><div class="brand-mark">✦</div><div><strong>星星助手</strong><small>LOVE RECORD · AI GUIDE</small></div></div>
+<button class="history-btn" id="historyBtn" title="对话记录">◷</button>
+</header>
+<main id="homeView" class="view">
+<section class="hero">
+<div class="eyebrow">YOUR LITTLE GUIDE</div>
+<h1>你好呀，我是星星。<span>✧</span></h1>
+<p>关于 LOVE RECORD 的功能、设置和问题，都可以来问我。</p>
+<div class="version-pill" id="versionPill">正在读取应用信息…</div>
+</section>
+<section class="quick-grid">
+<button data-prompt="请介绍 LOVE RECORD 的主要功能和应用。"><i>⌂</i><b>功能使用</b><small>了解小手机的各项功能</small></button>
+<button id="uploadShortcut"><i>⌕</i><b>截图诊断</b><small>上传截图，帮你分析问题</small></button>
+<button data-prompt="请介绍当前版本的更新内容和功能变更。"><i>▤</i><b>版本说明</b><small>了解版本与更新内容</small></button>
+<button data-prompt="我遇到了故障，请告诉我应该如何提供信息并排查。"><i>♡</i><b>故障排查</b><small>一步步解决异常</small></button>
+</section>
+<section class="suggestions"><div class="section-title">你可以这样问 <span>✦</span></div>
+<button data-prompt="怎么设置 LOVE RECORD 的全局字体？">怎么设置全局字体？ <span>›</span></button>
+<button data-prompt="API 没有回复或一直空白，应该怎么排查？">API 没有回复怎么办？ <span>›</span></button>
+<button data-prompt="怎么安全备份和恢复 LOVE RECORD 数据？">怎么备份和恢复数据？ <span>›</span></button>
+</section>
+</main>
+<main id="chatView" class="view chat-view" hidden>
+<div class="chat-head"><div><b>和星星聊天</b><small id="chatStatus">我会优先参考当前版本的知识资料</small></div><button id="newChatBtn">新对话</button></div>
+<div id="messages" class="messages"><div class="welcome-msg"><div class="star-avatar">✦</div><div class="bubble"><b>我是星星，很高兴见到你！</b><p>你可以直接描述问题，也可以上传截图。我会尽量结合 LOVE RECORD 的资料帮你解答。</p></div></div></div>
+<div id="imagePreview" class="image-preview" hidden></div>
+<div class="composer">
+<input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+<button id="imageBtn" class="tool-btn" aria-label="上传截图">＋</button>
+<textarea id="questionInput" rows="1" placeholder="告诉星星你遇到的问题…"></textarea>
+<button id="sendBtn" class="send-btn">发送</button>
+</div>
+<div class="composer-note">请勿上传密码、API Key 或其他敏感信息。</div>
+</main>
+<main id="historyView" class="view" hidden><div class="page-title"><button class="back-inline" id="historyBack">‹</button><div><h2>我的对话</h2><p>仅保存你主动选择保存的对话</p></div></div><label class="save-toggle"><input id="saveHistoryToggle" type="checkbox"> <span>保存对话历史</span></label><div id="historyList" class="history-list"></div><button id="clearHistoryBtn" class="danger-btn">删除全部已保存对话</button></main>
+<div id="toast" class="toast"></div>
+</div>
+<script src="./global-font.js?v=100"></script>\n<script src="./star-assistant.js?v=1"></script>
+</body></html>
