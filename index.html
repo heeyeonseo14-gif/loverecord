@@ -3020,26 +3020,48 @@ if(loveIntro){
 </style>
 <script>
 (()=>{const shell=document.getElementById('lrCompanionShell');const frame=document.getElementById('lrCompanionFrame');function openCompanion(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_COMPANION_OPEN'},location.origin)}catch(e){}}function closeCompanion(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-companion]').forEach(b=>b.addEventListener('click',openCompanion));window.__LOVE_RECORD_CLOSE_COMPANION=closeCompanion;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeCompanion()});})();
-<div id="lrStarAssistantShell" aria-label="星星助手"><iframe id="lrStarAssistantFrame" title="星星助手" src="./star-assistant.html"></iframe></div>
+<div id="lrStarAssistantShell" aria-label="星星助手" aria-hidden="true">
+  <iframe id="lrStarAssistantFrame" title="星星助手" src="./star-assistant.html?v=2"></iframe>
+</div>
 <style>
-#lrStarAssistantShell{position:fixed;inset:0;z-index:100000;background:#fff8fc;display:none;padding-top:env(safe-area-inset-top)}
-#lrStarAssistantShell.show{display:block}
+#lrStarAssistantShell{position:fixed;inset:0;z-index:2147483000;background:#fff8fc;display:none;padding-top:env(safe-area-inset-top);pointer-events:none}
+#lrStarAssistantShell.show{display:block;pointer-events:auto}
 #lrStarAssistantFrame{display:block;width:100%;height:100%;border:0;background:#fff8fc}
+#launcher [data-launch-star-assistant],#launcher [data-drag-id="app-star-assistant"]{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
 </style>
 <script>
-(()=>{const shell=document.getElementById('lrStarAssistantShell'),frame=document.getElementById('lrStarAssistantFrame');
-function open(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_STAR_ASSISTANT_OPEN'},location.origin)}catch(e){}}
-function close(){shell.classList.remove('show');document.body.style.overflow='';}
-document.addEventListener('click',function(e){
-  const trigger=e.target.closest('[data-launch-star-assistant],[data-drag-id="app-star-assistant"]');
-  if(!trigger)return;
-  e.preventDefault();
-  e.stopPropagation();
-  open();
-},true);
-window.__LOVE_RECORD_OPEN_STAR_ASSISTANT=open;
-window.__LOVE_RECORD_CLOSE_STAR_ASSISTANT=close;
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
+(()=>{
+  const shell=document.getElementById('lrStarAssistantShell');
+  const frame=document.getElementById('lrStarAssistantFrame');
+  if(!shell||!frame)return;
+  function open(){
+    if(shell.classList.contains('show'))return;
+    shell.classList.add('show');
+    shell.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    try{frame.contentWindow.postMessage({type:'LR_STAR_ASSISTANT_OPEN'},location.origin)}catch(e){}
+  }
+  function close(){
+    shell.classList.remove('show');
+    shell.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  // Window 捕获阶段优先接管点击，避免桌面拖拽及其他应用监听器抢先拦截。
+  window.addEventListener('click',function(e){
+    const target=e.target&&e.target.closest?e.target.closest('[data-launch-star-assistant],[data-drag-id="app-star-assistant"]'):null;
+    if(!target)return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    open();
+  },true);
+  // 兼容桌面图标被重新渲染的情况。
+  window.__LOVE_RECORD_OPEN_STAR_ASSISTANT=open;
+  window.__LOVE_RECORD_CLOSE_STAR_ASSISTANT=close;
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&shell.classList.contains('show'))close();
+  });
+  frame.addEventListener('load',()=>{if(shell.classList.contains('show'))open()});
 })();
 </script>
 <script src="./moments-v1.js?v=99"></script>
