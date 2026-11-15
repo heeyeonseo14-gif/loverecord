@@ -3030,12 +3030,17 @@ if(loveIntro){
 (()=>{const shell=document.getElementById('lrStarAssistantShell'),frame=document.getElementById('lrStarAssistantFrame');
 function open(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_STAR_ASSISTANT_OPEN'},location.origin)}catch(e){}}
 function close(){shell.classList.remove('show');document.body.style.overflow='';}
-document.querySelectorAll('[data-launch-star-assistant]').forEach(b=>b.addEventListener('click',open));
+document.addEventListener('click',function(e){
+  const trigger=e.target.closest('[data-launch-star-assistant],[data-drag-id="app-star-assistant"]');
+  if(!trigger)return;
+  e.preventDefault();
+  e.stopPropagation();
+  open();
+},true);
+window.__LOVE_RECORD_OPEN_STAR_ASSISTANT=open;
 window.__LOVE_RECORD_CLOSE_STAR_ASSISTANT=close;
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
 })();
-</script>
-
 </script>
 <script src="./moments-v1.js?v=99"></script>
 
@@ -3221,8 +3226,7 @@ body.lr-external-app-open{overflow:hidden}
 </script>
 
   <script src="./welcome-tour-v1.js?v=1"></script>
-  <script src="./use-guide-v1.js?v=2"></script>
-  <script src="./lr-full-backup-v1.js?v=3"></script>
+<script src="./lr-full-backup-v1.js?v=3"></script>
 
 <style id="lr-page-manager-v2">
 #launcher .launcher-pages [data-launcher-add-page]{display:none!important}
