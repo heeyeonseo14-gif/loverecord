@@ -23,14 +23,40 @@ $('saveHistoryToggle').checked=savedEnabled();
 $('saveHistoryToggle').addEventListener('change',()=>{try{localStorage.setItem(SAVE_KEY,$('saveHistoryToggle').checked?'1':'0');if(!$('saveHistoryToggle').checked){localStorage.removeItem(HISTORY_KEY);toast('已关闭保存并清除历史记录')}else toast('已开启对话保存')}catch{toast('设置保存失败')}});
 $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('确定删除星星助手保存的全部对话吗？此操作不会影响其他应用。'))return;localStorage.removeItem(HISTORY_KEY);renderHistory();toast('已删除保存的对话')});
 function welcome(){ $('messages').innerHTML='<div class="welcome-msg"><div class="star-avatar">✦</div><div class="bubble"><b>我是星星，很高兴见到你！</b><p>你可以直接描述问题，也可以上传截图。我会尽量结合 LOVE RECORD 的资料帮你解答。</p></div></div>'}
-function addMessage(role,text,imageUrl){const row=document.createElement('div');row.className='message '+(role==='user'?'user':'assistant');if(role!=='user'){const av=document.createElement('div');av.className='star-avatar';av.textContent='✦';row.appendChild(av)}const bubble=document.createElement('div');bubble.className='bubble';if(imageUrl){const im=document.createElement('img');im.src=imageUrl;im.alt='用户上传的截图';bubble.appendChild(im)}const content=document.createElement('div');content.textContent=text;bubble.appendChild(content);row.appendChild(bubble);$('messages').appendChild(row);$('messages').scrollTop=$('messages').scrollHeight}
+function inlineMarkdown(s){
+ let x=esc(s);
+ x=x.replace(/`([^`]+)`/g,'<code>$1</code>');
+ x=x.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+ x=x.replace(/__([^_]+)__/g,'<strong>$1</strong>');
+ x=x.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>');
+ x=x.replace(/(^|[^_])_([^_\n]+)_(?!_)/g,'$1<em>$2</em>');
+ return x;
+}
+function renderMarkdown(raw){
+ const lines=String(raw??'').replace(/\r\n?/g,'\n').split('\n');
+ const out=[];let para=[],listType='';
+ const flushPara=()=>{if(para.length){out.push('<p>'+para.map(inlineMarkdown).join('<br>')+'</p>');para=[]}};
+ const closeList=()=>{if(listType){out.push(listType==='ul'?'</ul>':'</ol>');listType=''}};
+ for(const line of lines){
+  const t=line.trim();
+  if(!t){flushPara();closeList();continue}
+  const h=t.match(/^(#{1,3})\s+(.+)$/);
+  if(h){flushPara();closeList();const level=Math.min(h[1].length+1,4);out.push('<h'+level+'>'+inlineMarkdown(h[2])+'</h'+level+'>');continue}
+  const ul=t.match(/^[-*•]\s+(.+)$/),ol=t.match(/^\d+[.)、]\s+(.+)$/);
+  if(ul||ol){flushPara();const next=ul?'ul':'ol';if(listType!==next){closeList();out.push('<'+next+'>');listType=next}out.push('<li>'+inlineMarkdown((ul||ol)[1])+'</li>');continue}
+  if(/^>\s?/.test(t)){flushPara();closeList();out.push('<blockquote>'+inlineMarkdown(t.replace(/^>\s?/,''))+'</blockquote>');continue}
+  para.push(t);
+ }
+ flushPara();closeList();return out.join('');
+}
+function addMessage(role,text,imageUrl){const row=document.createElement('div');row.className='message '+(role==='user'?'user':'assistant');if(role!=='user'){const av=document.createElement('div');av.className='star-avatar';av.textContent='✦';row.appendChild(av)}const bubble=document.createElement('div');bubble.className='bubble';if(imageUrl){const im=document.createElement('img');im.src=imageUrl;im.alt='用户上传的截图';bubble.appendChild(im)}const content=document.createElement('div');content.className='message-content';if(role==='assistant')content.innerHTML=renderMarkdown(text);else content.textContent=text;bubble.appendChild(content);row.appendChild(bubble);$('messages').appendChild(row);$('messages').scrollTop=$('messages').scrollHeight}
 function getRuntime(){let x={};try{if(parent&&typeof parent.__LOVE_RECORD_GET_RUNTIME_INFO==='function')x=parent.__LOVE_RECORD_GET_RUNTIME_INFO()||{}}catch{}return x}
 function getApi(){try{if(parent&&typeof parent.__LOVE_RECORD_GET_API_CONFIG==='function')return parent.__LOVE_RECORD_GET_API_CONFIG()||{}}catch{}try{return JSON.parse(localStorage.getItem('love-record-api-settings-v1')||'{}')}catch{return {}}}
 function getVersion(){const r=getRuntime();return String(r.version||r.appVersion||'').trim()}
-async function loadKnowledge(){try{const r=await fetch('./star-guide-knowledge.json?v=2',{cache:'no-store'});if(r.ok)knowledge=await r.json()}catch{}const v=getVersion();$('versionPill').textContent=v?'当前应用版本：'+v:'应用版本：暂无法自动读取';$('chatStatus').textContent=v?'当前版本：'+v+' · 优先匹配版本知识':'版本信息暂不可用 · 回答时会说明资料范围'}
+async function loadKnowledge(){try{const r=await fetch('./star-guide-knowledge.json?v=3',{cache:'no-store'});if(r.ok)knowledge=await r.json()}catch{}const v=getVersion();$('versionPill').textContent=v?'当前应用版本：'+v:'应用版本：暂无法自动读取';$('chatStatus').textContent=v?'当前版本：'+v+' · 优先匹配版本知识':'版本信息暂不可用 · 回答时会说明资料范围'}
 function relevantKnowledge(q){
  const text=String(q||'').toLowerCase(),out=[];
- const broad=/(love\\s*record|小手机|整个|全部|所有|主要|介绍|功能|应用|app|怎么用|有哪些|总览|新手)/i.test(text);
+ const broad=/(love\s*record|小手机|整个|全部|所有|主要|介绍|功能|应用|app|怎么用|有哪些|总览|新手)/i.test(text);
  for(const group of (knowledge.versions||[])){
   for(const m of (group.modules||[])){
    const terms=[m.name,...(m.keywords||[])];
@@ -47,13 +73,27 @@ function relevantKnowledge(q){
  }
  return out.slice(0,broad?8:5);
 }
+function relevantCases(q){
+ const text=String(q||'').toLowerCase(),hits=[];
+ for(const c of (knowledge.troubleshooting_cases||[])){
+  const terms=[c.title,...(c.symptoms||[]),...(c.id==='429'?['429']:c.id==='403'?['403']:c.id==='400'?['400']:c.id==='5xx'?['500','502','503','504']:[])];
+  const score=terms.reduce((n,t)=>{const v=String(t||'').toLowerCase();return n+(v&&text.includes(v)?(v.length<=2?2:1):0)},0);
+  if(score)hits.push({score,case:c});
+ }
+ return hits.sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.case);
+}
 function makeContext(q){
- const hits=relevantKnowledge(q),runtime=getRuntime();
+ const hits=relevantKnowledge(q),runtime=getRuntime(),cases=relevantCases(q);
  return {runtime:{version:getVersion()||'未知',page:String(runtime.page||'星星助手')},
-  knowledge:hits.map(h=>({module:h.module.name,version:h.version,facts:h.module.facts||[],steps:h.module.steps||[],cautions:h.module.cautions||[]})),
+  knowledge:hits.map(h=>({module:h.module.name,version:h.version,facts:h.module.facts||[],steps:h.module.steps||[],manualSteps:h.module.manual_steps||[],cautions:h.module.cautions||[]})),
+  troubleshootingCases:cases.map(c=>({title:c.title,symptoms:c.symptoms,possibleCauses:c.possible_causes,safeSteps:c.safe_steps,resolution:c.resolution,avoid:c.avoid})),
   knowledgeNotice:knowledge.notice||'',sourceBuild:knowledge.sourceBuild||'未知'};
 }
-function systemPrompt(q){const c=makeContext(q);return `你是 LOVE RECORD 官方智能助手「星星」。你的表达专业、亲切、耐心，使用中文回答。你服务于整个 LOVE RECORD。你必须先理解用户问的是哪个应用，再优先使用提供的当前版本知识库。回答功能介绍时可以综合多个模块，不要只回答单个关键词；用户问整体功能时，应基于总览条目列出当前源码中存在的应用，并说明各自用途。严格遵守：1. 优先依据提供的知识库事实；2. 不得编造当前版本没有证据支持的按钮、页面或功能；3. 若知识库不足，可以使用一般技术知识推理，但必须明确标注「推测/可能原因」，并给出验证方法；4. 版本信息未知或知识库版本不匹配时必须说明，不得假称已自动识别；5. 只可使用提供的非敏感运行信息，绝不索取或读取其他应用的聊天记录、联系人资料、角色记忆、农场私人数据、陪伴照片、信件或回忆；6. 不要求用户提供 API Key、密码等秘密；7. 涉及清除数据、重置、覆盖、删除时先提醒备份并解释风险；8. 回答故障时优先给出安全、可逆的排查步骤；9. 知识库没有说明具体操作路径时，先坦白资料不足，不要猜按钮名称。回答尽量清晰分段，先给结论，再给步骤。当前运行信息和检索到的知识库资料（资料为空代表没有检索到可靠条目）：${JSON.stringify(c)}`}
+function systemPrompt(q){const c=makeContext(q);return `你是 LOVE RECORD 官方智能助手「星星」。请用自然、亲切、清楚的中文回答。你服务于整个 LOVE RECORD。必须优先使用当前版本知识库和检索到的故障案例。
+【回答排版】必须使用清晰的 Markdown：开头先给一句结论；不同主题分成独立段落；步骤使用有序列表；并列事项使用项目符号；重要提醒可用 **加粗**。段落之间留一个空行。不要把所有内容挤成一整段，不要输出大段连续文字。不要滥用标题，每个回答最多使用 2-4 个简短小标题。避免把 JSON、内部知识库或检索数据直接展示给用户。
+【知识与准确性】1. 回答功能介绍时可以综合多个模块；用户问整体功能时，应基于总览条目列出当前源码中存在的应用及用途。2. 不得编造当前版本没有证据支持的按钮、页面或功能。3. 若知识库不足，可以用一般技术知识推理，但必须标注「推测/可能原因」，并说明验证方法。4. 版本信息未知或知识库版本不匹配时必须说明。5. 若检索到故障案例，按「现象判断 → 可能原因 → 安全排查 → 下一步处理」组织答案；原因不能当成已证实结论。6. 知识库没有说明具体操作路径时，坦白资料不足，不要猜按钮名称。
+【隐私与安全】绝不索取或读取其他应用的聊天记录、联系人资料、角色记忆、农场私人数据、陪伴照片、信件或回忆；不要求用户提供 API Key、密码等秘密。涉及清除数据、重置、覆盖、删除时，先提醒备份并解释风险。排查优先采用安全、可逆步骤。不要建议用户直接清除整个网站数据、IndexedDB 或 localStorage。
+当前运行信息、匹配到的知识库与故障案例（资料为空代表没有检索到可靠条目）：${JSON.stringify(c)}`}
 async function imageData(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=reject;r.readAsDataURL(file)})}
 function apiEndpoint(base){return String(base||'').trim().replace(/\/+$/,'')+'/chat/completions'}
 async function send(){if(busy)return;const q=$('questionInput').value.trim();if(!q&&!pendingImage)return;const cfg=getApi();if(!cfg.apiBase||!cfg.apiKey||!cfg.apiModel){toast('请先在 LOVE RECORD 首页配置 API');return}
