@@ -13,3 +13,9 @@
 .message-content em{color:#9b7890}
 .message-content code{font-family:ui-monospace,monospace;font-size:.9em;background:#f8f0f5;border-radius:5px;padding:2px 5px;color:#875c79}
 .message-content blockquote{margin:9px 0;padding:7px 11px;border-left:3px solid #d9b7cc;background:#fcf6fa;color:#866b7d;border-radius:0 8px 8px 0}
+
+/* 回复分段间距与长列表阅读优化 */
+.message-content{line-height:1.9}
+.message-content p{margin:0 0 13px;line-height:1.95}
+.message-content h2,.message-content h3{margin-top:16px;margin-bottom:8px}
+.message-content ul,.message-content ol{margin-top:8px;margin-bottom:14px}
