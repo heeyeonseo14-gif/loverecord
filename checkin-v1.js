@@ -174,7 +174,7 @@ async function generateForApp(view,button){
  const characterMemory=await getCharacterMemoryContext();
  const prompt=isChat
  ?`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7个【其他联系人】的聊天会话。绝对不要把手机主人自己列为联系人，也不要把聊天内容写成主人单方面自言自语。每个联系人生成4-6条有来有回的消息，sender只能是联系人名字或“${selected.name||'我'}”，并用fromMe布尔值标记是否由手机主人发送。返回JSON数组，每项格式：{"contactName":"对方姓名","preview":"最近一条消息摘要","messages":[{"sender":"对方姓名","fromMe":false,"text":"消息"},{"sender":"${selected.name||'我'}","fromMe":true,"text":"回复"}]}。对话自然、有上下文、符合人物设定。必须参考以下角色记忆、设定和近期聊天上下文，不能违背已发生的事情，也不能把用户与角色的关系、称呼、共同经历随意改写：\n${characterMemory||'暂无额外记忆资料'}。`
- :`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7条不同的${label}内容。必须符合角色设定，不要把手机主人自己当作通讯录联系人。只返回JSON数组。${view==='contactsApp'?'每项字段：name（其他人的姓名）、number（随机但格式合理的电话号码）、note（关系或备注）。禁止生成角色本人姓名或本人号码。':''}${view==='browser'?'每项字段：title（搜索标题）、url（网址或域名）、detail（简短浏览摘要）。':''}${view==='xiaohongshu'?'每项字段：author（博主昵称）、title（笔记标题）、body（笔记正文，具体自然）、tags（标签数组）。':''}${view==='photos'?'每项字段：title、detail。':''}${view==='music'?'每项字段：title、artist。':''}${view==='calendar'?'每项字段：title、time、detail。':''}${view==='notes'?'每项字段：title、time、body。':''}${view==='activity'?'每项字段：title、time、detail。':''}避免重复已有内容。角色身份：${selected.role||''}；角色设定：${selected.persona||selected.personality||''}；背景：${selected.background||''}；指令：${selected.instructions||''}。以下是必须参考的角色记忆、设定和近期聊天上下文：\n${characterMemory||'暂无额外记忆资料'}。`;
+ :`请为角色「${selected.name||'当前角色'}」的模拟手机生成5-7条不同的${label}内容。必须符合角色设定，不要把手机主人自己当作通讯录联系人。只返回JSON数组。${view==='contactsApp'?'每项字段：name（其他人的姓名）、number（随机但格式合理的电话号码）、note（关系或备注）。禁止生成角色本人姓名或本人号码。':''}${view==='browser'?'每项字段：title（搜索标题）、url（网址或域名）、detail（简短浏览摘要）。':''}${view==='xiaohongshu'?'每项字段：author（博主昵称）、title（笔记标题）、body（笔记正文，具体自然）、tags（标签数组）。':''}${view==='photos'?'每项字段：title、detail。':''}${view==='music'?'每项字段：title、artist。':''}${view==='calendar'?'每项字段：title、time、detail。':''}${view==='notes'?'每项字段：title、time、body。':''}${view==='activity'?'每项字段：title、time、detail。':''}请生成一批全新的内容，不要沿用或拼接此前查岗生成的旧内容。角色身份：${selected.role||''}；角色设定：${selected.persona||selected.personality||''}；背景：${selected.background||''}；指令：${selected.instructions||''}。以下是必须参考的角色记忆、设定和近期聊天上下文：\n${characterMemory||'暂无额外记忆资料'}。`;
  try{
   const base=String(cfg.apiBase).replace(/\/+$/,'');
   const res=await fetch(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.apiModel,messages:[{role:'system',content:'你是 LOVE RECORD 查岗手机内容生成器。严格只输出有效 JSON 数组，不要 Markdown 代码块、解释或数组以外的文字。'}, {role:'user',content:prompt}],temperature:.85,max_tokens:5000,stream:false})});
@@ -185,18 +185,18 @@ async function generateForApp(view,button){
   const a=content.indexOf('['),b=content.lastIndexOf(']');if(a<0||b<a)throw new Error('返回格式不正确');
   const rows=JSON.parse(content.slice(a,b+1));if(!Array.isArray(rows)||!rows.length)throw new Error('没有生成内容');
   const stamp=new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});
-  const add=(arr,items)=>{data[arr]=[...items,...(data[arr]||[])].slice(0,100)};
+  const replace=(arr,items)=>{data[arr]=items};
   if(isChat){
    const chats=rows.slice(0,7).map((x,i)=>({contactName:String(x.contactName||x.name||`联系人${i+1}`),preview:String(x.preview||x.messages?.at?.(-1)?.text||'新消息'),messages:(Array.isArray(x.messages)?x.messages:[]).slice(0,6).map(m=>({sender:String(m.sender||x.contactName||'联系人'),fromMe:!!m.fromMe,text:String(m.text||'')}))}));
-   add('messages',chats);
-  }else if(view==='photos')add('photos',rows.slice(0,7).map(x=>({title:x.title||'新照片',detail:x.detail||x.body||'',time:stamp})));
-  else if(view==='music')add('songs',rows.slice(0,7).map(x=>({name:x.title||x.name||'新曲目',artist:x.artist||x.detail||''})));
-  else if(view==='contactsApp')add('contacts',rows.slice(0,7).map((x,i)=>({name:String(x.name||`联系人${i+1}`),number:String(x.number||''),note:String(x.note||x.detail||'')})));
-  else if(view==='calendar')add('calendar',rows.slice(0,7).map(x=>({time:x.time||stamp,title:x.title||'日程安排',detail:x.detail||x.body||''})));
-  else if(view==='notes')add('notes',rows.slice(0,7).map(x=>({title:x.title||'新备忘录',body:x.body||x.detail||'',time:x.time||stamp})));
-  else if(view==='browser')add('browserHistory',rows.slice(0,7).map(x=>({title:x.title||'搜索记录',url:x.url||'',detail:x.detail||''})));
-  else if(view==='xiaohongshu')add('xhsNotes',rows.slice(0,7).map(x=>({author:x.author||'推荐博主',title:x.title||'生活笔记',body:x.body||x.detail||'',tags:Array.isArray(x.tags)?x.tags:[]})));
-  else add('activities',rows.slice(0,7).map(x=>({time:x.time||stamp,icon:'✧',title:x.title||'手机活动',detail:x.detail||x.body||''})));
+   replace('messages',chats);
+  }else if(view==='photos')replace('photos',rows.slice(0,7).map(x=>({title:x.title||'新照片',detail:x.detail||x.body||'',time:stamp})));
+  else if(view==='music')replace('songs',rows.slice(0,7).map(x=>({name:x.title||x.name||'新曲目',artist:x.artist||x.detail||''})));
+  else if(view==='contactsApp')replace('contacts',rows.slice(0,7).map((x,i)=>({name:String(x.name||`联系人${i+1}`),number:String(x.number||''),note:String(x.note||x.detail||'')})));
+  else if(view==='calendar')replace('calendar',rows.slice(0,7).map(x=>({time:x.time||stamp,title:x.title||'日程安排',detail:x.detail||x.body||''})));
+  else if(view==='notes')replace('notes',rows.slice(0,7).map(x=>({title:x.title||'新备忘录',body:x.body||x.detail||'',time:x.time||stamp})));
+  else if(view==='browser')replace('browserHistory',rows.slice(0,7).map(x=>({title:x.title||'搜索记录',url:x.url||'',detail:x.detail||''})));
+  else if(view==='xiaohongshu')replace('xhsNotes',rows.slice(0,7).map(x=>({author:x.author||'推荐博主',title:x.title||'生活笔记',body:x.body||x.detail||'',tags:Array.isArray(x.tags)?x.tags:[]})));
+  else replace('activities',rows.slice(0,7).map(x=>({time:x.time||stamp,icon:'✧',title:x.title||'手机活动',detail:x.detail||x.body||''})));
   save();renderData();toast(`生成完成 · ${Math.min(rows.length,7)} 条`);
  }catch(e){toast('生成失败：'+(e.message||'请检查 API 配置'))}
  finally{button.disabled=false;button.classList.remove('loading');button.innerHTML='✧'}
