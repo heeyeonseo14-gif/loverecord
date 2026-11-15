@@ -1174,7 +1174,75 @@ body.launcher-open .system-appbar{display:none!important}
 @media(max-width:380px){.lr-directory-grid{gap:9px}.lr-person-card{padding:15px 12px;min-height:230px}.lr-world-card{grid-template-columns:92px minmax(0,1fr);gap:12px}.lr-world-cover{min-height:135px}.lr-world-info h3{font-size:20px}.lr-library-toolbar{align-items:flex-start}.lr-library-note{font-size:8px;line-height:1.7}}
 </style>
 
-</head>
+<style id="lr-settings-center-v2">
+/* LOVE RECORD premium settings center */
+#settings{padding-bottom:calc(112px + env(safe-area-inset-bottom))}
+#settings .settings-intro{max-width:34rem;margin:8px 0 22px}
+#settings .settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+#settings .settings-entry{position:relative;min-height:142px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:15px;padding:18px 16px;border:1px solid rgba(151,125,169,.16);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.92),rgba(248,242,251,.78));box-shadow:0 12px 30px rgba(82,57,98,.07),inset 0 1px 0 rgba(255,255,255,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);text-align:left;color:var(--ink,#43364a);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+#settings .settings-entry:active{transform:scale(.985)}
+#settings .settings-entry-icon{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#f0e5f5,#e6d9ee);color:#896b98;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
+#settings .settings-entry-icon svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+#settings .settings-entry-copy{display:grid;gap:5px;min-width:0}
+#settings .settings-entry-copy strong{font-size:11px;letter-spacing:.09em;line-height:1.4;overflow-wrap:anywhere}
+#settings .settings-entry-copy small{font-size:12px;line-height:1.5;color:var(--muted,#93869a)}
+#settings .settings-entry-arrow{position:absolute;right:15px;top:16px;font-size:21px;color:#ad9ab5}
+#settings .settings-subpage{animation:lrSettingsIn .22s ease}
+@keyframes lrSettingsIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+#settings .settings-subpage-head{display:flex;align-items:center;gap:13px;margin:0 0 18px}
+#settings .settings-subpage-head h2{margin:2px 0 0;font-size:21px;letter-spacing:.02em}
+#settings .settings-back{width:38px;height:38px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.7);font-size:25px;color:var(--ink);display:grid;place-items:center}
+.settings-section-kicker{font-size:10px;letter-spacing:.13em;font-weight:750;color:#a18bac;margin-bottom:7px}
+.settings-help{font-size:12px;line-height:1.75;color:var(--muted,#93869a);margin:8px 0 12px}
+.settings-info-card{padding:18px;margin:13px 0;border:1px solid rgba(151,125,169,.15);background:rgba(255,255,255,.72)}
+.settings-info-card h3{margin:0 0 9px}
+.settings-info-card p{font-size:13px;line-height:1.85;color:var(--muted,#827587);margin:7px 0}
+.settings-api-manager{margin-top:19px;padding:16px;border:1px solid rgba(151,125,169,.2);border-radius:21px;background:linear-gradient(145deg,rgba(250,246,252,.95),rgba(255,255,255,.74))}
+.settings-api-manager-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.settings-api-manager-head>div{display:grid;gap:4px}
+.settings-api-manager-head strong{font-size:14px}
+.settings-api-manager-head small{font-size:11px;color:var(--muted)}
+.settings-live-dot{font-size:9px;letter-spacing:.1em;color:#6b8c76;background:#e8f2ea;padding:6px 9px;border-radius:20px;font-weight:800}
+.settings-api-site{padding:13px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.8);display:grid;gap:11px}
+.settings-api-site.is-active{border-color:rgba(133,105,151,.5);background:linear-gradient(135deg,#fff,#f4edf8);box-shadow:0 6px 18px rgba(103,76,119,.08)}
+.settings-api-site-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.settings-api-site-info{display:grid;gap:4px;min-width:0}
+.settings-api-site-info strong{font-size:13px;overflow-wrap:anywhere}
+.settings-api-site-info small{font-size:11px;color:var(--muted);overflow-wrap:anywhere;line-height:1.5}
+.settings-api-site-meta{font-size:10px;color:#a294a8}
+.settings-api-site-badge{flex:none;padding:5px 8px;border-radius:20px;background:#f0eaf3;color:#8b7395;font-size:10px}
+.settings-api-site.is-active .settings-api-site-badge{background:#e8f2ea;color:#62816b}
+.settings-api-site-actions{display:flex;gap:7px;flex-wrap:wrap}
+.settings-api-site-actions .btn{flex:1;min-width:72px;padding:9px 10px;font-size:11px}
+.settings-api-site-actions .btn:disabled{opacity:.6}
+.settings-api-site-actions .danger{color:#a65f70;border-color:rgba(190,110,130,.25)}
+.settings-empty-state{padding:14px;border-radius:14px;background:rgba(255,255,255,.65);font-size:12px;line-height:1.7;color:var(--muted)}
+.settings-accordion{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;color:inherit;text-align:left;padding:2px 0 12px}
+.settings-accordion span:first-child{display:grid;gap:5px}
+.settings-accordion strong{font-size:14px}
+.settings-accordion small{font-size:11px;color:var(--muted);line-height:1.5}
+.settings-accordion-mark{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#f0e8f4;color:#876d92}
+.settings-diagnostic-list{display:grid;gap:0;margin:6px 0 13px}
+.settings-diagnostic-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12px}
+.settings-diagnostic-row span:first-child{color:var(--muted)}
+.settings-diagnostic-row strong{text-align:right;overflow-wrap:anywhere;max-width:60%;font-weight:650}
+.settings-diagnostic-list+.btn{width:100%;margin-top:8px}
+.settings-about-hero{display:flex;align-items:center;gap:15px;padding:21px;background:linear-gradient(135deg,#f1e8f6,#fff)}
+.settings-brand-mark{width:58px;height:58px;flex:none;border-radius:19px;display:grid;place-items:center;background:linear-gradient(145deg,#c9afd8,#9677a8);color:white;font-size:19px;font-weight:800;letter-spacing:.05em;box-shadow:0 9px 20px rgba(117,87,137,.2)}
+.settings-about-hero h3{margin:0 0 4px}
+.settings-about-hero p{margin:0;font-size:12px;color:var(--muted)}
+.settings-about-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
+.settings-about-row:last-child{border-bottom:0}
+.settings-about-row span{color:var(--muted)}
+.settings-data-slot:empty{display:none}
+@media(max-width:370px){#settings .settings-grid{gap:9px}#settings .settings-entry{min-height:132px;padding:14px 12px;border-radius:20px}#settings .settings-entry-copy strong{font-size:10px}}
+</style>
+<style id="lr-settings-app-catalog-style">
+.settings-app-catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.settings-app-catalog>div{display:grid;gap:4px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.62);min-width:0}
+.settings-app-catalog strong{font-size:12px}
+.settings-app-catalog small{font-size:10px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+</style></head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
   <div class="love-intro-inner">
@@ -1424,33 +1492,15 @@ body.launcher-open .system-appbar{display:none!important}
   <h1 id="settingsMainTitle">SETTINGS</h1>
   <div class="settings-intro sub" id="settingsIntro">选择一个分类，进入对应的设置页面。</div>
 
-  <div class="settings-home-menu" id="settingsHomeMenu">
-    <button class="settings-entry" type="button" data-settings-open="settingsOurSpace">
-      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5h16M6.5 4.5h11A2.5 2.5 0 0 1 20 7v12H4V7a2.5 2.5 0 0 1 2.5-2.5Z"/><path d="M8 11h8M8 14.5h5"/></svg></span>
-      <span class="settings-entry-copy"><strong>OUR SPACE</strong><small>我们的专属设置 · 开始日期与今日文字</small></span>
-      <span class="settings-entry-arrow" aria-hidden="true">›</span>
-    </button>
-    <button class="settings-entry" type="button" data-settings-open="settingsPersonalization">
-      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.2"/><path d="M5 20c.5-4 2.8-6 7-6s6.5 2 7 6"/></svg></span>
-      <span class="settings-entry-copy"><strong>PERSONALIZATION</strong><small>自设管理</small></span>
-      <span class="settings-entry-arrow" aria-hidden="true">›</span>
-    </button>
-    <button class="settings-entry" type="button" data-settings-open="settingsAI">
-      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span>
-      <span class="settings-entry-copy"><strong>AI &amp; API</strong><small>连接与管理自己的 AI 服务</small></span>
-      <span class="settings-entry-arrow" aria-hidden="true">›</span>
-    </button>
-    <button class="settings-entry" type="button" data-settings-open="settingsApp">
-      <span class="settings-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 7h6M9 17h6"/></svg></span>
-      <span class="settings-entry-copy"><strong>APP</strong><small>安装与应用信息</small></span>
-      <span class="settings-entry-arrow" aria-hidden="true">›</span>
-    </button>
+  <div class="settings-home-menu settings-grid" id="settingsHomeMenu">
+    <button class="settings-entry" type="button" data-settings-open="settingsPersonalization"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="3.2"/><path d="M5 20c.5-4 2.8-6 7-6s6.5 2 7 6"/></svg></span><span class="settings-entry-copy"><strong>PERSONALIZATION</strong><small>自设与个人偏好</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsAI"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg></span><span class="settings-entry-copy"><strong>AI &amp; API</strong><small>多站点管理与模型连接</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsApp"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 7h6M9 17h6"/></svg></span><span class="settings-entry-copy"><strong>APP</strong><small>应用与安装信息</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsPrivacy"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><path d="M12 3 19 6v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="settings-entry-copy"><strong>PRIVACY &amp; SECURITY</strong><small>隐私边界与安全操作</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsData"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="7" ry="2.5"/><path d="M5 5v7c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5V5M5 12v7c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-7"/></svg></span><span class="settings-entry-copy"><strong>DATA &amp; BACKUP</strong><small>备份、恢复与数据管理</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsAdvanced"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><span class="settings-entry-copy"><strong>ADVANCED</strong><small>运行环境与开发者诊断</small></span><span class="settings-entry-arrow">›</span></button>
+    <button class="settings-entry" type="button" data-settings-open="settingsAbout"><span class="settings-entry-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg></span><span class="settings-entry-copy"><strong>ABOUT</strong><small>版本、更新与开源信息</small></span><span class="settings-entry-arrow">›</span></button>
   </div>
-
-  <section class="settings-subpage" id="settingsOurSpace" aria-labelledby="settingsOurSpaceTitle" hidden>
-    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsOurSpaceTitle">OUR SPACE</h2></div></div>
-    <div class="card" id="usCard"><h3>我们</h3><label>开始日期</label><input id="setDate" type="date"><label>今天的文字</label><textarea id="setToday"></textarea><button class="btn primary" id="saveSettings" type="button" style="margin-top:17px">保存修改</button></div>
-  </section>
 
   <section class="settings-subpage" id="settingsPersonalization" aria-labelledby="settingsPersonalizationTitle" hidden>
     <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsPersonalizationTitle">PERSONALIZATION</h2></div></div>
@@ -1459,18 +1509,62 @@ body.launcher-open .system-appbar{display:none!important}
 
   <section class="settings-subpage" id="settingsAI" aria-labelledby="settingsAITitle" hidden>
     <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsAITitle">AI &amp; API</h2></div></div>
-    <div class="card" id="apiCard"><h3 id="apiTitle">AI / API</h3><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
+    <div class="card" id="apiCard"><div class="settings-section-kicker">AI SERVICE MANAGEMENT</div><h3 id="apiTitle">AI / API</h3><p class="settings-help">保存多个 API 站点，并选择一个全局活动站点。所有 AI 应用统一使用当前活动配置。</p><div id="apiStatus" class="api-status">尚未连接 API</div><label>API BASE URL</label><input id="apiBase" placeholder="https://你的中转站/v1" autocomplete="url"><label>API KEY</label><input id="apiKey" type="password" placeholder="填写 API Key" autocomplete="off"><label>MODEL</label>
 <div id="modelPicker" class="model-picker" aria-label="可用模型"></div><div id="selectedModelLabel" class="sub" style="margin-top:10px">当前模型：未选择</div>
-<div class="api-preset-editor" style="margin-top:18px;padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.45)"><label for="apiPresetName" style="margin-top:0">预设名称</label><input id="apiPresetName" placeholder="例如：主力中转站 / 备用站"><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="saveApiPreset" type="button">保存预设</button><button class="btn" id="addApiPreset" type="button">添加预设</button></div><div id="apiPresetStatus" class="sub" role="status" aria-live="polite" style="margin-top:9px">预设会保存在当前浏览器。</div><div id="apiPresetList" style="display:grid;gap:9px;margin-top:12px"></div></div>
+<div class="api-preset-editor settings-api-manager"> <div class="settings-api-manager-head"><div><strong>已保存的 API 站点</strong><small>配置保存在当前浏览器；切换后全局生效</small></div><span class="settings-live-dot">GLOBAL</span></div><label for="apiPresetName" style="margin-top:0">站点名称</label><input id="apiPresetName" placeholder="例如：主力中转站 / 备用站 / 官方 API"><div style="display:flex;gap:9px;flex-wrap:wrap;margin-top:10px"><button class="btn primary" id="saveApiPreset" type="button">保存当前站点</button><button class="btn" id="addApiPreset" type="button">另存为新站点</button></div><div id="apiPresetStatus" class="sub" role="status" aria-live="polite" style="margin-top:9px">站点信息保存在当前浏览器的本地存储中。</div><div id="apiPresetList" style="display:grid;gap:9px;margin-top:12px"></div></div>
 <button class="btn primary" id="connectApi" type="button" style="margin-top:17px">连接 API / 读取模型</button><button class="btn" id="refreshModels" type="button" style="margin-top:9px">刷新模型</button><button class="btn" id="testApi" type="button" style="margin-top:9px">测试 AI</button><div id="apiDebug" class="sub" style="margin-top:12px;word-break:break-word">还没有进行 API 测试。</div></div>
   </section>
 
   <section class="settings-subpage" id="settingsApp" aria-labelledby="settingsAppTitle" hidden>
     <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">SETTINGS</div><h2 id="settingsAppTitle">APP</h2></div></div>
+    <div class="card settings-info-card"><div class="settings-section-kicker">INSTALLED APPLICATIONS</div><h3>应用目录</h3><div class="settings-app-catalog">
+      <div><strong>拾忆</strong><small>联系人记忆整理</small></div><div><strong>星星助手</strong><small>LOVE RECORD 使用帮助</small></div>
+      <div><strong>空间</strong><small>独立世界与剧情</small></div><div><strong>聊天</strong><small>AI 联系人对话</small></div>
+      <div><strong>社区</strong><small>帖子与互动</small></div><div><strong>日记</strong><small>日常记录与回顾</small></div>
+      <div><strong>音乐</strong><small>音乐搜索与收藏</small></div><div><strong>美化</strong><small>主题、字体与图标</small></div>
+      <div><strong>生活集市</strong><small>模拟点餐与购物</small></div><div><strong>游戏</strong><small>共同农场与游戏</small></div>
+      <div><strong>陪伴</strong><small>关系互动与共同回忆</small></div><div><strong>查岗</strong><small>AI 模拟手机</small></div>
+    </div><p class="settings-help">此目录根据当前首页应用入口整理；具体功能和可用状态以各应用页面为准。</p></div>
     <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
     <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
   </section>
 
+  <section class="settings-subpage" id="settingsPrivacy" aria-labelledby="settingsPrivacyTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">PRIVACY &amp; SECURITY</div><h2 id="settingsPrivacyTitle">隐私与安全</h2></div></div>
+    <div class="card settings-info-card"><div class="settings-section-kicker">YOUR DATA, YOUR CONTROL</div><h3>隐私边界</h3><p>LOVE RECORD 的主要资料保存在当前浏览器的本地存储中。不同应用的数据由各自模块管理；设置中心不会读取聊天正文、角色长期记忆、日记内容或陪伴照片。</p></div>
+    <div class="card settings-info-card"><h3>API 密钥保护</h3><p>API Key 用于向你配置的服务商发送请求。页面会以密码形式隐藏密钥；不要将密钥放入截图、诊断报告或公开分享的备份文件。</p><p class="settings-help">请只连接你信任的 API 服务商。第三方服务商可能按照其自身政策处理请求内容。</p></div>
+    <div class="card settings-info-card"><h3>危险操作保护</h3><p>删除、覆盖或恢复数据前，应确认目标范围并保留当前备份。设置中心不会提供一键清空所有网站数据的快捷操作。</p></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsData" aria-labelledby="settingsDataTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">DATA &amp; BACKUP</div><h2 id="settingsDataTitle">数据与备份</h2></div></div>
+    <div class="card settings-info-card"><div class="settings-section-kicker">LOCAL DATA MANAGEMENT</div><h3>备份与恢复中心</h3><p>导出当前备份机制能够读取的数据。备份文件可能包含私人资料，请妥善保存，不要随意发送给他人。</p><p class="settings-help">恢复会覆盖备份中同名的数据表和设置。开始恢复前，系统会先要求下载当前现场备份。</p></div>
+    <div class="settings-data-slot" id="settingsDataBackupSlot"></div>
+    <div class="card settings-info-card"><h3>数据迁移说明</h3><p>不同浏览器和设备的本地存储相互隔离。更换浏览器或手机时，请先从旧设备导出备份，再在新设备导入。</p></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsAdvanced" aria-labelledby="settingsAdvancedTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">ADVANCED &amp; DEVELOPER</div><h2 id="settingsAdvancedTitle">高级与开发者选项</h2></div></div>
+    <div class="card settings-info-card"><button class="settings-accordion" id="settingsDiagnosticsToggle" type="button" aria-expanded="false"><span><strong>运行环境与诊断</strong><small>普通用户可保持折叠，需要排查问题时再展开</small></span><span class="settings-accordion-mark">＋</span></button>
+      <div id="settingsDiagnosticsPanel" hidden>
+        <div class="settings-diagnostic-list" id="settingsDiagnosticList"></div>
+        <button class="btn primary" id="settingsRefreshDiagnostics" type="button">刷新诊断信息</button>
+        <button class="btn" id="settingsCopyDiagnostics" type="button">复制非敏感诊断报告</button>
+        <p class="settings-help">报告仅包含浏览器、页面、缓存与存储可访问状态，不包含 API Key、聊天正文、联系人资料或私人照片。</p>
+      </div>
+    </div>
+    <div class="card settings-info-card"><h3>高级操作说明</h3><p>此区域仅提供只读诊断，不会自动清理缓存、删除存储或修改 Service Worker。需要修复时，请先确认备份并使用可逆操作。</p></div>
+  </section>
+
+  <section class="settings-subpage" id="settingsAbout" aria-labelledby="settingsAboutTitle" hidden>
+    <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">ABOUT LOVE RECORD</div><h2 id="settingsAboutTitle">关于 LOVE RECORD</h2></div></div>
+    <div class="card settings-about-hero"><div class="settings-brand-mark">LR</div><div><div class="settings-section-kicker">YOUR LITTLE WORLD</div><h3>LOVE RECORD</h3><p>一个可自定义的 AI 互动与生活空间。</p></div></div>
+    <div class="card settings-info-card"><h3>项目信息</h3><div class="settings-about-row"><span>当前构建</span><strong id="settingsBuildValue">读取中</strong></div><div class="settings-about-row"><span>运行平台</span><strong>Web App / PWA</strong></div><div class="settings-about-row"><span>产品定位</span><strong>完全免费</strong></div></div>
+    <div class="card settings-info-card"><h3>开源与更新</h3><p>项目源码与版本更新以实际发布的仓库内容为准。请通过项目维护者提供的官方仓库地址查看开源许可和更新记录。</p></div>
+  </section>
+
+  <!-- Legacy OUR SPACE fields retained hidden for existing state-save compatibility; no visible settings category. -->
+  <div id="legacyOurSpaceCompat" hidden aria-hidden="true"><input id="setDate" type="date"><textarea id="setToday"></textarea><button id="saveSettings" type="button">保存修改</button></div>
   <!-- Hidden compatibility nodes: retained for existing initialization code; Appearance remains a separate app. -->
   <div id="appearanceCard" hidden aria-hidden="true">
     <h3 id="appearanceTitle">APPEARANCE</h3>
@@ -2754,25 +2848,83 @@ async function loadApiPresets(){
  renderApiPresets();
 }
 async function writeApiPresets(list){try{await lrKVSet(API_PRESETS_KV,list);apiPresetCache=list.filter(x=>x&&x.id);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(apiPresetCache))}catch(e){/* primary IndexedDB save succeeded */}return true}catch(e){console.warn('[LOVE RECORD] API presets IndexedDB save failed',e);try{localStorage.setItem(API_PRESETS_KEY,JSON.stringify(list));apiPresetCache=list.filter(x=>x&&x.id);return true}catch(err){return false}}}
-function renderApiPresets(){const box=$('apiPresetList');if(!box)return;const list=readApiPresets();box.innerHTML='';if(!list.length){box.innerHTML='<div class="sub">还没有预设。填写站点和模型后，点击「保存预设」即可保存。</div>';return}list.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.58)';const info=document.createElement('div');info.style.cssText='flex:1;min-width:120px';const name=document.createElement('strong');name.textContent=p.name||'未命名预设';name.style.display='block';const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写站点')+' · '+(p.apiModel||'未选模型');detail.style.cssText='display:block;opacity:.65;overflow-wrap:anywhere;margin-top:3px';info.append(name,detail);const use=document.createElement('button');use.type='button';use.className='btn';use.textContent='切换';use.onclick=async()=>{try{await writeActiveApiPresetPointer(p)}catch(e){$('apiPresetStatus').textContent='活动预设指针写入失败：'+(e.message||e);toast('预设切换状态保存失败');return}state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];state.apiConfigUpdatedAt=Number(p.updatedAt)||Date.now();$('apiPresetName').value=p.name||'';const ok=save();$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;renderModelPicker();updateAIState();syncApiStatus();$('apiStatus').textContent=state.apiBase&&state.apiKey?'已载入预设 · '+(state.apiModel||'待选择模型'):'预设已载入，请补全 API 信息';$('apiStatus').classList.toggle('on',!!(state.apiBase&&state.apiKey&&state.apiModel));syncApiStatus();$('apiPresetStatus').textContent='已切换到「'+(p.name||'未命名预设')+'」；主页运行配置已同步。'+(ok?'':'（主设置快照未保存，预设仍以独立存储为准）');toast('已切换 API 预设 ♡')};const del=document.createElement('button');del.type='button';del.className='btn';del.textContent='删除';del.onclick=async()=>{if(!confirm('确定删除预设「'+(p.name||'未命名预设')+'」？'))return;const next=readApiPresets().filter(x=>x.id!==p.id);const ok=await writeApiPresets(next);renderApiPresets();$('apiPresetStatus').textContent=ok?'预设已删除并保存。':'删除失败：独立储存和浏览器储存均不可用。'};row.append(info,use,del);box.append(row)})}
+function renderApiPresets(){
+ const box=$('apiPresetList');if(!box)return;
+ const list=readApiPresets();box.innerHTML='';
+ const activeId=(()=>{try{return JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'null')?.id||''}catch{return ''}})();
+ if(!list.length){const empty=document.createElement('div');empty.className='settings-empty-state';empty.textContent='还没有保存站点。填写 API 地址、密钥并选择模型后，可以保存为一个站点配置。';box.append(empty);return}
+ list.forEach(p=>{
+  const isActive=String(p.id)===String(activeId);
+  const row=document.createElement('div');row.className='settings-api-site'+(isActive?' is-active':'');
+  const top=document.createElement('div');top.className='settings-api-site-top';
+  const info=document.createElement('div');info.className='settings-api-site-info';
+  const name=document.createElement('strong');name.textContent=p.name||'未命名站点';
+  const detail=document.createElement('small');detail.textContent=(p.apiBase||'未填写地址')+' · '+(p.apiModel||'未选择模型');
+  const meta=document.createElement('div');meta.className='settings-api-site-meta';meta.textContent='更新于 '+(p.updatedAt?new Date(p.updatedAt).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'未知');
+  info.append(name,detail,meta);
+  const badge=document.createElement('span');badge.className='settings-api-site-badge';badge.textContent=isActive?'当前使用':'已保存';
+  top.append(info,badge);
+  const actions=document.createElement('div');actions.className='settings-api-site-actions';
+  const use=document.createElement('button');use.type='button';use.className='btn primary';use.textContent=isActive?'正在使用':'切换站点';use.disabled=isActive;
+  use.onclick=async()=>{
+   if(!confirm('切换到「'+(p.name||'未命名站点')+'」？切换后，所有使用首页 API 的应用，其后续 AI 请求都会使用此站点。'))return;
+   try{await writeActiveApiPresetPointer(p)}catch(e){$('apiPresetStatus').textContent='切换失败，原活动站点保持不变：'+(e.message||e);return}
+   state.apiBase=p.apiBase||'';state.apiKey=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];state.apiConfigUpdatedAt=Number(p.updatedAt)||Date.now();
+   try{save()}catch(e){console.warn('[LOVE RECORD] active API snapshot save failed',e)}
+   $('apiPresetName').value=p.name||'';$('apiBase').value=state.apiBase;$('apiKey').value=state.apiKey;
+   renderModelPicker();updateAIState();syncApiStatus();renderApiPresets();
+   $('apiPresetStatus').textContent='已切换到「'+(p.name||'未命名站点')+'」。所有应用后续请求将使用此站点。';toast('全局 API 站点已切换');
+  };
+  const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='编辑';edit.onclick=()=>{
+   $('apiPresetName').value=p.name||'';$('apiBase').value=p.apiBase||'';$('apiKey').value=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=Array.isArray(p.modelList)?p.modelList:[];renderModelPicker();
+   $('apiPresetStatus').textContent='已载入「'+(p.name||'未命名站点')+'」供编辑。点击「保存当前站点」更新；不会立即切换活动站点。';
+   $('apiBase').scrollIntoView({behavior:'smooth',block:'center'});
+  };
+  const del=document.createElement('button');del.type='button';del.className='btn danger';del.textContent='删除';del.onclick=async()=>{
+   if(isActive){$('apiPresetStatus').textContent='当前正在使用的站点不能直接删除。请先切换到另一个站点，再删除它。';toast('请先切换活动站点');return}
+   if(!confirm('确定删除已保存站点「'+(p.name||'未命名站点')+'」？此操作不会影响其他站点。'))return;
+   const ok=await writeApiPresets(readApiPresets().filter(x=>String(x.id)!==String(p.id)));
+   renderApiPresets();$('apiPresetStatus').textContent=ok?'站点已删除。':'删除失败：本地存储不可用。';
+  };
+  const test=document.createElement('button');test.type='button';test.className='btn';test.textContent='测试连接';test.onclick=async()=>{
+   test.disabled=true;test.textContent='测试中…';
+   try{
+    if(!p.apiBase||!p.apiKey||!p.apiModel)throw new Error('站点配置不完整');
+    const base=String(p.apiBase).trim().replace(/\/+$/,'');
+    const response=await fetchTimeout(base+'/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+p.apiKey,'Accept':'application/json'},body:JSON.stringify({model:p.apiModel,messages:[{role:'system',content:'Reply exactly OK.'},{role:'user',content:'OK'}],stream:false,max_tokens:8})},30000);
+    const raw=await response.text();if(!response.ok)throw new Error('HTTP '+response.status+' · '+raw.slice(0,140));
+    const payload=JSON.parse(raw);if(!extractAIText(payload))throw new Error('接口已响应，但没有读取到模型文本');
+    $('apiPresetStatus').textContent='「'+(p.name||'未命名站点')+'」连接测试成功。当前活动站点未改变。';test.textContent='测试成功';test.classList.add('is-tested');
+   }catch(err){$('apiPresetStatus').textContent='「'+(p.name||'未命名站点')+'」测试失败：'+(err.message||err)+'。当前活动站点未改变。';test.textContent='测试失败'}
+   finally{test.disabled=false}
+  };
+  actions.append(use,edit,test,del);row.append(top,actions);box.append(row);
+ });
+}
 async function saveCurrentApiPreset(addNew){
  const name=($('apiPresetName')?.value||'').trim();const apiBase=($('apiBase')?.value||'').trim().replace(/\/+$/,'');const apiKey=($('apiKey')?.value||'').trim();const apiModel=String(state.apiModel||'').trim();
  if(!name){$('apiPresetStatus').textContent='请先填写预设名称。';toast('请填写预设名称');return}
  if(!apiBase||!apiKey||!apiModel){$('apiPresetStatus').textContent='请先填写 API 地址、Key，并选择模型后再保存预设。';toast('API 配置不完整');return}
- const list=readApiPresets();const existing=!addNew?list.find(x=>x.name===name):null;
+ const list=readApiPresets();const editId=window.__lrEditingApiPresetId||'';const existing=!addNew?(editId?list.find(x=>String(x.id)===String(editId)):list.find(x=>x.name===name)):null;
+ const currentPointer=(()=>{try{return JSON.parse(localStorage.getItem('love-record-api-active-preset-v1')||'null')}catch{return null}})();
+ const shouldActivate=!existing||String(currentPointer?.id||'')===String(existing.id);
  const profile={id:existing?.id||('api-preset-'+Date.now()),name,apiBase,apiKey,apiModel,modelList:Array.isArray(state.modelList)?state.modelList:[],updatedAt:Date.now()};
  const next=existing?list.map(x=>String(x.id)===String(existing.id)?profile:x):[...list,profile];
  const saved=await writeApiPresets(next);
  if(!saved){$('apiPresetStatus').textContent='保存失败：IndexedDB 与浏览器备用存储均不可用。';toast('API 预设保存失败');return}
- try{await writeActiveApiPresetPointer(profile)}catch(e){$('apiPresetStatus').textContent='预设内容已保存，但活动预设指针保存失败：'+(e.message||e);toast('活动预设保存失败');return}
- // The just-saved preset is immediately authoritative for this page, not the old settings snapshot.
- state.apiBase=apiBase;state.apiKey=apiKey;state.apiModel=apiModel;state.modelList=profile.modelList;state.apiConfigUpdatedAt=profile.updatedAt;state.language='zh';
- try{save()}catch(e){console.warn('[LOVE RECORD] main settings snapshot save failed; active preset remains canonical',e)}
- $('apiBase').value=apiBase;$('apiKey').value=apiKey;renderModelPicker();updateAIState();renderApiPresets();
- $('apiPresetStatus').textContent=(existing?'已更新':'已新增')+'预设「'+name+'」并设为当前活动预设；主页与拾忆将读取这份配置。';toast((existing?'预设已更新':'预设已添加')+' ♡');
+ if(shouldActivate){
+  try{await writeActiveApiPresetPointer(profile)}catch(e){$('apiPresetStatus').textContent='站点已保存，但活动站点指针写入失败：'+(e.message||e);toast('活动站点保存失败');return}
+  state.apiBase=apiBase;state.apiKey=apiKey;state.apiModel=apiModel;state.modelList=profile.modelList;state.apiConfigUpdatedAt=profile.updatedAt;state.language='zh';
+  try{save()}catch(e){console.warn('[LOVE RECORD] main settings snapshot save failed; active preset remains canonical',e)}
+  $('apiBase').value=apiBase;$('apiKey').value=apiKey;renderModelPicker();updateAIState();
+ }
+ renderApiPresets();
+ window.__lrEditingApiPresetId='';
+ $('apiPresetStatus').textContent=shouldActivate?((existing?'已更新':'已新增')+'站点「'+name+'」，并设为全局活动站点。'):('已更新已保存站点「'+name+'」。当前全局活动站点保持不变。');
+ toast(shouldActivate?'站点已保存并启用':'站点配置已更新');
 }
-$('saveApiPreset').onclick=()=>saveCurrentApiPreset(false);$('addApiPreset').onclick=()=>saveCurrentApiPreset(true);
-$('apiPresetName').addEventListener('change',()=>{const p=readApiPresets().find(x=>x.name===$('apiPresetName').value.trim());if(p){$('apiBase').value=p.apiBase||'';$('apiKey').value=p.apiKey||'';state.apiModel=p.apiModel||'';state.modelList=p.modelList||[];renderModelPicker()}});
+$('saveApiPreset').onclick=()=>saveCurrentApiPreset(false);$('addApiPreset').onclick=()=>{window.__lrEditingApiPresetId='';saveCurrentApiPreset(true)};
+// A saved site is loaded only through its explicit Edit action; typing a name never silently changes configuration.
 loadApiPresets();
 
 $('chatSend').onclick=sendChatMessage;
@@ -3273,5 +3425,34 @@ body.lr-external-app-open{overflow:hidden}
 #lrWidgetBoard{width:100%;min-height:0}
 #lrWidgetShelf{touch-action:pan-y}
 </style>
+<script id="lr-settings-diagnostics-v1">
+(function(){
+ 'use strict';
+ const $=id=>document.getElementById(id);
+ const panel=$('settingsDiagnosticsPanel'),toggle=$('settingsDiagnosticsToggle');
+ if(toggle&&panel&&!toggle.dataset.bound){
+  toggle.dataset.bound='1';
+  toggle.addEventListener('click',()=>{const open=panel.hidden;panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));const mark=toggle.querySelector('.settings-accordion-mark');if(mark)mark.textContent=open?'−':'＋';if(open)refreshDiagnostics()});
+ }
+ let latestReport='';
+ async function refreshDiagnostics(){
+  const box=$('settingsDiagnosticList');if(!box)return;
+  box.innerHTML='<div class="settings-diagnostic-row"><span>正在读取</span><strong>请稍候…</strong></div>';
+  let sw='浏览器不支持';try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();sw=regs.length?regs.map(r=>r.active?'已激活':r.installing?'安装中':r.waiting?'等待更新':'已注册').join(' / '):'未注册'}}catch(e){sw='读取失败'}
+  let cache='不可用';try{cache=('caches'in window)?'可访问 · '+(await caches.keys()).length+' 个缓存':'浏览器不支持'}catch(e){cache='读取失败'}
+  let idb='不可用';try{if(indexedDB){if(typeof indexedDB.databases==='function'){const dbs=await indexedDB.databases();idb='可访问 · '+dbs.length+' 个数据库'}else idb='接口可用（浏览器未开放数据库枚举）'}}catch(e){idb='读取失败'}
+  let ls='不可用';try{const key='__lr_diag_test__';localStorage.setItem(key,'1');localStorage.removeItem(key);ls='可读写'}catch(e){ls='不可读写'}
+  const rows=[['浏览器',navigator.userAgent||'未知'],['当前页面',location.origin+location.pathname],['语言',navigator.language||'未知'],['网络状态',navigator.onLine?'在线':'离线'],['Service Worker',sw],['Cache Storage',cache],['IndexedDB',idb],['LocalStorage',ls],['屏幕尺寸',screen.width+' × '+screen.height],['当前构建',document.documentElement.dataset.build||'以项目发布版本为准']];
+  latestReport='LOVE RECORD 非敏感诊断报告\n'+rows.map(x=>x[0]+'：'+x[1]).join('\n');
+  box.innerHTML='';rows.forEach(([label,value])=>{const row=document.createElement('div');row.className='settings-diagnostic-row';const l=document.createElement('span');l.textContent=label;const v=document.createElement('strong');v.textContent=value;row.append(l,v);box.append(row)});
+ }
+ $('settingsRefreshDiagnostics')?.addEventListener('click',refreshDiagnostics);
+ $('settingsCopyDiagnostics')?.addEventListener('click',async()=>{if(!latestReport)await refreshDiagnostics();try{await navigator.clipboard.writeText(latestReport);if(typeof window.toast==='function')toast('诊断报告已复制（不含私人内容）');else alert('诊断报告已复制')}catch(e){const ta=document.createElement('textarea');ta.value=latestReport;document.body.append(ta);ta.select();try{document.execCommand('copy');if(typeof window.toast==='function')toast('诊断报告已复制')}finally{ta.remove()}}});
+ const about=$('settingsBuildValue');if(about)about.textContent=(window.__LOVE_RECORD_GET_RUNTIME_INFO?.().version)||'当前发布版本';
+ // Move the existing backup panel into the dedicated data category after its script creates it.
+ const moveBackup=()=>{const card=$('lrBackupCard'),slot=$('settingsDataBackupSlot');if(card&&slot&&card.parentElement!==slot)slot.append(card)};
+ moveBackup();new MutationObserver(moveBackup).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
 </body>
 </html>

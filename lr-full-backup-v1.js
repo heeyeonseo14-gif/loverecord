@@ -79,10 +79,33 @@ async function exportCaches(){
  }return out;
 }
 function storageDump(s){let o={};for(let i=0;i<s.length;i++){let k=s.key(i);o[k]=s.getItem(k)}return o}
+function redactApiSecrets(local,session,databases){
+ const secretKeys=new Set(['love-record-api-settings-v1','love-record-api-active-v1']);
+ for(const key of Object.keys(local||{})){
+  try{
+   const parsed=JSON.parse(local[key]);
+   if(key==='yanyan-love-settings-v5'&&parsed&&typeof parsed==='object'&&'apiKey'in parsed){parsed.apiKey='';local[key]=JSON.stringify(parsed)}
+   else if(key==='love-record-api-presets-v1'&&Array.isArray(parsed)){local[key]=JSON.stringify(parsed.map(p=>({...p,apiKey:''})))}
+   else if(secretKeys.has(key)&&parsed&&typeof parsed==='object'&&'apiKey'in parsed){parsed.apiKey='';local[key]=JSON.stringify(parsed)}
+  }catch(e){if(secretKeys.has(key))delete local[key]}
+ }
+ // API presets are stored as a value in the generic LOVE RECORD key-value database.
+ for(const db of databases||[]){
+  if(db.name!=='love-record-kv-v1')continue;
+  for(const store of db.stores||[]){
+   for(const record of store.records||[]){
+    const key=record.key?.$lrType==='Undefined'?undefined:record.key;
+    if(key==='api-presets-v1'&&Array.isArray(record.value))record.value=record.value.map(p=>({...p,apiKey:''}));
+   }
+  }
+ }
+ return {local,session,databases};
+}
 async function makeBackup(){
  const local=storageDump(localStorage),session=storageDump(sessionStorage),databases=[],warnings=[];
  const names=await dbNames();if(!names.length)warnings.push('没有发现可读取的 IndexedDB 数据库。请检查浏览器是否允许网站使用 IndexedDB。');
  for(const n of (names||[])){try{const d=await exportDB(n);if(d.stores.length)databases.push(d)}catch(e){warnings.push(n+': '+e.message)}}
+ redactApiSecrets(local,session,databases);
  const cacheStorage=await exportCaches();
  const dbRecordCount=name=>databases.filter(d=>d.name===name).reduce((a,d)=>a+d.stores.reduce((x,s)=>x+s.records.length,0),0);
  const localKeys=Object.keys(local);
@@ -184,10 +207,10 @@ async function importAll(file){
  finally{if(b)b.disabled=false;const f=$('lrBackupFile');if(f)f.value=''}
 }
 function addPanel(){
- const app=$('settingsApp');if(!app||$('lrBackupCard'))return;
+ const app=$('settingsData')||$('settingsApp');if(!app||$('lrBackupCard'))return;
  const card=document.createElement('section');card.id='lrBackupCard';card.className='lr-storage-card';
  card.style.cssText='margin-top:14px;padding:16px;border:1px solid var(--line,rgba(120,100,150,.18));border-radius:18px;background:var(--card,rgba(255,255,255,.55))';
- card.innerHTML=`<div class="eyebrow">BACKUP &amp; RESTORE · SAFETY CENTER</div><h3 style="margin:6px 0">LOVE RECORD 全量备份中心</h3><p class="sub">把聊天、联系人、自设、世界书、日记、动态、空间、农场、音乐、外观、应用资料及浏览器内可读取的数据保存成一个备份文件。建议每天备份，并把文件复制到手机以外的位置。</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px"><button class="btn primary" id="lrBackupExport" type="button">导出全量备份</button><button class="btn" id="lrBackupImport" type="button">从备份恢复</button></div><input id="lrBackupFile" type="file" accept=".json,application/json" hidden><div id="lrBackupReport" class="sub" style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;padding:11px;border-radius:12px;background:rgba(120,100,150,.07)">尚未执行备份。每次导出后，请确认文件确实出现在下载目录。</div><p class="sub" style="margin-top:10px">重要：备份文件可能包含 API Key、聊天内容、角色资料和私人照片，请勿发给他人。浏览器不允许网页读取 HttpOnly Cookie、其他网址的数据或手机文件系统中的任意文件；外部 API 服务端数据也不在本地备份范围内。导入前会先下载当前现场备份。</p>`;
+ card.innerHTML=`<div class="eyebrow">BACKUP &amp; RESTORE · SAFETY CENTER</div><h3 style="margin:6px 0">LOVE RECORD 全量备份中心</h3><p class="sub">把聊天、联系人、自设、世界书、日记、动态、空间、农场、音乐、外观、应用资料及浏览器内可读取的数据保存成一个备份文件。建议每天备份，并把文件复制到手机以外的位置。</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px"><button class="btn primary" id="lrBackupExport" type="button">导出全量备份</button><button class="btn" id="lrBackupImport" type="button">从备份恢复</button></div><input id="lrBackupFile" type="file" accept=".json,application/json" hidden><div id="lrBackupReport" class="sub" style="white-space:pre-wrap;overflow-wrap:anywhere;margin-top:12px;padding:11px;border-radius:12px;background:rgba(120,100,150,.07)">尚未执行备份。每次导出后，请确认文件确实出现在下载目录。</div><p class="sub" style="margin-top:10px">重要：备份文件可能包含 聊天内容、角色资料和私人照片；API Key 不会写入导出的备份，恢复后需重新填写各站点密钥，请勿发给他人。浏览器不允许网页读取 HttpOnly Cookie、其他网址的数据或手机文件系统中的任意文件；外部 API 服务端数据也不在本地备份范围内。导入前会先下载当前现场备份。</p>`;
  app.append(card);$('lrBackupExport').addEventListener('click',exportAll);$('lrBackupImport').addEventListener('click',()=>$('lrBackupFile').click());$('lrBackupFile').addEventListener('change',e=>{if(e.target.files?.[0])importAll(e.target.files[0])});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addPanel);else addPanel();
