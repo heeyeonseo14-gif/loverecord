@@ -1107,8 +1107,6 @@ body.launcher-open .system-appbar{display:none!important}
 #moduleModal .module-sheet{position:relative}
 #moduleModal .module-head{position:sticky;top:-25px;z-index:50;margin:-25px -23px 14px;padding:18px 23px 14px;background:rgba(255,255,255,.94);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-bottom:1px solid rgba(150,138,160,.12)}
 #moduleModal .module-head h2{margin-bottom:0}
-#lrLiveShell{padding-top:env(safe-area-inset-top)}
-#lrLiveBar{position:sticky;top:0;z-index:20;flex:none}
 </style>
 
 
@@ -1221,7 +1219,7 @@ body.launcher-open .system-appbar{display:none!important}
     <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
     <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
     <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
-    <button class="launcher-app" data-launch-live type="button" data-drag-id="app-live"><span class="app-icon" style="background:linear-gradient(145deg,#251536,#0e0a15);color:#d6b0ff;border:1px solid #d6b0ff55">✦</span><span>LIVE</span></button>
+    <button class="launcher-app" data-launch-companion type="button" data-drag-id="app-companion"><span class="app-icon" style="background:linear-gradient(145deg,#8f2949,#3f0d22);color:#f4d6b0;border:1px solid #e5b9a566">🌹</span><span>陪伴</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
@@ -1745,6 +1743,18 @@ function writeChatContacts(a){const value=[...new Set((a||[]).map(String))];chat
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
 function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a))}
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
+// Read-only context bridge for the Companion app: reuses the selected contact, related world book and existing real chat history.
+window.__LOVE_RECORD_GET_COMPANION_CONTEXT=(id)=>{
+ const person=contactById(id);if(!person)return null;
+ const relatedSpaces=(state.spaces||[]).filter(s=>String(s.personId)===String(id));
+ const worldIds=[...new Set(relatedSpaces.map(s=>s.worldId).filter(Boolean))];
+ const worlds=(state.worlds||[]).filter(w=>worldIds.includes(w.id));
+ let threads={};try{threads=readChatThreads()}catch{}
+ const recentChat=Array.isArray(threads[id])?threads[id].slice(-24):[];
+ const memoryFields=['memory','longMemory','longTermMemory','memories','importantMemories','summary','notes'];
+ const longMemory={};memoryFields.forEach(k=>{if(person[k])longMemory[k]=person[k]});
+ return {person,worlds,longMemory,recentChat};
+};
 function renderChatMessageContent(value, role){
  const raw=String(value==null?'':value);
  const orderMatch=raw.match(/^\[\[\s*LR_ORDER\s*\|\s*(food|shop)\s*\|([^\]]*)\]\]$/i);
@@ -2394,7 +2404,7 @@ const homeIconBindings=[
  {id:'app-shiyi',symbol:'✧'},{id:'app-memories',symbol:'▧'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},{id:'app-journal',symbol:'▤'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
- {id:'app-games',symbol:'🎮'},{id:'app-live',symbol:'✦'},{id:'app-checkin',symbol:'◉'}
+ {id:'app-games',symbol:'🎮'},{id:'app-companion',symbol:'🌹'},{id:'app-checkin',symbol:'◉'}
 ];
 document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>{location.href='./checkin.html';});
 async function loadHomeCustomIcons(){
@@ -2984,8 +2994,6 @@ if(loveIntro){
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="./farm-home-3d.js?v=28"></script>
 <style>
-#lrLiveShell{position:fixed;inset:0;z-index:99999;background:#0b0910;display:none;flex-direction:column;padding-top:env(safe-area-inset-top)}
-#lrLiveShell.show{display:flex}#lrLiveBar{height:42px;flex:none;display:flex;align-items:center;gap:12px;padding:0 14px;background:#171020;color:#eee;border-bottom:1px solid #b98ce533;font:13px system-ui,sans-serif}#lrLiveBar button{border:1px solid #b98ce555;border-radius:10px;background:#30203e;color:#f4eaff;padding:6px 12px}#lrLiveFrame{border:0;display:block;width:100%;height:calc(100% - 42px);flex:1;background:#0b0910}
 
 /* Settings 2.0: category landing + independent subpages (scoped to #settings) */
 #settings .settings-home-menu{display:grid;gap:12px;margin:26px 0 18px}
@@ -3007,9 +3015,14 @@ if(loveIntro){
 .nav-btn{width:100%;min-width:0}
 .dock-icon-svg{width:21px;height:21px;display:block;fill:none;stroke:#a28bb3;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<div id="lrLiveShell" aria-label="LIVE 直播应用"><div id="lrLiveBar"><button type="button" id="lrLiveBack">‹ 返回 LOVE RECORD</button><strong>LIVE · 直播舞台</strong></div><iframe id="lrLiveFrame" title="LIVE 直播应用" src="./live-app.html"></iframe></div>
+<div id="lrCompanionShell" aria-label="陪伴应用"><iframe id="lrCompanionFrame" title="LOVE RECORD 陪伴" src="./companion.html"></iframe></div>
+<style>
+#lrCompanionShell{position:fixed;inset:0;z-index:99999;background:#4b1025;display:none;padding-top:env(safe-area-inset-top)}
+#lrCompanionShell.show{display:block}
+#lrCompanionFrame{display:block;width:100%;height:100%;border:0;background:#fff8f4}
+</style>
 <script>
-(()=>{const shell=document.getElementById('lrLiveShell');const frame=document.getElementById('lrLiveFrame');function openLive(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_LIVE_OPEN'},location.origin)}catch(e){}}function closeLive(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-live]').forEach(b=>b.addEventListener('click',openLive));document.getElementById('lrLiveBack').addEventListener('click',closeLive);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeLive()});})();
+(()=>{const shell=document.getElementById('lrCompanionShell');const frame=document.getElementById('lrCompanionFrame');function openCompanion(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_COMPANION_OPEN'},location.origin)}catch(e){}}function closeCompanion(){shell.classList.remove('show');document.body.style.overflow='';}document.querySelectorAll('[data-launch-companion]').forEach(b=>b.addEventListener('click',openCompanion));window.__LOVE_RECORD_CLOSE_COMPANION=closeCompanion;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeCompanion()});})();
 </script>
 <script src="./moments-v1.js?v=99"></script>
 
