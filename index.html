@@ -2871,6 +2871,7 @@ worldBooksReady=restoreWorldBooks();
  }
  function freeCell(page){const used=new Set(getApps().filter(a=>pageMap[getId(a)]===page).map(a=>occupiedKey(page,cells[getId(a)].row,cells[getId(a)].col)));return firstFree(page,used)}
  function beginDrag(e){
+  if(e.target.closest('.nav, .nav *, button:not(.launcher-app), input, textarea, select, a'))return;
   const el=e.target.closest('#launcher .launcher-app[data-drag-id]');
   if(!el||el.hidden||(e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button:not(.launcher-app),input,textarea'))return;
   clearTimeout(timer);
@@ -3604,5 +3605,36 @@ body.lr-external-app-open{overflow:hidden}
  moveBackup();new MutationObserver(moveBackup).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="lr-home-touch-and-dock-repair-v1">
+/* Restore native vertical scrolling on the launcher; reserve drag gestures for long-press. */
+#launcher,
+#launcher.active,
+#launcher.page,
+#launcher .launcher-grid,
+#launcher .launcher-grid .launcher-app,
+#launcher .launcher-pages,
+#launcher .launcher-pages [data-launcher-page]{
+  touch-action: pan-y !important;
+}
+#launcher .launcher-grid .launcher-app,
+#launcher .launcher-grid .launcher-app *{
+  -webkit-user-select:none !important;
+  user-select:none !important;
+  -webkit-user-drag:none !important;
+}
+/* Keep the dock above launcher content and reliably tappable on mobile. */
+.nav{
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+  isolation: isolate;
+}
+.nav .nav-inner,
+.nav .nav-btn{
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+</style>
+
 </body>
 </html>
