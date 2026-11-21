@@ -40,19 +40,22 @@ body.photo-bg{background-size:cover;background-position:center;background-attach
 <script>
 'use strict';
 const KEY='yanyan-love-appearance-v1', DB='love-record-appearance-assets-v2', STORE='assets';
-const defaults={preset:'purple',font:'system',customFontName:'',fontSize:15,accent:'#b79bc7',bg:'soft',dark:false,liquid:false};
+const defaults={preset:'purple',themeMode:'purple',font:'system',customFontName:'',fontSize:15,accent:'#b79bc7',bg:'soft',dark:false,liquid:false};
 let a={...defaults}, bgData=null, timer=null, fontFace=null;
 const presets={
- purple:{name:'柔雾紫',desc:'柔和芋泥紫 · 原版气质',accent:'#b79bc7',bg:'soft',font:'system',fontSize:15,dark:false,ios:false,liquid:false}
+ purple:{name:'柔雾紫',desc:'保留原版紫色主题',accent:'#b79bc7',bg:'soft',font:'system',fontSize:15,dark:false,themeMode:'purple'},
+ cream:{name:'奶油白',desc:'温暖奶油白 · 深棕文字',accent:'#81796e',bg:'cream',font:'system',fontSize:15,dark:false,themeMode:'cream'},
+ monochrome:{name:'黑白灰',desc:'干净中性灰 · 黑色图标',accent:'#383838',bg:'plain',font:'system',fontSize:15,dark:false,themeMode:'monochrome'},
+ dark:{name:'深色模式',desc:'低亮度深灰 · 柔和浅字',accent:'#d0cec5',bg:'plain',font:'system',fontSize:15,dark:true,themeMode:'dark'}
 };
 const fonts={system:{name:'SYSTEM · 系统字体',value:'-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},serif:{name:'SERIF · 衬线字体',value:'Georgia,"Times New Roman",serif'},custom:{name:'自定义 TTF / OTF',value:'"LRCustomFont",sans-serif'}};
-const bgs={soft:{name:'柔雾紫',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'清晨奶油',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'雾蓝',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'柔和玫瑰',a:'#f6e9ef',b:'#eadce5'},plain:{name:'干净纯色',a:'#f7f5fa',b:'#f7f5fa'}};
+const bgs={soft:{name:'柔雾紫',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'清晨奶油',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'雾蓝',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'柔和玫瑰',a:'#f6e9ef',b:'#eadce5'},plain:{name:'干净纯色',a:'#f2f2f0',b:'#eeeeeb'}};
 function $(id){return document.getElementById(id)}
 function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('无法打开本地数据库'))})}
 async function assetPut(key,value){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(value,key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('写入失败'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('写入中断'))}})}
 async function assetGet(key){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).get(key);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
 async function assetDelete(key){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
-function normalizeTheme(){if(a.preset!=='purple')a.preset='purple';a.ios=false;a.liquid=false;if(a.bg==='liquid'||a.bg==='ios'||!bgs[a.bg])a.bg='soft';if(a.accent==='#007aff')a.accent='#b79bc7'}
+function normalizeTheme(){if(!presets[a.preset])a.preset='purple';a.ios=false;a.liquid=false;if(a.bg==='liquid'||a.bg==='ios'||!bgs[a.bg])a.bg=presets[a.preset]?.bg||'soft';if(a.accent==='#007aff')a.accent='#b79bc7';if(!a.themeMode)a.themeMode=presets[a.preset]?.themeMode||'purple'}
 function readLegacy(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');const old=s.bgData;delete s.bgData;a={...defaults,...s};normalizeTheme();return old||null}catch(e){return null}}
 function showSaved(message='已自动保存'){ $('status').querySelector('span').textContent=message;$('status').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('status').classList.remove('show'),1600)}
 async function save(){const cfg={...a};delete cfg.bgData;try{await assetPut('settings',cfg);try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}showSaved()}catch(e){alert('保存失败：'+(e?.message||'本地数据库不可用'))}}
@@ -117,7 +120,7 @@ $('homeIconGrid').addEventListener('change',async e=>{
  finally{input.value=''}
 });
 
-function choosePreset(k){const p=presets[k];if(!p)return;const keep={bgData};a={...a,...p,preset:k};bgData=keep.bgData;apply()}
+function choosePreset(k){const p=presets[k];if(!p)return;const keep={bgData};a={...a,...p,preset:k,themeMode:p.themeMode||k};bgData=keep.bgData;apply()}
 $('presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)choosePreset(b.dataset.preset)});
 $('fontGrid').addEventListener('click',e=>{const b=e.target.closest('[data-font]');if(!b)return;a.font=b.dataset.font;if(a.font!=='custom')a.customFontName='';apply()});
 $('backgroundGrid').addEventListener('click',e=>{const b=e.target.closest('[data-bg]');if(!b)return;a.bg=b.dataset.bg;apply()});
