@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f3ef">
+<meta name="theme-color" content="#f7f3f9">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
@@ -11,7 +11,7 @@
 <link rel="icon" href="./icon-192.png">
 <title>LOVE RECORD</title>
 <style>
-:root{--bg:#f5f3ef;--card:#fff;--ink:#282725;--muted:#85817b;--line:#e6e2dc;--soft:#eeece7;--purple:#77736d;--dark:#292826}
+:root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
 body{padding-bottom:92px}.app{max-width:760px;margin:auto;padding:0 20px}
@@ -262,21 +262,22 @@ h3{font-size:calc(15px * var(--ui-scale,1))}
 .our-history{margin-top:14px}.our-history-item{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;margin-top:9px}.our-history-item summary{list-style:none;cursor:pointer;padding:14px 15px;font-size:13px;line-height:1.55}.our-history-item summary::-webkit-details-marker{display:none}.our-history-item summary:after{content:'＋';float:right;color:var(--muted);font-size:15px}.our-history-item[open] summary:after{content:'−'}.our-history-content{border-top:1px solid var(--line);padding:14px 15px}.history-bubble{font-size:13px;line-height:1.75;margin-top:9px;white-space:pre-wrap}.history-label{font-size:10px;letter-spacing:2px;color:var(--muted)}.history-rollback{margin-top:12px}.dark-mode .our-history-item{background:#211c24;color:#f4eef6;border-color:#3a323e}.dark-mode .our-history-item summary{color:#f4eef6}
 
 /* LOVE RECORD — entrance animation */
-.love-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#fbfaf7 0%,#f2f0eb 55%,#eae8e2 100%);color:#292826;animation:introOut .55s cubic-bezier(.4,0,.2,1) 1.95s forwards;pointer-events:auto}
-.love-intro::before{content:"";position:absolute;width:min(76vw,360px);aspect-ratio:1;border-radius:50%;border:1px solid rgba(85,81,74,.08);box-shadow:0 0 0 22px rgba(255,255,255,.22),0 0 0 44px rgba(85,81,74,.025);pointer-events:none}
-.love-intro::after{content:"";position:absolute;width:min(48vw,220px);aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.38);filter:blur(28px);pointer-events:none}
-.love-intro-inner{position:relative;z-index:1;text-align:center;padding:28px;transform:translateY(10px);opacity:0;animation:introIn .9s cubic-bezier(.2,.8,.2,1) .12s forwards}
-.love-intro-mark{width:34px;height:34px;border:1px solid rgba(48,46,42,.55);border-radius:50%;margin:0 auto 24px;position:relative;animation:introPulse 2s ease-in-out .4s infinite}
-.love-intro-mark:after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:#34322e;left:50%;top:50%;transform:translate(-50%,-50%)}
-.love-intro-title{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(29px,8vw,46px);font-weight:400;letter-spacing:6px;color:#292826}
-.love-intro-line{width:0;height:1px;margin:19px auto 14px;background:rgba(41,40,38,.5);animation:introLine .7s ease-out .72s forwards}
-.love-intro-author{font-size:9px;letter-spacing:2.8px;color:rgba(41,40,38,.58);text-transform:none}
+.love-intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,#efe2f5 0%,#dfc9e9 38%,#b99acb 100%);color:#3d2d43;animation:introOut .7s cubic-bezier(.4,0,.2,1) 2.1s forwards;pointer-events:auto}
+.love-intro::before,.love-intro::after{content:"";position:absolute;border-radius:50%;filter:blur(3px);opacity:.34;pointer-events:none}
+.love-intro::before{width:48vw;height:48vw;max-width:340px;max-height:340px;background:#fff;top:-12vw;right:-9vw;animation:introOrbA 3.2s ease-in-out infinite}
+.love-intro::after{width:58vw;height:58vw;max-width:400px;max-height:400px;background:#8e68a1;bottom:-20vw;left:-16vw;animation:introOrbB 3.8s ease-in-out infinite}
+.love-intro-inner{position:relative;z-index:1;text-align:center;padding:28px;transform:translateY(8px);opacity:0;animation:introIn 1.05s cubic-bezier(.2,.8,.2,1) .18s forwards}
+.love-intro-mark{width:7px;height:7px;border-radius:50%;margin:0 auto 23px;background:#fff;box-shadow:0 0 0 8px rgba(255,255,255,.2);animation:introPulse 1.8s ease-in-out .55s infinite}
+.love-intro-title{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(31px,9vw,52px);font-weight:400;letter-spacing:7px;color:#33283a}
+.love-intro-line{width:0;height:1px;margin:20px auto 15px;background:rgba(51,40,58,.55);animation:introLine .8s ease-out .85s forwards}
+.love-intro-author{font-size:10px;letter-spacing:3px;color:rgba(51,40,58,.68);text-transform:none}
 @keyframes introIn{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes introLine{from{width:0;opacity:0}to{width:58px;opacity:1}}
-@keyframes introPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(45,43,39,0)}50%{transform:scale(1.06);box-shadow:0 0 0 9px rgba(45,43,39,.035)}}
-
+@keyframes introPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 8px rgba(255,255,255,.2)}50%{transform:scale(1.18);box-shadow:0 0 0 11px rgba(255,255,255,.13)}}
+@keyframes introOrbA{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-12px,16px) scale(1.08)}}
+@keyframes introOrbB{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(18px,-12px) scale(1.06)}}
 @keyframes introOut{to{opacity:0;visibility:hidden;pointer-events:none}}
-@media(prefers-reduced-motion:reduce){.love-intro{animation:introOut .35s ease 1.1s forwards}.love-intro-inner{animation:introIn .35s ease .05s forwards}.love-intro-line{animation:introLine .25s ease .25s forwards}.love-intro-mark{animation:none}}
+@media(prefers-reduced-motion:reduce){.love-intro{animation:introOut .35s ease 1.1s forwards}.love-intro-inner{animation:introIn .35s ease .05s forwards}.love-intro-line{animation:introLine .25s ease .25s forwards}.love-intro-mark,.love-intro::before,.love-intro::after{animation:none}}
 
 </style>
 <style>
@@ -1241,60 +1242,7 @@ body.launcher-open .system-appbar{display:none!important}
 .settings-app-catalog>div{display:grid;gap:4px;padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.62);min-width:0}
 .settings-app-catalog strong{font-size:12px}
 .settings-app-catalog small{font-size:10px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
-</style>
-<style id="lr-minimal-ivory-home-v1">
-:root{--bg:#f5f3ef;--ink:#292826;--muted:#85817b;--line:#e7e4de;--soft:#efede8;--purple:#77736d;--dock-bg:rgba(255,255,255,.78)}
-html,body{background:#f5f3ef!important;color:#292826}
-#launcher .launcher-welcome{display:none!important}
-#launcher .launcher-grid{column-gap:12px;row-gap:25px;padding-top:16px}
-#launcher .launcher-app{color:#514f4a;font-size:11px;letter-spacing:.6px;gap:9px}
-#launcher .app-icon{width:clamp(64px,17vw,80px);height:clamp(64px,17vw,80px);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(246,244,239,.84))!important;border:1px solid rgba(255,255,255,.98)!important;color:#292826!important;box-shadow:0 9px 24px rgba(56,52,45,.075),inset 0 1px 0 #fff!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-size:0}
-#launcher .app-icon svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;display:block}
-#launcher .launcher-app:active .app-icon{transform:scale(.95);box-shadow:0 4px 12px rgba(56,52,45,.08)!important}
-#launcher .launcher-pages button{background:rgba(55,53,48,.2)}#launcher .launcher-pages button.active{background:#34322e}
-.nav{background:rgba(255,255,255,.82)!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 12px 36px rgba(54,50,44,.09)!important}
-.nav-btn{color:#89857e!important}.nav-btn.active{background:rgba(242,240,235,.82)!important;color:#292826!important}.nav-btn.active .nav-dot{background:#292826!important}
-</style>
-
-\n<style id="lr-global-ivory-monochrome-v2">
-:root{color-scheme:light;--bg:#f5f3ef!important;--card:#fff!important;--ink:#292826!important;--muted:#85817b!important;--line:#e7e4de!important;--soft:#efede8!important;--purple:#55524c!important;--accent:#45433f!important;--accent-soft:#efede8!important;--dock-bg:rgba(255,255,255,.88)!important;--card-shadow:0 12px 30px rgba(55,52,46,.07)!important}
-html,body,.app,.page{background-color:#f5f3ef!important;color:#292826}
-body{background-image:none!important}
-#launcher,#launcher.page.active,.launcher-page,#lr-home-background-fix-layer{background-color:#f5f3ef!important;background-image:none!important}
-.nav,.dock,.bottom-nav,.settings-panel,.modal-card,.modal-content,.sheet,.panel,.card,.settings-entry,.settings-card,.appearance-option,.music-search-panel,.music-library,.music-player-card,.chat-contact-list,.chat-compose,.lrct-panel{background-color:rgba(255,255,255,.9)!important;border-color:#e7e4de!important;box-shadow:0 10px 28px rgba(55,52,46,.055)!important;color:#292826}
-#launcher .app-icon{background:linear-gradient(145deg,#fff,#f0eee8)!important;border:1px solid #fff!important;color:#292826!important;box-shadow:0 8px 22px rgba(56,52,45,.07),inset 0 1px 0 #fff!important}
-#launcher .app-icon svg{stroke:#292826!important;fill:none!important;opacity:1!important;visibility:visible!important}
-#launcher .launcher-app{color:#514f4a!important}
-#launcher .launcher-pages{background:rgba(255,255,255,.7)!important;border-color:#e7e4de!important}
-#launcher .launcher-pages button.active,.nav-btn.active,.primary,.btn-primary,.action-primary{background:#292826!important;color:#fff!important;border-color:#292826!important}
-button,a,.nav-btn,.settings-entry{--accent:#45433f}
-button:not(.primary):not(.btn-primary):not(.action-primary),input,select,textarea{accent-color:#55524c}
-input,select,textarea{background:#faf9f6!important;border-color:#e5e2dc!important;color:#292826!important}
-:where(h1,h2,h3,h4,p,label,small,strong,span){text-shadow:none}
-:where(.eyebrow,.sub,.muted,.hint,.description,.music-source-note,.music-empty){color:#85817b!important}
-:where(.settings-entry-icon,.settings-icon,.icon-tile){background:#f0eee9!important;border-color:#e7e4de!important}
-:where(.settings-entry-icon svg,.settings-icon svg,.dock-icon-svg,.nav svg){stroke:#55524c!important}
-:where(.chat-message-row.user .chat-bubble){background:#e9e7e1!important;color:#292826!important}
-:where(.chat-message-row.ai .chat-bubble){background:#fff!important;color:#292826!important}
-:where(.chat-bg-option,.chat-theme-option,.appearance-option.active){border-color:#77736d!important}
-:where(.music-search-row,.music-upload,.music-track-play,.music-track-delete,.music-main-play){background:#efede8!important;color:#45433f!important;border-color:#e3e0d9!important}
-:where(.music-player-art,.music-controls .music-main-play){background:linear-gradient(145deg,#aaa69d,#5b5851)!important;box-shadow:0 10px 24px rgba(50,48,43,.14)!important}
-:where(.music-progress-row input,.music-volume input){accent-color:#55524c!important}
-:where(.love-intro){background:#f5f3ef!important;color:#292826!important}
-:where(.love-intro-mark){border-color:#55524c!important;box-shadow:0 0 0 1px rgba(85,82,76,.12)!important}
-:where(.love-intro-line){background:#aaa69d!important}
-:where(.love-intro-author){color:#85817b!important}
-:where(.tour-overlay,.tour-backdrop,.onboarding-overlay){background:rgba(41,40,38,.38)!important}
-:where(.tour-card,.tour-panel,.onboarding-card,.welcome-tour-card){background:#faf9f6!important;color:#292826!important;border-color:#e7e4de!important;box-shadow:0 18px 50px rgba(41,40,38,.14)!important}
-:where(.tour-card button,.tour-panel button,.onboarding-card button,.welcome-tour-card button){background:#292826!important;color:#fff!important;border-color:#292826!important}
-:where(.tour-progress,.onboarding-progress){background:#e7e4de!important}
-:where(.tour-progress>i,.onboarding-progress>i){background:#55524c!important}
-/* Neutralize the old purple theme's broad decorative surfaces without touching user photos. */
-:where(.music-search-row,.music-upload,.music-track,.music-track-play,.music-track-delete,.music-mini,.music-toast,.space-session,.space-person-card,.world-tile,.module-item,.forum-post,.check-pill){border-color:#e7e4de!important}
-:where(.music-toast){background:#292826!important;color:#fff!important}
-</style>
-
-</head>
+</style></head>
 <body class="launcher-open">
 <div id="loveIntro" class="love-intro" aria-label="LOVE RECORD" aria-hidden="true">
   <div class="love-intro-inner">
@@ -1329,18 +1277,18 @@ input,select,textarea{background:#faf9f6!important;border-color:#e5e2dc!importan
     </div>
   </section>
   <section class="launcher-grid" aria-label="应用">
-    <button class="launcher-app" type="button" data-shiyi-launch data-drag-id="app-shiyi"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5l4.2 14.8L43 24l-14.8 4.2L24 43l-4.2-14.8L5 24l14.8-4.2L24 5Z"/></svg></span><span>拾忆</span></button>
-    <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5l4.2 14.8L43 24l-14.8 4.2L24 43l-4.2-14.8L5 24l14.8-4.2L24 5Z"/><path d="M37 5v8M33 9h8"/></svg></span><span>星星助手</span></button>
-    <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 17 24 7l19 10-19 10L5 17Z M5 25l19 10 19-10 M5 33l19 10 19-10"/></svg></span><span>空间</span></button>
-    <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 21a13 13 0 0 1 23-8 13 13 0 0 1-17 19L6 35l2-7a13 13 0 0 1-1-7Z M25 31a11 11 0 0 0 16-9 11 11 0 0 0-18-8"/></svg></span><span>聊天</span></button>
-    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="17" r="7"/><circle cx="33" cy="20" r="5"/><path d="M5 39c1-8 6-12 13-12s12 4 13 12M29 29c7-1 12 3 14 9"/></svg></span><span>社区</span></button>
-    <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 6h26v36H11z M17 15h14M17 22h14M17 29h10"/></svg></span><span>日记</span></button>
-    <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19 34V9l21-4v25M19 15l21-4"/><ellipse cx="12" cy="35" rx="7" ry="5"/><ellipse cx="33" cy="31" rx="7" ry="5"/></svg></span><span>音乐</span></button>
-    <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 36c8-1 12-7 16-16L36 6l6 6-14 12c-9 4-15 8-16 16Z M29 13l6 6M8 40h32"/></svg></span><span>美化</span></a>
-    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 27h32a16 16 0 0 1-32 0Z M13 18c-3-4 3-5 0-9M24 18c-3-4 3-5 0-9M35 18c-3-4 3-5 0-9"/></svg></span><span>生活集市</span></button>
-    <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 16h20a8 8 0 0 1 8 8l2 11a4 4 0 0 1-6 4l-8-6H18l-8 6a4 4 0 0 1-6-4l2-11a8 8 0 0 1 8-8Z M15 22v10M10 27h10M32 24h.1M36 29h.1"/></svg></span><span>游戏</span></button>
-    <button class="launcher-app" data-launch-companion type="button" data-drag-id="app-companion"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 41S6 30 6 17a9 9 0 0 1 18-2 9 9 0 0 1 18 2c0 13-18 24-18 24Z M24 15v16M16 23h16"/></svg></span><span>陪伴</span></button>
-    <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="7"/><path d="M24 3v5M24 40v5M3 24h5M40 24h5"/></svg></span><span>查岗</span></button>
+    <button class="launcher-app" type="button" data-shiyi-launch data-drag-id="app-shiyi"><span class="app-icon" style="background:linear-gradient(145deg,rgba(250,246,255,.96),rgba(218,202,239,.86));color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.14)">✧</span><span>拾忆</span></button>
+    <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
+    <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
+    <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
+    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
+    <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
+    <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
+    <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
+    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
+    <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
+    <button class="launcher-app" data-launch-companion type="button" data-drag-id="app-companion"><span class="app-icon" style="background:linear-gradient(145deg,#8f2949,#3f0d22);color:#f4d6b0;border:1px solid #e5b9a566">🌹</span><span>陪伴</span></button>
+    <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
 </main>
@@ -2518,25 +2466,25 @@ function addManualForum(){const author=prompt('谁来发帖？\n可填写 YANYAN
 
 const APPEARANCE_KEY='yanyan-love-appearance-v1';
 const APPEARANCE_DB='love-record-appearance-assets-v2', APPEARANCE_STORE='assets';
-const appearanceDefaults={preset:'cream',font:'system',fontSize:15,titleScale:1,accent:'#45433f',bg:'cream',radius:29,blur:0,opacity:.94,dark:false,motion:true};
+const appearanceDefaults={preset:'purple',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:0,opacity:.94,dark:false,motion:true};
 let appearance=Object.assign({},appearanceDefaults,JSON.parse(localStorage.getItem(APPEARANCE_KEY)||'{}'));
 const legacyAppearanceBg=typeof appearance.bgData==='string'?appearance.bgData:'';delete appearance.bgData;let appearanceAssetsReady=false;
 function openAppearanceAssetsDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(APPEARANCE_DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(APPEARANCE_STORE))r.result.createObjectStore(APPEARANCE_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('无法打开外观存储'))})}
 async function getAppearanceAsset(key){const db=await openAppearanceAssetsDB();return new Promise((resolve,reject)=>{const r=db.transaction(APPEARANCE_STORE,'readonly').objectStore(APPEARANCE_STORE).get(key);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
 async function putAppearanceAsset(key,value){const db=await openAppearanceAssetsDB();return new Promise((resolve,reject)=>{const tx=db.transaction(APPEARANCE_STORE,'readwrite');tx.objectStore(APPEARANCE_STORE).put(value,key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error||new Error('外观保存失败'))};tx.onabort=()=>{db.close();reject(tx.error||new Error('外观保存中断'))}})}
 const fontChoices={system:{name:'SYSTEM',value:'-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},clean:{name:'CLEAN',value:'Inter,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},serif:{name:'SERIF',value:'Georgia,"Times New Roman",serif'},round:{name:'ROUND',value:'ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'}};
-const accentChoices=[['#292826','#292826'],['#55524c','#55524c'],['#77736d','#77736d'],['#a39e94','#a39e94'],['#c8c2b7','#c8c2b7']];
-const bgChoices={soft:{name:'WARM IVORY',a:'#f5f3ef',b:'#eeece7'},cream:{name:'CREAM',a:'#f7f4ed',b:'#eeeae1'},mist:{name:'WARM GREY',a:'#efefed',b:'#e5e5e2'},rose:{name:'STONE',a:'#f1efeb',b:'#e8e5df'},plain:{name:'CLEAN WHITE',a:'#faf9f6',b:'#f4f3ef'}};
-const presetChoices={cream:{name:'奶油白',font:'system',fontSize:15,titleScale:1,accent:'#45433f',bg:'cream',radius:29,blur:8,opacity:.94,dark:false,motion:true},stone:{name:'暖灰',font:'system',fontSize:15,titleScale:1,accent:'#55524c',bg:'mist',radius:26,blur:6,opacity:.96,dark:false,motion:true},paper:{name:'纯净白',font:'round',fontSize:16,titleScale:1.02,accent:'#292826',bg:'plain',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
+const accentChoices=[['#b79bc7','#b79bc7'],['#c89bb0','#c89bb0'],['#9faed0','#9faed0'],['#a9c4a2','#a9c4a2'],['#c7ad8b','#c7ad8b'],['#8e6fae','#8e6fae']];
+const bgChoices={soft:{name:'SOFT PURPLE',a:'#f2e8f5',b:'#e9dfee'},cream:{name:'CREAM',a:'#f8f1e7',b:'#eee4d7'},mist:{name:'MIST BLUE',a:'#e8eef7',b:'#dfe7f1'},rose:{name:'SOFT ROSE',a:'#f6e9ef',b:'#eadce5'},plain:{name:'CLEAN',a:'#f7f3f9',b:'#f7f3f9'}};
+const presetChoices={purple:{name:'柔雾紫',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:8,opacity:.92,dark:false,motion:true},night:{name:'夜色紫',font:'serif',fontSize:15,titleScale:1.04,accent:'#9f83bd',bg:'soft',radius:26,blur:14,opacity:.78,dark:true,motion:true},cream:{name:'清晨奶油',font:'round',fontSize:16,titleScale:1.02,accent:'#b79bc7',bg:'cream',radius:32,blur:4,opacity:.96,dark:false,motion:false}};
 function saveAppearance(){const cfg={...appearance};delete cfg.bgData;try{localStorage.removeItem(APPEARANCE_KEY);localStorage.setItem(APPEARANCE_KEY,JSON.stringify(cfg))}catch(e){}if(appearanceAssetsReady)putAppearanceAsset('settings',cfg).catch(()=>{})}
 function applyAppearance(){const root=document.documentElement;
   if(appearance.preset==='ios'||appearance.ios||appearance.bg==='ios'){appearance.preset='purple';appearance.ios=false;if(appearance.accent==='#007aff')appearance.accent='#b79bc7';if(appearance.bg==='ios')appearance.bg='soft';}
   if(appearance.preset==='liquid'||appearance.liquid||appearance.bg==='liquid'){appearance.preset='purple';appearance.liquid=false;if(appearance.bg==='liquid')appearance.bg='soft';if(appearance.accent==='#c5a5d9')appearance.accent='#b79bc7';}
   const isLiquid=false;
-  const palette={bg:'#f5f3ef',card:'#fff',ink:'#292826',muted:'#85817b',line:'#e7e4de',soft:'#efede8',purple:appearance.accent||'#45433f'};
+  const palette={bg:'#f7f3f9',card:'#fff',ink:'#302b33',muted:'#8f8792',line:'#e2dce4',soft:'#eee5f2',purple:appearance.accent||'#b79bc7'};
   Object.entries(palette).forEach(([k,v])=>root.style.setProperty('--'+k,v));
   root.style.setProperty('--purple',appearance.accent||palette.purple);
-  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid','lr-theme-purple');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
+  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.classList.add('lr-theme-purple');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
 function updateAppearanceControls(){$('fontSizeRange').value=appearance.fontSize;$('fontSizeValue').textContent=appearance.fontSize+'px';$('titleScaleRange').value=appearance.titleScale;$('titleScaleValue').textContent=Math.round(appearance.titleScale*100)+'%';$('radiusRange').value=appearance.radius;$('radiusValue').textContent=appearance.radius+'px';$('blurRange').value=appearance.blur;$('blurValue').textContent=appearance.blur+'px';$('opacityRange').value=appearance.opacity;$('opacityValue').textContent=Math.round(appearance.opacity*100)+'%';$('customAccent').value=appearance.accent;$('motionToggle').textContent=appearance.motion?'MOTION ON':'MOTION OFF';$('lightModeBtn').classList.toggle('active',!appearance.dark);$('darkModeBtn').classList.toggle('active',appearance.dark);document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===appearance.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===appearance.font));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===appearance.accent));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===appearance.bg));const pv=$('appearancePreview');if(pv){pv.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value}}
 function openAppearance(){localizeEditors();renderAppearanceControls();$('appearanceModal').classList.add('show');document.body.style.overflow='hidden'}
@@ -2561,15 +2509,8 @@ async function loadHomeCustomIcons(){
     host.replaceChildren();
     const img=document.createElement('img');img.src=data;img.alt='';img.draggable=false;host.appendChild(img);
    }else{
-    // Keep the inline SVG shipped with the launcher. Replacing it with text glyphs
-    // caused blank tiles because the minimalist icon CSS intentionally sets font-size:0.
     host.classList.remove('has-custom-icon');
-    if(!host.querySelector('svg')){
-      const fallback=document.createElement('span');
-      fallback.className='launcher-icon-fallback';
-      fallback.textContent='•';
-      host.replaceChildren(fallback);
-    }
+    host.textContent=item.symbol;
    }
   }catch(e){}
  }
@@ -3438,7 +3379,7 @@ body.lr-external-app-open{overflow:hidden}
 })();
 </script>
 
-  <script src="./welcome-tour-v1.js?v=2"></script>
+  <script src="./welcome-tour-v1.js?v=1"></script>
 <script src="./lr-full-backup-v1.js?v=3"></script>
 
 <style id="lr-page-manager-v2">
