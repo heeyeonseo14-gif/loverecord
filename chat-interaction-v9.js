@@ -81,7 +81,7 @@
     style.textContent = `
       .chat-compose{display:flex;align-items:flex-end;gap:8px}
       #chatSend{flex:0 0 auto}
-      #lrAskAI{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:16px;background:#b99ac7;color:#fff;font-size:25px;line-height:1;display:grid;place-items:center;box-shadow:0 5px 14px rgba(125,94,143,.16)}
+      #lrAskAI{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:16px;background:#ADA8A1;color:#fff;font-size:25px;line-height:1;display:grid;place-items:center;box-shadow:0 5px 14px rgba(113, 109, 104, .16)}
       #lrAskAI:disabled{opacity:.5}
       #lrChatMessageTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 2px 9px}
       #lrChatMessageTools[hidden]{display:none!important}
@@ -89,14 +89,14 @@
       #lrChatMessageTools .lr-delete-selected{color:#9a6575;border-color:#d9bfc8}
       #lrChatMessageTools .lr-selection-count{font-size:11px;color:var(--muted);margin-right:auto}
       .chat-message-row{touch-action:pan-y}
-      .chat-message-row.lr-selected{background:rgba(185,154,199,.13);outline:2px solid rgba(185,154,199,.72);outline-offset:3px;border-radius:17px}
+      .chat-message-row.lr-selected{background:rgba(173, 168, 161, .13);outline:2px solid rgba(173, 168, 161, .72);outline-offset:3px;border-radius:17px}
       .lr-typing-row{display:flex;align-items:center;gap:9px;align-self:flex-start;color:var(--muted);font-size:12px;padding:8px 12px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:15px}
       .lr-typing-dots{letter-spacing:2px;animation:lrTypingPulse 1s ease-in-out infinite}
       @keyframes lrTypingPulse{0%,100%{opacity:.35}50%{opacity:1}}
-      #lrUndoToast{position:relative;display:flex;justify-content:center;align-items:center;gap:10px;margin:0 auto 8px;padding:7px 12px;width:max-content;max-width:90%;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 4px 18px rgba(70,50,80,.08);font-size:12px;color:var(--muted)}
+      #lrUndoToast{position:relative;display:flex;justify-content:center;align-items:center;gap:10px;margin:0 auto 8px;padding:7px 12px;width:max-content;max-width:90%;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 4px 18px rgba(62, 59, 56, .08);font-size:12px;color:var(--muted)}
       #lrUndoToast[hidden]{display:none!important}
-      #lrUndoToast button{border:0;background:transparent;color:#8c7099;font:inherit;font-weight:600}
-      #chatMessages .chat-bubble.user{background:var(--lr-user-bubble,#b99ac7)!important;color:var(--lr-user-text,#fff)!important;border-radius:var(--lr-bubble-radius,22px)!important}
+      #lrUndoToast button{border:0;background:transparent;color:#817D78;font:inherit;font-weight:600}
+      #chatMessages .chat-bubble.user{background:var(--lr-user-bubble,#ADA8A1)!important;color:var(--lr-user-text,#fff)!important;border-radius:var(--lr-bubble-radius,22px)!important}
       #chatMessages .chat-bubble.ai{background:var(--lr-ai-bubble,#fff)!important;color:var(--lr-ai-text,#28242b)!important;border-radius:var(--lr-bubble-radius,22px)!important}
       #chatSettingsScreen .lr-v9-card{background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0}
       #chatSettingsScreen .lr-v9-card h3{font-size:17px;font-weight:500;margin:0 0 12px}
@@ -108,7 +108,7 @@
       #chatSettingsScreen .lr-v9-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
       #chatSettingsScreen .lr-v9-actions .btn{flex:1;min-width:120px}
       #lrLongMemoryPanel[hidden]{display:none!important}
-      .dark-mode #lrChatMessageTools button,.dark-mode #lrUndoToast{background:#211c24;color:#f4eef6;border-color:#3a323e}
+      .dark-mode #lrChatMessageTools button,.dark-mode #lrUndoToast{background:#201E1C;color:#F7F1E8;border-color:#3a323e}
       @media(max-width:420px){#lrAskAI{width:44px;height:44px;flex-basis:44px;border-radius:15px}#chatSettingsScreen .lr-v9-card{padding:14px}}
     `;
     document.head.appendChild(style);
@@ -537,7 +537,7 @@
     const host = $('chatMessages');
     if (!host) return;
     const meta = currentMeta(id);
-    host.style.setProperty('--lr-user-bubble', meta.userBubbleColor || '#b99ac7');
+    host.style.setProperty('--lr-user-bubble', meta.userBubbleColor || '#ADA8A1');
     host.style.setProperty('--lr-ai-bubble', meta.aiBubbleColor || '#ffffff');
     host.style.setProperty('--lr-user-text', meta.userTextColor || '#ffffff');
     host.style.setProperty('--lr-ai-text', meta.aiTextColor || '#28242b');
@@ -623,7 +623,7 @@
     const host = $('chatMessages');
     if (!host) return;
     const val = id => $(id) ? $(id).value : '';
-    host.style.setProperty('--lr-user-bubble', val('lrUserBubbleColor') || '#b99ac7');
+    host.style.setProperty('--lr-user-bubble', val('lrUserBubbleColor') || '#ADA8A1');
     host.style.setProperty('--lr-ai-bubble', val('lrAiBubbleColor') || '#ffffff');
     host.style.setProperty('--lr-user-text', val('lrUserTextColor') || '#ffffff');
     host.style.setProperty('--lr-ai-text', val('lrAiTextColor') || '#28242b');
@@ -636,7 +636,7 @@
     ensureSettingsUI();
     const meta = currentMeta(activeId());
     const set = (id, value) => { if ($(id)) $(id).value = value; };
-    set('lrUserBubbleColor', meta.userBubbleColor || '#b99ac7');
+    set('lrUserBubbleColor', meta.userBubbleColor || '#ADA8A1');
     set('lrAiBubbleColor', meta.aiBubbleColor || '#ffffff');
     set('lrUserTextColor', meta.userTextColor || '#ffffff');
     set('lrAiTextColor', meta.aiTextColor || '#28242b');
@@ -658,7 +658,7 @@
     // populated so its safe IndexedDB-backed writer persists these small fields.
     button.addEventListener('click', () => {
       if (typeof editingChatMeta === 'undefined' || !editingChatMeta) return;
-      editingChatMeta.userBubbleColor = $('lrUserBubbleColor')?.value || '#b99ac7';
+      editingChatMeta.userBubbleColor = $('lrUserBubbleColor')?.value || '#ADA8A1';
       editingChatMeta.aiBubbleColor = $('lrAiBubbleColor')?.value || '#ffffff';
       editingChatMeta.userTextColor = $('lrUserTextColor')?.value || '#ffffff';
       editingChatMeta.aiTextColor = $('lrAiTextColor')?.value || '#28242b';

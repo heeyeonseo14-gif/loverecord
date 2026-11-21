@@ -26,20 +26,20 @@
     style.textContent = `
       .chat-compose{display:flex;align-items:flex-end;gap:8px}
       #chatSend{flex:0 0 auto}
-      #lrAskAI{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:16px;background:#b99ac7;color:#fff;font-size:25px;line-height:1;display:grid;place-items:center;box-shadow:0 5px 14px rgba(125,94,143,.16)}
+      #lrAskAI{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:16px;background:#ADA8A1;color:#fff;font-size:25px;line-height:1;display:grid;place-items:center;box-shadow:0 5px 14px rgba(113, 109, 104, .16)}
       #lrAskAI:disabled{opacity:.5}
       #lrChatMessageTools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 2px 9px}
       #lrChatMessageTools[hidden]{display:none!important}
       #lrChatMessageTools button{border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);padding:7px 12px;font-size:12px}
       #lrChatMessageTools .lr-delete-selected{color:#9a6575;border-color:#d9bfc8}
-      #lrChatMessageTools .lr-undo{color:#806b8b}
+      #lrChatMessageTools .lr-undo{color:#797570}
       #lrChatMessageTools .lr-selection-count{font-size:11px;color:var(--muted);margin-right:auto}
-      .chat-message-row.lr-selected{background:rgba(185,154,199,.13);outline:2px solid rgba(185,154,199,.72);outline-offset:3px;border-radius:17px}
+      .chat-message-row.lr-selected{background:rgba(173, 168, 161, .13);outline:2px solid rgba(173, 168, 161, .72);outline-offset:3px;border-radius:17px}
       .chat-message-row{cursor:pointer}
       .lr-typing-row{display:flex;align-items:center;gap:9px;align-self:flex-start;color:var(--muted);font-size:12px;padding:8px 12px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:15px}
       .lr-typing-dots{letter-spacing:2px;animation:lrTypingPulse 1s ease-in-out infinite}
       @keyframes lrTypingPulse{0%,100%{opacity:.35}50%{opacity:1}}
-      .dark-mode #lrChatMessageTools button{background:#211c24;color:#f4eef6;border-color:#3a323e}
+      .dark-mode #lrChatMessageTools button{background:#201E1C;color:#F7F1E8;border-color:#3a323e}
       @media(max-width:420px){#lrAskAI{width:44px;height:44px;flex-basis:44px;border-radius:15px}}
     `;
     document.head.appendChild(style);

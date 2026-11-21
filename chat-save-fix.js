@@ -60,7 +60,7 @@
       next.worldId = document.getElementById('lrWorldSelect')?.value || '';
       const rawCount = parseInt(document.getElementById('lrMemoryCount')?.value || '16', 10);
       next.memoryCount = Math.min(100, Math.max(1, Number.isFinite(rawCount) ? rawCount : 16));
-      next.userBubbleColor = document.getElementById('lrUserBubbleColor')?.value || next.userBubbleColor || '#b99ac7';
+      next.userBubbleColor = document.getElementById('lrUserBubbleColor')?.value || next.userBubbleColor || '#ADA8A1';
       next.aiBubbleColor = document.getElementById('lrAiBubbleColor')?.value || next.aiBubbleColor || '#ffffff';
       next.userTextColor = document.getElementById('lrUserTextColor')?.value || next.userTextColor || '#ffffff';
       next.aiTextColor = document.getElementById('lrAiTextColor')?.value || next.aiTextColor || '#28242b';

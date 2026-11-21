@@ -82,14 +82,14 @@
     const style = document.createElement('style'); style.id = 'lr-v10-style';
     style.textContent = `
       #chatConversation .chat-compose{position:relative;display:flex;align-items:flex-end;gap:7px}
-      #lrChatPlus{width:44px;height:44px;flex:0 0 44px;border:1px solid #e6dce9;border-radius:15px;background:#fff;color:#987ba5;font-size:27px;line-height:1;display:grid;place-items:center;padding:0}
+      #lrChatPlus{width:44px;height:44px;flex:0 0 44px;border:1px solid #E5E0D7;border-radius:15px;background:#fff;color:#8C8882;font-size:27px;line-height:1;display:grid;place-items:center;padding:0}
       #chatConversation .chat-compose textarea{min-width:0;flex:1}
       #chatSend{flex:0 0 auto}
       #lrAskAI{flex:0 0 44px!important;width:44px!important;height:44px!important}
-      #lrChatPlusMenu{position:absolute;left:0;bottom:calc(100% + 10px);z-index:30;width:min(245px,78vw);padding:9px;background:rgba(255,255,255,.97);border:1px solid #e9e0ec;border-radius:19px;box-shadow:0 12px 34px rgba(70,48,82,.14);display:grid;gap:4px}
+      #lrChatPlusMenu{position:absolute;left:0;bottom:calc(100% + 10px);z-index:30;width:min(245px,78vw);padding:9px;background:rgba(255,255,255,.97);border:1px solid #E9E4DB;border-radius:19px;box-shadow:0 12px 34px rgba(61, 58, 55, .14);display:grid;gap:4px}
       #lrChatPlusMenu[hidden]{display:none!important}
-      #lrChatPlusMenu button{border:0;background:transparent;border-radius:12px;padding:11px 12px;text-align:left;color:#55495d;font:inherit;font-size:14px}
-      #lrChatPlusMenu button:active{background:#f2eaf5}
+      #lrChatPlusMenu button{border:0;background:transparent;border-radius:12px;padding:11px 12px;text-align:left;color:#524F4B;font:inherit;font-size:14px}
+      #lrChatPlusMenu button:active{background:#F4EEE5}
       .lr-message-time{font-size:10px;color:#a49aa8;line-height:1.2;margin-top:4px;padding:0 4px}
       .chat-message-row.user .lr-message-time{text-align:right}
       .chat-message-row.ai .lr-message-time{text-align:left}
@@ -100,13 +100,13 @@
       .chat-message-row.user .lr-message-time{padding-right:56px}
       .chat-message-row.ai .lr-message-time{padding-left:56px}
       .lr-chat-image{display:block;max-width:min(62vw,260px);max-height:360px;border-radius:13px;object-fit:cover}
-      .lr-transfer-card{min-width:180px;padding:13px 15px;border-radius:14px;background:linear-gradient(135deg,#b99ac7,#a889b9);color:#fff}
+      .lr-transfer-card{min-width:180px;padding:13px 15px;border-radius:14px;background:linear-gradient(135deg,#ADA8A1,#9C9892);color:#fff}
       .lr-transfer-card strong{display:block;font-size:22px;font-weight:500;margin-bottom:4px}
       .lr-location-card{display:block;text-decoration:none;color:inherit}
       .lr-location-card small{display:block;color:inherit;opacity:.75;margin-top:5px}
-      #lrThoughtModal{position:fixed;inset:0;z-index:10020;background:rgba(35,27,40,.35);display:grid;place-items:center;padding:22px}
+      #lrThoughtModal{position:fixed;inset:0;z-index:10020;background:rgba(33, 31, 29, .35);display:grid;place-items:center;padding:22px}
       #lrThoughtModal[hidden]{display:none!important}
-      #lrThoughtModal .lr-thought-sheet{width:100%;max-width:420px;background:#fff;border-radius:25px;padding:22px;box-shadow:0 18px 60px rgba(30,20,40,.2);color:#423748}
+      #lrThoughtModal .lr-thought-sheet{width:100%;max-width:420px;background:#fff;border-radius:25px;padding:22px;box-shadow:0 18px 60px rgba(27, 25, 23, .2);color:#3F3C39}
       #lrThoughtModal h3{font-weight:500;margin:0 0 12px;font-size:19px}
       #lrThoughtText{white-space:pre-wrap;line-height:1.85;color:#716778;min-height:65px}
       #lrThoughtModal button{margin-top:15px;width:100%}
