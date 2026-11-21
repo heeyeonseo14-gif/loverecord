@@ -28,3 +28,8 @@ html,body,.app,.app *{font-family:var(--lr-global-font,system-ui,-apple-system,"
 .memory-entry p{font-size:10px!important;line-height:1.45;margin:5px 2px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .memory-entry .danger{font-size:10px;padding:5px 8px;margin:4px 2px}
 @media(max-width:380px){.memory-gallery{gap:7px}.memory-entry{padding:5px!important}}
+
+/* LOVE RECORD global ivory monochrome skin */
+:root{color-scheme:light;--bg:#f5f3ef;--ink:#292826;--muted:#85817b;--line:#e7e4de;--accent:#45433f}
+html,body{background:#f5f3ef!important;color:#292826!important}
+:where(.card,.panel,.sheet,.modal,.message-input,.composer,.toolbar){background-color:#fff!important;border-color:#e7e4de!important;color:#292826!important}

@@ -19,3 +19,8 @@
 .message-content p{margin:0 0 13px;line-height:1.95}
 .message-content h2,.message-content h3{margin-top:16px;margin-bottom:8px}
 .message-content ul,.message-content ol{margin-top:8px;margin-bottom:14px}
+
+/* LOVE RECORD global ivory monochrome skin */
+:root{color-scheme:light;--bg:#f5f3ef;--ink:#292826;--muted:#85817b;--line:#e7e4de;--accent:#45433f}
+html,body{background:#f5f3ef!important;color:#292826!important}
+:where(.card,.panel,.sheet,.modal,.message-input,.composer,.toolbar){background-color:#fff!important;border-color:#e7e4de!important;color:#292826!important}

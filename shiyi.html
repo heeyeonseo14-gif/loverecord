@@ -25,7 +25,19 @@ select,input,textarea{font:inherit;color:var(--ink);width:100%;border:1px solid 
 .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:rgba(62,48,81,.9);color:#fff;padding:11px 17px;border-radius:999px;font-size:12px;transition:.25s;z-index:5}.toast.show{opacity:1;transform:translate(-50%,0)}
 [hidden]{display:none!important}
 @media(min-width:620px){.hero{padding-top:46px}.orb{right:100px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
-</style></head>
+</style>
+<style id="lr-ivory-global-surface-v2">
+:root{color-scheme:light;--bg:#f5f3ef;--ink:#292826;--muted:#85817b;--line:#e7e4de;--soft:#efede8;--accent:#45433f;--purple:#55524c}
+html,body{background:#f5f3ef!important;color:#292826!important}
+button,input,select,textarea{accent-color:#55524c}
+input,select,textarea{background:#faf9f6!important;border-color:#e5e2dc!important;color:#292826!important}
+button.primary,.primary,button[type=submit]{background:#292826!important;color:#fff!important;border-color:#292826!important}
+:where(.card,.panel,.sheet,.modal,.modal-card,.settings-card,.settings-panel,.app-card,.content-card,.tour-card,.guide-card,.onboarding-card){background-color:#fff!important;border-color:#e7e4de!important;color:#292826!important;box-shadow:0 10px 28px rgba(55,52,46,.055)!important}
+:where(.muted,.hint,.subtitle,.description,.eyebrow,.sub){color:#85817b!important}
+:where(.active,.selected){--accent:#45433f}
+</style>
+
+</head>
 <body><div class="wrap">
 <div class="top"><button class="back" id="back">‹　返回主页</button><span class="micro">LOVE RECORD / ARCHIVE</span></div>
 <header class="hero"><div class="eyebrow">A QUIET PLACE FOR US</div><h1>拾忆</h1><div class="subtitle">那些没有消失的瞬间，<br>只是安静地住进了时间里。</div><div class="orb"></div></header>
