@@ -1285,9 +1285,7 @@ body.launcher-open .system-appbar{display:none!important}
     <button class="launcher-app" data-launch-module="journal" type="button" data-drag-id="app-journal"><span class="app-icon icon-journal">▤</span><span>日记</span></button>
     <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
     <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
-    <button class="launcher-app" data-launch-life="food" type="button" data-drag-id="app-foodie"><span class="app-icon icon-foodie">♨</span><span>生活集市</span></button>
     <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
-    <button class="launcher-app" data-launch-companion type="button" data-drag-id="app-companion"><span class="app-icon" style="background:linear-gradient(145deg,#8f2949,#3f0d22);color:#f4d6b0;border:1px solid #e5b9a566">🌹</span><span>陪伴</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
@@ -1522,8 +1520,8 @@ body.launcher-open .system-appbar{display:none!important}
       <div><strong>空间</strong><small>独立世界与剧情</small></div><div><strong>聊天</strong><small>AI 联系人对话</small></div>
       <div><strong>社区</strong><small>帖子与互动</small></div><div><strong>日记</strong><small>日常记录与回顾</small></div>
       <div><strong>音乐</strong><small>音乐搜索与收藏</small></div><div><strong>美化</strong><small>主题、字体与图标</small></div>
-      <div><strong>生活集市</strong><small>模拟点餐与购物</small></div><div><strong>游戏</strong><small>共同农场与游戏</small></div>
-      <div><strong>陪伴</strong><small>关系互动与共同回忆</small></div><div><strong>查岗</strong><small>AI 模拟手机</small></div>
+      <div><strong>游戏</strong><small>共同农场与游戏</small></div>
+      <div><strong>查岗</strong><small>AI 模拟手机</small></div>
     </div><p class="settings-help">此目录根据当前首页应用入口整理；具体功能和可用状态以各应用页面为准。</p></div>
     <div id="installBox" class="install"><div><b>把我们的空间放到主屏幕</b><br><span class="sub">像一个真正的小 App 一样打开</span></div><button class="btn primary" id="installBtn" type="button">ADD</button></div>
     <div class="card"><h3>HOME SCREEN</h3><div class="sub">如果没有自动出现安装按钮：Chrome ⋮ → 添加到主屏幕 / 安装应用。</div><button class="btn" id="installHelp" type="button" style="margin-top:13px">HOW TO ADD</button></div>
@@ -1531,7 +1529,7 @@ body.launcher-open .system-appbar{display:none!important}
 
   <section class="settings-subpage" id="settingsPrivacy" aria-labelledby="settingsPrivacyTitle" hidden>
     <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">PRIVACY &amp; SECURITY</div><h2 id="settingsPrivacyTitle">隐私与安全</h2></div></div>
-    <div class="card settings-info-card"><div class="settings-section-kicker">YOUR DATA, YOUR CONTROL</div><h3>隐私边界</h3><p>LOVE RECORD 的主要资料保存在当前浏览器的本地存储中。不同应用的数据由各自模块管理；设置中心不会读取聊天正文、角色长期记忆、日记内容或陪伴照片。</p></div>
+    <div class="card settings-info-card"><div class="settings-section-kicker">YOUR DATA, YOUR CONTROL</div><h3>隐私边界</h3><p>LOVE RECORD 的主要资料保存在当前浏览器的本地存储中。不同应用的数据由各自模块管理；设置中心不会读取聊天正文、角色长期记忆、日记内容或其他私人照片。</p></div>
     <div class="card settings-info-card"><h3>API 密钥保护</h3><p>API Key 用于向你配置的服务商发送请求。页面会以密码形式隐藏密钥；不要将密钥放入截图、诊断报告或公开分享的备份文件。</p><p class="settings-help">请只连接你信任的 API 服务商。第三方服务商可能按照其自身政策处理请求内容。</p></div>
     <div class="card settings-info-card"><h3>危险操作保护</h3><p>删除、覆盖或恢复数据前，应确认目标范围并保留当前备份。设置中心不会提供一键清空所有网站数据的快捷操作。</p></div>
   </section>
@@ -2042,7 +2040,7 @@ async function sendChatMessage(){
     reply=reply.replace(/(?:配字|文字|字幕)\s*[：:]\s*[^。！？\n]+[。！？]?/gi,'').trim();
   }
   if(!stickerMatches.length&&naturalStickerMention&&!savedStickers.length)console.warn('[LOVE RECORD] AI referenced a sticker but the saved sticker library is empty.');
-  const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到对应商品，请换个商品名称再试');}}else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到可用商品，请检查生活集市商品目录');}}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];if(reply)thread.push({role:'assistant',text:reply,at:Date.now()});if(stickerMatches.length){for(const sid of stickerMatches){const sticker=savedStickers.find(x=>String(x.id)===sid);if(sticker&&sticker.attachmentId!=null)thread.push({role:'assistant',kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:sticker.category,text:'[表情包：'+sticker.category+']',at:Date.now()});}}latest[activeChatContactId]=thread;writeChatThreads(latest);
+  const orderMatch=reply.match(/\[\[LR_AI_ORDER:(food|shop)\|([^\]]+)\]\]/i);if(orderMatch&&window.LoveRecordLifeApps?.createAIOrder){reply=reply.replace(orderMatch[0],'').trim();const made=await window.LoveRecordLifeApps.createAIOrder(orderMatch[1].toLowerCase()==='food'?'food':'shop',activeChatContactId,[orderMatch[2].trim()]);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到对应商品，请换个商品名称再试');}}else if(/(?:测试|试一下|测试一下).*(?:外卖|点餐|购物|买东西)|(?:外卖|点餐|购物|买东西).*(?:测试|试一下)/i.test(textValue)&&window.LoveRecordLifeApps?.createAITestOrder){const testKind=/(?:购物|买东西)/.test(textValue)&&!/(?:外卖|点餐)/.test(textValue)?'shop':'food';const made=await window.LoveRecordLifeApps.createAITestOrder(testKind,activeChatContactId);if(made.ok){toast('请确认订单地址');}else{toast('暂未找到可用商品，请检查商品目录');}}const latest=readChatThreads(),thread=latest[activeChatContactId]||[];if(reply)thread.push({role:'assistant',text:reply,at:Date.now()});if(stickerMatches.length){for(const sid of stickerMatches){const sticker=savedStickers.find(x=>String(x.id)===sid);if(sticker&&sticker.attachmentId!=null)thread.push({role:'assistant',kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:sticker.category,text:'[表情包：'+sticker.category+']',at:Date.now()});}}latest[activeChatContactId]=thread;writeChatThreads(latest);
  }catch(err){toast('发送失败：'+(err.message||'API 错误'))}
  finally{aiBusy=false;send.disabled=false;send.textContent='发送';renderChat()}
 }
@@ -2494,8 +2492,8 @@ function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},
 const homeIconBindings=[
  {id:'app-shiyi',symbol:'✧'},{id:'app-star-assistant',symbol:'✦'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},{id:'app-journal',symbol:'▤'},
- {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},{id:'app-foodie',symbol:'♨'},
- {id:'app-games',symbol:'🎮'},{id:'app-companion',symbol:'🌹'},{id:'app-checkin',symbol:'◉'}
+ {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},
+ {id:'app-games',symbol:'🎮'},{id:'app-checkin',symbol:'◉'}
 ];
 document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>{location.href='./checkin.html';});
 async function loadHomeCustomIcons(){
@@ -2569,7 +2567,7 @@ worldBooksReady=restoreWorldBooks();
  const getId=el=>el?.dataset?.dragId,getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
  const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
  const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
- const defaultPage={'app-foodie':1,'app-memories':1,'app-journal':1};
+ const defaultPage={'app-memories':1,'app-journal':1};
  let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,extraPages=2;
  let active=null,timer=null,dragged=false,writeSeq=0,layoutReady=false,dragFrame=0,pendingPoint=null;
  const style=document.createElement('style');style.id='lr-launcher-grid-v6';style.textContent=`
@@ -3164,15 +3162,6 @@ if(loveIntro){
 .nav-btn{width:100%;min-width:0}
 .dock-icon-svg{width:21px;height:21px;display:block;fill:none;stroke:#a28bb3;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 </style>
-<div id="lrCompanionShell" aria-label="陪伴应用"><iframe id="lrCompanionFrame" title="LOVE RECORD 陪伴" src="./companion.html"></iframe></div>
-<style>
-#lrCompanionShell{position:fixed;inset:0;z-index:99999;background:#4b1025;display:none;padding-top:env(safe-area-inset-top)}
-#lrCompanionShell.show{display:block}
-#lrCompanionFrame{display:block;width:100%;height:100%;border:0;background:#fff8f4}
-</style>
-<script>
-(()=>{const shell=document.getElementById('lrCompanionShell');const frame=document.getElementById('lrCompanionFrame');function openCompanion(){shell.classList.add('show');document.body.style.overflow='hidden';try{frame.contentWindow.postMessage({type:'LR_COMPANION_OPEN'},location.origin)}catch(e){}}function closeCompanion(){shell.classList.remove('show');document.body.style.overflow='';}document.addEventListener('click',function(e){const trigger=e.target.closest('[data-launch-companion],[data-drag-id="app-companion"]');if(!trigger)return;e.preventDefault();e.stopPropagation();openCompanion();},true);window.__LOVE_RECORD_CLOSE_COMPANION=closeCompanion;document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))closeCompanion()});})();
-</script>
 <div id="lrStarAssistantShell" aria-label="星星助手"><iframe id="lrStarAssistantFrame" title="星星助手" src="./star-assistant.html"></iframe></div>
 <style>
 #lrStarAssistantShell{position:fixed;inset:0;z-index:100000;background:#fff8fc;display:none;padding-top:env(safe-area-inset-top)}
