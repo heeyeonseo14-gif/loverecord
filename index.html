@@ -1250,6 +1250,26 @@ body.launcher-open .system-appbar{display:none!important}
     <div class="love-intro-author">Author by Lxing.</div>
   </div>
 </div>
+<script id="lr-intro-failsafe-v1">
+/* Independent splash failsafe: never let the intro cover the app indefinitely. */
+(function () {
+  var intro = document.getElementById('loveIntro');
+  if (!intro) return;
+  var dismissed = false;
+  function dismissIntro() {
+    if (dismissed) return;
+    dismissed = true;
+    intro.setAttribute('aria-hidden', 'true');
+    intro.style.animation = 'none';
+    intro.style.opacity = '0';
+    intro.style.visibility = 'hidden';
+    intro.style.pointerEvents = 'none';
+    intro.style.display = 'none';
+  }
+  window.setTimeout(dismissIntro, 3600);
+  intro.addEventListener('click', dismissIntro, { once: true });
+})();
+</script>
  <div id="lr-home-background-fix-layer" aria-hidden="true"></div>
 <div class="app">
 
