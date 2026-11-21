@@ -14,18 +14,18 @@
 /* 聊天背景：柔雾渐层 */
 #chatMessages {
   background:
-    radial-gradient(circle at 15% 12%, rgba(215, 210, 202, .48), transparent 38%),
-    radial-gradient(circle at 88% 78%, rgba(198, 193, 185, .42), transparent 42%),
-    linear-gradient(145deg, #FCF6EC, #F1EBE2) !important;
+    radial-gradient(circle at 15% 12%, rgba(224,196,244,.48), transparent 38%),
+    radial-gradient(circle at 88% 78%, rgba(194,184,235,.42), transparent 42%),
+    linear-gradient(145deg, #f8f4fc, #eee8f7) !important;
 }
 
 /* 我的气泡：紫水晶玻璃（排除转账卡片外层） */
 #chatMessages .chat-message-row.user .chat-bubble:not(.lr-transfer-bubble) {
-  background: linear-gradient(135deg, rgba(217, 212, 204, .78), rgba(200, 195, 187, .58)) !important;
-  color: #44413E !important;
+  background: linear-gradient(135deg, rgba(222,202,242,.78), rgba(205,184,231,.58)) !important;
+  color: #493957 !important;
   border: 1px solid rgba(255,255,255,.88) !important;
   border-radius: 23px 23px 7px 23px !important;
-  box-shadow: 0 8px 26px rgba(107, 103, 98, .12), inset 0 1px 0 rgba(255,255,255,.8) !important;
+  box-shadow: 0 8px 26px rgba(116,88,145,.12), inset 0 1px 0 rgba(255,255,255,.8) !important;
   backdrop-filter: blur(22px) saturate(155%) !important;
   -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
 }
@@ -33,23 +33,23 @@
 /* AI 气泡：雾白玻璃 */
 #chatMessages .chat-message-row.ai .chat-bubble:not(.lr-transfer-bubble) {
   background: rgba(255,255,255,.72) !important;
-  color: #3D3A37 !important;
+  color: #3e3546 !important;
   border: 1px solid rgba(255,255,255,.92) !important;
   border-radius: 23px 23px 23px 7px !important;
-  box-shadow: 0 8px 25px rgba(80, 77, 73, .075), inset 0 1px 0 rgba(255,255,255,.95) !important;
+  box-shadow: 0 8px 25px rgba(85,67,105,.075), inset 0 1px 0 rgba(255,255,255,.95) !important;
   backdrop-filter: blur(24px) saturate(145%) !important;
   -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
 }
 
 /* 消息排布与时间 */
 #chatMessages .chat-message-row { gap: 8px !important; margin-bottom: 7px !important; }
-#chatMessages .lr-message-time { color: #98948E !important; font-size: 10px !important; }
+#chatMessages .lr-message-time { color: #9b8da8 !important; font-size: 10px !important; }
 
 /* 图片 */
 #chatMessages .lr-chat-image {
   border-radius: 19px !important;
   border: 1px solid rgba(255,255,255,.9) !important;
-  box-shadow: 0 9px 26px rgba(74, 71, 68, .16) !important;
+  box-shadow: 0 9px 26px rgba(79,61,99,.16) !important;
 }
 
 /* 转账：独立玻璃卡，不要外层重复气泡 */
@@ -69,11 +69,11 @@
   width: min(260px, 68vw) !important;
   min-width: 0 !important;
   padding: 23px 21px !important;
-  background: linear-gradient(145deg, rgba(194, 189, 181, .88), rgba(139, 135, 129, .84)) !important;
+  background: linear-gradient(145deg, rgba(205,174,226,.88), rgba(151,119,177,.84)) !important;
   color: #fff !important;
   border: 1px solid rgba(255,255,255,.78) !important;
   border-radius: 27px !important;
-  box-shadow: 0 14px 34px rgba(98, 95, 91, .22), inset 0 1px 0 rgba(255,255,255,.48) !important;
+  box-shadow: 0 14px 34px rgba(112,79,139,.22), inset 0 1px 0 rgba(255,255,255,.48) !important;
   backdrop-filter: blur(28px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
 }
@@ -84,54 +84,54 @@
 /* 位置卡片 */
 #chatMessages .lr-location-card {
   display: block !important; min-width: 190px !important; padding: 16px !important;
-  background: rgba(255,255,255,.68) !important; color: #55524E !important;
+  background: rgba(255,255,255,.68) !important; color: #594a66 !important;
   border: 1px solid rgba(255,255,255,.9) !important; border-radius: 21px !important;
-  text-decoration: none !important; box-shadow: 0 8px 24px rgba(87, 84, 80, .1) !important;
+  text-decoration: none !important; box-shadow: 0 8px 24px rgba(95,72,118,.1) !important;
   backdrop-filter: blur(20px) saturate(145%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
 }
-#chatMessages .lr-location-pin { background: rgba(216, 211, 203, .72) !important; color: #7C7873 !important; border-radius: 15px !important; }
+#chatMessages .lr-location-pin { background: rgba(220,202,237,.72) !important; color: #866a9c !important; border-radius: 15px !important; }
 
 /* 输入栏与文字框 */
 #chatConversation .chat-compose {
   background: rgba(255,255,255,.72) !important;
   border: 1px solid rgba(255,255,255,.92) !important;
   border-radius: 26px !important;
-  box-shadow: 0 10px 30px rgba(84, 81, 77, .10), inset 0 1px 0 rgba(255,255,255,.95) !important;
+  box-shadow: 0 10px 30px rgba(92,70,112,.10), inset 0 1px 0 rgba(255,255,255,.95) !important;
   backdrop-filter: blur(26px) saturate(155%) !important;
   -webkit-backdrop-filter: blur(26px) saturate(155%) !important;
 }
 #chatConversation .chat-compose textarea {
-  background: rgba(255,255,255,.56) !important; color: #494643 !important;
+  background: rgba(255,255,255,.56) !important; color: #4d4057 !important;
   border: 1px solid rgba(255,255,255,.7) !important; border-radius: 17px !important;
 }
 
 /* 加号与弹出菜单 */
-#lrChatPlus { background: rgba(255,255,255,.76) !important; color: #8A8680 !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 16px !important; }
+#lrChatPlus { background: rgba(255,255,255,.76) !important; color: #9478a7 !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 16px !important; }
 #lrChatPlusMenu {
-  background: rgba(255, 253, 243, .78) !important; border: 1px solid rgba(255,255,255,.92) !important;
-  border-radius: 22px !important; box-shadow: 0 14px 38px rgba(68, 65, 62, .16) !important;
+  background: rgba(255,252,255,.78) !important; border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 22px !important; box-shadow: 0 14px 38px rgba(75,55,94,.16) !important;
   backdrop-filter: blur(26px) saturate(150%) !important; -webkit-backdrop-filter: blur(26px) saturate(150%) !important;
 }
-#lrChatPlusMenu button { color: #55524E !important; border-radius: 14px !important; }
+#lrChatPlusMenu button { color: #594a66 !important; border-radius: 14px !important; }
 
 /* 行程、心声、转账和位置弹窗 */
 #lrScheduleModal .lr-action-sheet, #lrThoughtModal .lr-thought-sheet,
 #lrTransferModal .lr-action-sheet, #lrLocationModal .lr-action-sheet {
-  background: rgba(255, 253, 243, .82) !important; color: #464340 !important;
+  background: rgba(255,252,255,.82) !important; color: #493d52 !important;
   border: 1px solid rgba(255,255,255,.95) !important; border-radius: 29px !important;
-  box-shadow: 0 20px 60px rgba(63, 60, 57, .18) !important;
+  box-shadow: 0 20px 60px rgba(70,50,88,.18) !important;
   backdrop-filter: blur(28px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
 }
 #lrScheduleModal .lr-schedule-item { background: rgba(255,255,255,.62) !important; border: 1px solid rgba(255,255,255,.9) !important; border-radius: 19px !important; }
-#lrScheduleModal .lr-schedule-time { color: #8C8882 !important; }
-#lrScheduleModal .lr-schedule-title { color: #464340 !important; }
+#lrScheduleModal .lr-schedule-time { color: #9879aa !important; }
+#lrScheduleModal .lr-schedule-title { color: #4b3c53 !important; }
 #lrScheduleModal .lr-schedule-detail { color: #8f8296 !important; }
 #lrThoughtModal #lrThoughtText { color: #71627a !important; line-height: 1.9 !important; }
-#lrTransferModal .lr-transfer-preview { background: linear-gradient(145deg, rgba(194, 189, 181, .9), rgba(139, 135, 129, .9)) !important; border: 1px solid rgba(255,255,255,.75) !important; border-radius: 24px !important; }
+#lrTransferModal .lr-transfer-preview { background: linear-gradient(145deg, rgba(205,174,226,.9), rgba(151,119,177,.9)) !important; border: 1px solid rgba(255,255,255,.75) !important; border-radius: 24px !important; }
 #lrLocationModal input, #lrLocationModal textarea, #lrTransferModal input {
-  background: rgba(255,255,255,.72) !important; color: #494643 !important;
+  background: rgba(255,255,255,.72) !important; color: #4d4057 !important;
   border: 1px solid rgba(255,255,255,.92) !important; border-radius: 16px !important;
 }
 #lrScheduleModal .lr-action-buttons button, #lrThoughtModal .lr-action-buttons button,
@@ -242,12 +242,12 @@
     const style = document.createElement('style');
     style.id = 'lr-css-preset-style';
     style.textContent = `
-      #lrCssPresetManager{margin-top:16px;padding:15px;border:1px solid #E9E4DB;border-radius:18px;background:rgba(254, 248, 238, .82)}
-      #lrCssPresetManager .lr-css-preset-heading{font-size:14px;font-weight:600;color:#55524E;margin-bottom:10px}
-      #lrCssPresetManager input,#lrCssPresetManager select{box-sizing:border-box;width:100%;min-width:0;min-height:43px;padding:9px 12px;border:1px solid #E5E0D7;border-radius:12px;background:#fff;color:#514657;font:inherit}
+      #lrCssPresetManager{margin-top:16px;padding:15px;border:1px solid #e9e0ec;border-radius:18px;background:rgba(250,247,252,.82)}
+      #lrCssPresetManager .lr-css-preset-heading{font-size:14px;font-weight:600;color:#594b60;margin-bottom:10px}
+      #lrCssPresetManager input,#lrCssPresetManager select{box-sizing:border-box;width:100%;min-width:0;min-height:43px;padding:9px 12px;border:1px solid #e6dce9;border-radius:12px;background:#fff;color:#514657;font:inherit}
       #lrCssPresetManager .lr-css-preset-row{display:flex;gap:8px;margin-top:9px}
-      #lrCssPresetManager button{flex:1;min-height:40px;padding:7px 10px;border:1px solid #E3DED5;border-radius:999px;background:#fff;color:#5E5B57;font:inherit;font-size:12px}
-      #lrCssPresetManager #lrCssPresetSave,#lrCssPresetManager #lrCssPresetApply{background:#B0ABA4;color:#fff;border-color:#B0ABA4}
+      #lrCssPresetManager button{flex:1;min-height:40px;padding:7px 10px;border:1px solid #e5d9e9;border-radius:999px;background:#fff;color:#65536d;font:inherit;font-size:12px}
+      #lrCssPresetManager #lrCssPresetSave,#lrCssPresetManager #lrCssPresetApply{background:#b99fc8;color:#fff;border-color:#b99fc8}
       #lrCssPresetManager .lr-css-preset-hint{margin-top:9px;color:#988b9d;font-size:11px;line-height:1.6}
       @media(max-width:380px){#lrCssPresetManager .lr-css-preset-row{gap:5px}#lrCssPresetManager button{font-size:11px;padding:6px}}
     `;
