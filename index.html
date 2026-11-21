@@ -1243,89 +1243,83 @@ body.launcher-open .system-appbar{display:none!important}
 .settings-app-catalog strong{font-size:12px}
 .settings-app-catalog small{font-size:10px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
 </style><style id="lr-theme-engine-v1">
-/* Preserve Space's legacy palette even when the global theme changes. */
-body.lr-theme-cream #space,
-body.lr-theme-monochrome #space,
-body.lr-theme-dark #space{
-  --bg:#f7f3f9!important;--card:#fff!important;--ink:#302b33!important;
-  --muted:#8f8792!important;--line:#e2dce4!important;--soft:#eee5f2!important;
-  --purple:#b79bc7!important;--accent:#b79bc7!important;--accent-soft:#b79bc7!important;
+/* LOVE RECORD Global Theme Engine v1.1
+   Applies to the shared shell and non-exempt apps. Space and Community remain independent. */
+:root{
+ --lr-surface:var(--card);--lr-surface-2:var(--soft);--lr-border:var(--line);
+ --lr-text:var(--ink);--lr-muted:var(--muted);--lr-accent:var(--accent);
+ --lr-field:var(--card);--lr-shadow:var(--card-shadow,0 10px 28px rgba(0,0,0,.06));
 }
-/* LOVE RECORD Theme Engine v1 — shared surface bridge.
-   Deliberately excludes #space and community-owned surfaces. */
-body.lr-theme-cream,
-body.lr-theme-monochrome,
-body.lr-theme-dark{
-  background:var(--bg)!important;color:var(--ink)!important;
+body.lr-theme-cream,body.lr-theme-monochrome,body.lr-theme-dark{
+ background:var(--bg)!important;color:var(--ink)!important;
 }
-body.lr-theme-cream .card,
-body.lr-theme-monochrome .card,
-body.lr-theme-dark .card,
-body.lr-theme-cream .settings-info-card,
-body.lr-theme-monochrome .settings-info-card,
-body.lr-theme-dark .settings-info-card,
-body.lr-theme-cream .settings-api-site,
-body.lr-theme-monochrome .settings-api-site,
-body.lr-theme-dark .settings-api-site{
-  background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important;
+body.lr-theme-cream .app,
+body.lr-theme-monochrome .app,
+body.lr-theme-dark .app{background:transparent!important;color:var(--ink)!important}
+body.lr-theme-cream .page:not(#space):not(#community),
+body.lr-theme-monochrome .page:not(#space):not(#community),
+body.lr-theme-dark .page:not(#space):not(#community){color:var(--ink)}
+/* Main surfaces, panels, sheets and cards created by the shell and feature modules. */
+body.lr-theme-cream :is(.launcher-info,.settings-entry,.settings-info-card,.settings-api-site,.panel,.module-sheet,.module-card,.lrw-card,.lrw-sheet,.history-item,.chat-picker-item,.chat-contact-card,.chat-person-head,.chat-compose,.chat-hint,.chat-page-heading,.music-mini,.music-panel,.diary-card,.diary-entry,.checkin-card,.game-card,.farm-card),
+body.lr-theme-monochrome :is(.launcher-info,.settings-entry,.settings-info-card,.settings-api-site,.panel,.module-sheet,.module-card,.lrw-card,.lrw-sheet,.history-item,.chat-picker-item,.chat-contact-card,.chat-person-head,.chat-compose,.chat-hint,.chat-page-heading,.music-mini,.music-panel,.diary-card,.diary-entry,.checkin-card,.game-card,.farm-card),
+body.lr-theme-dark :is(.launcher-info,.settings-entry,.settings-info-card,.settings-api-site,.panel,.module-sheet,.module-card,.lrw-card,.lrw-sheet,.history-item,.chat-picker-item,.chat-contact-card,.chat-person-head,.chat-compose,.chat-hint,.chat-page-heading,.music-mini,.music-panel,.diary-card,.diary-entry,.checkin-card,.game-card,.farm-card){
+ background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important;
+ box-shadow:var(--lr-shadow);
 }
-body.lr-theme-cream #settings .settings-entry,
-body.lr-theme-monochrome #settings .settings-entry,
-body.lr-theme-dark #settings .settings-entry{
-  background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important;
+/* Inputs and controls. */
+body.lr-theme-cream :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select),
+body.lr-theme-monochrome :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select),
+body.lr-theme-dark :is(input:not([type=range]):not([type=checkbox]):not([type=radio]),textarea,select){
+ background:var(--lr-field)!important;color:var(--ink)!important;border-color:var(--line)!important;
 }
-body.lr-theme-cream #settings .settings-entry-icon,
-body.lr-theme-monochrome #settings .settings-entry-icon,
-body.lr-theme-dark #settings .settings-entry-icon{
-  background:var(--soft)!important;color:var(--accent)!important;border-color:var(--line)!important;
+body.lr-theme-cream :is(button.btn,button.primary,.btn.primary,.settings-entry,.appearance-option),
+body.lr-theme-monochrome :is(button.btn,button.primary,.btn.primary,.settings-entry,.appearance-option),
+body.lr-theme-dark :is(button.btn,button.primary,.btn.primary,.settings-entry,.appearance-option){
+ border-color:var(--line)!important;
 }
-body.lr-theme-cream #settings .settings-entry-icon svg,
-body.lr-theme-monochrome #settings .settings-entry-icon svg,
-body.lr-theme-dark #settings .settings-entry-icon svg,
-body.lr-theme-cream .dock-icon-svg,
-body.lr-theme-monochrome .dock-icon-svg,
-body.lr-theme-dark .dock-icon-svg{
-  stroke:var(--accent)!important;
+body.lr-theme-cream :is(.btn.primary,.primary,.active>.settings-entry-icon),
+body.lr-theme-monochrome :is(.btn.primary,.primary,.active>.settings-entry-icon),
+body.lr-theme-dark :is(.btn.primary,.primary,.active>.settings-entry-icon){
+ background:var(--accent)!important;color:var(--bg)!important;
+}
+/* Launcher icons, labels, pagination and dock. */
+body.lr-theme-cream #launcher :is(.app-icon,.launcher-pages,.launcher-dock),
+body.lr-theme-monochrome #launcher :is(.app-icon,.launcher-pages,.launcher-dock),
+body.lr-theme-dark #launcher :is(.app-icon,.launcher-pages,.launcher-dock){
+ border-color:var(--line)!important;
 }
 body.lr-theme-cream #launcher .app-icon,
 body.lr-theme-monochrome #launcher .app-icon,
 body.lr-theme-dark #launcher .app-icon{
-  color:var(--accent)!important;border-color:var(--line)!important;
-  background:var(--surface2)!important;box-shadow:0 8px 24px rgba(0,0,0,.055)!important;
+ background:var(--lr-surface-2)!important;color:var(--accent)!important;
+ box-shadow:var(--lr-shadow)!important;
 }
 body.lr-theme-cream #launcher .launcher-app,
 body.lr-theme-monochrome #launcher .launcher-app,
-body.lr-theme-dark #launcher .launcher-app,
-body.lr-theme-cream #launcher .launcher-app span:last-child,
-body.lr-theme-monochrome #launcher .launcher-app span:last-child,
-body.lr-theme-dark #launcher .launcher-app span:last-child{
-  color:var(--ink)!important;
-}
+body.lr-theme-dark #launcher .launcher-app{color:var(--ink)!important}
 body.lr-theme-cream #launcher .launcher-pages button.active,
 body.lr-theme-monochrome #launcher .launcher-pages button.active,
-body.lr-theme-dark #launcher .launcher-pages button.active{
-  background:var(--accent)!important;
+body.lr-theme-dark #launcher .launcher-pages button.active{background:var(--accent)!important}
+body.lr-theme-cream :is(.eyebrow,.sub,.hint,.muted,.settings-entry-arrow),
+body.lr-theme-monochrome :is(.eyebrow,.sub,.hint,.muted,.settings-entry-arrow),
+body.lr-theme-dark :is(.eyebrow,.sub,.hint,.muted,.settings-entry-arrow){color:var(--muted)!important}
+/* Chat: keep user/AI bubble distinction but map the surfaces to the active palette. */
+body.lr-theme-cream .chat-page :is(.chat-contact-list,.chat-conversation,.chat-messages),
+body.lr-theme-monochrome .chat-page :is(.chat-contact-list,.chat-conversation,.chat-messages),
+body.lr-theme-dark .chat-page :is(.chat-contact-list,.chat-conversation,.chat-messages){color:var(--ink)}
+body.lr-theme-cream .chat-page .chat-bubble:not(.user),
+body.lr-theme-monochrome .chat-page .chat-bubble:not(.user),
+body.lr-theme-dark .chat-page .chat-bubble:not(.user){background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important}
+body.lr-theme-cream .chat-page .chat-compose,
+body.lr-theme-monochrome .chat-page .chat-compose,
+body.lr-theme-dark .chat-page .chat-compose{background:var(--card)!important;border-color:var(--line)!important}
+/* App overlays and toasts, excluding the Space page and community-owned roots. */
+body.lr-theme-cream :is(.modal,.modal-card,.module-modal,.module-sheet,.toast,.music-toast,.popover,.dropdown-menu),
+body.lr-theme-monochrome :is(.modal,.modal-card,.module-modal,.module-sheet,.toast,.music-toast,.popover,.dropdown-menu),
+body.lr-theme-dark :is(.modal,.modal-card,.module-modal,.module-sheet,.toast,.music-toast,.popover,.dropdown-menu){
+ background:var(--card)!important;color:var(--ink)!important;border-color:var(--line)!important;
 }
-body.lr-theme-cream #settings .settings-section-kicker,
-body.lr-theme-monochrome #settings .settings-section-kicker,
-body.lr-theme-dark #settings .settings-section-kicker,
-body.lr-theme-cream #settings .settings-entry-arrow,
-body.lr-theme-monochrome #settings .settings-entry-arrow,
-body.lr-theme-dark #settings .settings-entry-arrow{
-  color:var(--accent)!important;
-}
-body.lr-theme-dark input,
-body.lr-theme-dark textarea,
-body.lr-theme-dark select,
-body.lr-theme-dark .settings-api-site,
-body.lr-theme-dark #settings .settings-entry{
-  background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important;
-}
-body.lr-theme-cream :is(#space,.community-root),
-body.lr-theme-monochrome :is(#space,.community-root),
-body.lr-theme-dark :is(#space,.community-root){
-  color:initial;
-}
+/* Space and Community are intentionally not themed by this bridge. */
 </style>
 </head>
 <body class="launcher-open">
@@ -2584,7 +2578,7 @@ function applyAppearance(){const root=document.documentElement;
   root.style.setProperty('--lr-muted',palette.muted);
   root.style.setProperty('--lr-accent',palette.accent);
   root.style.setProperty('--purple',appearance.accent||palette.purple);
-  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
+  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',palette.soft);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',palette.soft);if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
 function updateAppearanceControls(){$('fontSizeRange').value=appearance.fontSize;$('fontSizeValue').textContent=appearance.fontSize+'px';$('titleScaleRange').value=appearance.titleScale;$('titleScaleValue').textContent=Math.round(appearance.titleScale*100)+'%';$('radiusRange').value=appearance.radius;$('radiusValue').textContent=appearance.radius+'px';$('blurRange').value=appearance.blur;$('blurValue').textContent=appearance.blur+'px';$('opacityRange').value=appearance.opacity;$('opacityValue').textContent=Math.round(appearance.opacity*100)+'%';$('customAccent').value=appearance.accent;$('motionToggle').textContent=appearance.motion?'MOTION ON':'MOTION OFF';$('lightModeBtn').classList.toggle('active',!appearance.dark);$('darkModeBtn').classList.toggle('active',appearance.dark);document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===appearance.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===appearance.font));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===appearance.accent));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===appearance.bg));const pv=$('appearancePreview');if(pv){pv.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value}}
 function openAppearance(){localizeEditors();renderAppearanceControls();$('appearanceModal').classList.add('show');document.body.style.overflow='hidden'}
@@ -3089,7 +3083,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=6',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=7',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
