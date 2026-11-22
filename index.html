@@ -3295,7 +3295,8 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=109"></script>
+<script src="./home-widgets-v1.js?v=110"></script>
+<script src="./lr-appearance-enhancements-v1.js?v=1"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3391,7 +3392,15 @@ body.lr-external-app-open{overflow:hidden}
  },true);
  window.addEventListener('message',function(event){
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
-  if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP')closeApp();
+  if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP'){closeApp();return;}
+  if(event.data&&event.data.type==='LR_OPEN_WIDGET_STUDIO'){
+   closeApp();
+   if(typeof window.LRHomeWidgetsOpenStudio==='function')window.LRHomeWidgetsOpenStudio();
+   return;
+  }
+  if(event.data&&event.data.type==='LR_APPEARANCE_SETTINGS_UPDATED'){
+   if(typeof window.LRAppearanceEnhancementsApply==='function')window.LRAppearanceEnhancementsApply();
+  }
  });
  window.LRCloseExternalApp=closeApp;
 })();
