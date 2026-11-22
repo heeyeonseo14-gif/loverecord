@@ -1372,6 +1372,7 @@ body.lr-theme-dark :is(#space,.community-root){
     <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
     <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
     <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
+    <button class="launcher-app" type="button" data-lr-store-launch data-drag-id="app-lr-store"><span class="app-icon" style="background:linear-gradient(145deg,#f7f1fb,#e7ddec);color:#826d98;box-shadow:0 8px 24px rgba(132,103,169,.13)">✧</span><span>LR STORE</span></button>
   </section>
   <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
 </main>
@@ -2893,6 +2894,7 @@ document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now(
   normalize();layoutReady=true;render();if(!saved||saved.version!==5)persist();
  })();
  window.__loveRecordLauncherSetPage=setPage;window.__loveRecordLauncherAddPage=addPage;
+ window.__loveRecordLauncherRefresh=()=>{render();persist()};
  window.__loveRecordLauncherCurrentPage=currentPage;
 })();
 document.addEventListener('click',e=>{
@@ -3553,5 +3555,20 @@ body.lr-external-app-open{overflow:hidden}
  moveBackup();new MutationObserver(moveBackup).observe(document.body,{childList:true,subtree:true});
 })();
 </script>
+
+<style id="lrStoreUserAppWindowStyle">
+#lrStoreUserAppWindow{position:fixed;inset:0;z-index:10080;display:none;flex-direction:column;background:var(--bg,#f7f3fa)}
+#lrStoreUserAppWindow.is-open{display:flex}
+#lrStoreUserAppWindow .lr-user-app-top{height:54px;min-height:54px;display:flex;align-items:center;gap:12px;padding:0 16px;background:rgba(250,248,251,.96);border-bottom:1px solid rgba(120,105,132,.12);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+#lrStoreUserAppWindow .lr-user-app-top strong{font-size:13px;font-weight:600;color:#62566e;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lrStoreUserAppWindow .lr-user-app-close{width:34px;height:34px;border:1px solid #e9e2ed;border-radius:50%;background:#fff;color:#81748d;font-size:20px;line-height:1}
+#lrStoreUserAppIframe{width:100%;height:calc(100% - 54px);height:calc(100dvh - 54px);border:0;background:#f8f6fa;flex:1}
+body.lr-user-app-open{overflow:hidden}
+</style>
+<div id="lrStoreUserAppWindow" aria-hidden="true">
+ <div class="lr-user-app-top"><button class="lr-user-app-close" id="lrStoreUserAppClose" type="button" aria-label="关闭应用">‹</button><strong id="lrStoreUserAppTitle">应用</strong><span style="width:34px"></span></div>
+ <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
+</div>
+<script src="./lr-store-runtime.js?v=1"></script>
 </body>
 </html>

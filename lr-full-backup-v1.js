@@ -5,7 +5,7 @@
 'use strict';
 if(window.__lrFullBackupV2Installed)return;window.__lrFullBackupV2Installed=true;
 const FORMAT='LOVE_RECORD_FULL_BACKUP',VERSION=3,$=id=>document.getElementById(id);
-const KNOWN_DBS=['love-record-long-chat-v1','love-record-chat-meta-db-v1','love-record-chat-index-v1','love-record-contact-db-v1','love-record-extra-v1','love-record-kv-v1','love-record-chat-files-v1','yanyan-love-v5','love-record-community-db','love-record-appearance-assets-v2','love-record-home-widgets-db','love-record-space-history-v1','love-record-space-cities-v1','love-record-life-apps-v1','love-record-music-v1','love-record-scrapbook-v1','LIVE_LOCAL_DB','lr-farm-save-db-v5','lr-farm-save-db'];
+const KNOWN_DBS=['love-record-long-chat-v1','love-record-chat-meta-db-v1','love-record-chat-index-v1','love-record-contact-db-v1','love-record-extra-v1','love-record-kv-v1','love-record-chat-files-v1','yanyan-love-v5','love-record-community-db','love-record-appearance-assets-v2','love-record-home-widgets-db','love-record-space-history-v1','love-record-space-cities-v1','love-record-life-apps-v1','love-record-music-v1','love-record-scrapbook-v1','LIVE_LOCAL_DB','lr-farm-save-db-v5','lr-farm-save-db','lr-store-db-v1'];
 const toast=m=>{if(typeof window.toast==='function')window.toast(m);else alert(m)};
 const b64=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode(...u.subarray(i,Math.min(i+32768,u.length)));return btoa(s)};
 const unb64=s=>{const x=atob(s),u=new Uint8Array(x.length);for(let i=0;i<x.length;i++)u[i]=x.charCodeAt(i);return u.buffer};
