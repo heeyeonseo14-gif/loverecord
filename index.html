@@ -1994,15 +1994,6 @@ function renderChat(){
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
-// MESSAGING 2.0 compatibility bridge: keep legacy private chat storage and generation intact.
-window.__LR_MESSAGING_BRIDGE={
- people:()=>Array.isArray(state.people)?state.people:[],
- contacts:()=>readChatContacts(),
- activePrivateId:()=>String(activeChatContactId||''),
- resetActivePrivate:()=>{activeChatContactId='';},
- addContact:(id)=>{const ids=[...new Set([...readChatContacts(),String(id)])];writeChatContacts(ids);saveChatContactIdsIndexedDB(ids).catch(e=>console.warn('[Messaging 2.0] private contact index mirror skipped',e));return ids;},
- openPrivate:(id)=>{const key=String(id);if(!readChatContacts().includes(key)){const ids=[...readChatContacts(),key];writeChatContacts(ids);saveChatContactIdsIndexedDB(ids).catch(e=>console.warn('[Messaging 2.0] private contact index mirror skipped',e));}openChatContact(key);}
-};
 function openChatContact(id){if(!readChatContacts().includes(id))return;activeChatContactId=id;renderChat()}
 function openChatSettings(){
  if(!activeChatContactId)return;
@@ -2245,7 +2236,6 @@ function applyLanguage(){
 }
 
 function nav(page){
-  if(page!=='chat')window.__LR_MESSAGING_RESET_SECTION?.();
   const dock=document.querySelector('.nav');if(dock)dock.style.display='';
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const target=$(page);if(!target)return;
@@ -2559,10 +2549,8 @@ function addManualForum(){const author=prompt('谁来发帖？\n可填写 YANYAN
 
 const APPEARANCE_KEY='yanyan-love-appearance-v1';
 const APPEARANCE_DB='love-record-appearance-assets-v2', APPEARANCE_STORE='assets';
-const glassAreaDefaults={desktop:{opacity:.24,blur:16,radius:22},apps:{opacity:.76,blur:18,radius:21},widgets:{opacity:.40,blur:24,radius:22},settings:{opacity:.78,blur:18,radius:22},chat:{opacity:.76,blur:20,radius:18}};
-const appearanceDefaults={preset:'purple',themeMode:'purple',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:0,opacity:.94,dark:false,motion:true,glassAreas:glassAreaDefaults};
-let _savedAppearance={};try{_savedAppearance=JSON.parse(localStorage.getItem(APPEARANCE_KEY)||'{}')||{}}catch(e){}
-let appearance=Object.assign({},appearanceDefaults,_savedAppearance,{glassAreas:Object.fromEntries(Object.entries(glassAreaDefaults).map(([key,value])=>[key,{...value,...(_savedAppearance.glassAreas?.[key]||{})}]))});
+const appearanceDefaults={preset:'purple',themeMode:'purple',font:'system',fontSize:15,titleScale:1,accent:'#b79bc7',bg:'soft',radius:29,blur:0,opacity:.94,dark:false,motion:true};
+let appearance=Object.assign({},appearanceDefaults,JSON.parse(localStorage.getItem(APPEARANCE_KEY)||'{}'));
 const legacyAppearanceBg=typeof appearance.bgData==='string'?appearance.bgData:'';delete appearance.bgData;let appearanceAssetsReady=false;
 function openAppearanceAssetsDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(APPEARANCE_DB);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(APPEARANCE_STORE))r.result.createObjectStore(APPEARANCE_STORE)};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error||new Error('无法打开外观存储'))})}
 async function getAppearanceAsset(key){const db=await openAppearanceAssetsDB();return new Promise((resolve,reject)=>{const r=db.transaction(APPEARANCE_STORE,'readonly').objectStore(APPEARANCE_STORE).get(key);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
@@ -2596,20 +2584,12 @@ function applyAppearance(){const root=document.documentElement;
   root.style.setProperty('--lr-muted',palette.muted);
   root.style.setProperty('--lr-accent',palette.accent);
   root.style.setProperty('--purple',appearance.accent||palette.purple);
-  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);const areas=appearance.glassAreas||glassAreaDefaults;Object.entries(glassAreaDefaults).forEach(([key,defaults])=>{const v=areas[key]||defaults;root.style.setProperty('--lr-glass-'+key+'-opacity',String(v.opacity));root.style.setProperty('--lr-glass-'+key+'-blur',String(v.blur)+'px');root.style.setProperty('--lr-glass-'+key+'-radius',String(v.radius)+'px')});let regionalStyle=document.getElementById('lr-regional-glass-runtime');if(!regionalStyle){regionalStyle=document.createElement('style');regionalStyle.id='lr-regional-glass-runtime';document.head.appendChild(regionalStyle)}regionalStyle.textContent=`
-#launcher .launcher-welcome,#launcher .launcher-grid{background:rgba(255,255,255,var(--lr-glass-desktop-opacity,.24))!important;backdrop-filter:blur(var(--lr-glass-desktop-blur,16px))!important;-webkit-backdrop-filter:blur(var(--lr-glass-desktop-blur,16px))!important;border-radius:var(--lr-glass-desktop-radius,22px)!important;border:1px solid rgba(255,255,255,.38)}
-#launcher .launcher-app .app-icon{background:rgba(255,255,255,var(--lr-glass-apps-opacity,.76))!important;backdrop-filter:blur(var(--lr-glass-apps-blur,18px))!important;-webkit-backdrop-filter:blur(var(--lr-glass-apps-blur,18px))!important;border-radius:var(--lr-glass-apps-radius,21px)!important}
-#lrWidgetBoard .lrw-card,#lrWidgetShelf .lrw-card{background:rgba(255,255,255,var(--lr-glass-widgets-opacity,.40))!important;backdrop-filter:blur(var(--lr-glass-widgets-blur,24px))!important;-webkit-backdrop-filter:blur(var(--lr-glass-widgets-blur,24px))!important;border-radius:var(--lr-glass-widgets-radius,22px)!important}
-#settings .settings-entry{background:rgba(255,255,255,var(--lr-glass-settings-opacity,.78))!important;backdrop-filter:blur(var(--lr-glass-settings-blur,18px))!important;-webkit-backdrop-filter:blur(var(--lr-glass-settings-blur,18px))!important;border-radius:var(--lr-glass-settings-radius,22px)!important}
-#chat .chat-compose,#lrGroupConversation .lr-group-header,#lrGroupConversation .lr-group-compose,#lrMessagingHome .lr-message-toolbar,#lrMessagingHome .lr-messages-list,#lrMessagingContactsView #lrContactPeopleList,#lrMessagingContactsView #lrContactGroupsList{backdrop-filter:blur(var(--lr-glass-chat-blur,20px))!important;-webkit-backdrop-filter:blur(var(--lr-glass-chat-blur,20px))!important;border-radius:var(--lr-glass-chat-radius,18px)!important}
-#chat .chat-compose,#lrGroupConversation .lr-group-header,#lrGroupConversation .lr-group-compose,#lrMessagingHome .lr-message-toolbar,#lrMessagingHome .lr-messages-list,#lrMessagingContactsView #lrContactPeopleList,#lrMessagingContactsView #lrContactGroupsList{background-color:rgba(255,255,255,var(--lr-glass-chat-opacity,.76))!important}
-#lrMessagingHome .lr-message-row,#lrMessagingContactsView .lr-contact-row{background-color:rgba(255,255,255,var(--lr-glass-chat-opacity,.76))!important}
-`;root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
+  root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
 function updateAppearanceControls(){$('fontSizeRange').value=appearance.fontSize;$('fontSizeValue').textContent=appearance.fontSize+'px';$('titleScaleRange').value=appearance.titleScale;$('titleScaleValue').textContent=Math.round(appearance.titleScale*100)+'%';$('radiusRange').value=appearance.radius;$('radiusValue').textContent=appearance.radius+'px';$('blurRange').value=appearance.blur;$('blurValue').textContent=appearance.blur+'px';$('opacityRange').value=appearance.opacity;$('opacityValue').textContent=Math.round(appearance.opacity*100)+'%';$('customAccent').value=appearance.accent;$('motionToggle').textContent=appearance.motion?'MOTION ON':'MOTION OFF';$('lightModeBtn').classList.toggle('active',!appearance.dark);$('darkModeBtn').classList.toggle('active',appearance.dark);document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===appearance.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===appearance.font));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===appearance.accent));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===appearance.bg));const pv=$('appearancePreview');if(pv){pv.style.fontFamily=fontChoices[appearance.font]?.value||fontChoices.system.value}}
 function openAppearance(){localizeEditors();renderAppearanceControls();$('appearanceModal').classList.add('show');document.body.style.overflow='hidden'}
 function closeAppearance(){ $('appearanceModal').classList.remove('show');document.body.style.overflow='';applyAppearance()}
-function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},appearanceDefaults,presetChoices[k],{glassAreas:Object.fromEntries(Object.entries(glassAreaDefaults).map(([key,value])=>[key,{...value}]))});appearance.preset=k;delete appearance.bgData;applyAppearance();renderAppearanceControls();toast('已切换：'+presetChoices[k].name)}
+function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},appearanceDefaults,presetChoices[k]);appearance.preset=k;delete appearance.bgData;applyAppearance();renderAppearanceControls();toast('已切换：'+presetChoices[k].name)}
 
 const homeIconBindings=[
  {id:'app-shiyi',symbol:'✧'},{id:'app-star-assistant',symbol:'✦'},{id:'app-space',symbol:'♡'},
@@ -2640,7 +2620,7 @@ async function loadHomeCustomIcons(){
 (async function loadSharedAppearanceOnHome(){
   try {
     const cfg = await getAppearanceAsset('settings');
-    if (cfg && typeof cfg === 'object') appearance = Object.assign({}, appearanceDefaults, cfg, {glassAreas:Object.fromEntries(Object.entries(glassAreaDefaults).map(([key,value])=>[key,{...value,...(cfg.glassAreas?.[key]||{})}]))});
+    if (cfg && typeof cfg === 'object') appearance = Object.assign({}, appearanceDefaults, cfg);
     let photo = await getAppearanceAsset('homepage-background');
     if (!photo && legacyAppearanceBg) {
       photo = legacyAppearanceBg;
@@ -2671,10 +2651,9 @@ $('useCustomAccent').onclick=()=>{appearance.accent=$('customAccent').value;appe
 $('lightModeBtn').onclick=()=>{appearance.dark=false;appearance.preset='custom';applyAppearance();renderAppearanceControls()};
 $('darkModeBtn').onclick=()=>{appearance.dark=true;appearance.preset='custom';applyAppearance();renderAppearanceControls()};
 $('motionToggle').onclick=()=>{appearance.motion=!appearance.motion;appearance.preset='custom';applyAppearance()};
-$('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults,{glassAreas:Object.fromEntries(Object.entries(glassAreaDefaults).map(([key,value])=>[key,{...value}]))});applyAppearance();renderAppearanceControls();toast('已经恢复默认外观')};
+$('resetAppearance').onclick=()=>{appearance=Object.assign({},appearanceDefaults);applyAppearance();renderAppearanceControls();toast('已经恢复默认外观')};
 $('appearanceBgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const url=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(f)});const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=reject;i.src=url});const max=1400;const scale=Math.min(1,max/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));const ctx=c.getContext('2d');ctx.drawImage(img,0,0,c.width,c.height);appearance.bgData=c.toDataURL('image/jpeg',.76);appearance.bg='plain';appearance.preset='custom';applyAppearance();renderAppearanceControls();toast('背景已换成你的照片')}catch(err){toast('背景照片读取失败，请换一张试试')}};
 applyAppearance();
-window.addEventListener('load',()=>{const style=document.getElementById('lr-regional-glass-runtime');if(style)document.head.appendChild(style)},{once:true});
 
 // Durable small settings store: keep API presets and launcher layout out of quota-limited localStorage.
 const LR_KV_DB='love-record-kv-v1',LR_KV_STORE='settings';
@@ -3110,7 +3089,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=7',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=6',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
@@ -3307,7 +3286,7 @@ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
 })();
 </script>
-<script src="./moments-v1.js?v=100"></script>
+<script src="./moments-v1.js?v=99"></script>
 
 <script>
 /* 拾忆：独立管理界面入口 */
@@ -3316,7 +3295,8 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=109"></script>
+<script src="./home-widgets-v1.js?v=110"></script>
+<script src="./lr-appearance-enhancements-v1.js?v=1"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3412,7 +3392,15 @@ body.lr-external-app-open{overflow:hidden}
  },true);
  window.addEventListener('message',function(event){
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
-  if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP')closeApp();
+  if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP'){closeApp();return;}
+  if(event.data&&event.data.type==='LR_OPEN_WIDGET_STUDIO'){
+   closeApp();
+   if(typeof window.LRHomeWidgetsOpenStudio==='function')window.LRHomeWidgetsOpenStudio();
+   return;
+  }
+  if(event.data&&event.data.type==='LR_APPEARANCE_SETTINGS_UPDATED'){
+   if(typeof window.LRAppearanceEnhancementsApply==='function')window.LRAppearanceEnhancementsApply();
+  }
  });
  window.LRCloseExternalApp=closeApp;
 })();
@@ -3492,7 +3480,6 @@ body.lr-external-app-open{overflow:hidden}
 
   <script src="./welcome-tour-v1.js?v=1"></script>
 <script src="./lr-full-backup-v1.js?v=3"></script>
-<script src="./messaging-v2.js?v=1"></script>
 
 <style id="lr-page-manager-v2">
 #launcher .launcher-pages [data-launcher-add-page]{display:none!important}
