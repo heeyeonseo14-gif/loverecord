@@ -282,7 +282,6 @@ function switchPage(next){const page=Math.max(0,Number(next)||0);if(page===state
 window.addEventListener('lr-launcher-page-change',e=>switchPage(e.detail?.page));
 
 function openLibrary(){sheetMode='library';activeCategory='全部';myTemplatesOnly=false;renderSheet();overlay.classList.add('show');setEdit(true)}
-window.LRHomeWidgetsOpenStudio=openLibrary;
 function closeSheet(){overlay.classList.remove('show');sheetMode='library';editingUid=null;editorDraft=null}
 function renderSheet(){
  if(sheetMode==='editor'){renderEditor();return}

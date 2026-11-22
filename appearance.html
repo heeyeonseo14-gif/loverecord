@@ -4,6 +4,7 @@
 :root{--accent:#b79bc7;--bg-a:#f2e8f5;--bg-b:#e9dfee;--radius:28px;--blur:20px;--opacity:.68;--font-size:15px;--ink:#51475a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;min-height:100vh;font:var(--font-size)/1.55 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;color:var(--ink);background:linear-gradient(145deg,var(--bg-a),var(--bg-b));background-attachment:fixed;padding:18px 14px 32px;transition:background .25s,color .25s}
 body.photo-bg{background-size:cover;background-position:center;background-attachment:fixed}.wrap{max-width:760px;margin:0 auto}.top{display:flex;align-items:center;gap:12px;margin:4px 0 22px}.back{display:grid;place-items:center;flex:0 0 52px;height:52px;border:1px solid rgba(255,255,255,.75);background:rgba(255,255,255,.58);color:inherit;border-radius:18px;text-decoration:none;backdrop-filter:blur(18px);font-size:22px}.eyebrow{font-size:10px;letter-spacing:3px;opacity:.62}.top h1{font-size:27px;letter-spacing:1px;margin:1px 0;font-weight:600}.sub{font-size:12px;opacity:.72}.panel{margin:13px 0;padding:18px;border:1px solid rgba(255,255,255,.76);border-radius:var(--radius);background:rgba(255,255,255,var(--opacity));box-shadow:0 16px 42px rgba(77,58,88,.07);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur))}h2{font-size:14px;letter-spacing:1.5px;margin:0 0 6px;font-weight:700}.hint{font-size:12px;opacity:.67;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}.opt,.action{font:inherit;cursor:pointer;border:1px solid rgba(153,128,168,.22);border-radius:18px;background:rgba(255,255,255,.56);color:inherit;padding:13px 10px;text-align:center;min-height:48px}.opt.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 20%,white);box-shadow:inset 0 0 0 1px var(--accent)}.opt.featured{min-height:82px}.opt.featured strong{display:block;font-size:15px}.opt.featured small{display:block;margin-top:4px;font-size:11px;opacity:.7}.swatches{display:flex;gap:11px;flex-wrap:wrap;margin:13px 0}.swatch{width:32px;height:32px;border:3px solid rgba(255,255,255,.9);outline:1px solid transparent;border-radius:50%;padding:0}.swatch.active{outline:2px solid var(--accent);outline-offset:2px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.action{flex:1;min-width:120px;text-decoration:none}.primary{background:var(--accent);border-color:transparent;color:white}.range{display:grid;grid-template-columns:1fr 54px;align-items:center;gap:10px;margin:12px 0 5px}input[type=range]{width:100%;accent-color:var(--accent)}.value{text-align:right;font-size:12px;opacity:.72}label{display:block;font-size:11px;letter-spacing:1px;opacity:.75;margin:13px 0 6px}input[type=color]{width:50px;height:42px;padding:3px;border:1px solid rgba(153,128,168,.25);border-radius:12px;background:transparent}input[type=file]{max-width:100%;font-size:12px}input[type=text]{width:100%;border:1px solid rgba(153,128,168,.3);border-radius:14px;padding:12px;background:rgba(255,255,255,.65);font:inherit;color:inherit}.status{position:sticky;bottom:10px;text-align:center;font-size:12px;margin-top:10px;pointer-events:none}.status span{display:inline-block;background:rgba(55,45,62,.88);color:white;padding:8px 14px;border-radius:999px;opacity:0;transition:opacity .2s}.status.show span{opacity:1}small{opacity:.7}body.ios{--ink:#1c1c1e}body.liquid{--ink:#4d4256}body.liquid .panel{border-color:rgba(255,255,255,.88);box-shadow:0 18px 50px rgba(124,100,145,.08)}
+.glass-area-card{margin-top:12px;padding:13px;border:1px solid rgba(153,128,168,.16);border-radius:17px;background:rgba(255,255,255,.42)}.glass-area-title{font-size:13px;font-weight:600;margin-bottom:7px}.glass-area-card .range{margin:7px 0}.glass-area-card label{margin:7px 0 3px;font-size:10px}.glass-area-card .value{font-variant-numeric:tabular-nums}
 .home-icon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
 .home-icon-card{min-width:0;padding:12px;border:1px solid rgba(153,128,168,.20);border-radius:18px;background:linear-gradient(145deg,rgba(255,255,255,.82),rgba(239,230,246,.48));box-shadow:0 8px 20px rgba(111,83,130,.06),inset 0 1px 0 rgba(255,255,255,.96)}
 .home-icon-main{width:100%;display:flex;align-items:center;gap:10px;padding:0;border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer}
@@ -24,110 +25,30 @@ body.photo-bg{background-size:cover;background-position:center;background-attach
 <style id="lr-fixed-standalone-header-v1">
 .top{position:sticky!important;top:0!important;z-index:500!important;isolation:isolate;background:rgba(250,249,252,.88)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;border-bottom:1px solid rgba(160,145,175,.12)!important;padding-top:10px!important;padding-bottom:10px!important}
 </style>
-
-<style id="lr-minimal-settings-center-v1">
-:root{--accent:#222;--bg-a:#fff;--bg-b:#fff;--ink:#171717;--radius:20px}
-body{background:#f7f7f7;color:#171717;padding:12px 13px 30px;font-family:var(--lr-global-font,-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif)}
-.top{background:rgba(255,255,255,.94)!important;border-bottom:1px solid #eee!important;padding:9px 0 13px!important;margin:0 0 13px!important;gap:11px}
-.top h1{font-size:23px;letter-spacing:-.5px;font-weight:750;color:#171717}.top .eyebrow{color:#777;letter-spacing:2px}.top .sub{color:#888}.back{width:40px;height:40px;flex-basis:40px;border-radius:50%;background:#fff!important;border:1px solid #e9e9e9!important;color:#171717!important;backdrop-filter:none!important}
-.settings-intro{padding:16px 17px!important;margin:10px 0 13px!important;background:#fff!important;border:1px solid #eee!important;border-radius:18px!important;box-shadow:0 2px 8px #00000005!important;backdrop-filter:none!important}
-.settings-intro h2{font-size:18px;letter-spacing:0;margin:5px 0 4px}.settings-kicker{font-size:9px;letter-spacing:2.4px;color:#999;font-weight:700}.settings-intro .hint{margin:0;color:#888}
-.settings-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
-.settings-tile{min-width:0;min-height:130px;padding:13px 5px 11px;border:1px solid #ededed;border-radius:17px;background:#fff;color:#171717;display:flex;align-items:center;flex-direction:column;justify-content:flex-start;gap:8px;box-shadow:0 2px 7px #00000005;transition:transform .15s,background .15s}
-.settings-tile:active{transform:scale(.97);background:#f8f8f8}
-.settings-icon{width:49px;height:49px;border-radius:15px;background:#f4f4f4;display:grid;place-items:center;color:#171717}
-.settings-icon svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.settings-tile strong{font-size:12px;font-weight:700;line-height:1.3;text-align:center}.settings-tile small{font-size:9px;line-height:1.4;color:#999;text-align:center;max-width:100%;padding:0 2px}
-.settings-footer{background:#fff!important;border:1px solid #eee!important;border-radius:18px!important;box-shadow:0 2px 8px #00000005!important;margin:13px 0!important;padding:15px!important;backdrop-filter:none!important}
-.settings-footer .action{min-height:43px;padding:9px 10px;border-radius:12px;background:#f5f5f5;border:1px solid #eee;color:#222}.settings-footer .action.primary{background:#171717;border-color:#171717;color:#fff}
-.settings-detail-head{display:flex;align-items:center;gap:12px;padding:7px 1px 12px;margin-bottom:3px}
-.detail-back{width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid #e8e8e8;color:#171717;font-size:24px;line-height:1}
-.settings-detail-head .eyebrow{font-size:9px;color:#999;letter-spacing:2px}.settings-detail-head h2{font-size:20px;letter-spacing:0;margin:3px 0 0;color:#171717}
-.settings-content[hidden],#settingsView[hidden],#settingsHome[hidden]{display:none!important}
-.settings-content .panel{background:#fff!important;border:1px solid #ededed!important;border-radius:17px!important;padding:15px!important;margin:10px 0!important;box-shadow:0 2px 8px #00000005!important;backdrop-filter:none!important;color:#171717}
-.settings-content .panel h2{font-size:13px;letter-spacing:.7px;color:#222}.settings-content .hint{color:#888;opacity:1}
-.settings-content .opt,.settings-content .action{background:#fff;border:1px solid #e8e8e8;border-radius:12px;color:#222}.settings-content .opt.active{background:#f5f5f5;border-color:#222;box-shadow:inset 0 0 0 1px #222;color:#171717}.settings-content .primary{background:#171717;color:#fff;border-color:#171717}
-.settings-content input[type=text],.settings-content input[type=number],.settings-content select{border:1px solid #e6e6e6;border-radius:11px;background:#fff;color:#222;padding:10px;font:inherit}
-.home-icon-card{background:#fff!important;border:1px solid #eee!important;border-radius:15px!important;box-shadow:none!important}.home-icon-preview{box-shadow:none!important}
-.bubble-live-preview{display:flex;flex-direction:column;gap:10px;padding:14px;background:#f5f5f5;border-radius:14px;margin-top:12px}
-.bubble-demo{max-width:84%;padding:10px 13px;font-size:12px;line-height:1.55;border-radius:17px}.bubble-demo.ai{align-self:flex-start;background:#fff;color:#222;border:1px solid #e9e9e9;border-bottom-left-radius:5px}.bubble-demo.user{align-self:flex-end;background:#171717;color:#fff;border-bottom-right-radius:5px}
-.css-selector-guide{display:grid;grid-template-columns:max-content 1fr;align-items:center;gap:7px 12px;padding:10px 12px;background:#f7f7f7;border-radius:12px;margin-top:12px;font-size:11px}.css-selector-guide code{font-family:ui-monospace,monospace;color:#333}.css-selector-guide span{color:#888}
-.bubble-css-editor{display:block;width:100%;min-height:220px;resize:vertical;border:0!important;border-radius:12px!important;background:#171717!important;color:#eee!important;padding:13px!important;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace!important;letter-spacing:0!important;tab-size:2;outline:none}
-.bubble-css-select{width:100%;min-height:42px;margin-top:5px}
-.widget-setting-preview{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.widget-setting-sample{min-height:108px;border:1px solid #e5e5e5;border-radius:15px;background:linear-gradient(145deg,#fff,#f0f0f0);padding:12px;display:flex;flex-direction:column;justify-content:space-between;color:#222}.widget-setting-sample small{font-size:8px;letter-spacing:1px;color:#888}.widget-setting-sample strong{font:17px Georgia,serif}.widget-setting-sample span{font-size:10px;color:#777}.widget-setting-sample-dark{background:linear-gradient(145deg,#343434,#161616);color:#fff;border-color:#333}.widget-setting-sample-dark small,.widget-setting-sample-dark span{color:#bbb}
-.glass-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:13px 0}.glass-presets .action{min-width:0;font-size:11px;padding:10px 5px;background:#f8f8f8}
-.glass-zone{border:1px solid #eee;border-radius:15px;padding:13px;margin:11px 0;background:#fff}.glass-zone-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.glass-zone-title{font-size:13px;font-weight:750}.glass-zone-desc{font-size:10px;color:#999;margin-top:3px;line-height:1.5}
-.glass-toggle{display:flex;align-items:center;gap:7px;font-size:10px;color:#777;white-space:nowrap}.glass-toggle input{accent-color:#222;width:16px;height:16px;margin:0}
-.glass-preview{margin:12px 0;padding:13px;border-radius:14px;background:linear-gradient(135deg,#f1f1f1,#dedede);min-height:78px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}.glass-preview-card{width:100%;min-height:54px;padding:12px;border:1px solid #ffffffaa;border-radius:14px;background:rgba(255,255,255,.58);color:#222;display:flex;flex-direction:column;justify-content:center;gap:4px}.glass-preview-card strong{font-size:12px}.glass-preview-card small{font-size:10px;color:#777}
-.glass-control{display:grid;grid-template-columns:1fr 48px;gap:5px 10px;align-items:center;margin:11px 0}.glass-control label{margin:0;font-size:11px;letter-spacing:0;color:#555}.glass-control output{text-align:right;font-size:10px;color:#888}.glass-control input[type=range]{grid-column:1/-1;margin:0}.glass-tint-row{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11px;color:#777}.glass-tint-row input{width:38px;height:30px;padding:2px;border:1px solid #ddd;border-radius:8px;background:#fff}
-.status{z-index:900;margin-top:12px}.status span{background:#222}
-@media(max-width:360px){.settings-grid{gap:7px}.settings-tile{min-height:122px;padding:11px 3px}.settings-icon{width:44px;height:44px}.settings-tile strong{font-size:11px}.settings-tile small{font-size:8px}}
-</style>
-
 </head><body><main class="wrap">
-<div id="settingsHome">
-<header class="top">
-  <a class="back" href="index.html" id="backHome" aria-label="返回主页">←</a>
-  <div><div class="eyebrow">LOVE RECORD · PERSONALIZE</div><h1>设置</h1><div class="sub">把每个细节，调整成你喜欢的样子</div></div>
-</header>
-  <section class="panel settings-intro"><div class="settings-kicker">YOUR OWN LITTLE WORLD</div><h2>个性化设置中心</h2><p class="hint">主题、字体、桌面组件与聊天气泡，都可以按自己的喜好调整。</p></section>
-  <div class="settings-grid" aria-label="设置分类">
-    <button class="settings-tile" type="button" data-settings-open="theme"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-8a1 1 0 0 1-1-1V3Z"/><path d="M16 4.2a8.8 8.8 0 0 1 3.8 3.8"/></svg></span><strong>主题风格</strong><small>选择界面整体气质</small></button>
-    <button class="settings-tile" type="button" data-settings-open="font"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v13M8 19h8M7.5 10h9"/></svg></span><strong>字体设置</strong><small>字体、字号与自定义字体</small></button>
-    <button class="settings-tile" type="button" data-settings-open="wallpaper"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><strong>桌面壁纸</strong><small>上传照片与背景样式</small></button>
-    <button class="settings-tile" type="button" data-settings-open="bubble"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.7-3A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8 11h8M8 14h5"/></svg></span><strong>聊天气泡</strong><small>气泡颜色与自定义 CSS</small></button>
-    <button class="settings-tile" type="button" data-settings-open="icons"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></span><strong>APP 图标</strong><small>更换主页应用图标图片</small></button>
-    <button class="settings-tile" type="button" data-settings-open="widgets"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span><strong>桌面组件</strong><small>创建、编辑与排列组件</small></button>
-    <button class="settings-tile" type="button" data-settings-open="glass"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M12 2 3.5 7v10L12 22l8.5-5V7L12 2Z"/><path d="m3.5 7 8.5 5 8.5-5M12 22V12"/></svg></span><strong>玻璃与透明度</strong><small>每个区域独立调整质感</small></button>
-  </div>
-  <section class="panel settings-footer"><div class="settings-kicker">SETTINGS MANAGEMENT</div><div class="actions"><button class="action" id="reset" type="button">恢复外观默认</button><a class="action primary" href="index.html" id="saveBack">保存并返回主页</a></div><p class="hint" style="margin-top:10px">图标、字体与壁纸保存在当前浏览器。桌面组件使用 LOVE RECORD 原有组件库与本地数据库。</p></section>
-</div>
-<div id="settingsView" hidden>
-  <div class="settings-detail-head"><button class="detail-back" id="settingsBack" type="button" aria-label="返回设置">‹</button><div><div class="eyebrow">PERSONALIZE</div><h2 id="settingsViewTitle">主题风格</h2></div></div>
-  <div class="settings-content" data-settings-content="theme" hidden>
-    <section class="panel"><h2>THEME PRESETS · 一键换整套气质</h2><div class="grid" id="presetGrid"></div><p class="hint">主题会应用到主页与应用界面。设置中心本身保持极简纯白。</p></section>
-    <section class="panel"><h2>ACCENT COLOR · 强调色</h2><p class="hint">按钮、重点和小圆点会跟随强调色变化。</p><div class="swatches" id="swatches"></div><div class="actions"><input type="color" id="customAccent" value="#b79bc7"><button class="action" id="useAccent" type="button">使用自定义颜色</button></div></section>
-  </div>
-  <div class="settings-content" data-settings-content="font" hidden>
-    <section class="panel"><h2>FONT · 全局字体</h2><div class="grid" id="fontGrid"></div><label for="fontFile">自定义字体文件 · TTF / OTF / WOFF</label><input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf"><div class="hint" id="fontStatus">选择字体文件后会自动保存，并应用到 LOVE RECORD 的主页及应用页面。</div><div class="range"><input id="fontSize" type="range" min="13" max="19" step="1"><div class="value" id="fontSizeVal">15px</div></div><label>FONT SIZE · 正文字号</label></section>
-  </div>
-  <div class="settings-content" data-settings-content="wallpaper" hidden>
-    <section class="panel"><h2>BACKGROUND · 桌面背景</h2><div class="grid" id="backgroundGrid"></div><label for="bgFile">BACKGROUND PHOTO · 上传桌面壁纸</label><input id="bgFile" type="file" accept="image/*"><div class="hint">壁纸只应用到主页桌面，不改变聊天和空间的独立背景。</div><button class="action" id="clearPhoto" type="button" style="width:100%;margin-top:12px">移除自定义背景照片</button></section>
-  </div>
-  <div class="settings-content" data-settings-content="bubble" hidden>
-    <section class="panel"><h2>CHAT BUBBLE · 聊天气泡预览</h2><p class="hint">下面的 CSS 是全局聊天气泡样式；每位联系人的原有独立聊天 CSS 仍然保留。</p>
-      <div class="bubble-live-preview" id="bubbleLivePreview"><div class="bubble-demo ai lr-bubble lr-bubble-ai" id="bubbleDemoAI">今天下班一起去吃饭吗？</div><div class="bubble-demo user lr-bubble lr-bubble-user" id="bubbleDemoUser">好呀！我已经开始期待了。</div><div class="bubble-demo ai lr-bubble lr-bubble-ai" id="bubbleDemoAI2">那就说好了，不许迟到。</div></div>
-    </section>
-    <section class="panel"><h2>CUSTOM CSS · 自定义气泡 CSS</h2><p class="hint">只允许编辑气泡外观。使用下面三个选择器，不会影响聊天输入框、背景、按钮或其他页面。</p>
-      <div class="css-selector-guide"><code>.lr-bubble-ai</code><span>对方气泡</span><code>.lr-bubble-user</code><span>我的气泡</span><code>.lr-bubble</code><span>全部气泡</span></div>
-      <label for="globalBubbleCss">CSS CODE</label><textarea id="globalBubbleCss" class="bubble-css-editor" maxlength="12000" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
-      <label for="bubbleCssExample">EXAMPLES · 示例样式</label><select id="bubbleCssExample" class="bubble-css-select"><option value="glass">液态玻璃</option><option value="minimal">极简黑白</option><option value="pink">柔雾粉色</option><option value="gradient">梦幻渐变</option><option value="empty">空白 CSS</option></select>
-      <div class="actions"><button class="action" id="bubbleCssPreview" type="button">应用预览</button><button class="action primary" id="bubbleCssSave" type="button">保存并应用</button></div>
-      <div class="actions"><button class="action" id="bubbleCssCopy" type="button">复制 CSS</button><button class="action" id="bubbleCssReset" type="button">恢复默认样式</button></div>
-      <p class="hint" id="bubbleCssStatus" aria-live="polite" style="margin-top:10px">选择示例后可以自由修改。点击「保存并应用」会作用于所有聊天。</p>
-    </section>
-  </div>
-  <div class="settings-content" data-settings-content="icons" hidden>
-    <section class="panel" id="homeIconPanel"><h2>HOME ICONS · 更换 APP 图标图片</h2><p class="hint">更换主页应用图标，不会改变对应 APP 的功能。上传图片后自动保存。</p><div class="home-icon-grid" id="homeIconGrid"></div></section>
-  </div>
-  <div class="settings-content" data-settings-content="widgets" hidden>
-    <section class="panel"><h2>WIDGET STUDIO · 桌面组件</h2><p class="hint">打开原有桌面组件工作室。可从组件库添加，也可以自由创作：编辑标题、文字、图片、图层、尺寸，并在桌面拖动排列。</p><div class="widget-setting-preview"><div class="widget-setting-sample"><small>LOVE RECORD · EVERYDAY</small><strong>A LITTLE MOMENT</strong><span>把喜欢的日常留在桌面。</span></div><div class="widget-setting-sample widget-setting-sample-dark"><small>YOUR LITTLE NOTE</small><strong>♡</strong><span>一张照片、一句话，或一段纪念。</span></div></div><button class="action primary" id="openWidgetStudio" type="button" style="width:100%;margin-top:14px">打开桌面组件工作室　→</button><p class="hint" style="margin-top:10px">现有组件和布局保存在 LOVE RECORD 原有本地数据库中，不会因这次设置中心改版而重置。</p></section>
-  </div>
-  <div class="settings-content" data-settings-content="glass" hidden>
-    <section class="panel"><h2>GLASS EFFECTS · 独立质感控制</h2><p class="hint">每个区域单独保存。调整桌面图标，不会改变应用卡片、桌面组件或聊天气泡。默认关闭自定义覆盖，原有外观不变。</p><div class="glass-presets"><button type="button" class="action" data-glass-preset="clear">清透玻璃</button><button type="button" class="action" data-glass-preset="mist">柔雾磨砂</button><button type="button" class="action" data-glass-preset="liquid">液态玻璃</button><button type="button" class="action" data-glass-preset="solid">半透明纯色</button></div><div id="glassControls"></div><button class="action" id="glassResetAll" type="button" style="width:100%;margin-top:8px">恢复所有区域默认效果</button><p class="hint" style="margin-top:10px">聊天区域的玻璃参数与自定义 CSS 分别保存；CSS 可以进一步微调气泡的形状和材质。</p></section>
-  </div>
-</div>
-<div class="status" id="status"><span>已自动保存</span></div>
-</main>
+<header class="top"><a class="back" href="index.html" id="backHome" aria-label="返回主页">←</a><div><div class="eyebrow">LOVE RECORD · PERSONALIZE</div><h1>美化</h1><div class="sub">保存后，主页与所有应用会同步更新</div></div></header>
+<section class="panel"><h2>PRESETS · 一键换整套气质</h2><div class="grid" id="presetGrid"></div><p class="hint">主题会自动保存并应用到主页与应用界面。背景照片可在下方单独设置。</p></section>
+<section class="panel"><h2>FONT · 全局字体</h2><div class="grid" id="fontGrid"></div><label for="fontFile">自定义字体文件 · TTF / OTF</label><input id="fontFile" type="file" accept=".ttf,.otf,font/ttf,font/otf"><div class="hint" id="fontStatus">选择字体文件后会自动保存，并应用到 LOVE RECORD 的主页及应用页面。</div><div class="range"><input id="fontSize" type="range" min="13" max="19" step="1"><div class="value" id="fontSizeVal">15px</div></div><label>FONT SIZE · 正文字号</label></section>
+<section class="panel"><h2>ACCENT COLOR · 强调色</h2><div class="hint">按钮、重点和小圆点都会跟着变。</div><div class="swatches" id="swatches"></div><div class="actions"><input type="color" id="customAccent" value="#b79bc7"><button class="action" id="useAccent">使用自定义颜色</button></div></section>
+<section class="panel"><h2>BACKGROUND · 背景</h2><div class="grid" id="backgroundGrid"></div><label for="bgFile">BACKGROUND PHOTO · 背景照片</label><input id="bgFile" type="file" accept="image/*"><div class="hint">照片只应用到主页背景，不改变聊天和空间的背景。选择后会自动保存。</div><button class="action" id="clearPhoto" style="width:100%;margin-top:10px">移除自定义背景照片</button></section>
+<section class="panel" id="glassAreasPanel"><h2>REGIONAL GLASS · 区域独立毛玻璃</h2><p class="hint">主页桌面、APP 卡片、桌面小组件、设置卡片与聊天界面分别调节，互不影响。数值会自动保存并同步到主页。</p><div id="glassAreasEditor"></div></section>
+<section class="panel" id="homeIconPanel">
+  <h2>HOME ICONS · 更换图标图片</h2>
+  <p class="hint">点击任意主页图标即可上传自定义图片。保存后会自动应用到主页；只更换图标图片，不会改变应用功能。</p>
+  <div class="home-icon-grid" id="homeIconGrid"></div>
+</section>
+<section class="panel"><div class="actions"><button class="action" id="reset">恢复默认</button><a class="action primary" href="index.html" id="saveBack">保存并返回主页</a></div><div class="hint" style="margin-top:10px">字体文件保存在当前浏览器的本地数据库；同一设备上的 LOVE RECORD 页面会共用这份设置。</div></section>
+<div class="status" id="status"><span>已自动保存</span></div></main>
 <script>
 'use strict';
 const KEY='yanyan-love-appearance-v1', DB='love-record-appearance-assets-v2', STORE='assets';
-const defaults={preset:'purple',themeMode:'purple',font:'system',customFontName:'',fontSize:15,accent:'#b79bc7',bg:'soft',dark:false,liquid:false};
-let a={...defaults}, bgData=null, timer=null, fontFace=null;
+const glassDefaults={desktop:{opacity:.24,blur:16,radius:22},apps:{opacity:.76,blur:18,radius:21},widgets:{opacity:.40,blur:24,radius:22},settings:{opacity:.78,blur:18,radius:22},chat:{opacity:.76,blur:20,radius:18}};
+const defaults={preset:'purple',themeMode:'purple',font:'system',customFontName:'',fontSize:15,accent:'#b79bc7',bg:'soft',dark:false,liquid:false,glassAreas:glassDefaults};
+let a={...defaults,glassAreas:JSON.parse(JSON.stringify(glassDefaults))}, bgData=null, timer=null, fontFace=null;
 const presets={
  purple:{name:'柔雾紫',desc:'保留原版紫色主题',accent:'#b79bc7',bg:'soft',font:'system',fontSize:15,dark:false,themeMode:'purple'},
  cream:{name:'奶油白',desc:'温暖奶油白 · 深棕文字',accent:'#81796e',bg:'cream',font:'system',fontSize:15,dark:false,themeMode:'cream'},
- monochrome:{name:'极简纯白',desc:'纯白界面 · 黑色图标',accent:'#383838',bg:'plain',font:'system',fontSize:15,dark:false,themeMode:'monochrome'},
+ monochrome:{name:'黑白灰',desc:'干净中性灰 · 黑色图标',accent:'#383838',bg:'plain',font:'system',fontSize:15,dark:false,themeMode:'monochrome'},
  dark:{name:'深色模式',desc:'低亮度深灰 · 柔和浅字',accent:'#d0cec5',bg:'plain',font:'system',fontSize:15,dark:true,themeMode:'dark'}
 };
 const fonts={system:{name:'SYSTEM · 系统字体',value:'-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif'},serif:{name:'SERIF · 衬线字体',value:'Georgia,"Times New Roman",serif'},custom:{name:'自定义 TTF / OTF',value:'"LRCustomFont",sans-serif'}};
@@ -138,14 +59,16 @@ async function assetPut(key,value){const db=await openDB();return new Promise((r
 async function assetGet(key){const db=await openDB();return new Promise((resolve,reject)=>{const r=db.transaction(STORE,'readonly').objectStore(STORE).get(key);r.onsuccess=()=>{db.close();resolve(r.result||null)};r.onerror=()=>{db.close();reject(r.error)}})}
 async function assetDelete(key){const db=await openDB();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(key);tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();reject(tx.error)}})}
 function normalizeTheme(){if(!presets[a.preset])a.preset='purple';a.ios=false;a.liquid=false;if(a.bg==='liquid'||a.bg==='ios'||!bgs[a.bg])a.bg=presets[a.preset]?.bg||'soft';if(a.accent==='#007aff')a.accent='#b79bc7';if(!a.themeMode)a.themeMode=presets[a.preset]?.themeMode||'purple'}
-function readLegacy(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');const old=s.bgData;delete s.bgData;a={...defaults,...s};normalizeTheme();return old||null}catch(e){return null}}
+function readLegacy(){try{const s=JSON.parse(localStorage.getItem(KEY)||'{}');const old=s.bgData;delete s.bgData;a={...defaults,...s,glassAreas:Object.fromEntries(Object.entries(glassDefaults).map(([key,value])=>[key,{...value,...(s.glassAreas?.[key]||{})}]))};normalizeTheme();return old||null}catch(e){return null}}
 function showSaved(message='已自动保存'){ $('status').querySelector('span').textContent=message;$('status').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('status').classList.remove('show'),1600)}
 async function save(){const cfg={...a};delete cfg.bgData;try{await assetPut('settings',cfg);try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}showSaved()}catch(e){alert('保存失败：'+(e?.message||'本地数据库不可用'))}}
 function installFont(blob,name){try{if(fontFace){document.fonts.delete(fontFace);fontFace=null}if(!blob)return;const url=URL.createObjectURL(blob);fontFace=new FontFace('LRCustomFont',`url(${url})`);fontFace.load().then(f=>{document.fonts.add(f);document.documentElement.style.setProperty('--lr-global-font','"LRCustomFont",sans-serif')}).catch(()=>{});}catch(e){}}
 function fontStack(){return a.font==='custom'&&a.customFontName?'"LRCustomFont",sans-serif':(fonts[a.font]||fonts.system).value}
-function apply(){normalizeTheme();const bg=bgs[a.bg]||bgs.soft;document.documentElement.style.setProperty('--accent',a.accent);document.documentElement.style.setProperty('--bg-a',bg.a);document.documentElement.style.setProperty('--bg-b',bg.b);document.documentElement.style.setProperty('--font-size',a.fontSize+'px');document.documentElement.style.setProperty('--lr-global-font',fontStack());document.body.style.fontFamily=fontStack();document.body.classList.remove('liquid','ios');document.body.style.backgroundImage=bgData?'linear-gradient(rgba(250,248,253,.08),rgba(250,248,253,.08)),url("'+bgData+'")':'';document.body.style.backgroundSize=bgData?'cover':'';document.body.style.backgroundPosition=bgData?'center center':'';document.body.classList.toggle('photo-bg',!!bgData);document.querySelectorAll('.panel').forEach(p=>{p.style.setProperty('--radius','28px');p.style.setProperty('--blur','20px');p.style.setProperty('--opacity','.72')});renderStates();save()}
+function renderGlassControls(){const names={desktop:'主页桌面',apps:'APP 卡片',widgets:'桌面小组件',settings:'设置卡片',chat:'聊天界面'};const host=$('glassAreasEditor');if(!host)return;host.innerHTML=Object.entries(names).map(([key,name])=>{const v=a.glassAreas?.[key]||glassDefaults[key];return `<div class="glass-area-card"><div class="glass-area-title">${name}</div><label>透明度</label><div class="range"><input type="range" min="0.15" max="1" step="0.05" value="${v.opacity}" data-glass-area="${key}" data-glass-prop="opacity"><div class="value">${Math.round(v.opacity*100)}%</div></div><label>模糊程度</label><div class="range"><input type="range" min="0" max="36" step="2" value="${v.blur}" data-glass-area="${key}" data-glass-prop="blur"><div class="value">${v.blur}px</div></div><label>圆角</label><div class="range"><input type="range" min="8" max="36" step="1" value="${v.radius}" data-glass-area="${key}" data-glass-prop="radius"><div class="value">${v.radius}px</div></div></div>`}).join('')}
+function updateGlassValue(input){const value=input.parentElement.querySelector('.value');if(value)value.textContent=input.dataset.glassProp==='opacity'?Math.round(Number(input.value)*100)+'%':input.value+'px'}
+function apply(){normalizeTheme();const bg=bgs[a.bg]||bgs.soft;document.documentElement.style.setProperty('--accent',a.accent);document.documentElement.style.setProperty('--bg-a',bg.a);document.documentElement.style.setProperty('--bg-b',bg.b);document.documentElement.style.setProperty('--font-size',a.fontSize+'px');Object.entries(a.glassAreas||glassDefaults).forEach(([key,v])=>{document.documentElement.style.setProperty('--lr-glass-'+key+'-opacity',String(v.opacity));document.documentElement.style.setProperty('--lr-glass-'+key+'-blur',String(v.blur)+'px');document.documentElement.style.setProperty('--lr-glass-'+key+'-radius',String(v.radius)+'px')});document.documentElement.style.setProperty('--lr-global-font',fontStack());document.body.style.fontFamily=fontStack();document.body.classList.remove('liquid','ios');document.body.style.backgroundImage=bgData?'linear-gradient(rgba(250,248,253,.08),rgba(250,248,253,.08)),url("'+bgData+'")':'';document.body.style.backgroundSize=bgData?'cover':'';document.body.style.backgroundPosition=bgData?'center center':'';document.body.classList.toggle('photo-bg',!!bgData);document.querySelectorAll('.panel').forEach(p=>{p.style.setProperty('--radius','28px');p.style.setProperty('--blur','20px');p.style.setProperty('--opacity','.72')});renderStates();save()}
 function renderStates(){ $('fontSize').value=a.fontSize;$('fontSizeVal').textContent=a.fontSize+'px';$('customAccent').value=a.accent;document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x.dataset.preset===a.preset));document.querySelectorAll('[data-font]').forEach(x=>x.classList.toggle('active',x.dataset.font===a.font));document.querySelectorAll('[data-bg]').forEach(x=>x.classList.toggle('active',x.dataset.bg===a.bg));document.querySelectorAll('[data-accent]').forEach(x=>x.classList.toggle('active',x.dataset.accent===a.accent));$('fontStatus').textContent=a.font==='custom'&&a.customFontName?'已保存字体：'+a.customFontName+'（全局应用）':'选择字体文件后会自动保存，并应用到 LOVE RECORD 的主页及应用页面。'}
-function render(){ $('presetGrid').innerHTML=Object.entries(presets).map(([k,v])=>`<button class="opt featured ${a.preset===k?'active':''}" data-preset="${k}"><strong>${v.name}</strong><small>${v.desc}</small></button>`).join('');$('fontGrid').innerHTML=Object.entries(fonts).map(([k,v])=>`<button class="opt ${a.font===k?'active':''}" data-font="${k}" style="font-family:${v.value}">${v.name}</button>`).join('');$('backgroundGrid').innerHTML=Object.entries(bgs).map(([k,v])=>`<button class="opt ${a.bg===k?'active':''}" data-bg="${k}">${v.name}</button>`).join('');$('swatches').innerHTML=['#b79bc7','#c89bb0','#9faed0','#a9c4a2','#c7ad8b','#8e6fae'].map(c=>`<button class="swatch ${a.accent===c?'active':''}" data-accent="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');renderStates()}
+function render(){ $('presetGrid').innerHTML=Object.entries(presets).map(([k,v])=>`<button class="opt featured ${a.preset===k?'active':''}" data-preset="${k}"><strong>${v.name}</strong><small>${v.desc}</small></button>`).join('');$('fontGrid').innerHTML=Object.entries(fonts).map(([k,v])=>`<button class="opt ${a.font===k?'active':''}" data-font="${k}" style="font-family:${v.value}">${v.name}</button>`).join('');$('backgroundGrid').innerHTML=Object.entries(bgs).map(([k,v])=>`<button class="opt ${a.bg===k?'active':''}" data-bg="${k}">${v.name}</button>`).join('');$('swatches').innerHTML=['#b79bc7','#c89bb0','#9faed0','#a9c4a2','#c7ad8b','#8e6fae'].map(c=>`<button class="swatch ${a.accent===c?'active':''}" data-accent="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');renderStates();renderGlassControls()}
 
 const homeIconDefs=[
  {id:'app-shiyi',name:'拾忆',symbol:'✧'},
@@ -202,6 +125,7 @@ $('homeIconGrid').addEventListener('change',async e=>{
  finally{input.value=''}
 });
 
+$('glassAreasEditor').addEventListener('input',e=>{const input=e.target.closest('[data-glass-area]');if(!input)return;const area=input.dataset.glassArea,prop=input.dataset.glassProp;a.glassAreas=a.glassAreas||JSON.parse(JSON.stringify(glassDefaults));a.glassAreas[area]=a.glassAreas[area]||{...glassDefaults[area]};a.glassAreas[area][prop]=Number(input.value);updateGlassValue(input);apply()});
 function choosePreset(k){const p=presets[k];if(!p)return;const keep={bgData};a={...a,...p,preset:k,themeMode:p.themeMode||k};bgData=keep.bgData;apply()}
 $('presetGrid').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(b)choosePreset(b.dataset.preset)});
 $('fontGrid').addEventListener('click',e=>{const b=e.target.closest('[data-font]');if(!b)return;a.font=b.dataset.font;if(a.font!=='custom')a.customFontName='';apply()});
@@ -209,91 +133,12 @@ $('backgroundGrid').addEventListener('click',e=>{const b=e.target.closest('[data
 $('swatches').addEventListener('click',e=>{const b=e.target.closest('[data-accent]');if(b){a.accent=b.dataset.accent;apply()}});
 $('fontSize').addEventListener('input',e=>{a.fontSize=+e.target.value;apply()});
 $('useAccent').onclick=()=>{a.accent=$('customAccent').value;apply()};
-$('fontFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!/\.(ttf|otf|woff2?)$/i.test(f.name)){alert('请选择 .ttf、.otf、.woff 或 .woff2 字体文件');e.target.value='';return}try{await assetPut('custom-font',f);a.font='custom';a.customFontName=f.name;installFont(f,f.name);apply()}catch(err){alert('字体保存失败：'+(err?.message||'本地存储空间不足'))}finally{e.target.value=''}};
+$('fontFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;if(!/\.(ttf|otf)$/i.test(f.name)){alert('请选择 .ttf 或 .otf 字体文件');e.target.value='';return}try{await assetPut('custom-font',f);a.font='custom';a.customFontName=f.name;installFont(f,f.name);apply()}catch(err){alert('字体保存失败：'+(err?.message||'本地存储空间不足'))}finally{e.target.value=''}};
 $('bgFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const url=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});const maxSide=2200,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);bgData=c.toDataURL('image/jpeg',.92);await assetPut('homepage-background',bgData);a.bg='plain';apply()}catch(err){alert('背景图保存失败：'+(err?.message||'本地存储空间不足'))}finally{e.target.value=''}};
 $('clearPhoto').onclick=async()=>{bgData=null;await assetDelete('homepage-background').catch(()=>{});apply()};
-$('reset').onclick=async()=>{a={...defaults};bgData=null;await assetDelete('homepage-background').catch(()=>{});apply();render()};
+$('reset').onclick=async()=>{a={...defaults,glassAreas:JSON.parse(JSON.stringify(glassDefaults))};bgData=null;await assetDelete('homepage-background').catch(()=>{});apply();render()};
 $('saveBack').onclick=()=>{try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}save()};
 $('backHome').onclick=(e)=>{if(window.parent!==window){e.preventDefault();window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}};
-async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg};normalizeTheme();bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply()}
-
-// Settings-center navigation: the existing controls remain the source of truth.
-(function initSettingsCenterNavigation(){
- const home=$('settingsHome'),view=$('settingsView'),title=$('settingsViewTitle');
- const names={theme:'主题风格',font:'字体设置',wallpaper:'桌面壁纸',bubble:'聊天气泡',icons:'APP 图标',widgets:'桌面组件',glass:'玻璃与透明度'};
- function show(id){if(!names[id])return;home.hidden=true;view.hidden=false;document.querySelectorAll('[data-settings-content]').forEach(x=>x.hidden=x.dataset.settingsContent!==id);title.textContent=names[id];window.scrollTo({top:0,behavior:'smooth'});}
- function back(){view.hidden=true;home.hidden=false;window.scrollTo({top:0,behavior:'smooth'});}
- document.querySelectorAll('[data-settings-open]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.settingsOpen)));
- $('settingsBack').addEventListener('click',back);
- $('openWidgetStudio').addEventListener('click',()=>{
-   if(window.parent!==window){window.parent.postMessage({type:'LR_OPEN_WIDGET_STUDIO'},location.origin);return;}
-   if(typeof window.LRHomeWidgetsOpenStudio==='function'){window.LRHomeWidgetsOpenStudio();return;}
-   showSaved('请从 LOVE RECORD 桌面打开组件工作室');
- });
-})();
-
-// Independent glass parameters for each UI area. Disabled by default to preserve existing appearance.
-const GLASS_KEY='lr-visual-zones-v1';
-const glassAreas=[
- {id:'desktop',name:'手机桌面 · APP 图标',desc:'只改变桌面应用图标表面的玻璃质感。'},
- {id:'appCards',name:'应用卡片',desc:'作用于各个 APP 内的通用内容卡片。'},
- {id:'widgets',name:'桌面组件',desc:'只改变桌面组件外壳，不修改组件内部排版。'},
- {id:'settings',name:'设置卡片',desc:'设置页面中的信息卡片和设置面板。'},
- {id:'chat',name:'聊天区域',desc:'控制聊天消息气泡的基础玻璃质感；自定义 CSS 可进一步覆盖。'}
-];
-const glassDefault=Object.fromEntries(glassAreas.map(z=>[z.id,{enabled:false,opacity:58,blur:18,intensity:65,highlight:55,radius:20,shadow:32,tint:'#ffffff'}]));
-let glassConfig=(()=>{try{const saved=JSON.parse(localStorage.getItem(GLASS_KEY)||'{}');return Object.fromEntries(glassAreas.map(z=>[z.id,{...glassDefault[z.id],...(saved[z.id]||{})}]))}catch(e){return structuredClone(glassDefault)}})();
-const bubbleCssKey='lr-global-chat-bubble-css-v1';
-const bubbleExamples={
- glass:`/* 对方气泡 */\n.lr-bubble-ai {\n  background: rgba(255,255,255,.72);\n  color: #28242b;\n  border: 1px solid rgba(255,255,255,.9);\n  border-radius: 22px 22px 22px 6px;\n  box-shadow: 0 8px 24px rgba(40,40,40,.08);\n  backdrop-filter: blur(18px) saturate(145%);\n  -webkit-backdrop-filter: blur(18px) saturate(145%);\n}\n\n/* 我的气泡 */\n.lr-bubble-user {\n  background: rgba(31,31,31,.84);\n  color: #fff;\n  border: 1px solid rgba(255,255,255,.18);\n  border-radius: 22px 22px 6px 22px;\n  box-shadow: 0 8px 24px rgba(0,0,0,.12);\n  backdrop-filter: blur(16px);\n  -webkit-backdrop-filter: blur(16px);\n}`,
- minimal:`.lr-bubble-ai {\n  background: #f1f1f1;\n  color: #171717;\n  border: 1px solid #e5e5e5;\n  border-radius: 5px 16px 16px 16px;\n  box-shadow: none;\n}\n.lr-bubble-user {\n  background: #171717;\n  color: #fff;\n  border: 1px solid #171717;\n  border-radius: 16px 5px 16px 16px;\n  box-shadow: none;\n}`,
- pink:`.lr-bubble-ai {\n  background: rgba(249,233,237,.94);\n  color: #704b55;\n  border: 1px solid #f2dce3;\n  border-radius: 21px 21px 21px 6px;\n  box-shadow: 0 5px 16px rgba(190,130,150,.12);\n}\n.lr-bubble-user {\n  background: linear-gradient(135deg,#ead9ed,#e6d5e8);\n  color: #553e59;\n  border: 1px solid #e3d2e8;\n  border-radius: 21px 21px 6px 21px;\n  box-shadow: 0 5px 16px rgba(150,110,160,.13);\n}`,
- gradient:`.lr-bubble-ai {\n  background: linear-gradient(135deg,#fce4ec,#eee2ff);\n  color: #543c60;\n  border: 1px solid rgba(255,255,255,.8);\n  border-radius: 20px;\n  box-shadow: 0 8px 20px rgba(130,100,160,.12);\n}\n.lr-bubble-user {\n  background: linear-gradient(135deg,#9d82c5,#d2a9cf);\n  color: #fff;\n  border: 1px solid rgba(255,255,255,.5);\n  border-radius: 20px;\n  box-shadow: 0 8px 20px rgba(130,100,160,.2);\n}`,
- empty:''
-};
-const bubbleAllowed=new Set(['background','background-color','color','border','border-color','border-width','border-style','border-radius','box-shadow','backdrop-filter','-webkit-backdrop-filter','padding','padding-top','padding-right','padding-bottom','padding-left','font-size','font-weight','font-family','font-style','letter-spacing','line-height','opacity']);
-function compileBubbleCss(raw,target='app'){
- const src=String(raw||'');if(src.length>12000)throw new Error('CSS 内容超过 12000 字符限制');
- if(/<\/style|url\s*\(|expression\s*\(|javascript:|@import|@charset|behavior\s*:|position\s*:/i.test(src))throw new Error('检测到不允许的 CSS 内容');
- const clean=src.replace(/\/\*[\s\S]*?\*\//g,'');if((clean.match(/{/g)||[]).length!==(clean.match(/}/g)||[]).length)throw new Error('CSS 大括号不匹配');
- const blocks=clean.match(/[^{}]+\{[^{}]*\}/g)||[];if(clean.trim()&&!blocks.length)throw new Error('没有找到有效的 CSS 规则');
- const mapped={'.lr-bubble':'#chatMessages .chat-message-row .chat-bubble:not(.lr-transfer-bubble)','.lr-bubble-ai':'#chatMessages .chat-message-row.ai .chat-bubble:not(.lr-transfer-bubble)','.lr-bubble-user':'#chatMessages .chat-message-row.user .chat-bubble:not(.lr-transfer-bubble)'};
- const preview={'.lr-bubble':'.lr-bubble','.lr-bubble-ai':'.lr-bubble-ai','.lr-bubble-user':'.lr-bubble-user'};
- const out=[];
- for(const block of blocks){const i=block.indexOf('{'),selectors=block.slice(0,i).split(',').map(x=>x.trim());const body=block.slice(i+1,-1),decl=[];
-   if(!selectors.length||selectors.some(x=>!Object.prototype.hasOwnProperty.call(mapped,x)))throw new Error('只允许 .lr-bubble-ai、.lr-bubble-user 和 .lr-bubble 选择器');
-   for(const item of body.split(';')){const part=item.trim();if(!part)continue;const pos=part.indexOf(':');if(pos<1)throw new Error('CSS 声明格式错误');const prop=part.slice(0,pos).trim().toLowerCase(),value=part.slice(pos+1).trim();if(!bubbleAllowed.has(prop))throw new Error('暂不允许使用 CSS 属性：'+prop);if(!value||value.length>180||/[{}<>;\\]/.test(value)||/url\s*\(|expression\s*\(|javascript:|!important|@/i.test(value))throw new Error('属性 '+prop+' 的值无效或不安全');decl.push(prop+':'+value+' !important');}
-   if(decl.length){const sels=selectors.map(x=>target==='preview'?'.bubble-live-preview '+preview[x]:mapped[x]);out.push(sels.join(',')+'{'+decl.join(';')+';}');}
- }
- if(clean.trim()&&!out.length)throw new Error('没有可应用的 CSS 声明');return out.join('\n');
-}
-function applyBubbleCssToPreview(){const box=$('globalBubbleCss'),styleId='lr-global-bubble-preview-style';let st=$(styleId);if(!st){st=document.createElement('style');st.id=styleId;document.head.appendChild(st)}try{st.textContent=compileBubbleCss(box.value,'preview');$('bubbleCssStatus').textContent='预览已更新。尚未保存到全部聊天。';return true}catch(e){$('bubbleCssStatus').textContent='CSS 错误：'+e.message;return false}}
-function notifyParentAppearance(){try{if(window.parent!==window)window.parent.postMessage({type:'LR_APPEARANCE_SETTINGS_UPDATED'},location.origin)}catch(e){}}
-function initBubbleCssEditor(){const box=$('globalBubbleCss');if(!box)return;try{box.value=localStorage.getItem(bubbleCssKey)||''}catch(e){}applyBubbleCssToPreview();
- $('bubbleCssExample').addEventListener('change',e=>{box.value=bubbleExamples[e.target.value]??'';applyBubbleCssToPreview()});
- $('bubbleCssPreview').addEventListener('click',applyBubbleCssToPreview);
- $('bubbleCssSave').addEventListener('click',()=>{try{const compiled=compileBubbleCss(box.value,'app');localStorage.setItem(bubbleCssKey,box.value);notifyParentAppearance();applyBubbleCssToPreview();$('bubbleCssStatus').textContent=compiled?'已保存并应用到所有聊天。每个联系人的独立 CSS 仍保留。':'已清除全局自定义 CSS。';showSaved('聊天气泡 CSS 已保存')}catch(e){$('bubbleCssStatus').textContent='保存失败：'+e.message}});
- $('bubbleCssReset').addEventListener('click',()=>{box.value='';try{localStorage.removeItem(bubbleCssKey)}catch(e){}notifyParentAppearance();applyBubbleCssToPreview();showSaved('已恢复默认气泡样式')});
- $('bubbleCssCopy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(box.value);$('bubbleCssStatus').textContent='CSS 已复制。'}catch(e){box.focus();box.select();$('bubbleCssStatus').textContent='请使用系统复制功能复制已选中的 CSS。'}});
- box.addEventListener('input',applyBubbleCssToPreview);
-}
-function hexRgb(hex){const v=String(hex||'#ffffff').replace('#','');const n=parseInt(v.length===3?v.split('').map(x=>x+x).join(''):v,16);return Number.isFinite(n)?[(n>>16)&255,(n>>8)&255,n&255]:[255,255,255]}
-function zoneCssStyle(c){const [r,g,b]=hexRgb(c.tint);const alpha=Math.max(0,Math.min(100,c.opacity))/100;const shine=Math.max(0,Math.min(100,c.highlight))/100;const glass=Math.max(0,Math.min(100,c.intensity))/100;const blur=Math.max(0,Math.min(40,c.blur));const radius=Math.max(0,Math.min(40,c.radius));const shadow=Math.max(0,Math.min(100,c.shadow))/100;return `background:linear-gradient(145deg,rgba(${r},${g},${b},${alpha}) ,rgba(${r},${g},${b},${alpha*.72})) !important;border:1px solid rgba(255,255,255,${shine*.92}) !important;border-radius:${radius}px !important;backdrop-filter:blur(${blur}px) saturate(${1+glass*.85}) !important;-webkit-backdrop-filter:blur(${blur}px) saturate(${1+glass*.85}) !important;box-shadow:inset 0 1px 0 rgba(255,255,255,${shine*.85}),0 8px 24px rgba(25,25,25,${shadow*.14}) !important;`}
-function applyLocalSettingsGlass(){
- const id='lr-settings-glass-override';let style=$(id);if(!style){style=document.createElement('style');style.id=id;document.head.appendChild(style)}
- const c=glassConfig.settings;style.textContent=c?.enabled?`.settings-intro,.settings-footer,.settings-content > .panel{${zoneCssStyle(c)}}`:'';
-}
-function saveGlass(quiet=false){try{localStorage.setItem(GLASS_KEY,JSON.stringify(glassConfig))}catch(e){if(!quiet)showSaved('保存失败：浏览器存储空间不足');return}applyLocalSettingsGlass();notifyParentAppearance();if(!quiet)showSaved('玻璃效果已保存')}
-function updateGlassPreviews(){document.querySelectorAll('[data-glass-preview]').forEach(el=>{const c=glassConfig[el.dataset.glassPreview];el.style.cssText='';if(c?.enabled)el.style.cssText=zoneCssStyle(c);});applyLocalSettingsGlass();}
-function renderGlassControls(){const host=$('glassControls');if(!host)return;host.innerHTML=glassAreas.map(z=>{const c=glassConfig[z.id];const range=(key,label,min,max,unit)=>`<div class="glass-control"><label for="glass-${z.id}-${key}">${label}</label><output id="glass-${z.id}-${key}-out">${c[key]}${unit}</output><input type="range" id="glass-${z.id}-${key}" data-glass-zone="${z.id}" data-glass-key="${key}" min="${min}" max="${max}" value="${c[key]}"></div>`;return `<section class="glass-zone" data-glass-zone-panel="${z.id}"><div class="glass-zone-head"><div><div class="glass-zone-title">${z.name}</div><div class="glass-zone-desc">${z.desc}</div></div><label class="glass-toggle"><input type="checkbox" data-glass-zone="${z.id}" data-glass-key="enabled" ${c.enabled?'checked':''}>启用</label></div><div class="glass-preview" data-glass-stage="${z.id}"><div class="glass-preview-card" data-glass-preview="${z.id}"><strong>${z.name} · GLASS</strong><small>实时效果预览 · 独立保存</small></div></div>${range('opacity','透明度',0,100,'%')}${range('blur','磨砂模糊',0,40,'px')}${range('intensity','玻璃质感',0,100,'%')}${range('highlight','边缘高光',0,100,'%')}${range('radius','圆角',0,40,'px')}${range('shadow','阴影浓度',0,100,'%')}<div class="glass-tint-row"><input type="color" data-glass-zone="${z.id}" data-glass-key="tint" value="${c.tint}"><span>玻璃色调</span></div><div class="glass-zone-actions"><button type="button" class="action" data-glass-reset-zone="${z.id}">恢复本区域默认</button></div><p class="hint" style="margin:7px 0 0">此区域独立保存，不影响其他区域。</p></section>`}).join('');
- host.querySelectorAll('[data-glass-zone]').forEach(input=>input.addEventListener('input',()=>{const c=glassConfig[input.dataset.glassZone],key=input.dataset.glassKey;if(key==='enabled')c.enabled=input.checked;else if(key==='tint')c.tint=input.value;else c[key]=Number(input.value);const out=$('glass-'+input.dataset.glassZone+'-'+key+'-out');if(out)out.textContent=input.value+(key==='blur'||key==='radius'?'px':key==='enabled'||key==='tint'?'':'%');const preview=host.querySelector('[data-glass-preview="'+input.dataset.glassZone+'"]');if(preview){preview.style.cssText='';if(c.enabled)preview.style.cssText=zoneCssStyle(c)}saveGlass(true);}));
- host.querySelectorAll('[data-glass-reset-zone]').forEach(button=>button.addEventListener('click',()=>{const zone=button.dataset.glassResetZone;glassConfig[zone]=structuredClone(glassDefault[zone]);renderGlassControls();saveGlass();}));
- updateGlassPreviews();}
-function applyGlassPreset(kind){const presets={clear:{opacity:34,blur:10,intensity:35,highlight:35,radius:18,shadow:22,tint:'#ffffff'},mist:{opacity:58,blur:24,intensity:42,highlight:48,radius:22,shadow:30,tint:'#f4f4f4'},liquid:{opacity:48,blur:32,intensity:88,highlight:86,radius:24,shadow:48,tint:'#ffffff'},solid:{opacity:90,blur:0,intensity:0,highlight:12,radius:16,shadow:12,tint:'#f5f5f5'}};const preset=presets[kind];if(!preset)return;glassAreas.forEach(z=>{glassConfig[z.id]={...glassConfig[z.id],...preset,enabled:true}});renderGlassControls();saveGlass();}
-document.querySelector('.glass-presets').addEventListener('click',e=>{const b=e.target.closest('[data-glass-preset]');if(b)applyGlassPreset(b.dataset.glassPreset)});
-$('glassResetAll').addEventListener('click',()=>{glassConfig=structuredClone(glassDefault);renderGlassControls();saveGlass()});
-renderGlassControls();
-initBubbleCssEditor();
-
+async function init(){const legacy=readLegacy();try{const cfg=await assetGet('settings');if(cfg)a={...defaults,...cfg,glassAreas:Object.fromEntries(Object.entries(glassDefaults).map(([key,value])=>[key,{...value,...(cfg.glassAreas?.[key]||{})}]))};normalizeTheme();bgData=await assetGet('homepage-background');if(!bgData&&legacy){bgData=legacy;await assetPut('homepage-background',legacy).catch(()=>{})}const font=await assetGet('custom-font');if(font&&a.font==='custom')installFont(font,a.customFontName)}catch(e){if(legacy)bgData=legacy}normalizeTheme();render();await renderHomeIconEditor();apply()}
 init();
 </script></body></html>
