@@ -712,7 +712,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     old.className='page active lr-space-v2';
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
-        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>SPACE</h1><p>长文剧情是这里的核心；像素城市与生活世界，为每一段故事提供场景。</p></div></div>
+        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>SPACE</h1><p>长文剧情是 SPACE 的核心体验。</p></div></div>
         <section class="lr-space-v2-panel"><h2 id="lrSpaceCityDirectoryTitle">我的城市</h2><div id="lrSpaceCityList" class="lr-space-city-list"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityToggle" class="lr-space-primary" type="button">＋ AI 生成新城市</button></div></section>
         <section id="lrSpaceCreateCityPanel" class="lr-space-v2-panel" hidden><h2>选择这座城市的同行者</h2><div class="lr-space-v2-sub">选择一位或多位联系人，保存后会创建全新的城市，不会与其他城市共用地图、地点或剧情。</div><div id="lrSpacePeople" class="lr-space-people"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityCancel" class="lr-space-secondary" type="button">取消</button><button id="lrSpaceCreateCitySave" class="lr-space-primary" type="button" disabled>保存并创建城市</button></div></section>
       </div>
@@ -1290,7 +1290,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
       const action=e.target.closest?.('[data-creator-action],[data-story-line],[data-relation-delete],[data-echo-delete]');
       if(!action)return;
       e.preventDefault();e.stopPropagation();
-      if(action.dataset.creatorAction==='world'){closeCreatorCenter();openWorldSettings();return}
+      if(action.dataset.creatorAction==='world'){closeCreatorCenter();return}
       if(action.dataset.creatorAction==='memory'){closeCreatorCenter();openMemoryArchive('cards');return}
       if(action.dataset.creatorAction==='story'){openCreatorCenter('story');return}
       if(action.dataset.creatorAction==='backup'){openCreatorCenter('backup');return}
@@ -1380,12 +1380,12 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
       else if(id==='lrSpaceLocationEditClose')closeLocationEditor();
       else if(id==='lrSpaceLocationSave')saveLocationEditor();
       else if(id==='lrSpaceLocationDelete')deleteLocationEditor();
-      else if(id==='systemAppbarAction'&&$('space')?.classList.contains('active'))openWorldSettings();
+      else if(id==='systemAppbarAction'&&$('space')?.classList.contains('active')){/* SPACE 现阶段聚焦长文剧情，旧世界设置入口暂时停用。 */}
     });
     document.addEventListener('click',e=>{if(e.target?.id==='lrSpaceStoryReview')closeStoryReview();if(e.target?.id==='lrSpaceActivityModal')closeActivityModal()});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeStoryReview();closeMemoryArchive();closeHome();closeMissions();closeMissionEditor()}});
     document.addEventListener('change',e=>{if(e.target?.id!=='lrSpaceLocationImage')return;const f=e.target.files?.[0],p=$('lrSpaceLocationPreview');if(f&&p){const r=new FileReader();r.onload=()=>p.innerHTML=`<img src="${esc(String(r.result||''))}" alt="">`;r.readAsDataURL(f)}});
-    $('systemAppbarAction')?.addEventListener('click',()=>{if($('space')?.classList.contains('active'))openWorldSettings()});
+    $('systemAppbarAction')?.addEventListener('click',()=>{/* SPACE 世界设置入口暂时停用，保留底层资料以便未来恢复。 */});
   }
   // Register before init(): even if SPACE data hydration or rendering fails,
   // the visible Continue control remains live and reports its failure.
