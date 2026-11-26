@@ -707,7 +707,7 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     old.className='page active lr-space-v2';
     old.innerHTML=`
       <div id="lrSpaceV2Directory" class="lr-space-v2-screen">
-        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>我的城市</h1><p>每一组同行者，都拥有独立的城市与故事。</p></div></div>
+        <div class="lr-space-v2-head"><div><div class="lr-space-v2-kicker">LOVE RECORD · SPACE</div><h1>SPACE</h1><p>长文剧情是这里的核心；像素城市与生活世界，为每一段故事提供场景。</p></div></div>
         <section class="lr-space-v2-panel"><h2 id="lrSpaceCityDirectoryTitle">我的城市</h2><div id="lrSpaceCityList" class="lr-space-city-list"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityToggle" class="lr-space-primary" type="button">＋ AI 生成新城市</button></div></section>
         <section id="lrSpaceCreateCityPanel" class="lr-space-v2-panel" hidden><h2>选择这座城市的同行者</h2><div class="lr-space-v2-sub">选择一位或多位联系人，保存后会创建全新的城市，不会与其他城市共用地图、地点或剧情。</div><div id="lrSpacePeople" class="lr-space-people"></div><div class="lr-space-actions"><button id="lrSpaceCreateCityCancel" class="lr-space-secondary" type="button">取消</button><button id="lrSpaceCreateCitySave" class="lr-space-primary" type="button" disabled>保存并创建城市</button></div></section>
       </div>
@@ -1196,10 +1196,20 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     renderPeople();
     renderCityDirectory();
     show('directory');
+    try{window.dispatchEvent(new CustomEvent('lr-space-v2-ready'))}catch(e){}
     const intro=document.createElement('div');intro.className='lr-space-v2-intro';intro.id='lrSpaceIntro';
     intro.innerHTML='<div class="lr-space-v2-intro-inner"><div class="lr-space-v2-intro-mark"></div><div class="lr-space-v2-intro-title">SPACE</div><div class="lr-space-v2-intro-line"></div><div class="lr-space-v2-intro-sub">ENTER YOUR WORLD</div></div>';
     document.body.appendChild(intro);setTimeout(()=>intro.classList.add('hide'),1700);setTimeout(()=>intro.remove(),2400);
   }
+  // Public, read-only bridge for the independent long-form story engine.
+  // The homepage remains the source of truth for contacts, personas and world books.
+  window.LRSpaceStoryBridge={
+    getContacts:()=>people().map(p=>cloneData(p)),
+    getSelfPersonas:()=>selfPersonas().map(p=>cloneData(p)),
+    getWorldBooks:()=>worldBooks().map(w=>cloneData(w)),
+    callAPI:(system,user,loadingText,inline,timeoutMs)=>callAPI(system,user,loadingText,inline,timeoutMs),
+    toast:message=>toast(message)
+  };
   window.openLoveRecordSpaceV2=()=>{open()};
 
   function openCreatorCenter(section='all'){

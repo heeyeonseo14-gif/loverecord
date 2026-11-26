@@ -2337,7 +2337,7 @@ function renderSelfPersonas(){ensureSelfPersonas();const box=$('selfPersonaList'
 let editingSelfPersonaId='';
 function openSelfPersonaEditor(id=''){ensureSelfPersonas();editingSelfPersonaId=id;const p=state.selfPersonas.find(x=>x.id===id)||{};$('selfPersonaEditTitle').textContent=id?(currentLang()==='zh'?'编辑自设':'EDIT PERSONA'):(currentLang()==='zh'?'新建自设':'NEW PERSONA');$('selfPersonaName').value=p.name||'';$('selfPersonaRole').value=p.role||'';$('selfPersonaPersonality').value=p.personality||'';$('selfPersonaAppearance').value=p.appearance||'';$('selfPersonaSpeech').value=p.speech||'';$('selfPersonaBackground').value=p.background||'';$('selfPersonaEditModal').classList.add('show');document.body.style.overflow='hidden'}
 function closeSelfPersonaEditor(){$('selfPersonaEditModal').classList.remove('show');document.body.style.overflow=''}
-function saveSelfPersona(){ensureSelfPersonas();const obj={id:editingSelfPersonaId||('sp-'+Date.now()),name:$('selfPersonaName').value.trim(),role:$('selfPersonaRole').value.trim(),personality:$('selfPersonaPersonality').value.trim(),appearance:$('selfPersonaAppearance').value.trim(),speech:$('selfPersonaSpeech').value.trim(),background:$('selfPersonaBackground').value.trim()};if(!obj.name){toast(currentLang()==='zh'?'请先填写自设名称':'Please enter a persona name');return}if(editingSelfPersonaId){const i=state.selfPersonas.findIndex(x=>x.id===editingSelfPersonaId);if(i>=0)state.selfPersonas[i]=obj;else state.selfPersonas.push(obj)}else state.selfPersonas.push(obj);save();closeSelfPersonaEditor();renderSettings();toast(currentLang()==='zh'?'自设已保存':'Persona saved')}
+function saveSelfPersona(){ensureSelfPersonas();const obj={id:editingSelfPersonaId||('sp-'+Date.now()),name:$('selfPersonaName').value.trim(),role:$('selfPersonaRole').value.trim(),personality:$('selfPersonaPersonality').value.trim(),appearance:$('selfPersonaAppearance').value.trim(),speech:$('selfPersonaSpeech').value.trim(),background:$('selfPersonaBackground').value.trim()};if(!obj.name){toast(currentLang()==='zh'?'请先填写自设名称':'Please enter a persona name');return}if(editingSelfPersonaId){const i=state.selfPersonas.findIndex(x=>x.id===editingSelfPersonaId);if(i>=0)state.selfPersonas[i]=obj;else state.selfPersonas.push(obj)}else state.selfPersonas.push(obj);save();closeSelfPersonaEditor();renderSettings();try{window.dispatchEvent(new CustomEvent('lr-self-personas-updated'))}catch(e){}toast(currentLang()==='zh'?'自设已保存':'Persona saved')}
 
 function ensureWorldData(){
   if(!Array.isArray(state.people))state.people=defaults.people.map(x=>({...x}));
@@ -2448,7 +2448,7 @@ async function savePerson(){
   const recoverySaved=persistPeopleRecovery();
   let dbHasContacts=false;try{dbHasContacts=(await loadPeopleFromIndexedDB()).some(x=>String(x.id)===String(obj.id))}catch{}
   if(!mainSaved&&!recoverySaved&&!dbHasContacts){toast('保存失败：浏览器储存空间不足，请检查浏览器权限/储存空间');return}
-  closePersonEditor();renderModule('people');toast(mainSaved?'联系人已保存 ♡':'联系人已保存到独立储存；建议导出备份');
+  closePersonEditor();renderModule('people');try{window.dispatchEvent(new CustomEvent('lr-contacts-updated'))}catch(e){}toast(mainSaved?'联系人已保存 ♡':'联系人已保存到独立储存；建议导出备份');
  }catch(err){console.error('[LOVE RECORD] person save failed',err);toast('保存失败：'+(err?.message||'请检查浏览器储存空间'))}
 }
 let worldBooksReady=Promise.resolve();
@@ -3069,10 +3069,10 @@ $('worldEditClose').onclick=closeWorldEditor;$('cancelWorld').onclick=closeWorld
 $('journalEditClose').onclick=closeJournalEditor;$('cancelJournal').onclick=closeJournalEditor;$('saveJournal').onclick=saveJournal;$('spacePersonClose').onclick=closePersonSpace;$('spaceBackToDirectory').onclick=()=>setSpaceView('directory');$('spaceHistoryOpen').onclick=()=>{renderOurHistory();setSpaceView('history')};$('spaceHistoryBack').onclick=()=>setSpaceView('workspace');$('spacePersonModal').addEventListener('click',e=>{if(e.target.id==='spacePersonModal')closePersonSpace()});$('forumDetailClose').onclick=closeForumDetail;$('forumDetailModal').addEventListener('click',e=>{if(e.target.id==='forumDetailModal')closeForumDetail()});
 if(!window.__loveRecordGlobalActionsBound){window.__loveRecordGlobalActionsBound=true;document.addEventListener('click',e=>{
  const open=e.target.closest('[data-open-module]');if(open){openModule(open.dataset.openModule);return}
- const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
+ const sa=e.target.closest('[data-self-action]');if(sa){const sid=sa.dataset.id;if(sa.dataset.selfAction==='edit'){openSelfPersonaEditor(sid);return}if(sa.dataset.selfAction==='delete'){if(confirm(currentLang()==='zh'?'删除这个自设？':'Delete this persona?')){ensureSelfPersonas();state.selfPersonas=state.selfPersonas.filter(x=>x.id!==sid);save();try{window.dispatchEvent(new CustomEvent('lr-self-personas-updated'))}catch(e){}renderSettings();toast(currentLang()==='zh'?'自设已删除':'Persona deleted')}return}}
  const act=e.target.closest('[data-action]');if(!act)return;const a=act.dataset.action,id=act.dataset.id;
  if(a==='new-person'){openPersonEditor();return} if(a==='edit-person'){openPersonEditor(id);return} if(a==='open-person-detail'){renderPersonDetail(id);return} if(a==='back-to-people'){renderModule('people');return} if(a==='open-world-detail'){renderWorldDetail(id);return} if(a==='back-to-worlds'){renderModule('world');return}
- if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();removePersonFromIndexedDB(id).catch(e=>console.warn(e));persistPeopleRecovery();renderModule('people');toast('人物已删除')}return}
+ if(a==='delete-person'){if(confirm('删除这个人物？')){state.people=state.people.filter(x=>x.id!==id);save();removePersonFromIndexedDB(id).catch(e=>console.warn(e));persistPeopleRecovery();try{window.dispatchEvent(new CustomEvent('lr-contacts-updated'))}catch(e){}renderModule('people');toast('人物已删除')}return}
  if(a==='new-world'){openWorldEditor();return} if(a==='edit-world'){openWorldEditor(id);return}
  if(a==='delete-world'){if(confirm('删除这个世界？')){(async()=>{try{await worldBooksReady;state.worlds=state.worlds.filter(x=>String(x.id)!==String(id));await persistWorldBooks(state.worlds);save();window.dispatchEvent(new CustomEvent('lr-worldbooks-updated'));renderModule('world');toast('世界书已删除')}catch(err){console.error('[LOVE RECORD] worldbook delete failed',err);toast('删除失败：储存写入失败')}})()}return}
  if(a==='new-journal'){openJournalEditor();return}
@@ -3242,7 +3242,8 @@ if(loveIntro){
 </script>
 
 
-<script src="./space-v2.js?v=56"></script>
+<script src="./space-v2.js?v=58"></script>
+<script src="./space-story-v1.js?v=1"></script>
 <script src="./games-v1.js?v=99"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="./farm-home-3d.js?v=28"></script>
