@@ -433,21 +433,26 @@
   function person(id){return people().find(p=>p.id===id)}
   function toast(msg){if(typeof window.toast==='function')window.toast(msg);else alert(msg)}
   function apiConfig(){let s={};try{s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}')||{}}catch(e){}let st={};try{if(typeof state!=='undefined')st=state||{}}catch(e){}return {base:String(st.apiBase||s.apiBase||$('apiBase')?.value||'').trim().replace(/\/+$/,''),key:String(st.apiKey||s.apiKey||$('apiKey')?.value||'').trim(),model:String(st.apiModel||s.apiModel||$('apiModel')?.value||'').trim()}}
-  async function callAPI(system,user,loadingText='正在生成…',inline=false,timeoutMs=30000){
+  async function callAPI(system,user,loadingText='正在生成…',inline=false,timeoutMs=30000,options={}){
     const {base,key,model}=apiConfig();
     if(!base||!key||!model){toast('请先在 LOVE RECORD 的 API 设置里连接模型。');return null}
+    const stream=options?.stream===true;
     busy=true;
     if(inline){const status=$('lrSpaceStoryGenerating');if(status){status.textContent=loadingText;status.hidden=false;}}
     else setBusy(true,loadingText);
-    const safeTimeout=Math.max(10000,Math.min(120000,Number(timeoutMs)||30000));const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),safeTimeout);
+    const safeTimeout=Math.max(10000,Math.min(180000,Number(timeoutMs)||30000));const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),safeTimeout);
     try{
-      const r=await fetch(base+'/chat/completions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:.9,stream:false})});
-      const raw=await r.text();if(!r.ok){let d=raw;try{const j=JSON.parse(raw);d=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+' · '+String(d).slice(0,220))}
-      let j;try{j=JSON.parse(raw)}catch{throw new Error('API 返回不是有效 JSON')}
-      let c=j?.choices?.[0]?.message?.content??j?.choices?.[0]?.text??'';
-      if(Array.isArray(c))c=c.map(x=>x?.text||'').join('');
-      if(!String(c).trim())throw new Error('API 返回为空');
-      return String(c).trim();
+      const r=await fetch(base+'/chat/completions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':stream?'text/event-stream, application/json':'application/json'},body:JSON.stringify({model,messages:[{role:'system',content:system},{role:'user',content:user}],temperature:.9,stream})});
+      if(!r.ok){const raw=await r.text();let d=raw;try{const j=JSON.parse(raw);d=j.error?.message||j.message||raw}catch{}throw new Error('HTTP '+r.status+' · '+String(d).slice(0,220))}
+      const contentType=String(r.headers.get('content-type')||'').toLowerCase();
+      if(stream&&r.body?.getReader&&contentType.includes('text/event-stream')){
+        const reader=r.body.getReader(),decoder=new TextDecoder();let buffer='',content='';
+        const consumeLine=line=>{const trimmed=line.trim();if(!trimmed.startsWith('data:'))return;const data=trimmed.slice(5).trim();if(!data||data==='[DONE]')return;let packet;try{packet=JSON.parse(data)}catch{return}if(packet.error)throw new Error(packet.error.message||'流式 API 返回错误');const delta=packet.choices?.[0]?.delta?.content??packet.choices?.[0]?.text??packet.choices?.[0]?.message?.content??'';const piece=Array.isArray(delta)?delta.map(x=>x?.text||'').join(''):String(delta||'');if(piece){content+=piece;try{options?.onDelta?.(piece)}catch(e){console.warn('[SPACE] stream callback failed',e)}}};
+        while(true){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});let idx;while((idx=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,idx).replace(/\r$/,'');buffer=buffer.slice(idx+1);consumeLine(line)}}
+        buffer+=decoder.decode();if(buffer.trim())consumeLine(buffer);
+        if(!content.trim())throw new Error('流式 API 返回为空');return content.trim();
+      }
+      const raw=await r.text();let j;try{j=JSON.parse(raw)}catch{throw new Error('API 返回不是有效 JSON')};let c=j?.choices?.[0]?.message?.content??j?.choices?.[0]?.text??'';if(Array.isArray(c))c=c.map(x=>x?.text||'').join('');if(!String(c).trim())throw new Error('API 返回为空');const text=String(c).trim();if(stream&&options?.onDelta)options.onDelta(text);return text;
     }catch(e){toast(e.name==='AbortError'?'API 请求超时（'+Math.round(safeTimeout/1000)+'秒），本次剧情未生成；已创建的城市和已有资料不会因此删除。可以稍后重试。':'API 请求失败：'+e.message);return null}
     finally{clearTimeout(timer);busy=false;if(inline){const status=$('lrSpaceStoryGenerating');if(status)status.hidden=true;}else setBusy(false)}
   }
@@ -1207,7 +1212,11 @@ body.lr-space-standalone > .nav,body.lr-space-standalone nav.nav{display:none!im
     getContacts:()=>people().map(p=>cloneData(p)),
     getSelfPersonas:()=>selfPersonas().map(p=>cloneData(p)),
     getWorldBooks:()=>worldBooks().map(w=>cloneData(w)),
-    callAPI:(system,user,loadingText,inline,timeoutMs)=>callAPI(system,user,loadingText,inline,timeoutMs),
+    getCities:()=>cities.map(c=>({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],updatedAt:c.updatedAt||0})),
+    getActiveCityId:()=>activeCityId,
+    getCitySnapshot:(id)=>{const c=cities.find(x=>String(x.id)===String(id));return c?{id:c.id,name:c.name||makeCityName(c.peopleIds||[]),updatedAt:c.updatedAt||0,snapshot:cloneData(c.snapshot||{})}:null},
+    setCityCurrentLocation:async(cityId,locationId)=>{const c=cities.find(x=>String(x.id)===String(cityId));if(!c)return {ok:false,message:'找不到关联城市'};const snap=cloneData(c.snapshot||{});const loc=(snap.locations||[]).find(x=>String(x.id)===String(locationId));if(!loc)return {ok:false,message:'目标地点不在这座城市中'};snap.currentLocation=loc.id;snap.updatedAt=Date.now();snap.activityLog=Array.isArray(snap.activityLog)?snap.activityLog:[];snap.activityLog.push({id:'story-sync-'+Date.now(),title:'剧情同步地点',description:'剧情工作台确认将当前地点同步为「'+loc.name+'」',kind:'story-sync',at:Date.now(),locationId:loc.id});c.snapshot=snap;c.updatedAt=Date.now();try{if(c.id===activeCityId){data={...cloneData(EMPTY_DATA),...cloneData(snap)};if(!save())return {ok:false,message:'城市资料暂时无法保存'};}else{await idbCityPut({id:c.id,name:c.name||makeCityName(c.peopleIds||[]),peopleIds:[...(c.peopleIds||[])],createdAt:c.createdAt||Date.now(),updatedAt:c.updatedAt,snapshot:cloneData(snap)});persistCities();if(!await waitForCityWrite())return {ok:false,message:'城市资料写入失败，请稍后重试'};}}catch(err){console.error('[SPACE story city sync]',err);return {ok:false,message:'城市同步失败：'+(err.message||'存储异常')}}renderCityDirectory();return {ok:true,cityName:c.name||makeCityName(c.peopleIds||[]),locationName:loc.name}},
+    callAPI:(system,user,loadingText,inline,timeoutMs,options)=>callAPI(system,user,loadingText,inline,timeoutMs,options),
     toast:message=>toast(message)
   };
   window.openLoveRecordSpaceV2=()=>{open()};
