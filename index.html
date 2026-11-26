@@ -1365,6 +1365,7 @@ body.lr-theme-dark :is(#space,.community-root){
     <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
     <button class="launcher-app" data-launch-dream-fate type="button" data-drag-id="app-dream-fate"><span class="app-icon app-icon-dream-fate">✧</span><span class="app-label-dream-fate">寻梦</span></button>
     <button class="launcher-app" data-launch-weather type="button" data-drag-id="app-weather"><span class="app-icon app-icon-weather">☼</span><span>天气</span></button>
+    <button class="launcher-app" data-launch-zodiac type="button" data-drag-id="app-zodiac"><span class="app-icon" style="background:linear-gradient(145deg,#f8fbfe,#d9e4ef);color:#6682a0;box-shadow:0 8px 24px rgba(102,130,160,.16)">✶</span><span>星盘</span></button>
     <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
     <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
     <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
@@ -2595,7 +2596,7 @@ function closeAppearance(){ $('appearanceModal').classList.remove('show');docume
 function applyPreset(k){if(!presetChoices[k])return;appearance=Object.assign({},appearanceDefaults,presetChoices[k]);appearance.preset=k;delete appearance.bgData;applyAppearance();renderAppearanceControls();toast('已切换：'+presetChoices[k].name)}
 
 const homeIconBindings=[
- {id:'app-star-assistant',symbol:'✦'},{id:'app-dream-fate',symbol:'✧'},{id:'app-weather',symbol:'☼'},{id:'app-space',symbol:'♡'},
+ {id:'app-star-assistant',symbol:'✦'},{id:'app-dream-fate',symbol:'✧'},{id:'app-weather',symbol:'☼'},{id:'app-zodiac',symbol:'✶'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},
  {id:'app-games',symbol:'🎮'},{id:'app-checkin',symbol:'◉'}
@@ -3391,6 +3392,8 @@ body.lr-external-app-open{overflow:hidden}
   if(dreamFate){event.preventDefault();event.stopImmediatePropagation();openApp('./dream-fate.html');return}
   const weather=event.target.closest('[data-launch-weather],[data-drag-id="app-weather"]');
   if(weather){event.preventDefault();event.stopImmediatePropagation();openApp('./weather-calendar.html');return}
+  const zodiac=event.target.closest('[data-launch-zodiac],[data-drag-id="app-zodiac"]');
+  if(zodiac){event.preventDefault();event.stopImmediatePropagation();openApp('./zodiac.html');return}
   const shiyi=event.target.closest('[data-shiyi-launch]');
   if(shiyi){event.preventDefault();event.stopImmediatePropagation();openApp('./shiyi.html');return}
   const appearance=event.target.closest('a.launcher-app[href*="appearance.html"]');

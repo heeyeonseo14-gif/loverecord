@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eaf0f6">
+<title>星盘 · LOVE RECORD</title>
+<link rel="stylesheet" href="./zodiac.css?v=1">
+</head>
+<body>
+<div class="za-app">
+  <header class="za-topbar">
+    <button class="za-back" id="backBtn" type="button" aria-label="返回主页">‹</button>
+    <div class="za-brand"><span class="za-brand-mark">✧</span><span><strong>星盘</strong><small>LOVE RECORD · ZODIAC</small></span></div>
+    <button class="za-history-open" id="historyOpen" type="button" aria-label="历史记录">◷</button>
+  </header>
+
+  <main class="za-main">
+    <section class="za-view active" id="view-horoscope" data-view="horoscope">
+      <div class="za-hero">
+        <span class="za-kicker">YOUR CELESTIAL GUIDE</span>
+        <h1>读懂星象，也读懂自己。</h1>
+        <p>把星座当作一面温柔的镜子，而不是替你决定人生的答案。</p>
+        <div class="za-hero-stars" aria-hidden="true">✦　·　✧　　·　✦</div>
+      </div>
+      <section class="za-panel za-horoscope-panel">
+        <div class="za-panel-head"><div><span class="za-kicker">HOROSCOPE</span><h2>你的星座运势</h2></div><span class="za-date-pill" id="todayDate"></span></div>
+        <label for="signSelect">选择太阳星座</label>
+        <select id="signSelect"></select>
+        <div class="za-periods" role="group" aria-label="运势周期">
+          <button class="active" type="button" data-period="daily">今日</button>
+          <button type="button" data-period="weekly">本周</button>
+          <button type="button" data-period="monthly">本月</button>
+        </div>
+        <button class="za-primary" id="generateHoroscope" type="button">为我生成运势 <span>✧</span></button>
+        <p class="za-small-note" id="horoscopeApiNote">运势由主页 AI API 生成，记得先在 LOVE RECORD 设置中连接 API。</p>
+      </section>
+      <section class="za-result" id="horoscopeResult" hidden>
+        <div class="za-result-head"><div><span class="za-kicker" id="horoscopePeriodLabel">TODAY'S READING</span><h2 id="horoscopeTitle">今日运势</h2></div><span class="za-result-symbol">✧</span></div>
+        <div class="za-reading-content" id="horoscopeContent"></div>
+        <div class="za-result-actions"><button type="button" class="za-secondary" id="saveReading">保存这次解读</button><span id="horoscopeSavedHint"></span></div>
+      </section>
+      <div class="za-disclaimer">星座运势属于占星文化与娱乐性自我探索，不是科学预测。请把它当作灵感，不作为医疗、投资或重大决定的依据。</div>
+    </section>
+
+    <section class="za-view" id="view-chart" data-view="chart" hidden>
+      <div class="za-section-intro"><span class="za-kicker">YOUR NATAL CHART</span><h1>绘制你的本命星盘</h1><p>出生日期、当地时间与出生城市共同决定星盘。资料越完整，结果越精确。</p></div>
+      <section class="za-panel">
+        <div class="za-panel-head"><div><span class="za-kicker">BIRTH DETAILS</span><h2>出生资料</h2></div><span class="za-lock-mark">⌖ 本机计算</span></div>
+        <label for="birthDate">出生日期</label><input id="birthDate" type="date" required>
+        <div class="za-form-row" id="birthTimeRow"><div class="za-field"><label for="birthTime">出生时间</label><input id="birthTime" type="time" value="12:00"></div><div class="za-field za-time-check"><label>时间资料</label><label class="za-check"><input id="unknownBirthTime" type="checkbox"><span>不确定出生时间</span></label></div></div>
+        <label for="birthCityInput">出生城市</label>
+        <div class="za-city-search"><input id="birthCityInput" type="search" autocomplete="off" placeholder="输入城市，例如：Kuantan / Sibu / Rome"><button type="button" id="searchBirthCity">搜索</button></div>
+        <div id="birthCityResults" class="za-city-results" aria-live="polite"></div>
+        <div class="za-selected-city" id="selectedBirthCity">尚未选择出生城市。请从搜索结果中选择。</div>
+        <button class="za-primary" id="calculateChart" type="button">计算本命星盘 <span>✧</span></button>
+        <p class="za-small-note">城市搜索使用 Open-Meteo 地名资料；出生坐标仅用于本机星盘计算，不会发送给主页 AI API。</p>
+      </section>
+      <section class="za-chart-output" id="chartOutput" hidden>
+        <div class="za-chart-summary" id="chartSummary"></div>
+        <div class="za-panel za-wheel-panel"><div class="za-panel-head"><div><span class="za-kicker">NATAL WHEEL</span><h2>你的星盘轮盘</h2></div><span class="za-lock-mark">TROPICAL</span></div><div id="chartWheel" class="za-chart-wheel"></div><p class="za-chart-method" id="chartMethodNote"></p></div>
+        <div class="za-panel"><div class="za-panel-head"><div><span class="za-kicker">PLANETARY PLACEMENTS</span><h2>行星落点</h2></div></div><div class="za-placements" id="planetPlacements"></div></div>
+        <div class="za-panel"><div class="za-panel-head"><div><span class="za-kicker">MAJOR ASPECTS</span><h2>主要相位</h2></div></div><div class="za-aspects" id="chartAspects"></div></div>
+        <button class="za-primary" id="interpretChart" type="button">AI 深入解读星盘 <span>✧</span></button>
+        <section class="za-result" id="chartInterpretation" hidden><div class="za-result-head"><div><span class="za-kicker">YOUR CHART STORY</span><h2>本命星盘解读</h2></div><span class="za-result-symbol">✧</span></div><div class="za-reading-content" id="chartInterpretationContent"></div><div class="za-result-actions"><button type="button" class="za-secondary" id="saveChartReading">保存这次解读</button><span id="chartSavedHint"></span></div></section>
+      </section>
+      <div class="za-disclaimer">星盘采用热带黄道与整宫制（Whole Sign Houses）。行星位置由 Astronomy Engine 计算；占星解释属于文化与娱乐性参考，不是科学人格测验或命运预测。</div>
+    </section>
+
+    <section class="za-view" id="view-match" data-view="match" hidden>
+      <div class="za-section-intro"><span class="za-kicker">SYNASTRY & CONNECTION</span><h1>两个人的星座故事</h1><p>看看彼此怎样表达爱、沟通和面对差异。</p></div>
+      <section class="za-panel">
+        <div class="za-panel-head"><div><span class="za-kicker">TWO SIGNS, ONE STORY</span><h2>选择你们的星座</h2></div><span class="za-lock-mark">♡ 配对</span></div>
+        <div class="za-match-person"><span class="za-person-mark">A</span><div class="za-field"><label for="matchSignA">第一个人</label><select id="matchSignA"></select></div></div>
+        <div class="za-match-person"><span class="za-person-mark">B</span><div class="za-field"><label for="matchSignB">第二个人</label><select id="matchSignB"></select></div></div>
+        <label for="matchRelation">关系类型</label><select id="matchRelation"><option value="爱情关系">爱情关系</option><option value="朋友关系">朋友关系</option><option value="家人关系">家人关系</option><option value="合作关系">合作关系</option></select>
+        <label for="matchFocus">想了解的方面</label><select id="matchFocus"><option value="全面相处分析">全面相处分析</option><option value="情感表达与亲密关系">情感表达与亲密关系</option><option value="沟通方式与冲突处理">沟通方式与冲突处理</option><option value="长期相处与共同成长">长期相处与共同成长</option></select>
+        <button class="za-primary" id="generateMatch" type="button">生成星座配对 <span>♡</span></button>
+      </section>
+      <section class="za-result" id="matchResult" hidden><div class="za-result-head"><div><span class="za-kicker">YOUR CONNECTION</span><h2 id="matchTitle">星座配对</h2></div><span class="za-result-symbol">♡</span></div><div class="za-reading-content" id="matchContent"></div><div class="za-result-actions"><button type="button" class="za-secondary" id="saveMatchReading">保存这次解读</button><span id="matchSavedHint"></span></div></section>
+      <div class="za-disclaimer">星座配对不代表关系的真实质量，也不能决定两个人是否适合。真实相处中的尊重、沟通和选择更重要。</div>
+    </section>
+
+    <section class="za-view" id="view-profile" data-view="profile" hidden>
+      <div class="za-section-intro"><span class="za-kicker">YOUR PERSONAL COSMOS</span><h1>我的星座档案</h1><p>你的出生资料只保存在当前设备的浏览器中。</p></div>
+      <section class="za-panel za-profile-card"><div class="za-profile-orbit">✧</div><div><span class="za-kicker">SAVED PROFILE</span><h2 id="profileName">还没有星座档案</h2><p id="profileDetail">完成一次本命星盘计算后，这里会显示你的档案。</p></div><button type="button" class="za-secondary" id="editProfile">编辑出生资料</button></section>
+      <section class="za-panel"><div class="za-panel-head"><div><span class="za-kicker">LOCAL DATA</span><h2>本机数据管理</h2></div></div><p class="za-small-note">星座档案和你主动保存的解读只存放在当前浏览器，不会自动同步到其他设备。</p><div class="za-profile-actions"><button type="button" class="za-secondary" id="openHistoryFromProfile">查看历史记录</button><button type="button" class="za-danger" id="deleteProfile">删除星座档案</button></div></section>
+      <div class="za-disclaimer">星盘计算需要外部天文计算脚本与城市地名查询服务；AI 解读会使用 LOVE RECORD 首页当前配置的 AI API。仅在你主动点击生成或解读时发送星座与计算结果，不发送出生日期、出生时间或坐标。<br>天文计算库：Astronomy Engine 2.1.19（MIT License）。</div>
+    </section>
+  </main>
+
+  <nav class="za-bottom-nav" aria-label="星盘应用导航">
+    <button type="button" class="active" data-tab="horoscope"><span>☼</span><b>运势</b></button>
+    <button type="button" data-tab="chart"><span>✧</span><b>星盘</b></button>
+    <button type="button" data-tab="match"><span>♡</span><b>配对</b></button>
+    <button type="button" data-tab="profile"><span>◌</span><b>我的</b></button>
+  </nav>
+</div>
+
+<div class="za-modal" id="historyModal" aria-hidden="true"><section class="za-modal-card"><div class="za-modal-head"><div><span class="za-kicker">YOUR SAVED READINGS</span><h2>历史记录</h2></div><button type="button" id="historyClose" aria-label="关闭">×</button></div><div id="historyList" class="za-history-list"></div><div class="za-modal-foot"><button type="button" class="za-danger" id="clearHistory">清空历史记录</button></div></section></div>
+<div class="za-toast" id="zaToast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js" crossorigin="anonymous" defer onerror="this.onerror=null;this.src='https://unpkg.com/astronomy-engine@2.1.19/astronomy.browser.min.js'"></script>
+<script src="./zodiac.js?v=1" defer></script>
+</body>
+</html>
