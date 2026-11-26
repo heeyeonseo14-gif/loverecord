@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f1e8">
+<title>DREAM &amp; FATE · LOVE RECORD</title>
+<link rel="stylesheet" href="./dream-fate.css?v=1">
+</head>
+<body>
+<div class="df-app">
+  <header class="df-topbar">
+    <button class="df-back" id="backBtn" type="button" aria-label="返回主页">‹</button>
+    <div class="df-brand">
+      <span class="df-brand-mark">✧</span>
+      <span><strong>DREAM &amp; FATE</strong><small>LOVE RECORD · INNER UNIVERSE</small></span>
+    </div>
+    <button class="df-history-btn" id="historyBtn" type="button" aria-label="我的记录">◷</button>
+  </header>
+
+  <main class="df-main" id="mainView">
+    <section class="df-hero">
+      <div class="df-kicker">A QUIET PLACE TO EXPLORE</div>
+      <h1>探索梦境与<br><em>命运的线索。</em></h1>
+      <p>从一场梦、一个生日，或两个人的故事开始。</p>
+      <div class="df-hero-meta"><span class="df-orbit">✦</span><span>AI INSIGHT · TRADITIONAL CULTURE · FOR FUN</span></div>
+    </section>
+
+    <nav class="df-tabs" aria-label="选择功能">
+      <button type="button" class="df-tab active" data-mode="dream"><span>☾</span><b>解梦</b><small>DREAM</small></button>
+      <button type="button" class="df-tab" data-mode="fortune"><span>✧</span><b>算命</b><small>FORTUNE</small></button>
+      <button type="button" class="df-tab" data-mode="match"><span>♡</span><b>配对</b><small>MATCH</small></button>
+    </nav>
+
+    <section class="df-panel df-form-panel" id="dreamPanel">
+      <div class="df-section-head"><div><span class="df-overline">01 / DREAM JOURNAL</span><h2>说说你的梦</h2><p>记下你还记得的画面、人物和感觉。</p></div><span class="df-section-symbol">☾</span></div>
+      <label for="dreamText">梦境内容 <i>必填</i></label>
+      <textarea id="dreamText" rows="5" maxlength="5000" placeholder="例如：我梦见自己走在一条很熟悉的街道上，后来突然下起了大雨……"></textarea>
+      <div class="df-char-count"><span id="dreamCount">0</span> / 5000</div>
+      <div class="df-form-grid">
+        <div><label for="dreamMood">梦里的主要感觉</label><select id="dreamMood"><option value="不确定">不确定</option><option>平静</option><option>开心</option><option>紧张或害怕</option><option>悲伤</option><option>困惑</option><option>怀念</option><option>兴奋</option></select></div>
+        <div><label for="dreamRepeat">是否重复出现</label><select id="dreamRepeat"><option value="第一次">第一次</option><option value="偶尔出现">偶尔出现</option><option value="经常重复">经常重复</option></select></div>
+      </div>
+      <label for="dreamExtra">最近有没有相关的事情？ <span>选填</span></label>
+      <input id="dreamExtra" type="text" maxlength="300" placeholder="可以留空，也可以写下最近的心情或经历">
+      <button class="df-submit" type="button" data-submit="dream"><span>开始解析梦境</span><b>→</b></button>
+      <p class="df-footnote">梦境解析是象征与情绪的探索，不是预言或心理诊断。</p>
+    </section>
+
+    <section class="df-panel df-form-panel" id="fortunePanel" hidden>
+      <div class="df-section-head"><div><span class="df-overline">02 / BIRTH &amp; DESTINY</span><h2>了解你的命理线索</h2><p>可从生日与出生信息开始，资料不完整也可以分析。</p></div><span class="df-section-symbol">✧</span></div>
+      <div class="df-form-grid">
+        <div><label for="fortuneName">怎么称呼你 <span>选填</span></label><input id="fortuneName" type="text" maxlength="30" placeholder="例如：妍妍"></div>
+        <div><label for="fortuneFocus">想了解的方面</label><select id="fortuneFocus"><option value="整体运势">整体运势</option><option value="事业与学业">事业与学业</option><option value="感情与人际">感情与人际</option><option value="财运与规划">财运与规划</option><option value="性格与优势">性格与优势</option></select></div>
+      </div>
+      <label for="fortuneBirth">出生日期（公历） <i>必填</i></label>
+      <input id="fortuneBirth" type="date">
+      <div class="df-form-grid">
+        <div><label for="fortuneTime">出生时间 <span>不确定可留空</span></label><input id="fortuneTime" type="time"></div>
+        <div><label for="fortunePlace">出生地点 <span>选填</span></label><input id="fortunePlace" type="text" maxlength="80" placeholder="城市 / 国家"></div>
+      </div>
+      <label for="fortuneExtra">想补充的背景 <span>选填</span></label>
+      <textarea id="fortuneExtra" rows="3" maxlength="500" placeholder="例如：最近在考虑换工作，想看看事业方向。"></textarea>
+      <button class="df-submit" type="button" data-submit="fortune"><span>生成命理解读</span><b>→</b></button>
+      <p class="df-footnote">传统命理属于民俗文化参考。出生时间不完整时，解读会明确说明局限，不会补造信息。</p>
+    </section>
+
+    <section class="df-panel df-form-panel" id="matchPanel" hidden>
+      <div class="df-section-head"><div><span class="df-overline">03 / TWO STORIES</span><h2>看看两个人的契合点</h2><p>可以是恋人、朋友、家人，也可以是任何重要关系。</p></div><span class="df-section-symbol">♡</span></div>
+      <div class="df-person-card">
+        <div class="df-person-title"><span class="df-person-number">01</span><b>第一个人</b></div>
+        <label for="matchNameA">姓名或称呼</label><input id="matchNameA" type="text" maxlength="30" placeholder="例如：我">
+        <label for="matchBirthA">出生日期（公历） <i>必填</i></label><input id="matchBirthA" type="date">
+        <label for="matchNoteA">性格或特点 <span>选填</span></label><input id="matchNoteA" type="text" maxlength="240" placeholder="例如：慢热、喜欢独处、重视安全感">
+      </div>
+      <div class="df-match-mark">＋</div>
+      <div class="df-person-card">
+        <div class="df-person-title"><span class="df-person-number">02</span><b>第二个人</b></div>
+        <label for="matchNameB">姓名或称呼</label><input id="matchNameB" type="text" maxlength="30" placeholder="例如：对方">
+        <label for="matchBirthB">出生日期（公历） <i>必填</i></label><input id="matchBirthB" type="date">
+        <label for="matchNoteB">性格或特点 <span>选填</span></label><input id="matchNoteB" type="text" maxlength="240" placeholder="例如：外向、表达直接、喜欢热闹">
+      </div>
+      <div class="df-form-grid">
+        <div><label for="matchRelation">关系类型</label><select id="matchRelation"><option>恋人 / 暧昧</option><option>朋友</option><option>家人</option><option>同事 / 合作伙伴</option><option>其他关系</option></select></div>
+        <div><label for="matchStyle">分析侧重点</label><select id="matchStyle"><option>综合契合度</option><option>沟通方式</option><option>情感相处</option><option>长期关系</option></select></div>
+      </div>
+      <button class="df-submit" type="button" data-submit="match"><span>探索两个人的契合点</span><b>→</b></button>
+      <p class="df-footnote">配对结果只作趣味交流参考，不代表关系质量或未来结局。</p>
+    </section>
+
+    <section class="df-api-note" id="apiNote" role="status"><span class="df-api-dot"></span><span id="apiStatusText">正在读取主页 API 配置…</span><button id="apiRefresh" type="button">刷新</button></section>
+    <p class="df-data-note">提交分析时，填写的内容会发送给你在主页配置的 AI 服务；只有点击「保存到记录」后，解读才会保存在当前浏览器。</p>
+    <section class="df-result" id="resultPanel" hidden>
+      <div class="df-result-head"><div><span class="df-overline">YOUR READING</span><h2 id="resultTitle">解读结果</h2><p id="resultDate"></p></div><span class="df-result-seal">✧</span></div>
+      <div class="df-result-content" id="resultContent"></div>
+      <div class="df-result-actions"><button type="button" class="df-secondary" id="saveResult">保存到记录</button><button type="button" class="df-primary" id="againBtn">再做一次</button></div>
+      <p class="df-footnote">内容由你当前选择的主页 AI 模型生成，请把它作为探索与娱乐参考。</p>
+    </section>
+    <div class="df-bottom-note">DREAM &amp; FATE <span>·</span> A LITTLE SPACE FOR WONDER</div>
+  </main>
+
+  <main class="df-history-view" id="historyView" hidden>
+    <div class="df-history-head"><button class="df-back-inline" id="historyBack" type="button">‹</button><div><span class="df-overline">YOUR PERSONAL ARCHIVE</span><h2>我的解读记录</h2><p>记录只保存在当前浏览器。</p></div></div>
+    <div id="historyList" class="df-history-list"></div>
+  </main>
+  <div class="df-toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="df-loading" id="loading" hidden><div class="df-loading-card"><span class="df-loading-symbol">✧</span><b id="loadingTitle">正在整理线索…</b><p>请稍候，AI 正在生成你的专属解读。</p><div class="df-loading-track"><i></i></div><button type="button" id="cancelRequest">取消</button></div></div>
+</div>
+<script src="./global-font.js?v=100"></script>
+<script src="./dream-fate.js?v=1"></script>
+</body>
+</html>
