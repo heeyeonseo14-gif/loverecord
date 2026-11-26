@@ -27,7 +27,7 @@ select,input,textarea{font:inherit;color:var(--ink);width:100%;border:1px solid 
 @media(min-width:620px){.hero{padding-top:46px}.orb{right:100px}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
 </style></head>
 <body><div class="wrap">
-<div class="top"><button class="back" id="back">‹　返回主页</button><span class="micro">LOVE RECORD / ARCHIVE</span></div>
+<div class="top"><button class="back" id="back">‹　返回聊天</button><span class="micro">LOVE RECORD / ARCHIVE</span></div>
 <header class="hero"><div class="eyebrow">A QUIET PLACE FOR US</div><h1>拾忆</h1><div class="subtitle">那些没有消失的瞬间，<br>只是安静地住进了时间里。</div><div class="orb"></div></header>
 <section class="panel"><div class="panel-head"><h2>选择一段关系</h2><span class="micro">PRIVATE UNIVERSE</span></div><select id="contactSelect"><option value="">正在寻找联系人……</option></select><div class="contactline" style="margin-top:15px"><div class="avatar" id="avatar">✧</div><div style="min-width:0"><div class="contactname" id="contactName">还没有选择联系人</div><div class="contactsub" id="contactDesc">每个人，都有独属于你们的记忆</div></div><div class="count" id="count">0</div></div></section>
 <section class="panel"><div class="panel-head"><h2>记忆的回声</h2><span class="micro">CHRONOLOGY</span></div><div class="sub" style="font-size:12px;color:#9c90ad;line-height:1.8;margin-bottom:12px">按照日期，重新看见那些值得留下的片段。这里与聊天中的「长期记忆」共用内容。</div><div class="timeline" id="timeline"><div class="empty"><span class="star">✧</span>选择一位联系人，看看你们共同留下的记忆。</div></div></section>
@@ -108,7 +108,7 @@ async function loadPeople(){
  try{merge(await readPeopleFromDB())}catch(e){console.warn('[拾忆] contact DB read skipped',e)}
  return Array.from(byId.values());
 }
-$('back').onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}location.replace('./index.html')};
+$('back').onclick=()=>{if(window.parent!==window){window.parent.postMessage({type:'LR_CLOSE_EXTERNAL_APP'},location.origin);return}const ref=document.referrer;let cameFromChat=false;try{const u=new URL(ref);cameFromChat=u.origin===location.origin&&(/\/index\.html?$/.test(u.pathname)||u.pathname==='/' )}catch(e){}if(cameFromChat&&history.length>1){history.back();return}try{sessionStorage.setItem('lr-skip-intro-once','1')}catch(e){}location.replace('./index.html')};
 $('contactSelect').onchange=e=>{selected=e.target.value;resetForm();render()};
 $('memoryForm').onsubmit=async e=>{e.preventDefault();if(!selected){toast('请先选择联系人');return}const title=$('entryTitle').value.trim(),content=$('entryText').value.trim(),at=new Date($('entryDate').value).getTime();if(!content||!Number.isFinite(at)){toast('请填写记忆内容和有效日期');return}let entries=getEntries(selected);if(editing){entries=entries.map(x=>String(x.id)===editing?{...x,title,content,at,source:'manual'}:x)}else entries.push({id:'mem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),title,content,at,source:'manual'});try{await syncEntries(selected,entries);resetForm();render();toast('这段记忆已被好好收藏 ♡')}catch(err){toast('保存失败：'+(err.message||'请稍后重试'))}};
 $('cancelEdit').onclick=resetForm;
