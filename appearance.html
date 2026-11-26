@@ -148,12 +148,10 @@ function renderStates(){ $('fontSize').value=a.fontSize;$('fontSizeVal').textCon
 function render(){ $('presetGrid').innerHTML=Object.entries(presets).map(([k,v])=>`<button class="opt featured ${a.preset===k?'active':''}" data-preset="${k}"><strong>${v.name}</strong><small>${v.desc}</small></button>`).join('');$('fontGrid').innerHTML=Object.entries(fonts).map(([k,v])=>`<button class="opt ${a.font===k?'active':''}" data-font="${k}" style="font-family:${v.value}">${v.name}</button>`).join('');$('backgroundGrid').innerHTML=Object.entries(bgs).map(([k,v])=>`<button class="opt ${a.bg===k?'active':''}" data-bg="${k}">${v.name}</button>`).join('');$('swatches').innerHTML=['#b79bc7','#c89bb0','#9faed0','#a9c4a2','#c7ad8b','#8e6fae'].map(c=>`<button class="swatch ${a.accent===c?'active':''}" data-accent="${c}" style="background:${c}" aria-label="${c}"></button>`).join('');renderStates()}
 
 const homeIconDefs=[
- {id:'app-shiyi',name:'拾忆',symbol:'✧'},
  {id:'app-star-assistant',name:'星星助手',symbol:'✦'},
  {id:'app-space',name:'空间',symbol:'♡'},
  {id:'app-chat',name:'聊天',symbol:'♡'},
  {id:'app-community',name:'社区',symbol:'◎'},
- {id:'app-journal',name:'日记',symbol:'▤'},
  {id:'app-music',name:'音乐',symbol:'♫'},
  {id:'app-appearance',name:'美化',symbol:'✧'},
  {id:'app-games',name:'游戏',symbol:'🎮'},

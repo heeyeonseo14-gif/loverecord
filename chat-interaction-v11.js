@@ -197,7 +197,7 @@
     if(existing){const oldMenu=$('lrChatPlusMenu');if(oldMenu&&oldMenu.parentElement!==compose)oldMenu.remove();return;}
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
-    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="sticker">♡　发送表情包</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
+    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="sticker">♡　发送表情包</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="shiyi">✧　拾忆</button><button type="button" data-lr-action="journal">▤　日记</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
@@ -222,6 +222,11 @@
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
       if(action==='thought') showInnerThought();
+      if(action==='shiyi') location.href='./shiyi.html';
+      if(action==='journal'){
+        if(typeof window.openModule==='function') window.openModule('journal');
+        else document.querySelector('[data-launch-module="journal"]')?.click();
+      }
       if(action==='foodie'||action==='market'){
         const cid=activeId();
         const person=(window.state&&Array.isArray(window.state.people)?window.state.people:[]).find(p=>String(p.id)===String(cid));
