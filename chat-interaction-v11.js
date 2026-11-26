@@ -222,7 +222,7 @@
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
       if(action==='thought') showInnerThought();
-      if(action==='shiyi') location.href='./shiyi.html';
+      if(action==='shiyi'){if(typeof window.LROpenExternalApp==='function')window.LROpenExternalApp('./shiyi.html');else location.href='./shiyi.html';}
       if(action==='journal'){
         if(typeof window.openModule==='function') window.openModule('journal');
         else document.querySelector('[data-launch-module="journal"]')?.click();
