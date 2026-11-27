@@ -356,9 +356,14 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
 #space.lr-space-v2 .lr-story-focus-top{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);padding:8px 0 12px}
 #space.lr-space-v2 .lr-story-focus-spacer{min-width:1px}
 #space.lr-space-v2 .lr-story-gear-btn{justify-self:end;width:42px;height:42px;min-height:42px;padding:0;font-size:18px;border-radius:50%;background:#fffaf0}
-#space.lr-space-v2 .lr-story-settings-overlay{position:fixed;inset:0;z-index:10080;display:flex;align-items:stretch;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px);background:rgba(49,39,52,.48);backdrop-filter:blur(5px);box-sizing:border-box}
+/* Keep the modal above story transcript cards, the global app bar and the bottom dock.
+   The reader is an isolated stacking context for the animated canvas, so elevate that
+   context only while settings are open, then place the panel above all reader children. */
+body.lr-story-settings-open #space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-reader{z-index:2147483000!important}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-reader>#lrStorySettingsPanel{position:fixed!important;inset:0!important;z-index:2147483640!important;pointer-events:auto!important}
+#space.lr-space-v2 .lr-story-settings-overlay{position:fixed;inset:0;z-index:2147483640!important;display:flex;align-items:stretch;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px);background:rgba(49,39,52,.48);backdrop-filter:blur(5px);box-sizing:border-box;pointer-events:auto;touch-action:pan-y}
 #space.lr-space-v2 .lr-story-settings-overlay[hidden]{display:none!important}
-#space.lr-space-v2 .lr-story-settings-sheet{width:100%;max-width:620px;max-height:100%;overflow:auto;background:#f6f0e4;border:2px solid #8a728d;box-shadow:5px 5px 0 #cbb9ca;padding:14px;border-radius:5px;overscroll-behavior:contain}
+#space.lr-space-v2 .lr-story-settings-sheet{position:relative;z-index:1;pointer-events:auto;width:100%;max-width:620px;max-height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior:contain;background:#f6f0e4;border:2px solid #8a728d;box-shadow:5px 5px 0 #cbb9ca;padding:14px;border-radius:5px;box-sizing:border-box}
 #space.lr-space-v2 .lr-story-settings-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:2px 0 12px;border-bottom:1px solid #d9c8d8;margin-bottom:10px}
 #space.lr-space-v2 .lr-story-settings-head h2{font:700 19px/1.35 ui-monospace,monospace;color:#59475e;margin:5px 0}
 #space.lr-space-v2 .lr-story-settings-head p{font-size:11px;line-height:1.6;color:#99899a;margin:0}
