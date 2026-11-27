@@ -215,15 +215,14 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
             <button type="button" class="lr-story-theme-card" data-offline-theme-select="yuzu" aria-pressed="false"><span class="lr-story-theme-preview yuzu"><i></i><b></b><em></em></span><strong>柚子汽水</strong><small>YUZU SODA</small><span class="lr-story-theme-check">✓</span></button>
           </div><div class="lr-story-theme-controls"><label class="lr-story-theme-motion"><input id="lrStoryThemeMotion" type="checkbox" checked><span><b>动态效果</b><small>启用主题专属的轻量动画</small></span></label><label class="lr-story-theme-rain-control" id="lrStoryRainControl"><span>雨势强度</span><select id="lrStoryRainIntensity" class="lr-story-select"><option value="light">小雨 · 轻柔细密</option><option value="medium" selected>中雨 · 雨丝与水滴</option><option value="heavy">大雨 · 密集雨幕</option></select></label></div><div class="lr-story-theme-status" id="lrStoryThemeStatus" role="status" aria-live="polite">当前使用：原始像素</div><p class="lr-story-theme-note">动画只在故事阅读页运行；离开故事、切换页面或关闭动态效果时会暂停。支持系统减少动态效果设置。</p>
           <section class="lr-story-custom-theme-builder" id="lrStoryCustomThemeBuilder">
-            <div class="lr-story-custom-theme-head"><div><h3>自定义 CSS 主题</h3><p>在这里编写自己的线下模式主题，保存后会成为可重复选择的个人预设，最多保存 30 套。主题保存在当前浏览器，可导出 CSS 与他人分享。CSS 仅作用于 SPACE 线下故事阅读区域，不影响其他 APP、SPACE CITY 地图或主页。</p></div><span class="lr-story-custom-theme-badge">MY THEMES</span></div>
+            <div class="lr-story-custom-theme-head"><div><h3>自定义 CSS 主题</h3><p>从空白开始设计自己的线下模式外观，不继承四套官方预设。保存后会成为可重复选择的个人主题，最多保存 30 套。主题保存在当前浏览器，可导出 CSS 与他人分享。CSS 仅作用于 SPACE 线下故事阅读区域，不影响其他 APP、SPACE CITY 地图或主页。</p></div><span class="lr-story-custom-theme-badge">MY THEMES</span></div>
             <div class="lr-story-custom-theme-list-wrap"><div class="lr-story-custom-theme-list-title">我的主题预设</div><div id="lrStoryCustomThemeList" class="lr-story-custom-theme-list"><div class="lr-story-custom-theme-empty">还没有自定义主题，下面可以创建第一套。</div></div></div>
             <div class="lr-story-custom-theme-editor">
               <div class="lr-story-custom-theme-fields">
                 <label class="lr-story-field"><span class="lr-story-label">编辑已保存主题</span><select id="lrSpaceCustomThemeSelect" class="lr-story-select"><option value="">选择已保存主题进行编辑…</option></select></label>
-                <label class="lr-story-field"><span class="lr-story-label">主题名称</span><input id="lrSpaceCustomThemeName" class="lr-story-input" maxlength="32" placeholder="例如：雾蓝玻璃日记"></label>
-                <label class="lr-story-field"><span class="lr-story-label">基础预设</span><select id="lrSpaceCustomThemeBase" class="lr-story-select"><option value="pixel">原始像素</option><option value="rain">雨幕玻璃</option><option value="cream">奶油黑白</option><option value="yuzu">柚子汽水</option></select></label>
+                <label class="lr-story-field"><span class="lr-story-label">主题名称</span><input id="lrSpaceCustomThemeName" class="lr-story-input" maxlength="32" placeholder="例如：紫雾水晶"></label>
               </div>
-              <label class="lr-story-field"><span class="lr-story-label">编辑 CSS</span><textarea id="lrSpaceCustomCssInput" class="lr-story-textarea lr-story-custom-css-input" maxlength="24000" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="这里已经准备了可直接修改的示例 CSS……"></textarea></label>
+              <label class="lr-story-field"><span class="lr-story-label">编辑 CSS</span><textarea id="lrSpaceCustomCssInput" class="lr-story-textarea lr-story-custom-css-input" maxlength="24000" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="这里已经准备了紫色磨砂玻璃示例，可从空白概念开始自由修改……"></textarea></label>
               <div class="lr-story-custom-theme-toolbar">
                 <button class="lr-story-pixel-btn primary" type="button" data-story-action="save-custom-theme">保存为新主题并应用</button>
                 <button class="lr-story-pixel-btn" type="button" data-story-action="update-custom-theme">更新所选主题</button>
@@ -233,8 +232,8 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
                 <button class="lr-story-pixel-btn" type="button" data-story-action="import-css">导入 CSS</button>
                 <input id="lrSpaceCssFile" type="file" accept=".css,text/css" hidden>
               </div>
-              <div id="lrSpaceCustomCssStatus" class="lr-story-status" role="status" aria-live="polite">示例 CSS 已准备好。修改后点击「保存为新主题并应用」。</div>
-              <details class="lr-story-custom-theme-help"><summary>CSS 编写说明与示例说明</summary><ul><li>只需写选择器和样式声明，不需要写 HTML 或 JavaScript。</li><li>可使用 #lrSpaceStoryWorkspace 定义整页变量，或使用 .lr-story-msg、.lr-story-composer 等类名微调对应区域。新建后点击「保存为新主题并应用」，它会出现在上方「我的主题预设」中。</li><li>所有选择器会自动限定在线下故事工作区内；不允许外部 URL、@import、脚本或全局页面选择器。主题最多保存 30 套，默认保存在当前浏览器；换设备可导出 CSS 再导入。</li><li>需要覆盖内置主题的视觉属性时，可以在对应声明后添加 <code>!important</code>。</li></ul></details>
+              <div id="lrSpaceCustomCssStatus" class="lr-story-status" role="status" aria-live="polite">已载入「紫雾水晶」独立主题示例。修改后点击「保存为新主题并应用」。</div>
+              <details class="lr-story-custom-theme-help"><summary>CSS 编写说明与示例说明</summary><ul><li>只需写选择器和样式声明，不需要写 HTML 或 JavaScript。</li><li>自定义主题完全独立，不会继承任何官方预设。建议从 #lrSpaceStoryWorkspace 定义颜色变量，再用 .lr-story-msg、.lr-story-composer 等类名设计正文、输入卡片和按钮。新建后点击「保存为新主题并应用」，它会出现在上方「我的主题预设」中。</li><li>所有选择器会自动限定在线下故事工作区内；不允许外部 URL、@import、脚本或全局页面选择器。主题最多保存 30 套，默认保存在当前浏览器；换设备可导出 CSS 再导入。</li><li>需要覆盖内置主题的视觉属性时，可以在对应声明后添加 <code>!important</code>。</li></ul></details>
             </div>
           </section></details>
           <details class="lr-story-settings-group" open><summary>故事管理</summary><div class="lr-story-settings-actions"><button class="lr-story-pixel-btn" data-story-action="library">‹ 返回故事档案</button><button class="lr-story-pixel-btn" data-story-action="edit-active">编辑故事资料</button></div><label class="lr-story-field"><span class="lr-story-label">当前剧情分支</span><select id="lrStoryBranchSelect" class="lr-story-select" aria-label="当前分支"></select></label></details>
@@ -263,14 +262,14 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
   const OFFLINE_CUSTOM_THEMES_KEY='love-record-offline-custom-themes-v1';
   const OFFLINE_THEME_NAMES={pixel:'原始像素',rain:'雨幕玻璃',cream:'奶油黑白',yuzu:'柚子汽水'};
   let offlineThemeRaf=0,offlineThemeLastFrame=0,offlineThemeParticles=[],offlineThemeDrops=[],offlineThemeClouds=[],offlineThemeCanvasSize={w:0,h:0,dpr:1},offlineThemeLifecycleBound=false;
-  function getOfflineCustomThemes(){try{const list=JSON.parse(localStorage.getItem(OFFLINE_CUSTOM_THEMES_KEY)||'[]');return Array.isArray(list)?list.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.css==='string'&&Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,x.baseTheme)):[]}catch(e){return []}}
+  function getOfflineCustomThemes(){try{const list=JSON.parse(localStorage.getItem(OFFLINE_CUSTOM_THEMES_KEY)||'[]');return Array.isArray(list)?list.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.css==='string'&&(!x.baseTheme||Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,x.baseTheme))).map(x=>({...x,baseTheme:''})):[]}catch(e){return []}}
   function saveOfflineCustomThemes(list){if(!Array.isArray(list)||list.length>30)throw new Error('最多保存 30 套自定义主题。');localStorage.setItem(OFFLINE_CUSTOM_THEMES_KEY,JSON.stringify(list))}
   function findOfflineCustomTheme(id){return getOfflineCustomThemes().find(x=>x.id===id)||null}
-  function readOfflineThemePrefs(){let theme='pixel',selectedTheme='pixel',customTheme=null,motion=true,rain='medium';try{const t=localStorage.getItem(OFFLINE_THEME_KEY);if(Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,t)){theme=t;selectedTheme=t}else if(typeof t==='string'&&t.startsWith('custom:')){const id=t.slice(7),found=findOfflineCustomTheme(id);if(found){customTheme=found;theme=found.baseTheme;selectedTheme=t}}motion=localStorage.getItem(OFFLINE_THEME_MOTION_KEY)!=='false';rain=['light','medium','heavy'].includes(localStorage.getItem(OFFLINE_THEME_RAIN_KEY))?localStorage.getItem(OFFLINE_THEME_RAIN_KEY):'medium'}catch(e){}return {theme,selectedTheme,customTheme,customThemeId:customTheme?.id||'',isCustom:!!customTheme,motion,rain}}
+  function readOfflineThemePrefs(){let theme='pixel',selectedTheme='pixel',customTheme=null,motion=true,rain='medium';try{const t=localStorage.getItem(OFFLINE_THEME_KEY);if(Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,t)){theme=t;selectedTheme=t}else if(typeof t==='string'&&t.startsWith('custom:')){const id=t.slice(7),found=findOfflineCustomTheme(id);if(found){customTheme=found;theme='custom';selectedTheme=t}}motion=localStorage.getItem(OFFLINE_THEME_MOTION_KEY)!=='false';rain=['light','medium','heavy'].includes(localStorage.getItem(OFFLINE_THEME_RAIN_KEY))?localStorage.getItem(OFFLINE_THEME_RAIN_KEY):'medium'}catch(e){}return {theme,selectedTheme,customTheme,customThemeId:customTheme?.id||'',isCustom:!!customTheme,motion,rain}}
   function writeOfflineThemePref(key,value){try{localStorage.setItem(key,String(value))}catch(e){console.warn('[SPACE offline theme] preference could not be saved',e)}}
-  function renderOfflineCustomThemeList(prefs){const box=$('lrStoryCustomThemeList');if(!box)return;const list=getOfflineCustomThemes();if(!list.length){box.innerHTML='<div class="lr-story-custom-theme-empty">还没有自定义主题。编辑下面的示例 CSS，即可保存为自己的主题预设。</div>'}else{box.innerHTML=list.map(t=>`<button type="button" class="lr-story-custom-theme-chip ${prefs.customThemeId===t.id?'is-selected':''}" data-offline-custom-theme-select="${esc(t.id)}" aria-pressed="${prefs.customThemeId===t.id?'true':'false'}"><span class="lr-story-custom-theme-swatch" data-base="${esc(t.baseTheme)}"></span><span class="lr-story-custom-theme-chip-copy"><strong>${esc(t.name)}</strong><small>${esc(OFFLINE_THEME_NAMES[t.baseTheme]||'原始像素')} · 自定义主题</small></span><span class="lr-story-custom-theme-chip-action">${prefs.customThemeId===t.id?'使用中':'应用'}</span></button>`).join('')}}
+  function renderOfflineCustomThemeList(prefs){const box=$('lrStoryCustomThemeList');if(!box)return;const list=getOfflineCustomThemes();if(!list.length){box.innerHTML='<div class="lr-story-custom-theme-empty">还没有自定义主题。编辑下面的示例 CSS，即可保存为自己的主题预设。</div>'}else{box.innerHTML=list.map(t=>`<button type="button" class="lr-story-custom-theme-chip ${prefs.customThemeId===t.id?'is-selected':''}" data-offline-custom-theme-select="${esc(t.id)}" aria-pressed="${prefs.customThemeId===t.id?'true':'false'}"><span class="lr-story-custom-theme-swatch" data-base="custom"></span><span class="lr-story-custom-theme-chip-copy"><strong>${esc(t.name)}</strong><small>独立 CSS · 不继承官方预设</small></span><span class="lr-story-custom-theme-chip-action">${prefs.customThemeId===t.id?'使用中':'应用'}</span></button>`).join('')}}
   function renderOfflineThemeControls(){const prefs=readOfflineThemePrefs();document.querySelectorAll('[data-offline-theme-select]').forEach(btn=>{const selected=!prefs.isCustom&&btn.dataset.offlineThemeSelect===prefs.theme;btn.classList.toggle('is-selected',selected);btn.setAttribute('aria-pressed',String(selected))});const motion=$('lrStoryThemeMotion');if(motion)motion.checked=prefs.motion;const rain=$('lrStoryRainIntensity');if(rain)rain.value=prefs.rain;const rainControl=$('lrStoryRainControl');if(rainControl)rainControl.hidden=prefs.theme!=='rain';const status=$('lrStoryThemeStatus');if(status){const rainName={light:'小雨',medium:'中雨',heavy:'大雨'}[prefs.rain],name=prefs.customTheme?.name||OFFLINE_THEME_NAMES[prefs.theme];status.textContent=`当前使用：${name} · ${prefs.motion?'动态效果已开启':'动态效果已关闭'}${prefs.theme==='rain'?' · '+rainName:''}`};renderOfflineCustomThemeList(prefs);const select=$('lrSpaceCustomThemeSelect');if(select){const current=select.value;select.innerHTML='<option value="">选择已保存主题进行编辑…</option>'+getOfflineCustomThemes().map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');if(getOfflineCustomThemes().some(t=>t.id===current))select.value=current}}
-  function applyOfflineTheme(){const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace'),reader=work?.querySelector('.lr-story-reader'),space=$('space'),app=space?.closest('.app');const active=!!work&&!work.hidden;if(work){work.dataset.offlineTheme=prefs.theme;work.dataset.offlineCustomTheme=prefs.customThemeId||'';work.classList.toggle('lr-offline-motion-off',!prefs.motion)}if(reader)reader.dataset.offlineTheme=prefs.theme;if(space){if(active)space.dataset.offlineTheme=prefs.theme;else delete space.dataset.offlineTheme}if(document.body){if(active)document.body.dataset.lrOfflineTheme=prefs.theme;else delete document.body.dataset.lrOfflineTheme}if(app){if(active)app.dataset.lrOfflineTheme=prefs.theme;else delete app.dataset.lrOfflineTheme}applyCustomCss(prefs.customTheme?.css||'',!!prefs.customTheme&&active);const canvas=$('lrStoryThemeCanvas');if(canvas){canvas.style.opacity=({pixel:'.92',rain:'1',cream:'.48',yuzu:'.88'})[prefs.theme]||'.85'}renderOfflineThemeControls();if(active&&prefs.motion&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)startOfflineThemeAnimation();else stopOfflineThemeAnimation()}
+  function applyOfflineTheme(){const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace'),reader=work?.querySelector('.lr-story-reader'),space=$('space'),app=space?.closest('.app');const active=!!work&&!work.hidden;if(work){work.dataset.offlineTheme=prefs.theme;work.dataset.offlineCustomTheme=prefs.customThemeId||'';work.classList.toggle('lr-offline-motion-off',!prefs.motion)}if(reader)reader.dataset.offlineTheme=prefs.theme;if(space){if(active)space.dataset.offlineTheme=prefs.theme;else delete space.dataset.offlineTheme}if(document.body){if(active)document.body.dataset.lrOfflineTheme=prefs.theme;else delete document.body.dataset.lrOfflineTheme}if(app){if(active)app.dataset.lrOfflineTheme=prefs.theme;else delete app.dataset.lrOfflineTheme}applyCustomCss(prefs.customTheme?.css||'',!!prefs.customTheme&&active);const canvas=$('lrStoryThemeCanvas');if(canvas){canvas.style.opacity=prefs.isCustom?'0':(({pixel:'.92',rain:'1',cream:'.48',yuzu:'.88'})[prefs.theme]||'.85')}renderOfflineThemeControls();if(active&&prefs.motion&&!prefs.isCustom&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)startOfflineThemeAnimation();else stopOfflineThemeAnimation()}
   function setOfflineTheme(theme){if(!Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,theme))return;writeOfflineThemePref(OFFLINE_THEME_KEY,theme);applyOfflineTheme();const status=$('lrStoryThemeStatus');if(status)status.textContent=`已切换并保存：${OFFLINE_THEME_NAMES[theme]}`}
   function setOfflineCustomTheme(id){const item=findOfflineCustomTheme(id);if(!item)return;writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+id);applyOfflineTheme();const select=$('lrSpaceCustomThemeSelect');if(select)select.value=id;loadCustomThemeIntoEditor(id);const status=$('lrStoryThemeStatus');if(status)status.textContent=`已应用并保存：${item.name}`}
   function makeThemeParticles(theme,w,h){
@@ -350,7 +349,7 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
   }
   function drawOfflineThemeFrame(now){
     offlineThemeRaf=0;const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace'),canvas=$('lrStoryThemeCanvas');
-    if(!canvas||work?.hidden||!prefs.motion||document.hidden||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    if(!canvas||work?.hidden||!prefs.motion||prefs.isCustom||document.hidden||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
     const theme=prefs.theme,ctx=canvas.getContext('2d');if(!ctx)return;
     if(offlineThemeLastFrame&&now-offlineThemeLastFrame<32){offlineThemeRaf=requestAnimationFrame(drawOfflineThemeFrame);return}
     const {w,h}=offlineThemeCanvasSize;if(!w||!h){resizeOfflineThemeCanvas();offlineThemeRaf=requestAnimationFrame(drawOfflineThemeFrame);return}
@@ -390,9 +389,10 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
     offlineThemeRaf=requestAnimationFrame(drawOfflineThemeFrame);
   }
   function stopOfflineThemeAnimation(){if(offlineThemeRaf)cancelAnimationFrame(offlineThemeRaf);offlineThemeRaf=0;offlineThemeLastFrame=0;const canvas=$('lrStoryThemeCanvas');if(canvas){const ctx=canvas.getContext('2d');ctx?.clearRect(0,0,canvas.width,canvas.height)}}
-  function startOfflineThemeAnimation(){stopOfflineThemeAnimation();const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace');if(!work||work.hidden||!prefs.motion||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;resizeOfflineThemeCanvas();offlineThemeRaf=requestAnimationFrame(drawOfflineThemeFrame)}
+  function startOfflineThemeAnimation(){stopOfflineThemeAnimation();const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace');if(!work||work.hidden||!prefs.motion||prefs.isCustom||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;resizeOfflineThemeCanvas();offlineThemeRaf=requestAnimationFrame(drawOfflineThemeFrame)}
   function injectOfflineThemeStyles(){if($('lrStoryOfflineThemeStyles'))return;const st=document.createElement('style');st.id='lrStoryOfflineThemeStyles';st.textContent=`
 /* OFFLINE THEMES 3.0 — page-wide design tokens and full-surface coverage */
+#space.lr-space-v2[data-offline-theme="custom"]{--lr-theme-page:#f1ebf8;--lr-theme-surface:rgba(250,247,255,.72);--lr-theme-card:rgba(255,255,255,.58);--lr-theme-user:rgba(230,220,245,.62);--lr-theme-composer:rgba(248,243,253,.76);--lr-theme-input:rgba(255,255,255,.82);--lr-theme-text:#51445f;--lr-theme-muted:#9385a2;--lr-theme-heading:#69547f;--lr-theme-border:rgba(255,255,255,.9);--lr-theme-accent:#c2a5e2;--lr-theme-accent-strong:#9270b8;--lr-theme-button:rgba(255,255,255,.76);--lr-theme-button-text:#70568d;--lr-theme-shadow:rgba(112,80,150,.14);--lr-theme-radius:22px;--lr-theme-soft:rgba(232,222,247,.68);background:var(--lr-theme-page)!important;color:var(--lr-theme-text)!important}
 #space.lr-space-v2[data-offline-theme="pixel"]{--lr-theme-page:#f6f0e4;--lr-theme-surface:#fffaf0;--lr-theme-card:#fffdf8;--lr-theme-user:#eee4f0;--lr-theme-composer:#f1e8d9;--lr-theme-input:#fffdf8;--lr-theme-text:#554a57;--lr-theme-muted:#927f96;--lr-theme-heading:#59475e;--lr-theme-border:#d7c7d5;--lr-theme-accent:#a985ae;--lr-theme-accent-strong:#846f83;--lr-theme-button:#e6d7eb;--lr-theme-button-text:#5b4860;--lr-theme-shadow:#d8c8d5;--lr-theme-radius:4px;--lr-theme-soft:#f5edf6;background:var(--lr-theme-page)!important;color:var(--lr-theme-text)!important}
 #space.lr-space-v2[data-offline-theme="rain"]{--lr-theme-page:linear-gradient(145deg,#dceaf3 0%,#eaf3f8 42%,#d7e7f1 100%);--lr-theme-surface:rgba(245,251,255,.72);--lr-theme-card:rgba(255,255,255,.58);--lr-theme-user:rgba(210,231,245,.56);--lr-theme-composer:rgba(237,247,253,.72);--lr-theme-input:rgba(255,255,255,.76);--lr-theme-text:#314b60;--lr-theme-muted:#7893a8;--lr-theme-heading:#3d6179;--lr-theme-border:rgba(255,255,255,.76);--lr-theme-accent:#7ba6c2;--lr-theme-accent-strong:#477c9f;--lr-theme-button:rgba(238,248,254,.72);--lr-theme-button-text:#426c86;--lr-theme-shadow:rgba(89,132,160,.16);--lr-theme-radius:21px;--lr-theme-soft:rgba(225,240,249,.60);background:var(--lr-theme-page)!important;color:var(--lr-theme-text)!important}
 #space.lr-space-v2[data-offline-theme="cream"]{--lr-theme-page:#efeee9;--lr-theme-surface:#faf9f5;--lr-theme-card:#fffefa;--lr-theme-user:#e9e8e1;--lr-theme-composer:rgba(250,249,245,.96);--lr-theme-input:#fffefa;--lr-theme-text:#282825;--lr-theme-muted:#77766f;--lr-theme-heading:#20201e;--lr-theme-border:#d4d2ca;--lr-theme-accent:#292927;--lr-theme-accent-strong:#171715;--lr-theme-button:#fffefa;--lr-theme-button-text:#242422;--lr-theme-shadow:rgba(33,33,30,.08);--lr-theme-radius:13px;--lr-theme-soft:#f0efe9;background:var(--lr-theme-page)!important;color:var(--lr-theme-text)!important}
@@ -634,77 +634,186 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
   }
   const LEGACY_SPACE_CSS_KEY='love-record-space-custom-css-v1';
   const SPACE_CSS_STARTER=`/* LOVE RECORD · OFFLINE CUSTOM THEME
-   这份 CSS 只会作用于 SPACE 的线下故事阅读器。
-   可修改颜色、透明度、边框、圆角、阴影与字体。
-   需要覆盖内置主题的属性时，使用 !important。
+   紫雾水晶 / LAVENDER CRYSTAL
+   独立主题：不继承 ORIGINAL PIXEL / RAIN GLASS / CREAM MONO / YUZU SODA。
+   这份示例覆盖页面、正文、用户消息、回复栏、输入框和设置面板。
+   可以直接改颜色、透明度、模糊、边框、圆角与阴影。
+   选择器会自动限制在线下故事工作区内；不要写 html、body 或其他 APP 选择器。
 */
+
+/* 01 · 主题色彩变量与页面底色 */
 #lrSpaceStoryWorkspace {
-  --lr-theme-page: #eaf3f8 !important;
-  --lr-theme-surface: rgba(255,255,255,.72) !important;
-  --lr-theme-card: rgba(255,255,255,.56) !important;
-  --lr-theme-user: rgba(207,231,245,.66) !important;
-  --lr-theme-composer: rgba(244,250,254,.78) !important;
-  --lr-theme-input: rgba(255,255,255,.82) !important;
-  --lr-theme-text: #314b60 !important;
-  --lr-theme-muted: #7893a8 !important;
-  --lr-theme-heading: #385d76 !important;
-  --lr-theme-border: rgba(255,255,255,.88) !important;
-  --lr-theme-accent: #8bb8d1 !important;
-  --lr-theme-accent-strong: #477c9f !important;
-  --lr-theme-button: rgba(255,255,255,.78) !important;
-  --lr-theme-button-text: #426c86 !important;
-  --lr-theme-shadow: rgba(71,118,149,.16) !important;
-  --lr-theme-radius: 20px !important;
-  --lr-theme-soft: rgba(224,240,249,.72) !important;
+  --lr-theme-page: #eee8f8 !important;
+  --lr-theme-surface: rgba(250,247,255,.70) !important;
+  --lr-theme-card: rgba(255,255,255,.52) !important;
+  --lr-theme-user: rgba(220,205,244,.52) !important;
+  --lr-theme-composer: rgba(246,240,255,.68) !important;
+  --lr-theme-input: rgba(255,255,255,.78) !important;
+  --lr-theme-text: #51445f !important;
+  --lr-theme-muted: #9182a2 !important;
+  --lr-theme-heading: #68527e !important;
+  --lr-theme-border: rgba(255,255,255,.92) !important;
+  --lr-theme-accent: #c4a9e5 !important;
+  --lr-theme-accent-strong: #8d6bb3 !important;
+  --lr-theme-button: rgba(255,255,255,.74) !important;
+  --lr-theme-button-text: #70568d !important;
+  --lr-theme-shadow: rgba(112,80,150,.16) !important;
+  --lr-theme-radius: 23px !important;
+  --lr-theme-soft: rgba(230,218,247,.68) !important;
+  background: linear-gradient(145deg,#f5f0fb 0%,#e9e1f5 48%,#f4effb 100%) !important;
+  color: var(--lr-theme-text) !important;
 }
 
-/* 用户输入卡片 */
+/* 02 · 柔和的紫色环境光：缓慢移动，不遮挡阅读内容 */
+.lr-story-reader {
+  background: transparent !important;
+  color: var(--lr-theme-text) !important;
+}
+.lr-story-reader::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 12%,rgba(213,187,244,.34),transparent 38%),
+    radial-gradient(ellipse at 88% 38%,rgba(190,170,229,.26),transparent 42%),
+    radial-gradient(ellipse at 48% 92%,rgba(246,232,255,.58),transparent 46%);
+  background-size: 135% 135%;
+  animation: lavenderCrystalAurora 24s ease-in-out infinite alternate;
+}
+.lr-story-reader > *:not(.lr-story-theme-canvas) {
+  position: relative;
+  z-index: 2;
+}
+
+/* 03 · 顶部标题栏、返回档案与设置按钮 */
+.lr-story-reader-top {
+  background: rgba(246,241,252,.66) !important;
+  border-color: rgba(255,255,255,.78) !important;
+  backdrop-filter: blur(26px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(1.5) !important;
+}
+.lr-story-back-btn,
+.lr-story-gear-btn {
+  background: rgba(255,255,255,.72) !important;
+  color: #71578d !important;
+  border: 1px solid rgba(255,255,255,.96) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 7px 22px rgba(112,80,150,.12),inset 0 1px 0 #fff !important;
+}
+
+/* 04 · 用户消息玻璃卡片 */
 .lr-story-msg.user {
-  background: rgba(205,231,246,.60) !important;
-  border: 1px solid rgba(178,214,235,.90) !important;
-  border-radius: 22px !important;
+  background: linear-gradient(145deg,rgba(225,211,246,.66),rgba(241,234,251,.48)) !important;
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 25px !important;
+  color: #51445f !important;
+  backdrop-filter: blur(26px) saturate(1.48) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(1.48) !important;
+  box-shadow: 0 12px 32px rgba(112,80,150,.11),inset 0 1px 1px rgba(255,255,255,.96) !important;
 }
 
-/* AI 剧情正文卡片与折叠标题 */
+/* 05 · AI 正文玻璃卡片与展开标题 */
 .lr-story-msg.assistant {
-  background: rgba(255,255,255,.58) !important;
-  border: 1px solid rgba(255,255,255,.92) !important;
-  border-radius: 22px !important;
-  backdrop-filter: blur(20px) saturate(1.35) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(1.35) !important;
+  background: linear-gradient(145deg,rgba(255,255,255,.72),rgba(245,239,253,.52)) !important;
+  border: 1px solid rgba(255,255,255,.96) !important;
+  border-radius: 25px !important;
+  color: #51445f !important;
+  backdrop-filter: blur(30px) saturate(1.55) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(1.55) !important;
+  box-shadow: 0 14px 36px rgba(112,80,150,.10),inset 0 1px 1px rgba(255,255,255,.98) !important;
 }
 .lr-story-msg-fold > summary {
-  background: rgba(255,255,255,.48) !important;
-  border-radius: 14px !important;
+  background: rgba(235,225,248,.56) !important;
+  border: 1px solid rgba(255,255,255,.9) !important;
+  border-radius: 16px !important;
+  color: #70568d !important;
 }
 .lr-story-msg-body {
-  color: var(--lr-theme-text) !important;
-  line-height: 2 !important;
-  letter-spacing: .02em;
+  color: #51445f !important;
+  line-height: 2.05 !important;
+  letter-spacing: .025em !important;
 }
 
-/* 底部回复栏与输入框 */
-.lr-story-composer {
-  background: rgba(244,250,254,.78) !important;
-  border: 1px solid rgba(255,255,255,.9) !important;
+/* 06 · 长记忆、时间轴与输出提示 */
+.lr-story-long-memory,
+.lr-story-timeline,
+.lr-story-output-toolbar,
+.lr-story-live-region,
+#lrStoryLiveDraft {
+  background: rgba(250,247,255,.62) !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
   border-radius: 22px !important;
-  backdrop-filter: blur(24px) saturate(1.4) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+  color: #51445f !important;
+  backdrop-filter: blur(24px) saturate(1.45) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.45) !important;
+  box-shadow: 0 9px 26px rgba(112,80,150,.08),inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+
+/* 07 · 底部回复栏与输入框 */
+.lr-story-composer {
+  background: linear-gradient(145deg,rgba(250,247,255,.82),rgba(230,218,247,.58)) !important;
+  border: 1px solid rgba(255,255,255,.96) !important;
+  border-radius: 26px !important;
+  color: #51445f !important;
+  backdrop-filter: blur(32px) saturate(1.58) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.58) !important;
+  box-shadow: 0 16px 38px rgba(112,80,150,.13),inset 0 1px 1px rgba(255,255,255,.98) !important;
 }
 .lr-story-composer textarea {
-  background: rgba(255,255,255,.82) !important;
-  border-radius: 15px !important;
+  background: rgba(255,255,255,.78) !important;
+  border: 1px solid rgba(255,255,255,.98) !important;
+  border-radius: 18px !important;
+  color: #51445f !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  box-shadow: inset 0 2px 8px rgba(112,80,150,.045) !important;
 }
 .lr-story-composer #lrStoryGenerate {
-  background: #477c9f !important;
-  border-radius: 14px !important;
+  background: linear-gradient(135deg,#b99bdd,#8f6db6) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.76) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 20px rgba(125,88,168,.24),inset 0 1px 1px rgba(255,255,255,.42) !important;
+}
+
+/* 08 · 设置面板、按钮和输入控件 */
+.lr-story-settings-sheet,
+.lr-story-settings-group,
+.lr-story-profile-sheet {
+  background: rgba(249,245,255,.82) !important;
+  border: 1px solid rgba(255,255,255,.94) !important;
+  border-radius: 24px !important;
+  color: #51445f !important;
+  backdrop-filter: blur(28px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.5) !important;
+}
+.lr-story-pixel-btn,
+.lr-story-input,
+.lr-story-textarea,
+.lr-story-select {
+  border-radius: 15px !important;
+}
+.lr-story-pixel-btn {
+  background: rgba(255,255,255,.72) !important;
+  color: #70568d !important;
+  border: 1px solid rgba(255,255,255,.96) !important;
+  box-shadow: 0 5px 15px rgba(112,80,150,.10),inset 0 1px 0 #fff !important;
+}
+.lr-story-pixel-btn.primary {
+  background: linear-gradient(135deg,#b99bdd,#8f6db6) !important;
   color: #fff !important;
 }
 
-/* 设置面板也会使用这套自定义主题 */
-.lr-story-settings-sheet,
-.lr-story-settings-group {
-  border-radius: 20px !important;
+/* 09 · 轻微环境光动画：不移动正文或按钮 */
+@keyframes lavenderCrystalAurora {
+  0% { background-position: 0% 0%; opacity: .72; }
+  50% { background-position: 45% 35%; opacity: .94; }
+  100% { background-position: 100% 70%; opacity: .78; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lr-story-reader::before { animation: none !important; }
 }
 `;
   function scopeCustomCss(input){
@@ -712,7 +821,7 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
     if(!css)return '';
     if(css.length>24000)throw new Error('CSS 最多 24,000 个字符。');
     if(/@import|@namespace|@charset|@font-face|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding|@document|@page/i.test(css))throw new Error('不允许导入外部资源、字体文件、执行表达式或使用全局页面规则。');
-    const scope='#space.lr-space-v2 #lrSpaceStoryWorkspace';
+    const scope='#space.lr-space-v2[data-offline-theme="custom"] #lrSpaceStoryWorkspace';
     const keyframeMap=new Map();
     const hash=Array.from(css).reduce((h,ch)=>((h*33)^ch.charCodeAt(0))>>>0,5381).toString(36);
     function splitSelectors(value){const out=[];let buf='',depth=0,quote='';for(let i=0;i<value.length;i++){const c=value[i];if(quote){buf+=c;if(c===quote&&value[i-1]!=='\\')quote='';continue}if(c==='"'||c==="'"){quote=c;buf+=c;continue}if(c==='('||c==='[')depth++;if(c===')'||c===']')depth=Math.max(0,depth-1);if(c===','&&depth===0){out.push(buf.trim());buf='';}else buf+=c}if(buf.trim())out.push(buf.trim());return out}
@@ -723,15 +832,15 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
   }
   function applyCustomCss(css,enabled=true){let node=$('lrSpaceCustomCssStyle');if(!node){node=document.createElement('style');node.id='lrSpaceCustomCssStyle';node.dataset.scope='offline-story-only';document.head.appendChild(node)}node.textContent=enabled?scopeCustomCss(css):'';return node.textContent}
   function makeCustomThemeId(){return 'offline-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
-  function loadCustomThemeIntoEditor(id){const item=findOfflineCustomTheme(id);if(!item)return;const name=$('lrSpaceCustomThemeName'),base=$('lrSpaceCustomThemeBase'),input=$('lrSpaceCustomCssInput'),select=$('lrSpaceCustomThemeSelect');if(name)name.value=item.name;if(base)base.value=item.baseTheme;if(input)input.value=item.css;if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`已载入「${item.name}」，可修改后更新，或另存为新主题。`}
+  function loadCustomThemeIntoEditor(id){const item=findOfflineCustomTheme(id);if(!item)return;const name=$('lrSpaceCustomThemeName'),input=$('lrSpaceCustomCssInput'),select=$('lrSpaceCustomThemeSelect');if(name)name.value=item.name;if(input)input.value=item.css;if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`已载入「${item.name}」，这是独立 CSS 主题，不继承官方预设；可修改后更新，或另存为新主题。`}
   function renderCustomThemeEditor(){const input=$('lrSpaceCustomCssInput');if(input&&!input.value)input.value=SPACE_CSS_STARTER;renderOfflineThemeControls()}
-  function saveCustomTheme(update=false){const name=$('lrSpaceCustomThemeName')?.value.trim()||'',baseTheme=$('lrSpaceCustomThemeBase')?.value||'pixel',css=$('lrSpaceCustomCssInput')?.value||'',select=$('lrSpaceCustomThemeSelect');if(!name){notify('请先填写主题名称。');$('lrSpaceCustomThemeName')?.focus?.();return}if(!Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,baseTheme))throw new Error('请选择有效的基础预设。');if(!css.trim())throw new Error('CSS 内容不能为空。');if(!scopeCustomCss(css).trim())throw new Error('CSS 中没有可应用的样式规则，请检查示例或补充有效声明。');let list=getOfflineCustomThemes(),item;if(update){const id=select?.value||'';const index=list.findIndex(x=>x.id===id);if(index<0)throw new Error('请先从「我的主题预设」选择一套主题，再更新。');if(list.some((x,i)=>i!==index&&x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称。');item={...list[index],name,baseTheme,css,updatedAt:Date.now()};list[index]=item}else{if(list.some(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称，或选择原主题进行更新。');if(list.length>=30)throw new Error('最多保存 30 套自定义主题。');item={id:makeCustomThemeId(),name,baseTheme,css,createdAt:Date.now(),updatedAt:Date.now()};list.push(item)}saveOfflineCustomThemes(list);writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+item.id);applyOfflineTheme();renderOfflineThemeControls();if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`「${item.name}」已保存并应用。它只会作用于线下故事阅读区域。`;notify(`自定义主题「${item.name}」已保存并应用。`)}
-  function deleteCustomTheme(){const id=$('lrSpaceCustomThemeSelect')?.value||'';const item=findOfflineCustomTheme(id);if(!item){notify('请先选择要删除的自定义主题。');return}if(!confirm(`确定删除自定义主题「${item.name}」吗？`))return;const wasActive=readOfflineThemePrefs().customThemeId===id;const list=getOfflineCustomThemes().filter(x=>x.id!==id);saveOfflineCustomThemes(list);if(wasActive)writeOfflineThemePref(OFFLINE_THEME_KEY,'pixel');$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomThemeBase').value='pixel';$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;applyOfflineTheme();renderOfflineThemeControls();$('lrSpaceCustomCssStatus').textContent='已删除主题；官方四套预设不受影响。';notify('自定义主题已删除。')}
+  function saveCustomTheme(update=false){const name=$('lrSpaceCustomThemeName')?.value.trim()||'',css=$('lrSpaceCustomCssInput')?.value||'',select=$('lrSpaceCustomThemeSelect');if(!name){notify('请先填写主题名称。');$('lrSpaceCustomThemeName')?.focus?.();return}if(!css.trim())throw new Error('CSS 内容不能为空。');if(!scopeCustomCss(css).trim())throw new Error('CSS 中没有可应用的样式规则，请检查示例或补充有效声明。');let list=getOfflineCustomThemes(),item;if(update){const id=select?.value||'';const index=list.findIndex(x=>x.id===id);if(index<0)throw new Error('请先从「我的主题预设」选择一套主题，再更新。');if(list.some((x,i)=>i!==index&&x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称。');item={...list[index],name,css,baseTheme:'',updatedAt:Date.now()};list[index]=item}else{if(list.some(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称，或选择原主题进行更新。');if(list.length>=30)throw new Error('最多保存 30 套自定义主题。');item={id:makeCustomThemeId(),name,css,baseTheme:'',createdAt:Date.now(),updatedAt:Date.now()};list.push(item)}saveOfflineCustomThemes(list);writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+item.id);applyOfflineTheme();renderOfflineThemeControls();if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`「${item.name}」已保存并应用。它是独立主题，不继承官方预设，只作用于线下故事阅读区域。`;notify(`自定义主题「${item.name}」已保存并应用。`)}
+  function deleteCustomTheme(){const id=$('lrSpaceCustomThemeSelect')?.value||'';const item=findOfflineCustomTheme(id);if(!item){notify('请先选择要删除的自定义主题。');return}if(!confirm(`确定删除自定义主题「${item.name}」吗？`))return;const wasActive=readOfflineThemePrefs().customThemeId===id;const list=getOfflineCustomThemes().filter(x=>x.id!==id);saveOfflineCustomThemes(list);if(wasActive)writeOfflineThemePref(OFFLINE_THEME_KEY,'pixel');$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;applyOfflineTheme();renderOfflineThemeControls();$('lrSpaceCustomCssStatus').textContent='已删除个人主题；四套官方预设不受影响。';notify('自定义主题已删除。')}
   function openCustomCss(){openOfflineSettings();const group=$('lrStoryCustomThemeBuilder')?.closest('details');if(group)group.open=true;$('lrStoryCustomThemeBuilder')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});renderCustomThemeEditor()}
   function saveCustomCss(){saveCustomTheme(false)}
-  function loadCustomCssAtBoot(){try{const legacy=localStorage.getItem(LEGACY_SPACE_CSS_KEY)||'';if(!legacy)return;const wasEnabled=localStorage.getItem(LEGACY_SPACE_CSS_KEY+':enabled')!=='false';const list=getOfflineCustomThemes();let migrated=list.find(x=>x.legacy)||null;if(!migrated){const css=legacy.replace(/:root\b/g,'.lr-story-reader').replace(/#space(?:\.lr-space-v2)?/g,'.lr-story-reader');const compiled=scopeCustomCss(css);if(compiled.trim()){migrated={id:'legacy-'+Date.now().toString(36),name:'旧版自定义主题',baseTheme:'pixel',css,legacy:true,createdAt:Date.now(),updatedAt:Date.now()};list.push(migrated);saveOfflineCustomThemes(list)}}if(wasEnabled&&migrated)writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+migrated.id);localStorage.removeItem(LEGACY_SPACE_CSS_KEY);localStorage.removeItem(LEGACY_SPACE_CSS_KEY+':enabled')}catch(e){console.warn('[SPACE] legacy CSS migration skipped',e)}}
+  function loadCustomCssAtBoot(){try{const legacy=localStorage.getItem(LEGACY_SPACE_CSS_KEY)||'';if(!legacy)return;const wasEnabled=localStorage.getItem(LEGACY_SPACE_CSS_KEY+':enabled')!=='false';const list=getOfflineCustomThemes();let migrated=list.find(x=>x.legacy)||null;if(!migrated){const css=legacy.replace(/:root\b/g,'.lr-story-reader').replace(/#space(?:\.lr-space-v2)?/g,'.lr-story-reader');const compiled=scopeCustomCss(css);if(compiled.trim()){migrated={id:'legacy-'+Date.now().toString(36),name:'旧版自定义主题',baseTheme:'',css,legacy:true,createdAt:Date.now(),updatedAt:Date.now()};list.push(migrated);saveOfflineCustomThemes(list)}}if(wasEnabled&&migrated)writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+migrated.id);localStorage.removeItem(LEGACY_SPACE_CSS_KEY);localStorage.removeItem(LEGACY_SPACE_CSS_KEY+':enabled')}catch(e){console.warn('[SPACE] legacy CSS migration skipped',e)}}
   function exportCustomCss(){const css=$('lrSpaceCustomCssInput')?.value||'';downloadFile('LOVE_RECORD_OFFLINE_custom_theme.css',css,'text/css;charset=utf-8')}
-  function newCustomThemeDraft(){$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomThemeBase').value='pixel';$('lrSpaceCustomCssStatus').textContent='已新建主题草稿。编辑名称和 CSS 后，可以保存为新的个人预设。'}
+  function newCustomThemeDraft(){$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomCssStatus').textContent='已新建独立主题草稿。它不会继承任何官方预设。填写名称并编辑 CSS 后即可保存。'}
   function resetCustomCss(){if(!confirm('清空当前编辑框并载入官方示例 CSS？已保存的主题不会删除。'))return;newCustomThemeDraft()}
   function importCustomCssFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{const value=String(reader.result||'');try{scopeCustomCss(value);$('lrSpaceCustomCssInput').value=value;$('lrSpaceCustomCssStatus').textContent='CSS 文件已载入并通过作用域检查；填写主题名称后可以保存。'}catch(err){$('lrSpaceCustomCssStatus').textContent='CSS 导入失败：'+err.message}};reader.onerror=()=>$('lrSpaceCustomCssStatus').textContent='CSS 文件读取失败。';reader.readAsText(file)}
   function checkSelections(selector){return [...document.querySelectorAll(selector+':checked')].map(x=>x.value)}
@@ -1079,6 +1188,9 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
     window.addEventListener('lr-self-personas-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
   }
   function injectOfflineCustomThemeStyles(){if($('lrStoryOfflineCustomThemeStyles'))return;const st=document.createElement('style');st.id='lrStoryOfflineCustomThemeStyles';st.textContent=`
+#space.lr-space-v2 #lrSpaceStoryWorkspace.lr-offline-motion-off *,#space.lr-space-v2 #lrSpaceStoryWorkspace.lr-offline-motion-off *::before,#space.lr-space-v2 #lrSpaceStoryWorkspace.lr-offline-motion-off *::after{animation-play-state:paused!important;transition:none!important}
+#space.lr-space-v2 #lrSpaceStoryWorkspace.lr-offline-motion-off .lr-story-reader::before,#space.lr-space-v2 #lrSpaceStoryWorkspace.lr-offline-motion-off .lr-story-reader::after{animation:none!important}
+@media(prefers-reduced-motion:reduce){#space.lr-space-v2 #lrSpaceStoryWorkspace *,#space.lr-space-v2 #lrSpaceStoryWorkspace *::before,#space.lr-space-v2 #lrSpaceStoryWorkspace *::after{animation:none!important;transition:none!important}}
 #space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-builder{margin:18px 0 2px;padding:15px;border:1px solid var(--lr-theme-border,#d7c7d5);border-radius:16px;background:var(--lr-theme-surface,rgba(255,255,255,.55));color:var(--lr-theme-text,#554a57)}
 #space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:13px}
 #space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-head h3{margin:0 0 5px;font-size:14px;color:var(--lr-theme-heading,#59475e)}
