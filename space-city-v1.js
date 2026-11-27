@@ -42,6 +42,21 @@
   const legacySpaceBridge=window.LRSpaceStoryBridge||{};
   let worlds=[],activeId='',world=null,dbPromise=null,tickTimer=null,openModal='',selectedResidentId='',controlResidentId='',currentScreen='map',interiorBuildingId='',toastTimer=null;
   const DEFAULT_SETTINGS={speed:'standard',customSpeed:20,paused:false,residentLimit:24,weather:'sunny',season:'spring',lastRealAt:now(),realMultiplier:20};
+  const pixelPngCache=new Map();
+  function pixelCanvasUrl(cacheKey,width,height,draw){
+    if(pixelPngCache.has(cacheKey))return pixelPngCache.get(cacheKey);
+    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+    const ctx=canvas.getContext('2d',{alpha:true});
+    if(!ctx)throw new Error('当前浏览器无法创建像素画布');
+    ctx.imageSmoothingEnabled=false;
+    draw(ctx,(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));});
+    const url=canvas.toDataURL('image/png');
+    if(pixelPngCache.size>360)pixelPngCache.delete(pixelPngCache.keys().next().value);
+    pixelPngCache.set(cacheKey,url);return url;
+  }
+  function pixelImg(className,url,alt=''){
+    return `<img class="${className}" src="${url}" alt="${esc(alt)}" draggable="false" decoding="async">`;
+  }
   function people(){
     try{if(window.LRSpaceStoryBridge?.getContacts)return window.LRSpaceStoryBridge.getContacts().filter(p=>p&&p.id&&p.name)}catch(e){}
     try{const s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');return Array.isArray(s.people)?s.people.filter(p=>p&&p.id&&p.name&&p.id!=='p-yanyan'):[]}catch(e){return []}
@@ -338,6 +353,19 @@
 #space.lr-space-city-shell .sc-face-feature button.active{border-color:#9674a0;background:#eee3f0;color:#624b6b;box-shadow:0 2px 0 #d4c1d7;}
 #space.lr-space-city-shell .sc-face-grid{display:block;}
 `;
+    st.textContent += `
+/* TRUE PIXEL PNG pipeline: all game sprites are raster PNGs, never SVG artwork. */
+#space.lr-space-city-shell .sc-pixel-character{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;image-rendering:crisp-edges;}
+#space.lr-space-city-shell .sc-sprite .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-room-person .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-closet-avatar .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-profile-preview .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-cloth-thumb{overflow:hidden;}
+#space.lr-space-city-shell .sc-cloth-pixel-preview{width:100%;height:100%;display:grid;place-items:center;overflow:hidden;}
+#space.lr-space-city-shell .sc-cloth-pixel-preview .sc-pixel-character{width:100%;height:100%;max-width:none;object-fit:contain;image-rendering:pixelated;}
+#space.lr-space-city-shell .sc-furniture-art img{width:100%;height:100%;max-width:100px;object-fit:contain;image-rendering:pixelated;}
+#space.lr-space-city-shell .sc-building-art img{width:min(100%,112px);height:88px;object-fit:contain;image-rendering:pixelated;}
+`;
     document.head.appendChild(st);
   }
   function normalizePixelLooks(){
@@ -520,39 +548,84 @@
     if(pose==='eat'){paint(18,18,4,1,'#f2d8a8')}
     if(pose==='sleep'||expr==='sleepy'){paint(30,7,1,1,'#8d87a8');paint(32,5,1,1,'#8d87a8');paint(34,3,1,1,'#8d87a8')}
 
-    // Compact each horizontal run into pixel rectangles. Every visible element is a hard-edged pixel.
-    let out='';for(let y=0;y<H;y++){let x=0;while(x<W){const c=grid[y][x];if(!c){x++;continue}let end=x+1;while(end<W&&grid[y][end]===c)end++;out+=`<rect x="${x}" y="${y}" width="${end-x}" height="1" fill="${c}"/>`;x=end}}
-    return `<svg class="sc-pixel-character" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(r?.name||'像素居民')}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${out}</svg>`;
+    // Rasterize the actual colour grid to a transparent PNG. No SVG, paths or strokes are emitted.
+    const cacheKey='character:'+JSON.stringify([o,expr,pose,bodyShape,r?.gender||r?.personaSnapshot?.gender||'']);
+    const png=pixelCanvasUrl(cacheKey,W,H,(ctx)=>{
+      const image=ctx.createImageData(W,H);
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+        const color=grid[y][x];if(!color)continue;
+        const n=parseInt(color.slice(1),16),i=(y*W+x)*4;
+        image.data[i]=(n>>16)&255;image.data[i+1]=(n>>8)&255;image.data[i+2]=n&255;image.data[i+3]=255;
+      }
+      ctx.putImageData(image,0,0);
+    });
+    return pixelImg('sc-pixel-character',png,r?.name||'像素居民');
   }
 
-  function buildingSvg(type='home'){
-    const palette={home:['#b78b9c','#f2d8b7','#76576b'],cafe:['#c98f76','#f6dfb8','#805b50'],shop:['#88a6aa','#f2ddb5','#557378'],park:['#84a86f','#d8e5ad','#52764b'],school:['#8b91bd','#f1d8a5','#5c638a'],studio:['#bc9a70','#f4dfb8','#876b4c'],legacy:['#9c8daf','#f0dfb7','#6e5c7a']};
-    const [roof,wall,trim]=palette[type]||palette.home;
-    const roofMarkup=type==='park'?'<rect x="16" y="24" width="64" height="12" fill="#75a96b"/><rect x="27" y="12" width="42" height="18" fill="#8ebc75"/>':`<path d="M8 38L48 8 88 38H8Z" fill="${roof}"/><path d="M15 36L48 12 81 36" fill="none" stroke="${trim}" stroke-width="5"/>`;
-    const body=type==='park'?'<rect x="24" y="34" width="48" height="33" fill="#96bd79"/><rect x="15" y="61" width="66" height="8" fill="#6d955e"/><circle cx="48" cy="46" r="9" fill="#c9df9f"/>':`<rect x="15" y="35" width="66" height="38" fill="${wall}" stroke="${trim}" stroke-width="4"/><rect x="24" y="43" width="13" height="12" fill="#8cc5d0" stroke="${trim}" stroke-width="3"/><rect x="59" y="43" width="13" height="12" fill="#8cc5d0" stroke="${trim}" stroke-width="3"/><rect x="42" y="52" width="13" height="21" fill="${trim}"/><rect x="45" y="56" width="7" height="8" fill="#e9c98e"/>`;
-    return `<svg viewBox="0 0 96 82" aria-hidden="true" shape-rendering="crispEdges"><rect x="5" y="72" width="86" height="5" fill="#71815d"/>${roofMarkup}${body}<rect x="9" y="75" width="78" height="3" fill="#e8dfbc"/></svg>`;
+  function buildingPng(type='home'){
+    const palettes={home:['#bd8197','#f0d7ad','#77546c','#9fc9d0'],cafe:['#c88970','#f3dfbf','#80564b','#f2c985'],shop:['#78a9aa','#f4dfb7','#536e70','#a6d3cf'],park:['#79a96f','#cce0a5','#4f774d','#9bc98b'],school:['#8e91bf','#f2dfb0','#5e6388','#a8cbd4'],studio:['#bd9a70','#f3dfbf','#806549','#b3c6ac'],legacy:['#9d8caf','#f0dfb7','#6e5c7a','#a9c6d1']};
+    const [roof,wall,trim,glass]=palettes[type]||palettes.home;
+    const src=pixelCanvasUrl('building:'+type,96,82,(ctx,R)=>{
+      R(5,75,86,4,'#71815d');R(10,72,76,3,'#e8dfbc');
+      if(type==='park'){
+        R(39,18,18,39,'#77543f');R(30,31,36,12,'#5d914f');R(22,25,52,18,'#72a967');R(29,17,38,15,'#8abb70');R(36,10,24,11,'#9ac77a');
+        R(15,48,17,12,'#87b96c');R(64,47,18,13,'#87b96c');R(19,45,9,5,'#d9b1c1');R(67,44,10,6,'#f0d28a');R(43,59,10,13,'#8a7054');
+        return;
+      }
+      // Stepped roof, wall and trim are built only from solid pixel rectangles.
+      R(8,35,80,7,trim);R(14,29,68,8,roof);R(22,23,52,8,roof);R(30,17,36,8,roof);R(39,11,18,8,roof);
+      R(17,39,62,35,trim);R(21,42,54,30,wall);R(25,46,13,13,trim);R(27,48,9,9,glass);R(58,46,13,13,trim);R(60,48,9,9,glass);
+      R(42,54,13,20,trim);R(45,57,7,13,'#c99476');R(50,64,2,2,'#f3d68c');
+      R(23,43,8,2,'#fff0d4');R(59,43,8,2,'#fff0d4');
+      if(type==='cafe'){R(18,37,60,5,'#f7e9ce');for(let x=20;x<78;x+=12)R(x,37,6,5,'#d58d77');R(42,28,12,5,'#fff0d7');}
+      if(type==='shop'){R(18,36,60,7,'#f4e8d2');for(let x=20;x<78;x+=10)R(x,36,5,7,x%20?'#e6a4a7':'#79adb0');R(40,27,16,8,'#e8c4a8');}
+      if(type==='school'){R(40,9,16,9,'#d9d9e9');R(31,30,34,6,'#f5e9c9');}
+      if(type==='studio'){R(43,24,10,8,'#f5e8c9');R(45,26,6,4,'#d39e91');R(74,31,5,7,'#e4c88a');}
+    });
+    return pixelImg('sc-pixel-building',src,type+' 建筑像素图');
   }
-  function furnitureSvg(name){
-    const common='shape-rendering="crispEdges"';
-    const icons={
-      '床':'<rect x="10" y="37" width="76" height="27" fill="#b98da5" stroke="#765a71" stroke-width="4"/><rect x="16" y="28" width="22" height="15" fill="#f5e9d8" stroke="#8d7584" stroke-width="3"/><rect x="40" y="39" width="40" height="20" fill="#d6a9c2"/><rect x="8" y="63" width="8" height="9" fill="#74596c"/><rect x="80" y="63" width="8" height="9" fill="#74596c"/>',
-      '沙发':'<rect x="10" y="35" width="76" height="32" fill="#b18cba" stroke="#715c7a" stroke-width="4"/><rect x="16" y="28" width="64" height="23" fill="#d0b3d2" stroke="#715c7a" stroke-width="3"/><rect x="5" y="34" width="11" height="34" fill="#92739a"/><rect x="80" y="34" width="11" height="34" fill="#92739a"/><rect x="19" y="65" width="8" height="8" fill="#715c7a"/><rect x="69" y="65" width="8" height="8" fill="#715c7a"/>',
-      '餐桌':'<rect x="12" y="30" width="72" height="12" fill="#bd936d" stroke="#785943" stroke-width="4"/><rect x="21" y="42" width="8" height="30" fill="#896448"/><rect x="67" y="42" width="8" height="30" fill="#896448"/><rect x="35" y="21" width="26" height="8" fill="#e6c8a3"/>',
-      '书架':'<rect x="20" y="9" width="56" height="65" fill="#a77c62" stroke="#664e48" stroke-width="4"/><path d="M23 31H73M23 51H73" stroke="#664e48" stroke-width="4"/><rect x="27" y="15" width="10" height="14" fill="#a9b9c8"/><rect x="40" y="13" width="9" height="16" fill="#d2a27d"/><rect x="53" y="17" width="14" height="12" fill="#8fa77f"/><rect x="28" y="35" width="12" height="14" fill="#d9c08a"/><rect x="44" y="34" width="10" height="15" fill="#9985ad"/><rect x="58" y="36" width="10" height="13" fill="#a9b9c8"/>',
-      '咖啡机':'<rect x="23" y="12" width="50" height="54" fill="#9daeb0" stroke="#596c72" stroke-width="4"/><rect x="32" y="20" width="32" height="18" fill="#d7e5df"/><rect x="36" y="44" width="24" height="8" fill="#5d6670"/><rect x="38" y="57" width="20" height="11" fill="#f1e1c7" stroke="#866d68" stroke-width="3"/><rect x="46" y="39" width="5" height="10" fill="#6a4c3d"/>',
-      '服装架':'<path d="M17 18H79M24 18V70M72 18V70" stroke="#78647a" stroke-width="5"/><path d="M30 23V47H42V23M44 23V48H57V23M60 23V47H69V23" fill="#d3afc9" stroke="#8b6c8c" stroke-width="3"/><path d="M35 20l-5 7M49 20l-5 7M64 20l-4 7" stroke="#78647a" stroke-width="3"/>',
-      '试衣镜':'<rect x="29" y="6" width="38" height="64" rx="0" fill="#b4d0d2" stroke="#826d7d" stroke-width="5"/><rect x="35" y="13" width="26" height="49" fill="#d9e7e0"/><rect x="20" y="70" width="56" height="5" fill="#826d7d"/>',
-      '收银台':'<rect x="11" y="30" width="74" height="38" fill="#b58c70" stroke="#765947" stroke-width="4"/><rect x="23" y="15" width="26" height="17" fill="#91b8b7" stroke="#596d6a" stroke-width="3"/><rect x="55" y="20" width="18" height="10" fill="#f4e3bd"/>',
-      '长椅':'<rect x="16" y="35" width="64" height="10" fill="#b58a61" stroke="#70533e" stroke-width="3"/><rect x="16" y="49" width="64" height="10" fill="#c49b70" stroke="#70533e" stroke-width="3"/><rect x="23" y="59" width="7" height="15" fill="#70533e"/><rect x="66" y="59" width="7" height="15" fill="#70533e"/>',
-      '喷泉':'<rect x="12" y="54" width="72" height="17" fill="#8ab7c0" stroke="#547b87" stroke-width="4"/><rect x="26" y="43" width="44" height="11" fill="#a5d0d4" stroke="#547b87" stroke-width="3"/><rect x="42" y="21" width="12" height="22" fill="#85b8c5"/><rect x="46" y="11" width="4" height="10" fill="#b3dce0"/>',
-      '花坛':'<rect x="10" y="47" width="76" height="25" fill="#9b775b" stroke="#72533f" stroke-width="4"/><rect x="22" y="32" width="10" height="17" fill="#6f9a63"/><rect x="43" y="25" width="10" height="24" fill="#80a96a"/><rect x="65" y="32" width="10" height="17" fill="#6f9a63"/><rect x="19" y="25" width="16" height="10" fill="#d6a2bd"/><rect x="40" y="16" width="16" height="12" fill="#e4c27c"/><rect x="62" y="25" width="16" height="10" fill="#d6a2bd"/>',
-      '课桌':'<rect x="12" y="27" width="76" height="14" fill="#c39a72" stroke="#76583e" stroke-width="4"/><rect x="19" y="41" width="8" height="31" fill="#876648"/><rect x="72" y="41" width="8" height="31" fill="#876648"/><rect x="35" y="16" width="25" height="8" fill="#f1e3ca"/>',
-      '黑板':'<rect x="8" y="8" width="80" height="56" fill="#496b5b" stroke="#8e725f" stroke-width="6"/><path d="M20 23H74M20 35H63M20 47H70" stroke="#e7e3c7" stroke-width="3"/><rect x="43" y="65" width="10" height="8" fill="#8e725f"/>',
-      '工作台':'<rect x="10" y="32" width="76" height="15" fill="#bd946f" stroke="#765943" stroke-width="4"/><rect x="18" y="47" width="8" height="24" fill="#825e47"/><rect x="70" y="47" width="8" height="24" fill="#825e47"/><rect x="36" y="17" width="24" height="13" fill="#9bb9b2" stroke="#5f7773" stroke-width="3"/>',
-      '书桌':'<rect x="10" y="31" width="76" height="14" fill="#bd946f" stroke="#765943" stroke-width="4"/><rect x="19" y="45" width="8" height="27" fill="#825e47"/><rect x="69" y="45" width="8" height="27" fill="#825e47"/><rect x="35" y="18" width="27" height="10" fill="#e9e0c9"/>',
-      '画架':'<path d="M48 10L20 72M48 10L76 72M48 10V76" stroke="#806248" stroke-width="5"/><rect x="27" y="18" width="42" height="37" fill="#f3e5cb" stroke="#8c7280" stroke-width="4"/><path d="M33 47L44 33 53 41 63 27" stroke="#b58cae" stroke-width="4" fill="none"/>'
-    };
-    return `<svg viewBox="0 0 96 80" ${common} aria-hidden="true"><rect x="3" y="74" width="90" height="3" fill="#88756e"/>${icons[name]||icons['工作台']}</svg>`;
+  function furniturePng(name){
+    const src=pixelCanvasUrl('furniture:'+name,96,80,(ctx,R)=>{
+      R(7,72,82,4,'#584b55');R(11,69,74,3,'#9e8b83');
+      const outline='#66505c',wood='#b98763',woodLight='#d5a27a',woodDark='#805a48',cream='#f2e3cb',fabric='#b88eae',fabricLight='#d8b7d1',fabricDark='#8d6c91',metal='#7b858a',metalLight='#c2ccca';
+      if(name==='床'){
+        R(10,39,76,27,outline);R(14,36,68,28,wood);R(17,31,24,17,cream);R(19,33,20,10,'#fff7e8');R(42,39,36,21,fabric);R(45,42,29,4,fabricLight);R(48,51,24,2,fabricDark);R(8,64,10,8,woodDark);R(78,64,10,8,woodDark);R(14,37,4,24,woodLight);R(81,39,3,21,woodDark);R(17,58,60,3,'#a9789b');R(25,69,8,3,outline);R(65,69,8,3,outline);
+      }else if(name==='沙发'){
+        R(9,39,78,29,outline);R(14,43,68,21,fabric);R(17,29,62,20,fabricDark);R(21,33,25,14,fabricLight);R(50,33,25,14,'#cba9ca');R(5,38,13,30,outline);R(8,42,8,21,fabric);R(78,38,13,30,outline);R(81,42,8,21,fabric);R(18,64,9,7,woodDark);R(69,64,9,7,woodDark);R(25,37,12,2,'#f1dbe9');R(56,37,12,2,'#f1dbe9');
+      }else if(name==='餐桌'||name==='课桌'||name==='书桌'||name==='工作台'){
+        R(17,43,9,28,woodDark);R(70,43,9,28,woodDark);R(12,31,72,15,outline);R(15,32,66,9,woodLight);R(19,34,55,2,'#e7bd91');R(22,43,4,24,wood);R(70,43,4,24,wood);R(38,23,22,7,cream);R(41,25,16,2,'#fff7e6');
+        if(name!=='餐桌'){R(36,17,27,7,metal);R(38,19,23,3,metalLight);R(43,48,10,3,woodDark);}
+        if(name==='工作台'){R(31,13,34,12,'#93b5ae');R(34,16,28,6,'#d2e5d8');R(45,17,6,3,'#586d6c');}
+      }else if(name==='书架'){
+        R(16,7,64,68,outline);R(20,11,56,60,wood);R(23,31,50,5,woodDark);R(23,51,50,5,woodDark);R(24,14,10,15,'#9fb8cb');R(36,12,9,17,'#d9a27d');R(47,16,10,13,'#88a77e');R(60,13,10,16,'#b7a0c6');R(25,35,12,14,'#e0c68f');R(40,34,10,15,'#9584ae');R(54,36,17,13,'#9fc0c5');R(25,55,12,13,'#ce9b85');R(41,55,10,13,'#e6d8b6');R(56,55,14,13,'#96ad88');R(18,8,4,66,woodLight);
+      }else if(name==='咖啡机'){
+        R(22,13,52,57,outline);R(26,17,44,49,metal);R(31,22,34,19,'#d5e5df');R(34,25,28,12,'#829d9a');R(38,28,18,6,'#e9f0df');R(33,45,30,6,metal);R(41,52,14,5,metalLight);R(40,58,20,11,cream);R(43,61,14,3,'#b98577');R(46,42,4,8,woodDark);R(65,47,5,5,'#d9b56f');R(17,68,62,4,outline);
+      }else if(name==='服装架'){
+        R(15,13,66,5,outline);R(19,18,5,48,metal);R(72,18,5,48,metal);R(12,65,17,5,outline);R(68,65,17,5,outline);R(22,21,51,3,metalLight);
+        const clothes=[['#d9a8bd',25],['#9ebbd0',41],['#c9b1d8',57]];
+        for(const [c,x] of clothes){R(x,21,3,7,woodDark);R(x-4,27,11,4,outline);R(x-3,30,9,25,outline);R(x-2,32,7,21,c);R(x-4,52,3,7,c);R(x+5,52,3,7,c);R(x-2,31,2,12,'#f7e7e7');}
+      }else if(name==='试衣镜'){
+        R(24,5,48,67,outline);R(28,9,40,58,'#b5ced0');R(31,12,34,52,'#dce9df');R(33,15,13,20,'#f6f4e7');R(49,18,12,27,'#c3d8d7');R(34,44,8,17,'#a8c4c0');R(18,72,60,4,woodDark);R(31,67,34,5,wood);
+      }else if(name==='收银台'){
+        R(10,36,77,34,outline);R(14,40,69,27,wood);R(18,44,58,5,woodLight);R(18,53,58,10,woodDark);R(27,55,17,5,'#f0d8be');R(22,28,33,12,metal);R(26,31,25,6,'#b8d5d1');R(57,25,23,12,outline);R(60,28,17,6,'#f3e4bd');R(63,48,4,5,'#d5a46e');
+      }else if(name==='长椅'){
+        R(17,35,62,9,outline);R(20,37,56,5,woodLight);R(17,49,62,9,outline);R(20,51,56,5,wood);R(24,58,7,14,woodDark);R(65,58,7,14,woodDark);R(12,43,5,14,outline);R(79,43,5,14,outline);R(22,33,52,2,'#e2c49c');
+      }else if(name==='喷泉'){
+        R(11,56,74,17,outline);R(15,59,66,10,'#8ab9c4');R(20,56,55,3,'#b7dce0');R(27,45,42,11,outline);R(31,47,34,6,'#a8d3d8');R(42,24,12,22,'#76aebc');R(38,18,20,7,'#8fc6d0');R(44,10,8,9,'#b9e0df');R(46,4,4,7,'#d5ece3');R(21,54,7,3,'#d7edf0');R(68,54,7,3,'#d7edf0');
+      }else if(name==='花坛'){
+        R(9,49,78,23,outline);R(13,53,70,15,'#9b765c');R(15,50,66,4,'#c08c69');
+        const flowers=[['#d8a6bd',18,30],['#edc977',43,19],['#c9b5db',66,29],['#e0a6a1',36,34],['#f3dfb4',58,38]];
+        for(const [c,x,y] of flowers){R(x+5,y+7,4,15,'#689264');R(x,y,14,8,c);R(x+4,y-3,6,5,'#f3d986');R(x+3,y+3,8,5,c);}
+      }else if(name==='黑板'){
+        R(8,7,80,61,outline);R(14,13,68,48,'#496f5d');R(18,18,30,3,'#dfe7ce');R(18,30,44,3,'#e8e6d2');R(18,42,36,3,'#dfe7ce');R(40,69,16,5,woodDark);R(18,62,60,4,wood);R(61,19,12,4,'#dce6d0');
+      }else if(name==='画架'){
+        R(44,13,8,58,woodDark);R(23,68,8,7,woodDark);R(65,68,8,7,woodDark);R(28,60,19,4,wood);R(49,60,19,4,wood);R(47,8,4,8,woodLight);
+        R(24,17,48,42,outline);R(28,21,40,34,cream);R(33,42,8,7,'#c28dac');R(42,33,8,10,'#86aab6');R(52,27,10,10,'#d99c82');R(32,23,15,4,'#b3c6a0');
+      }else{
+        R(15,33,66,15,outline);R(19,36,58,8,woodLight);R(22,48,7,23,woodDark);R(67,48,7,23,woodDark);R(35,18,26,12,metal);R(39,22,18,4,metalLight);
+      }
+    });
+    return pixelImg('sc-pixel-furniture',src,name+' 像素家具');
   }
   function furnitureList(type){
     const lists={home:[['床',22,72],['沙发',52,73],['餐桌',79,54],['书架',23,33]],cafe:[['咖啡机',77,34],['餐桌',27,67],['沙发',55,75]],shop:[['服装架',27,37],['试衣镜',70,37],['收银台',50,72]],park:[['长椅',28,67],['喷泉',70,45],['花坛',50,78]],school:[['课桌',26,63],['黑板',50,32],['书架',77,62]],studio:[['画架',30,43],['沙发',70,72],['工作台',71,34]]};
@@ -581,12 +654,12 @@
   function createCity(){const personaId=$('scPersonaSelect').value;const persona=personas().find(p=>String(p.id)===String(personaId));if(!persona){notify('请先在主页创建并选择一个自设，SPACE CITY 不会自动生成用户角色。');return}const name=$('scNewCityName').value.trim()||'我的像素城市';const ids=[...document.querySelectorAll('#scContactChoices input:checked')].map(x=>x.value);const w=worldTemplate(name,ids,personaId);worlds.push(w);activeId=w.id;world=w;persist().then(ok=>{if(ok){renderCityList();openWorld(w.id);notify('城市创建成功！已使用你选择的主页自设。')}else notify('城市创建失败，请检查浏览器存储。')})}
   function renderMap(){if(!world)return;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);$('scClock').textContent=timeLabel(world.worldNow);$('scWeather').textContent=({sunny:'☀ 晴天',cloudy:'☁ 多云',rain:'☂ 下雨',snow:'❄ 下雪',wind:'༄ 微风'}[world.settings.weather]||'☀ 晴天');$('scSeason').textContent=({spring:'春季',summer:'夏季',autumn:'秋季',winter:'冬季'}[world.settings.season]||'春季');$('scResidentCount').textContent=world.residents.length+' 位居民';$('scAreaName').textContent=world.map.activeArea||'中心城区';const areaSelect=$('scAreaSelect');if(areaSelect){areaSelect.innerHTML=(world.map.unlockedAreas||['中心城区']).map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');areaSelect.value=world.map.activeArea||'中心城区'}
     const buildings=(world.map.buildings||[]).filter(x=>x.area===(world.map.activeArea||'中心城区')||!x.area);
-    const b=$('scBuildings');b.innerHTML=buildings.map(x=>`<button class="sc-building" data-sc-building="${esc(x.id)}" aria-label="进入${esc(x.name)}"><span class="sc-building-art">${buildingSvg(x.type)}</span><b>${esc(x.name)}</b><small>${esc(x.open||'全天')}</small></button>`).join('');
+    const b=$('scBuildings');b.innerHTML=buildings.map(x=>`<button class="sc-building" data-sc-building="${esc(x.id)}" aria-label="进入${esc(x.name)}"><span class="sc-building-art">${buildingPng(x.type)}</span><b>${esc(x.name)}</b><small>${esc(x.open||'全天')}</small></button>`).join('');
     const sprites=$('scSprites');sprites.innerHTML=world.residents.map(r=>{const p=r.position||{x:50,y:52};return `<button class="sc-sprite" style="left:${clamp(p.x,2,96)}%;top:${clamp(p.y,8,94)}%" data-sc-resident="${esc(r.id)}" aria-label="${esc(r.name)}">${sprite(r)}<span class="sc-sprite-label">${esc(r.name)}</span></button>`}).join('');
     fillController();$('scTownMap').dataset.area=world.map.activeArea||'中心城区';}
   function renderLatestLogs(){const box=$('scLatestLogs');if(!box||!world)return;box.innerHTML=(world.logs||[]).slice(0,3).map(l=>`<div class="sc-log"><b>${esc(l.title)}</b><small>${esc(timeLabel(l.at))} · ${esc(l.kind||'生活')}</small><p>${esc(l.detail)}</p></div>`).join('')||'<div class="sc-note">居民正在熟悉这座城市。</div>'}
   function fillController(){const s=$('scControllerSelect');if(!s||!world)return;s.innerHTML=world.residents.map(r=>`<option value="${esc(r.id)}">${esc(r.name)} · ${r.kind==='user'?'用户':r.kind==='char'?'CHAR':'NPC'}</option>`).join('');controlResidentId=world.currentController||world.residents.find(r=>r.kind==='user')?.id||world.residents[0]?.id||'';s.value=controlResidentId}
-  function enterInterior(id){const b=world.map.buildings.find(x=>x.id===id);if(!b)return;interiorBuildingId=id;world.currentLocation=id;const moving=currentResident(controlResidentId);if(moving){moving.buildingId=id;moving.status='在 '+b.name+' 活动';moveResident(moving,50,83)}persist();$('space').classList.add('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=false;$('scInteriorName').textContent=b.name;$('scRoomFurniture').innerHTML=furnitureList(b.type).map(f=>`<button class="sc-furniture" style="left:${f[1]}%;top:${f[2]}%" data-sc-furniture="${esc(f[0])}" aria-label="${esc(f[0])}"><span class="sc-furniture-art">${furnitureSvg(f[0])}</span><span class="sc-furniture-label">${esc(f[0])}</span></button>`).join('');renderInteriorResidents();} 
+  function enterInterior(id){const b=world.map.buildings.find(x=>x.id===id);if(!b)return;interiorBuildingId=id;world.currentLocation=id;const moving=currentResident(controlResidentId);if(moving){moving.buildingId=id;moving.status='在 '+b.name+' 活动';moveResident(moving,50,83)}persist();$('space').classList.add('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=false;$('scInteriorName').textContent=b.name;$('scRoomFurniture').innerHTML=furnitureList(b.type).map(f=>`<button class="sc-furniture" style="left:${f[1]}%;top:${f[2]}%" data-sc-furniture="${esc(f[0])}" aria-label="${esc(f[0])}"><span class="sc-furniture-art">${furniturePng(f[0])}</span><span class="sc-furniture-label">${esc(f[0])}</span></button>`).join('');renderInteriorResidents();} 
   function renderInteriorResidents(){const box=$('scRoomResidents');if(!box)return;const here=world.residents.filter(r=>(r.buildingId||r.homeId||'home')===interiorBuildingId);box.innerHTML=here.map((r,i)=>{const p=r.roomPosition||{x:18+(i%4)*20,y:78-Math.floor(i/4)*22};return `<button class="sc-room-person" style="left:${p.x}%;top:${p.y}%" data-sc-resident="${esc(r.id)}" aria-label="查看 ${esc(r.name)} 档案">${sprite(r)}</button>`}).join('')}
   function renderResidents(){const box=$('scResidentList');if(!box||!world)return;box.innerHTML=world.residents.map(r=>`<article class="sc-resident-card"><div class="sc-resident-avatar">${sprite(r)}</div><div class="sc-resident-info"><b>${esc(r.name)}</b><small>${r.kind==='user'?'用户角色':r.kind==='char'?'主页 CHAR':'NPC'} · ${r.age} 岁 · ${esc(r.role||'居民')}<br>${esc(r.status||'自由活动')} · ${esc(world.map.buildings.find(b=>b.id===r.buildingId)?.name||'城市')}</small><span class="sc-tag">${r.wardrobe?.auto===false?'手动穿搭':'自动换装'}</span></div><div class="sc-resident-actions"><button data-sc-action="profile" data-id="${esc(r.id)}">档案</button><button data-sc-action="closet-one" data-id="${esc(r.id)}">换装</button><button data-sc-action="control-one" data-id="${esc(r.id)}">控制</button><button data-sc-action="interact" data-id="${esc(r.id)}">互动</button></div></article>`).join('')}
   function renderRelations(){const a=$('scRelA'),b=$('scRelB');if(!world)return;const opts=world.residents.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');a.innerHTML=opts;b.innerHTML=opts;if(world.residents[1])b.value=world.residents[1].id;const fam=$('scFamilyList');fam.innerHTML=(world.families||[]).map(f=>`<article class="sc-family-card"><b>${esc(f.name)}</b><p>${(f.memberIds||[]).map(id=>displayResident(currentResident(id))).join('、')}</p><small class="sc-family-home">⌂ 共同住所：${esc(world.map.buildings.find(x=>x.id===f.sharedHomeId)?.name||'居民公寓')}</small></article>`).join('')||'<div class="sc-note">还没有家庭档案。</div>';const rel=$('scRelationshipList');rel.innerHTML=world.relationships.length?world.relationships.map(r=>`<div class="sc-rel-card"><span>${esc(displayResident(currentResident(r.a)))} ⇄ ${esc(displayResident(currentResident(r.b)))}</span><b>${(REL_LABELS[r.type]||r.type)} · ${clamp(r.affinity,0,100)}%</b></div>`).join(''):'<div class="sc-note">目前还没有明确的关系。</div>'}
@@ -710,67 +783,24 @@
   let closetSlot='hair';
   const SKIN_TONES=['#f9dfc8','#edc5a8','#d9a782','#bd8968','#91634d','#704b3d'];
   function clothingArt(slot,item,color,baseResident){
-    const outfit=baseResident?.outfit||DEFAULT_OUTFIT;
+    const base=baseResident||{name:'像素试衣模特',outfit:clone(DEFAULT_OUTFIT)};
+    const outfit={...clone(DEFAULT_OUTFIT),...(base.outfit||{})};
     const safeHex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;
-    const c=safeHex(color||({hair:outfit.hairColor,top:outfit.topColor,bottom:outfit.bottomColor,dress:outfit.topColor,outer:outfit.outerColor,shoes:outfit.shoeColor,accessory:outfit.accessoryColor,sleep:outfit.topColor,face:outfit.skin}[slot]),'#c4a4d3');
-    const dark='#5a4b60',light=safeHex((baseResident?.outfit?.skin),'#edc5a8'),shade=(hex,amt)=>{const n=parseInt(hex.slice(1),16),a=[(n>>16)+amt,((n>>8)&255)+amt,(n&255)+amt].map(v=>clamp(v,0,255));return '#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('')};
-    const grid=Array.from({length:48},()=>Array(40).fill(''));
-    const paint=(x,y,w,h,col)=>{for(let yy=Math.max(0,y);yy<48&&yy<y+h;yy++)for(let xx=Math.max(0,x);xx<40&&xx<x+w;xx++)grid[yy][xx]=col};
-    const row=(cy,y,widths,col)=>widths.forEach((w,i)=>{if(w)paint(cy-Math.floor(w/2),y+i,w,1,col)});
-    const skinShadow=shade(light,-22),cl=shade(c,22),cd=shade(c,-24),hair=safeHex(outfit.hairColor,'#493d4c');
-    if(slot==='hair'||slot==='face'){
-      row(20,8,[10,16,20,20,20,18,16,14,12,10],slot==='face'?skin:hair);
-      if(slot==='hair'){
-        const length=item.includes('long')||item.includes('wave')||item.includes('curl')||/ponytail|twin|braid|wolf|mullet|curtain/.test(item);
-        if(length){paint(9,16,4,19,hair);paint(27,16,4,19,shade(hair,-18))}
-        if(item.includes('twin')){paint(5,14,5,17,hair);paint(30,14,5,17,hair)}
-        if(item.includes('bun'))paint(14,3,12,6,hair);
-        if(item.includes('ponytail'))paint(29,10,6,20,hair);
-        if(item.includes('braid'))for(let y=18;y<34;y+=4){paint(9,y,4,3,y%2?shade(hair,20):hair);paint(27,y,4,3,y%2?hair:shade(hair,20))}
-        paint(12,12,16,4,hair);paint(14,10,6,2,shade(hair,25));paint(12,18,3,6,shade(hair,-20));
-      }else{
-        paint(14,19,4,2,dark);paint(22,19,4,2,dark);paint(19,25,3,1,'#a96371');paint(13,24,3,1,'#e99b9e');paint(24,24,3,1,'#e99b9e');
-      }
-    }else if(slot==='top'||slot==='outer'){
-      row(20,7,[8,14,20,24,22,18,18,18,18,18,18,18,18,18,18,18,18,18,18],c);
-      paint(7,13,7,8,c);paint(26,13,7,8,c);paint(11,15,3,15,cd);paint(27,15,3,15,cl);
-      paint(17,7,6,3,slot==='outer'?cd:'#f1dedc');paint(19,10,2,15,cl);
-      if(item.includes('shirt')||item.includes('blouse')||item.includes('blazer')){paint(18,9,4,3,'#fbf1e7');for(let y=13;y<29;y+=4)paint(20,y,1,1,'#f5e1c2')}
-      if(item.includes('knit')||item.includes('sweater'))for(let y=14;y<31;y+=4){paint(12,y,16,1,cl)}
-      if(item.includes('hoodie')){paint(15,5,10,5,cd);paint(18,8,4,2,cl)}
-      if(item.includes('cardigan'))paint(19,10,2,22,cd);
-      if(item.includes('turtleneck'))paint(16,5,8,4,cd);
-    }else if(slot==='bottom'){
-      paint(10,8,20,4,cd);
-      if(/skirt|pleated|long-skirt|culottes/.test(item)){
-        const widths=item.includes('long')?[18,20,22,24,26,28,28,26,24,22,20,18,18,18]:[18,20,22,24,26,28,28,26,24];row(20,12,widths,c);
-        for(let x=13;x<=25;x+=5)paint(x,17,1,widths.length-3,cl);
-      }else{
-        paint(11,12,8,30,c);paint(21,12,8,30,c);paint(12,13,2,23,cl);paint(26,13,2,23,cd);
-        if(item.includes('jeans')){paint(15,14,1,24,'#d9e2ec');paint(24,14,1,24,'#d9e2ec')}
-        if(item.includes('cargo')){paint(9,25,5,5,cl);paint(26,25,5,5,cl)}
-        if(item.includes('leggings')){paint(13,18,4,20,cl);paint(23,18,4,20,cl)}
-      }
-    }else if(slot==='dress'||slot==='sleep'){
-      row(20,5,[8,14,20,24,22,20,18,18,18,18,18,20,22,24,26,26,24,22,20,18,18,16,14,12,10,8],c);
-      paint(10,11,6,7,c);paint(24,11,6,7,c);paint(17,7,6,2,cl);
-      paint(13,20,2,14,cd);paint(25,20,2,14,cl);
-      if(item.includes('floral')||item.includes('party')){paint(14,31,2,2,'#f1d5d9');paint(24,36,2,2,'#f1d5d9');paint(19,26,2,2,'#e7cc8e')}
-    }else if(slot==='shoes'){
-      paint(7,17,12,18,c);paint(22,17,12,18,c);paint(7,31,13,4,dark);paint(22,31,13,4,dark);paint(9,19,5,2,cl);paint(24,19,5,2,cl);
-      if(item.includes('boots')){paint(8,8,9,12,c);paint(23,8,9,12,c);paint(8,8,9,2,cd);paint(23,8,9,2,cd)}
-      if(item.includes('sandal')){paint(8,24,10,2,'#d6b38d');paint(23,24,10,2,'#d6b38d')}
-    }else if(slot==='accessory'){
-      if(item.includes('glasses')){paint(5,18,12,2,c);paint(5,18,2,9,c);paint(15,18,2,9,c);paint(23,18,2,9,c);paint(33,18,2,9,c);paint(17,21,6,2,dark)}
-      else if(item.includes('hat')){paint(6,17,28,4,c);paint(11,8,18,10,c);paint(12,8,16,2,cl)}
-      else if(item.includes('bag')){paint(11,10,18,30,c);paint(13,13,14,24,cl);paint(17,18,4,4,cd)}
-      else if(item.includes('necklace')){paint(12,10,2,18,c);paint(26,10,2,18,c);paint(17,26,7,2,c);paint(19,28,3,4,cl)}
-      else if(item.includes('earrings')){paint(8,14,3,9,c);paint(29,14,3,9,c);paint(9,22,1,4,cl);paint(30,22,1,4,cl)}
-      else if(item.includes('ribbon')){paint(7,12,11,7,c);paint(22,12,11,7,c);paint(17,14,6,4,cd)}
-      else {paint(8,15,24,5,c);paint(13,8,14,8,cl);paint(18,14,4,3,cd)}
+    const c=safeHex(color||'#c4a4d3','#c4a4d3');
+    if(slot==='sleep'){
+      outfit.top='top-knit';outfit.bottom='bottom-pants';outfit.dress='';outfit.outer='outer-none';outfit.topColor=c;outfit.isSleeping=true;outfit.sleepwear=item;
+    }else if(slot==='face'){
+      outfit.skin=c;
+    }else{
+      outfit[slot]=item;
+      const key={hair:'hairColor',top:'topColor',bottom:'bottomColor',dress:'topColor',outer:'outerColor',shoes:'shoeColor',accessory:'accessoryColor'}[slot];
+      if(key)outfit[key]=c;
+      if(slot==='dress')outfit.top='';
+      if(['top','bottom'].includes(slot))outfit.dress='';
+      if(slot==='hair')outfit.hairColor=c;
     }
-    let out='';for(let y=0;y<48;y++){let x=0;while(x<40){const col=grid[y][x];if(!col){x++;continue}let end=x+1;while(end<40&&grid[y][end]===col)end++;out+=`<rect x="${x}" y="${y}" width="${end-x}" height="1" fill="${col}"/>`;x=end}}
-    return `<svg class="sc-pixel-item" viewBox="0 0 40 48" shape-rendering="crispEdges" aria-hidden="true">${out}</svg>`;
+    const model={...base,outfit,expression:'neutral',pose:'idle'};
+    return `<span class="sc-cloth-pixel-preview">${sprite(model)}</span>`;
   }
   function closetModal(id,slot='hair'){
     const r=currentResident(id||selectedResidentId);if(!r)return;selectedResidentId=r.id;closetSlot=slot;
