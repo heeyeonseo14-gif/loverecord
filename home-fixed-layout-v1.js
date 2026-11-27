@@ -6,8 +6,9 @@ const $=id=>document.getElementById(id);
 const PROFILE_KEY='lr-home-profile-v1';
 const PHOTOS_KEY='lr-home-photo-grid-v1';
 const COUNTDOWN_KEY='lr-home-countdowns-v1';
+const CHAT_PREVIEW_KEY='lr-home-chat-preview-contact-v1';
 const DEFAULT_PROFILE={name:'妍妍',username:'@yourname',bio:'把喜欢的日常，慢慢收藏起来。',phrase:'EVERY LITTLE MOMENT MATTERS.',avatar:'',banner:''};
-let profile={...DEFAULT_PROFILE},profileDraft={...DEFAULT_PROFILE},photos=['',''],countdowns=[],editingCountdownId='';
+let profile={...DEFAULT_PROFILE},profileDraft={...DEFAULT_PROFILE},photos=['',''],countdowns=[],editingCountdownId='',selectedChatContactId='';
 const screens=()=>Array.from(document.querySelectorAll('#launcher [data-launcher-screen]'));
 function setNotice(message){if(typeof window.toast==='function')window.toast(message);else console.info('[LOVE RECORD]',message)}
 async function storeGet(key){try{return await lrKVGet(key)}catch(e){console.warn('[LOVE RECORD] home data read failed',key,e);return null}}
@@ -29,7 +30,7 @@ function fillProfileForm(){
  $('lrProfileBioInput').value=profileDraft.bio||'';
  $('lrProfilePhraseInput').value=profileDraft.phrase||'';
 }
-function syncDialogDock(){const open=!$('lrProfileModal').hidden||!$('lrCountdownModal').hidden;document.body.classList.toggle('lr-home-dialog-open',open)}
+function syncDialogDock(){const open=!$('lrProfileModal').hidden||!$('lrCountdownModal').hidden||!$('lrChatContactModal').hidden;document.body.classList.toggle('lr-home-dialog-open',open)}
 function openProfileEditor(){profileDraft={...profile};fillProfileForm();$('lrProfileModal').hidden=false;syncDialogDock()}
 function closeProfileEditor(){$('lrProfileModal').hidden=true;syncDialogDock()}
 async function compressImage(file,maxSide=1800,quality=.86){
@@ -125,6 +126,72 @@ function bindCountdown(){
  });
 }
 function fmtTime(n){if(!Number.isFinite(n)||n<0)return '0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0')}
+function homeContactById(id){try{return typeof window.contactById==='function'?window.contactById(String(id)):null}catch(e){return null}}
+function homeContactName(person){try{return typeof window.chatShownName==='function'?window.chatShownName(person):(person?.name||'未命名联系人')}catch(e){return person?.name||'未命名联系人'}}
+function homeContactAvatar(person){let src='';try{const meta=typeof window.chatMeta==='function'?window.chatMeta(person?.id):{};src=meta?.avatar||person?.avatar||person?.image||person?.photo||''}catch(e){src=person?.avatar||person?.image||''}return typeof src==='string'?src:''}
+function setAvatarSurface(host,src,label){if(!host)return;host.replaceChildren();if(src){const image=document.createElement('img');image.src=src;image.alt=label||'头像';image.loading='lazy';image.onerror=()=>{host.replaceChildren();const fallback=document.createElement('span');fallback.textContent=(label||'♡').trim().slice(0,1)||'♡';host.append(fallback)};host.append(image)}else{const fallback=document.createElement('span');fallback.textContent=(label||'♡').trim().slice(0,1)||'♡';host.append(fallback)}}
+function cleanPreviewMessage(message){let text=String(message?.text??'').trim();if(message?.kind==='sticker'||/^\[表情包：/.test(text))return '发送了表情包';if(/^\[\[LR_ORDER\|/.test(text)||/^\[\[LR_AI_ORDER:/.test(text))return '分享了一份订单';if(/^\[\[/.test(text))return '分享了一项内容';text=text.replace(/\[\[NARRATION\]\]([\s\S]*?)\[\[\/NARRATION\]\]/gi,'$1').replace(/\[\[\/?NARRATION\]\]/gi,'').replace(/\*\*/g,'').replace(/\s+/g,' ').trim();return text.slice(0,64)||'发送了一条消息'}
+function chatTimeLabel(value){const at=Number(value);if(!at)return '';const date=new Date(at);if(Number.isNaN(date.getTime()))return '';const now=new Date();if(date.toDateString()===now.toDateString())return date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false});return `${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`}
+function renderChatPreview(){
+ const name=$('lrChatPreviewName'),line1=$('lrChatPreviewMessage1'),line2=$('lrChatPreviewMessage2'),time=$('lrChatPreviewTime'),host=$('lrChatPreviewAvatar');if(!name||!line1||!line2||!host)return;
+ const person=selectedChatContactId?homeContactById(selectedChatContactId):null;
+ if(!person){name.textContent='尚未选择联系人';line1.textContent='选择一位联系人，在这里查看最新对话。';line2.hidden=true;line2.textContent='';time.textContent='';setAvatarSurface(host,'','♡');return}
+ const shown=homeContactName(person);name.textContent=shown;setAvatarSurface(host,homeContactAvatar(person),shown);
+ let threads={};try{threads=typeof window.readChatThreads==='function'?window.readChatThreads():{}}catch(e){}
+ let messages=Array.isArray(threads?.[String(person.id)])?threads[String(person.id)]:[];
+ if(!messages.length){try{const legacy=JSON.parse(localStorage.getItem('love-record-chat-threads-v2')||'{}');if(Array.isArray(legacy?.[String(person.id)]))messages=legacy[String(person.id)]}catch(e){}}
+ const latest=messages.slice(-2);
+ if(!latest.length){line1.textContent='开始你们的第一次聊天';line2.hidden=true;line2.textContent='';time.textContent='';return}
+ const first=latest[0],second=latest[1];
+ const label=m=>m?.role==='user'?'我':shown;
+ if(second){line1.textContent=`${label(first)}：${cleanPreviewMessage(first)}`;line2.textContent=`${label(second)}：${cleanPreviewMessage(second)}`;line2.hidden=false;time.textContent=chatTimeLabel(second.at||first.at)}
+ else{line1.textContent=`${label(first)}：${cleanPreviewMessage(first)}`;line2.hidden=true;line2.textContent='';time.textContent=chatTimeLabel(first.at)}
+}
+async function waitForHomeChatSources(){const waits=['__LOVE_RECORD_PEOPLE_READY','__lrChatContactsReady','__lrChatStorageReady','__lrLongStorageReady'].map(key=>window[key]).filter(x=>x&&typeof x.then==='function');if(waits.length)await Promise.allSettled(waits);try{if(typeof window.loadPeopleFromIndexedDB==='function')await window.loadPeopleFromIndexedDB()}catch(e){}try{if(typeof window.loadChatContactIdsIndexedDB==='function'){const ids=await window.loadChatContactIdsIndexedDB();if(ids?.length&&typeof window.writeChatContacts==='function')window.writeChatContacts([...(window.readChatContacts?.()||[]),...ids])}}catch(e){}}
+function renderChatContactChoices(){
+ const box=$('lrChatContactChoices');if(!box)return;box.replaceChildren();
+ let ids=[];try{ids=typeof window.readChatContacts==='function'?window.readChatContacts():[]}catch(e){}
+ const people=ids.map(id=>homeContactById(id)).filter(Boolean);
+ if(!people.length){const empty=document.createElement('div');empty.className='lr-chat-contact-empty';empty.textContent='目前还没有聊天联系人。请先到 LOVE RECORD 聊天中添加联系人。';box.append(empty);return}
+ people.forEach(person=>{
+  const id=String(person.id),shown=homeContactName(person),button=document.createElement('button');button.type='button';button.className='lr-chat-contact-choice'+(id===selectedChatContactId?' active':'');button.dataset.lrChatContact=id;
+  const avatar=document.createElement('span');avatar.className='lr-chat-contact-choice-avatar';setAvatarSurface(avatar,homeContactAvatar(person),shown);
+  const copy=document.createElement('span');copy.className='lr-chat-contact-choice-copy';const title=document.createElement('strong');title.textContent=shown;const hint=document.createElement('small');hint.textContent=id===selectedChatContactId?'当前主页展示联系人':'设为主页展示联系人';copy.append(title,hint);
+  const mark=document.createElement('span');mark.className='lr-chat-contact-choice-mark';mark.textContent=id===selectedChatContactId?'✓':'›';button.append(avatar,copy,mark);button.addEventListener('click',()=>chooseChatPreviewContact(id));box.append(button);
+ });
+}
+async function chooseChatPreviewContact(id){const person=homeContactById(id);if(!person){setNotice('找不到这位联系人，请刷新后重试');return}if(await storeSet(CHAT_PREVIEW_KEY,String(id))){selectedChatContactId=String(id);renderChatPreview();closeChatContactPicker();setNotice('主页聊天联系人已更新 ♡')}}
+async function clearChatPreviewContact(){if(await storeSet(CHAT_PREVIEW_KEY,'')){selectedChatContactId='';renderChatPreview();closeChatContactPicker();setNotice('已取消主页聊天预览')}}
+async function openChatContactPicker(){await waitForHomeChatSources();renderChatContactChoices();$('lrChatContactModal').hidden=false;syncDialogDock()}
+function closeChatContactPicker(){$('lrChatContactModal').hidden=true;syncDialogDock()}
+function openPreviewConversation(){if(!selectedChatContactId){openChatContactPicker();return}if(!homeContactById(selectedChatContactId)){setNotice('这位联系人已不存在，请重新选择');openChatContactPicker();return}if(typeof window.nav==='function')window.nav('chat');if(typeof window.openChatContact==='function')window.openChatContact(selectedChatContactId)}
+function bindChatPreview(){
+ $('lrChatPreviewChoose')?.addEventListener('click',openChatContactPicker);$('lrChatPreviewOpen')?.addEventListener('click',openPreviewConversation);
+ $('lrChatContactModalClose')?.addEventListener('click',closeChatContactPicker);$('lrChatContactDone')?.addEventListener('click',closeChatContactPicker);$('lrChatContactClear')?.addEventListener('click',clearChatPreviewContact);
+ $('lrChatContactModal')?.addEventListener('click',e=>{if(e.target===$('lrChatContactModal'))closeChatContactPicker()});
+ window.addEventListener('lr-chat-threads-updated',renderChatPreview);window.addEventListener('lr-storage-ready',renderChatPreview);window.addEventListener('lr-contacts-updated',async()=>{await waitForHomeChatSources();renderChatPreview()});window.addEventListener('lr-contact-meta-ready',renderChatPreview);
+}
+function activityTimeLabel(value){const at=Number(value);if(!at)return '';const date=new Date(at);if(Number.isNaN(date.getTime()))return '';return `${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')} ${date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})}`}
+function renderSpaceActivities(payload){
+ const box=$('lrSpaceActivitiesList');if(!box)return;box.replaceChildren();const items=Array.isArray(payload?.activities)?payload.activities.slice(0,2):[];
+ if(!items.length){const empty=document.createElement('span');empty.className='lr-space-activity-empty';empty.textContent=payload?.cityName?'最近还没有新的居民活动记录。':'进入 SPACE CITY，看看小人的日常生活。';box.append(empty);return}
+ items.forEach(item=>{
+  const row=document.createElement('span');row.className='lr-space-activity-item';
+  const avatar=document.createElement('span');avatar.className='lr-space-activity-avatar';if(item.avatar){const image=document.createElement('img');image.src=item.avatar;image.alt=item.residentName||'像素居民';image.loading='lazy';avatar.append(image)}else{avatar.textContent=String(item.residentName||'♡').slice(0,1)}
+  const copy=document.createElement('span');copy.className='lr-space-activity-copy';const title=document.createElement('strong');title.textContent=item.residentName||'SPACE CITY 居民';const desc=document.createElement('span');const titleText=String(item.title||'').trim(),detail=String(item.detail||'').trim();desc.textContent=[titleText,detail].filter(Boolean).join(' · ').slice(0,76)||'正在享受自己的日常。';copy.append(title,desc);
+  const time=document.createElement('small');time.className='lr-space-activity-time';time.textContent=activityTimeLabel(item.at);row.append(avatar,copy,time);box.append(row);
+ });
+}
+async function refreshSpaceActivities(){
+ const bridge=window.LRSpaceCityBridge;if(!bridge||typeof bridge.getRecentActivities!=='function'){renderSpaceActivities(null);return}
+ try{const result=await bridge.getRecentActivities(2);renderSpaceActivities(result)}catch(error){console.warn('[LOVE RECORD] SPACE CITY activity preview unavailable',error);renderSpaceActivities(null)}
+}
+function bindSpaceActivities(){
+ $('lrSpaceActivitiesOpen')?.addEventListener('click',()=>{if(typeof window.openLoveRecordSpaceV2==='function')window.openLoveRecordSpaceV2();else setNotice('SPACE CITY 正在初始化，请稍后再试')});
+ window.addEventListener('lr-space-city-activity-updated',refreshSpaceActivities);window.addEventListener('lr-space-city-ready',refreshSpaceActivities);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshSpaceActivities()});
+ window.addEventListener('lr-launcher-page-change',e=>{if(Number(e.detail?.page)===1)refreshSpaceActivities()});
+ const launcher=document.getElementById('launcher');if(launcher&&typeof MutationObserver!=='undefined'){const observer=new MutationObserver(()=>{if(launcher.classList.contains('active'))refreshSpaceActivities()});observer.observe(launcher,{attributes:true,attributeFilter:['class']});}
+}
 function renderMusic(snapshot=window.LRMusicSnapshot){
  const state=snapshot||{};const title=$('lrHomeMusicTitle'),artist=$('lrHomeMusicArtist'),play=$('lrHomeMusicPlay'),progress=$('lrHomeMusicProgress');
  title.textContent=state.title||'还没有播放歌曲';artist.textContent=state.artist||'从音乐库选择一首歌';
@@ -187,7 +254,10 @@ async function init(){
  profile={...DEFAULT_PROFILE,...(await storeGet(PROFILE_KEY)||{})};profileDraft={...profile};applyProfile();
  const savedPhotos=await storeGet(PHOTOS_KEY);if(Array.isArray(savedPhotos))photos=[String(savedPhotos[0]||''),String(savedPhotos[1]||'')];renderPhotos();if(!savedPhotos)await migrateLegacyPhoto();
  const savedCountdowns=await storeGet(COUNTDOWN_KEY);countdowns=Array.isArray(savedCountdowns)?savedCountdowns.filter(x=>x&&x.id&&x.title&&x.date):[];renderCountdown();
- bindProfile();bindPhotos();bindCountdown();bindMusic();initPages();
+ const selected=await storeGet(CHAT_PREVIEW_KEY);selectedChatContactId=String(selected||'');
+ bindProfile();bindPhotos();bindCountdown();bindMusic();bindChatPreview();bindSpaceActivities();initPages();
+ await waitForHomeChatSources();renderChatPreview();await refreshSpaceActivities();
+
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>init().catch(e=>console.error('[LOVE RECORD] fixed home init failed',e)),{once:true});
 else init().catch(e=>console.error('[LOVE RECORD] fixed home init failed',e));

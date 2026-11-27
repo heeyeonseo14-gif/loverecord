@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
-<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=2">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=3">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -1387,6 +1387,23 @@ body.lr-theme-dark :is(#space,.community-root){
           <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
         </section>
       </div>
+
+      <section class="lr-chat-preview-card" aria-label="聊天预览组件">
+        <div class="lr-chat-preview-head">
+          <span>CHAT PREVIEW</span>
+          <button id="lrChatPreviewChoose" type="button">选择联系人　↗</button>
+        </div>
+        <button class="lr-chat-preview-open" id="lrChatPreviewOpen" type="button" aria-label="打开主页聊天预览联系人">
+          <span class="lr-chat-preview-avatar" id="lrChatPreviewAvatar"><span>♡</span></span>
+          <span class="lr-chat-preview-copy">
+            <strong id="lrChatPreviewName">尚未选择联系人</strong>
+            <span class="lr-chat-preview-message" id="lrChatPreviewMessage1">选择一位联系人，在这里查看最新对话。</span>
+            <span class="lr-chat-preview-message" id="lrChatPreviewMessage2" hidden></span>
+          </span>
+          <span class="lr-chat-preview-time" id="lrChatPreviewTime"></span>
+          <span class="lr-chat-preview-arrow" aria-hidden="true">›</span>
+        </button>
+      </section>
     </section>
 
     <section class="launcher-screen" data-launcher-screen="1" aria-label="主页第二页">
@@ -1417,6 +1434,17 @@ body.lr-theme-dark :is(#space,.community-root){
         <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
         <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
         <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
+      </section>
+      <section class="lr-space-activities-card" aria-label="SPACE CITY 最近活动">
+        <button class="lr-space-activities-open" id="lrSpaceActivitiesOpen" type="button" aria-label="打开 SPACE CITY">
+          <span class="lr-space-activities-head">
+            <span><b>SPACE CITY</b><small>DAILY ACTIVITIES</small></span>
+            <em>VIEW ALL　↗</em>
+          </span>
+          <span class="lr-space-activities-list" id="lrSpaceActivitiesList">
+            <span class="lr-space-activity-empty">正在读取小人的日常活动……</span>
+          </span>
+        </button>
       </section>
     </section>
 
@@ -1462,6 +1490,15 @@ body.lr-theme-dark :is(#space,.community-root){
         <label class="lr-home-field"><span>日期</span><input id="lrCountdownDateInput" type="date" required></label>
         <div class="lr-home-actions"><button id="lrCountdownReset" type="button">清空输入</button><button class="primary" id="lrCountdownSave" type="submit">添加日期</button></div>
       </form>
+    </section>
+  </div>
+
+  <div class="lr-home-modal" id="lrChatContactModal" hidden>
+    <section class="lr-home-sheet" role="dialog" aria-modal="true" aria-labelledby="lrChatContactModalTitle">
+      <header class="lr-home-sheet-head"><div><div class="eyebrow">CHAT PREVIEW</div><h2 id="lrChatContactModalTitle">选择一位联系人</h2></div><button class="lr-home-sheet-close" id="lrChatContactModalClose" type="button" aria-label="关闭">×</button></header>
+      <p class="lr-chat-contact-hint">从现有聊天联系人中选择一位，主页会同步他的头像、名字和最新对话。</p>
+      <div id="lrChatContactChoices" class="lr-chat-contact-choices"></div>
+      <div class="lr-home-actions"><button id="lrChatContactClear" type="button">不显示联系人</button><button class="primary" id="lrChatContactDone" type="button">完成</button></div>
     </section>
   </div>
 </main>
@@ -1890,7 +1927,7 @@ async function removePersonFromIndexedDB(id){
  await new Promise((resolve,reject)=>{const tx=db.transaction(CONTACT_DB_STORE,'readwrite');tx.objectStore(CONTACT_DB_STORE).delete(String(id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('联系人删除失败'))});
 }
 // Restore contact profiles independently at startup; do not overwrite current profile edits.
-(async()=>{
+window.__LOVE_RECORD_PEOPLE_READY=(async()=>{
  try{
   const stored=await loadPeopleFromIndexedDB();
   if(stored.length){
@@ -2004,10 +2041,10 @@ async function saveChatContactIdsIndexedDB(ids){const db=await openChatContactIn
 async function loadChatContactIdsIndexedDB(){const db=await openChatContactIndexDB();return new Promise((resolve,reject)=>{const req=db.transaction(CHAT_CONTACT_STORE,'readonly').objectStore(CHAT_CONTACT_STORE).get('chat-contact-ids');req.onsuccess=()=>resolve(Array.isArray(req.result?.ids)?req.result.ids.map(String):[]);req.onerror=()=>reject(req.error||new Error('聊天联系人索引读取失败'))})}
 function readChatContacts(){let a=[...chatContactIdsCache];try{const x=JSON.parse(localStorage.getItem(CHAT_CONTACTS_KEY)||'[]');if(Array.isArray(x))a.push(...x)}catch{}try{const b=JSON.parse(localStorage.getItem('love-record-chat-contacts-recovery-v1')||'[]');if(Array.isArray(b))a.push(...b)}catch{}return [...new Set(a.map(String))]}
 function writeChatContacts(a){const value=[...new Set((a||[]).map(String))];chatContactIdsCache=value;let saved=false;try{localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(value));saved=true}catch(e){console.warn('[LOVE RECORD] primary chat contacts storage full',e)}try{localStorage.setItem('love-record-chat-contacts-recovery-v1',JSON.stringify(value));saved=true}catch(e){console.warn('[LOVE RECORD] recovery chat contacts storage full',e)}return saved}
-(async()=>{try{const [ids,storedPeople]=await Promise.all([loadChatContactIdsIndexedDB(),loadPeopleFromIndexedDB()]);if(storedPeople.length){const map=new Map((Array.isArray(state.people)?state.people:[]).map(x=>[String(x.id),x]));storedPeople.forEach(x=>{if(x&&x.id)map.set(String(x.id),x)});state.people=Array.from(map.values())}if(ids.length){chatContactIdsCache=[...new Set([...chatContactIdsCache,...ids])];try{localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(chatContactIdsCache))}catch{}if(typeof renderChat==='function')renderChat()}}catch(e){console.warn('[LOVE RECORD] chat contact index restore skipped',e)}})();
+window.__lrChatContactsReady=(async()=>{try{const [ids,storedPeople]=await Promise.all([loadChatContactIdsIndexedDB(),loadPeopleFromIndexedDB()]);if(storedPeople.length){const map=new Map((Array.isArray(state.people)?state.people:[]).map(x=>[String(x.id),x]));storedPeople.forEach(x=>{if(x&&x.id)map.set(String(x.id),x)});state.people=Array.from(map.values())}if(ids.length){chatContactIdsCache=[...new Set([...chatContactIdsCache,...ids])];try{localStorage.setItem(CHAT_CONTACTS_KEY,JSON.stringify(chatContactIdsCache))}catch{}if(typeof renderChat==='function')renderChat()}}catch(e){console.warn('[LOVE RECORD] chat contact index restore skipped',e)}})();
 
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
-function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a))}
+function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a));try{window.dispatchEvent(new CustomEvent('lr-chat-threads-updated',{detail:{contactIds:Object.keys(a||{})}}))}catch(e){}}
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
 // Read-only context bridge for the Companion app: reuses the selected contact, related world book and existing real chat history.
 window.__LOVE_RECORD_GET_COMPANION_CONTEXT=(id)=>{
@@ -3027,7 +3064,7 @@ if(loveIntro){
 
 <script src="./space-v2.js?v=61"></script>
 <script src="./space-story-v1.js?v=18"></script>
-<script src="./space-city-v1.js?v=9"></script>
+<script src="./space-city-v1.js?v=10"></script>
 <script src="./games-v1.js?v=99"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script src="./farm-home-3d.js?v=28"></script>
@@ -3320,7 +3357,7 @@ body.lr-user-app-open{overflow:hidden}
  <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
 </div>
 <script src="./lr-store-runtime.js?v=1"></script>
-<script src="./home-fixed-layout-v1.js?v=2"></script>
+<script src="./home-fixed-layout-v1.js?v=3"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
