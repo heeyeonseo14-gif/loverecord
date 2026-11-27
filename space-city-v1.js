@@ -384,7 +384,7 @@
 #space.lr-space-city-shell .sc-room-person{will-change:left,top;}
 @media(prefers-reduced-motion:reduce){#space.lr-space-city-shell .sc-pixel-animated .sc-pixel-frame{animation:none!important;opacity:0!important}#space.lr-space-city-shell .sc-pixel-animated .sc-pixel-frame-0{opacity:1!important}}
 `;
-    st.textContent += css;
+    // The complete SPACE CITY stylesheet is already assembled above.
     document.head.appendChild(st);
   }
   function normalizeLivingData(){
