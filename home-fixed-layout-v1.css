@@ -47,7 +47,10 @@
 #launcher .lr-profile-bio{font-size:10px;line-height:1.55;color:#77717b;margin-top:6px;overflow-wrap:anywhere}
 #launcher .lr-profile-edit{width:31px;height:31px;border:1px solid rgba(105,95,110,.12);border-radius:50%;background:rgba(255,255,255,.74);color:#7e7482;font-size:14px;align-self:start;margin-top:13px}
 #launcher .lr-profile-phrase{padding:0 16px 13px;margin:0;font:italic 10px/1.5 Georgia,serif;letter-spacing:.55px;color:#9a909c}
-#launcher .lr-home-feature-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;align-items:stretch;margin:0 1px}
+#launcher .lr-home-feature-row{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:17px!important;align-items:stretch;width:100%;min-width:0;box-sizing:border-box;margin:0 1px;overflow:visible}
+#launcher .lr-home-feature-row>.lr-home-music-widget,#launcher .lr-home-feature-row>.lr-first-app-grid{width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;justify-self:stretch!important;margin:0!important}
+#launcher .lr-home-feature-row>.lr-home-music-widget{position:relative;z-index:1;aspect-ratio:1/1}
+#launcher .lr-home-feature-row>.lr-first-app-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;align-self:stretch!important;overflow:hidden}
 #launcher .lr-home-music-widget{
   aspect-ratio:1/1;min-width:0;position:relative;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
   padding:12px;border:1px solid rgba(255,255,255,.94);border-radius:22px;
@@ -130,3 +133,8 @@
 #launcher #lrProfileAvatarPreview{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #eee8f0;margin:8px 0}
 #launcher #lrProfileBannerPreview{display:block;width:100%;height:82px;object-fit:cover;border-radius:12px;margin:8px 0}
 #launcher #lrProfileBannerPreview[hidden],#launcher #lrProfileAvatarPreview[hidden]{display:none!important}
+
+/* Photo tiles are clean image surfaces; upload by tapping the tile. */
+#launcher .lr-photo-slot-clear,#launcher .lr-photo-slot-badge{display:none!important}
+/* Keep the fixed bottom dock from covering the save actions in home dialogs. */
+body.lr-home-dialog-open .nav{visibility:hidden!important;pointer-events:none!important}

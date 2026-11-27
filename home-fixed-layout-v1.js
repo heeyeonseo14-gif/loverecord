@@ -29,8 +29,9 @@ function fillProfileForm(){
  $('lrProfileBioInput').value=profileDraft.bio||'';
  $('lrProfilePhraseInput').value=profileDraft.phrase||'';
 }
-function openProfileEditor(){profileDraft={...profile};fillProfileForm();$('lrProfileModal').hidden=false}
-function closeProfileEditor(){$('lrProfileModal').hidden=true}
+function syncDialogDock(){const open=!$('lrProfileModal').hidden||!$('lrCountdownModal').hidden;document.body.classList.toggle('lr-home-dialog-open',open)}
+function openProfileEditor(){profileDraft={...profile};fillProfileForm();$('lrProfileModal').hidden=false;syncDialogDock()}
+function closeProfileEditor(){$('lrProfileModal').hidden=true;syncDialogDock()}
 async function compressImage(file,maxSide=1800,quality=.86){
  if(!file||!file.type?.startsWith('image/'))throw new Error('请选择图片文件');
  const source=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result));reader.onerror=()=>reject(new Error('图片读取失败'));reader.readAsDataURL(file)});
@@ -109,8 +110,8 @@ function renderCountdownList(){
 }
 function resetCountdownForm(){editingCountdownId='';$('lrCountdownTitleInput').value='';$('lrCountdownDateInput').value='';$('lrCountdownSave').textContent='添加日期'}
 function editCountdown(id){const item=countdowns.find(x=>x.id===id);if(!item)return;editingCountdownId=id;$('lrCountdownTitleInput').value=item.title;$('lrCountdownDateInput').value=item.date;$('lrCountdownSave').textContent='保存修改'}
-function openCountdownManager(){renderCountdownList();resetCountdownForm();$('lrCountdownModal').hidden=false}
-function closeCountdownManager(){$('lrCountdownModal').hidden=true}
+function openCountdownManager(){renderCountdownList();resetCountdownForm();$('lrCountdownModal').hidden=false;syncDialogDock()}
+function closeCountdownManager(){$('lrCountdownModal').hidden=true;syncDialogDock()}
 function bindCountdown(){
  $('lrCountdownManage').addEventListener('click',openCountdownManager);$('lrCountdownModalClose').addEventListener('click',closeCountdownManager);
  $('lrCountdownModal').addEventListener('click',e=>{if(e.target===$('lrCountdownModal'))closeCountdownManager()});
