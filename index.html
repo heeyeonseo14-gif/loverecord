@@ -2240,7 +2240,11 @@ function applyLanguage(){
 }
 
 function nav(page){
-  const dock=document.querySelector('.nav');if(dock)dock.style.display='';
+  const dock=document.querySelector('.nav');
+  if(page!=='space'){
+    document.body.classList.remove('lr-space-standalone');
+    if(dock){dock.style.removeProperty('display');dock.style.removeProperty('visibility');dock.style.removeProperty('pointer-events')}
+  }else if(dock){dock.style.removeProperty('display')}
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const target=$(page);if(!target)return;
   target.classList.add('active');
@@ -3243,7 +3247,7 @@ if(loveIntro){
 
 
 <script src="./space-v2.js?v=61"></script>
-<script src="./space-story-v1.js?v=6"></script>
+<script src="./space-story-v1.js?v=7"></script>
 <script src="./space-city-v1.js?v=9"></script>
 <script src="./games-v1.js?v=99"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>

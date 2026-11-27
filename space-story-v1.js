@@ -80,6 +80,10 @@
 @media(min-width:650px){#space.lr-space-v2 .lr-story-screen{max-width:820px;margin:0 auto;padding-left:24px;padding-right:24px}#space.lr-space-v2 .lr-story-option-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:380px){#space.lr-space-v2 .lr-story-screen{padding-left:11px;padding-right:11px}#space.lr-space-v2 .lr-story-panel{padding:11px}}
 #space.lr-space-v2 .lr-story-screen[hidden]{display:none!important}
+/* MOBILE FIX: the long story profile form owns its scroll area inside the clipped SPACE shell. */
+#space.lr-space-v2 #lrSpaceStoryCreate.lr-story-screen.is-current{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 52px);max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 52px);min-height:0;overflow-y:auto!important;overflow-x:hidden!important;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
+#space.lr-space-v2 #lrSpaceStoryCreate.lr-story-screen.is-current>*{touch-action:pan-y}
+#space.lr-space-v2 #lrSpaceStoryCreate.lr-story-screen.is-current .lr-story-textarea{touch-action:pan-y}
 /* SPACE OFFLINE STORY FOCUS: temporarily hide city/world-settings UI without deleting saved city data */
 #space.lr-space-v2 #lrSpaceV2Directory>.lr-space-v2-panel,
 #space.lr-space-v2 #lrSpaceCreateCityPanel,
@@ -144,6 +148,25 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
 #space.lr-space-v2 .lr-story-reader .lr-story-msg{padding:16px 14px;box-shadow:1px 2px 0 #e5dce0}
 #space.lr-space-v2 .lr-story-reader .lr-story-msg-body{font-size:16px;line-height:2.05;letter-spacing:.015em}
 #space.lr-space-v2 .lr-story-reader .lr-story-msg.user .lr-story-msg-body{font:14px/1.8 -apple-system,BlinkMacSystemFont,sans-serif}
+/* Reading column: modestly wider, while preserving comfortable side margins. */
+#space.lr-space-v2 .lr-story-reader{max-width:820px}
+#space.lr-space-v2 .lr-story-reader .lr-story-transcript{max-width:760px}
+#space.lr-space-v2 .lr-story-reader .lr-story-msg.user{margin-left:6%}
+#space.lr-space-v2 .lr-story-reader .lr-story-msg.assistant{margin-right:1%}
+#space.lr-space-v2 .lr-story-reader .lr-story-msg{padding-left:16px;padding-right:16px}
+#space.lr-space-v2 .lr-story-long-memory{margin-top:18px;padding:13px;border:2px solid #d8c7d8;background:linear-gradient(145deg,#fffaf0,#f9f2f8);box-shadow:2px 2px 0 #e7dce5}
+#space.lr-space-v2 .lr-story-long-memory-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+#space.lr-space-v2 .lr-story-long-memory-head h3{margin:0;color:#705b74;font:700 12px/1.5 ui-monospace,monospace;letter-spacing:.5px}
+#space.lr-space-v2 .lr-story-long-memory-head p{margin:5px 0 0;color:#99899a;font-size:10px;line-height:1.65}
+#space.lr-space-v2 .lr-story-memory-mark{display:grid;place-items:center;width:32px;height:32px;flex:none;background:#eaddec;border:1px solid #cbb6cf;color:#8b6f91}
+#space.lr-space-v2 .lr-story-memory-toggle{margin:12px 0 8px}
+#space.lr-space-v2 .lr-story-memory-settings{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
+#space.lr-space-v2 .lr-story-memory-settings .lr-story-field{margin:5px 0}
+#space.lr-space-v2 .lr-story-memory-status{padding:8px 10px;background:#f1e9f2;border-left:3px solid #ad91b1;color:#806b84;font-size:10px;line-height:1.65;overflow-wrap:anywhere}
+#space.lr-space-v2 .lr-story-memory-text{min-height:190px;line-height:1.8}
+#space.lr-space-v2 .lr-story-memory-actions{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+#space.lr-space-v2 .lr-story-memory-actions button{flex:1;min-width:130px}
+@media(max-width:390px){#space.lr-space-v2 .lr-story-reader{padding-left:9px;padding-right:9px}#space.lr-space-v2 .lr-story-reader .lr-story-msg.user{margin-left:5%}#space.lr-space-v2 .lr-story-reader .lr-story-msg.assistant{margin-right:.5%}#space.lr-space-v2 .lr-story-reader .lr-story-msg{padding-left:14px;padding-right:14px}}
 #space.lr-space-v2 .lr-story-reader .lr-story-composer{z-index:30}
 #space.lr-space-v2 .lr-story-generation-mode{display:flex;align-items:center;gap:7px;margin:5px 0}
 #space.lr-space-v2 .lr-story-generation-mode label{font:700 10px ui-monospace,monospace;color:#8d728f}
@@ -190,7 +213,9 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
           <details class="lr-story-settings-group"><summary>角色与主页资料</summary><div id="lrStoryCastDetails" class="lr-story-settings-content"><div class="lr-story-cast" id="lrStoryCast"></div><div class="lr-story-toolbar"><button class="lr-story-pixel-btn" data-story-action="add-contact">＋ 添加 CHAR</button><button class="lr-story-pixel-btn" data-story-action="manual-npc">＋ 手动 NPC</button><button class="lr-story-pixel-btn" data-story-action="ai-npc">✦ AI 创建 NPC</button></div><div id="lrStorySourceChanges"></div><div class="lr-story-muted" id="lrStoryContextMeta"></div></div></details>
           <details class="lr-story-settings-group"><summary>SPACE CITY · 城市同步</summary><div id="lrStoryCitySyncDetails" class="lr-story-settings-content"><div class="lr-story-muted" id="lrStoryCitySyncMeta" style="margin:9px 0">尚未关联城市。可以在编辑故事资料时选择一座 SPACE CITY。</div><div class="lr-story-field"><label class="lr-story-label" for="lrStoryCityLocationSelect">将城市当前地点同步为</label><select id="lrStoryCityLocationSelect" class="lr-story-select"><option value="">请先关联城市</option></select></div><div class="lr-story-toolbar"><button type="button" class="lr-story-pixel-btn primary" data-story-action="sync-city-location">确认同步当前地点</button></div><p class="lr-story-muted">同步前会再次询问。只有你确认后，城市当前地点和用户角色位置才会更新；不会自动改变其他居民、关系或家庭状态。</p></div></details>
           <details class="lr-story-settings-group"><summary>本故事写作设置</summary><div id="lrStoryWritingDetails" class="lr-story-settings-content"><div class="lr-story-option-grid" style="margin-top:10px"><label class="lr-story-field"><span class="lr-story-label">剧情模式</span><select id="lrStoryWorkspaceMode" class="lr-story-select"><option value="novel">小说沉浸</option><option value="interactive">互动长文</option></select></label><label class="lr-story-field"><span class="lr-story-label">目标字数</span><input id="lrStoryWorkspaceTarget" class="lr-story-input" type="number" min="300" max="12000" step="100"></label><label class="lr-story-field"><span class="lr-story-label">文风描写</span><select id="lrStoryWorkspaceDetail" class="lr-story-select"><option value="rich">丰富</option><option value="moderate">适中</option><option value="dialogue">对白优先</option></select></label><label class="lr-story-field"><span class="lr-story-label">连贯性</span><select id="lrStoryWorkspaceContinuity" class="lr-story-select"><option value="balanced">平衡</option><option value="strict">严格</option><option value="creative">创作</option></select></label><label class="lr-story-field"><span class="lr-story-label">AI 主动性</span><select id="lrStoryWorkspaceInitiative" class="lr-story-select"><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label><label class="lr-story-field"><span class="lr-story-label">用户角色控制</span><select id="lrStoryWorkspaceUserControl" class="lr-story-select"><option value="user">用户完全控制</option><option value="assist">AI 辅助控制</option><option value="ai">AI 完全控制</option></select></label><label class="lr-story-field"><span class="lr-story-label">NPC 创建方式</span><select id="lrStoryWorkspaceNpcPolicy" class="lr-story-select"><option value="both">AI＋手动创建</option><option value="manual">仅手动创建</option><option value="ai">AI 创建</option></select></label><label class="lr-story-field"><span class="lr-story-label">叙事视角</span><select id="lrStoryWorkspaceView" class="lr-story-select"><option value="third">第三人称</option><option value="first">第一人称</option></select></label><label class="lr-story-field"><span class="lr-story-label">剧情节奏</span><select id="lrStoryWorkspacePace" class="lr-story-select"><option value="slow">慢节奏</option><option value="normal">正常</option><option value="fast">快速</option></select></label></div><label class="lr-story-field"><span class="lr-story-label">剧情摘要 / 当前进度</span><textarea id="lrStoryWorkspaceSummary" class="lr-story-textarea" placeholder="记录故事目前发展到哪里，帮助后续续写保持连贯。"></textarea></label><label class="lr-story-field"><span class="lr-story-label">固定事实与长期备注</span><textarea id="lrStoryWorkspaceNotes" class="lr-story-textarea" placeholder="记录不能随意改变的事实、承诺、秘密与重要关系。"></textarea></label><textarea id="lrStoryWorkspaceRules" class="lr-story-textarea" placeholder="故事专属规则"></textarea><div class="lr-story-toolbar"><button class="lr-story-pixel-btn" data-story-action="save-settings" type="button">保存故事设置</button></div></div></details>
-          <details class="lr-story-settings-group"><summary>剧情时间轴 · 已记录的重要节点</summary><div id="lrStoryTimelineDetails" class="lr-story-settings-content lr-story-timeline"><div id="lrStoryTimelineList"></div><button type="button" class="lr-story-pixel-btn" data-story-action="add-timeline-event">＋ 记录剧情节点</button></div></details>
+          <details class="lr-story-settings-group"><summary>剧情时间轴 · 已记录的重要节点</summary><div id="lrStoryTimelineDetails" class="lr-story-settings-content lr-story-timeline"><div id="lrStoryTimelineList"></div><button type="button" class="lr-story-pixel-btn" data-story-action="add-timeline-event">＋ 记录剧情节点</button>
+          <section class="lr-story-long-memory" aria-labelledby="lrStoryLongMemoryTitle"><div class="lr-story-long-memory-head"><div><h3 id="lrStoryLongMemoryTitle">长记忆 · LONG MEMORY</h3><p>把当前分支的对话整理成可持续累积的剧情记忆。原始消息不会删除。</p></div><span class="lr-story-memory-mark">✦</span></div><label class="lr-story-option lr-story-memory-toggle"><input id="lrStoryLongMemoryAuto" type="checkbox" checked><span><b>启用自动总结</b><br><small>达到设定消息数后，自动整理当前分支的待总结内容。</small></span></label><div class="lr-story-memory-settings"><label class="lr-story-field"><span class="lr-story-label">每多少条对话消息总结一次</span><input id="lrStoryLongMemoryInterval" class="lr-story-input" type="number" min="2" max="100" step="1" value="15"></label><div id="lrStoryLongMemoryStatus" class="lr-story-memory-status" role="status">正在读取长记忆状态…</div></div><label class="lr-story-field"><span class="lr-story-label">当前分支的长记忆（可手动编辑）</span><textarea id="lrStoryLongMemoryText" class="lr-story-textarea lr-story-memory-text" placeholder="这里会保存人物关系、重要事实、剧情进度、伏笔和待推进事项。你也可以直接手动编辑。"></textarea></label><div class="lr-story-memory-actions"><button type="button" class="lr-story-pixel-btn" data-story-action="save-long-memory">保存长记忆</button><button type="button" class="lr-story-pixel-btn primary" data-story-action="summarize-long-memory">立即总结待处理消息</button></div><p class="lr-story-muted">消息数按“每条用户输入”和“每轮完整 SPACE 回复”计算；长文内部的分段生成会合并计为一条。自动总结需要调用当前配置的 API。</p></section>
+        </div></details>
           <details class="lr-story-settings-group"><summary>正文输出方式</summary><div class="lr-story-output-toolbar"><label for="lrStoryQuickStreamMode">生成模式</label><select id="lrStoryQuickStreamMode" class="lr-story-select"><option value="stream">流式输出 · 边生成边显示</option><option value="complete">非流式输出 · 完整生成后显示</option></select><span class="lr-story-label" id="lrStoryLiveStatus">就绪</span><div class="lr-story-output-hint" id="lrStoryOutputHint">流式：正文会随模型输出逐步出现。</div></div></details>
         </section></div>
         <div id="lrStoryTranscript" class="lr-story-transcript"></div>
@@ -231,7 +256,7 @@ body.lr-story-settings-open{overflow:hidden}
   function showScreen(id){
     const root=$('space');if(!root)return;
     root.querySelectorAll('.lr-space-v2-screen').forEach(el=>{el.hidden=true;el.classList.remove('is-current')});
-    const page=$(id);if(page){page.hidden=false;page.classList.add('is-current')}
+    const page=$(id);if(page){page.hidden=false;page.classList.add('is-current');page.scrollTop=0}
     window.scrollTo({top:0,behavior:'auto'});
   }
   const SPACE_CSS_KEY='love-record-space-custom-css-v1';
@@ -396,13 +421,87 @@ body.lr-story-settings-open{overflow:hidden}
     const settingsGroups=$('lrStorySettingsPanel')?.querySelectorAll('.lr-story-settings-group')||[];settingsGroups.forEach((group,index)=>{group.open=index===0});closeOfflineSettings();
     renderStoryCitySync(story);
     const manualNpc=document.querySelector('[data-story-action="manual-npc"]'),aiNpc=document.querySelector('[data-story-action="ai-npc"]');if(manualNpc)manualNpc.hidden=story.npcPolicy==='ai';if(aiNpc)aiNpc.hidden=story.npcPolicy==='manual';
-    renderBranches(story);renderTranscript(story);renderSourceChanges(story);renderTimeline(story);
+    renderBranches(story);renderTranscript(story);renderSourceChanges(story);renderTimeline(story);renderLongMemory(story);
     $('lrStoryContextMeta').textContent=`${(story.characters||[]).length} 位主页 CHAR · ${(story.npcs||[]).length} 位故事 NPC · ${(story.worldBooks||[]).length} 本世界书 · 目标 ${story.targetLength||2000} 字`;
     $('lrStoryGenerate').textContent=story.pendingGeneration?'继续补完本次目标':'生成剧情';$('lrStoryComposerHint').textContent=story.mode==='interactive'?'互动长文 · 输入你的动作、对白或想法，CHAR 会根据你的参与继续推进。':'小说沉浸 · 阅读完整段落后，再决定故事接下来往哪里走。';$('lrStoryUserInput').placeholder=story.mode==='interactive'?'写下你的行动、对白或临时剧情方向……':'写下你希望下一段发生的事，或让故事自然继续……';
     $('lrStoryGenerationStatus').textContent=story.pendingGeneration?'上次生成未完成，已有内容已保存；点击按钮可以继续接近目标字数。':'每段剧情都会自动保存。你可以选择流式或非流式输出。';
     showScreen('lrSpaceStoryWorkspace');
   }
-  function renderTimeline(story){const box=$('lrStoryTimelineList');if(!box)return;const rows=Array.isArray(story.timeline)?story.timeline.slice().sort((a,b)=>(a.at||0)-(b.at||0)):[];box.innerHTML=rows.length?rows.map(ev=>`<article class="lr-story-msg"><div class="lr-story-msg-head"><b>${esc(ev.title||'剧情节点')}</b><time>${esc(new Date(ev.at||Date.now()).toLocaleString())}</time></div><div class="lr-story-msg-body" style="font:12px/1.7 sans-serif">${esc(ev.note||'')}</div><div class="lr-story-msg-actions"><button class="lr-story-pixel-btn" data-story-action="remove-timeline-event" data-event-id="${esc(ev.id)}">移除节点</button></div></article>`).join(''):'<p class="lr-story-muted">还没有记录重要节点。可以手动添加相遇、旅行、关系变化或其他关键事件。</p>'}
+  function ensureLongMemory(story){
+    if(!story.longMemory||typeof story.longMemory!=='object')story.longMemory={autoEnabled:true,interval:15,branches:{}};
+    if(typeof story.longMemory.autoEnabled!=='boolean')story.longMemory.autoEnabled=true;
+    story.longMemory.interval=Math.max(2,Math.min(100,Number(story.longMemory.interval)||15));
+    if(!story.longMemory.branches||typeof story.longMemory.branches!=='object')story.longMemory.branches={};
+    const branchId=String(story.activeBranchId||'main');
+    if(!story.longMemory.branches[branchId])story.longMemory.branches[branchId]={summary:'',coveredEntryIds:[],lastSummaryAt:0,totalSummarized:0};
+    const branch=story.longMemory.branches[branchId];
+    if(typeof branch.summary!=='string')branch.summary='';
+    if(!Array.isArray(branch.coveredEntryIds))branch.coveredEntryIds=[];
+    return branch;
+  }
+  function longMemoryUnits(story,entries){
+    const rows=visibleEntries(story,entries).filter(e=>(e.role==='user'||e.role==='assistant')&&String(e.content||'').trim());
+    const units=[];
+    rows.forEach(entry=>{
+      const last=units[units.length-1];
+      if(entry.role==='assistant'&&entry.generationId&&last?.role==='assistant'&&last.generationId===entry.generationId){last.content+='\n\n'+entry.content;last.entryIds.push(entry.id);last.lastAt=entry.createdAt||last.lastAt;}
+      else units.push({role:entry.role,generationId:entry.generationId||'',content:String(entry.content||''),entryIds:[entry.id],at:entry.createdAt||0,lastAt:entry.createdAt||0});
+    });
+    return units;
+  }
+  function renderLongMemory(story){
+    if(!story)return;
+    const branch=ensureLongMemory(story),units=longMemoryUnits(story,activeEntries),covered=new Set(branch.coveredEntryIds);
+    const pending=units.filter(unit=>unit.entryIds.some(id=>!covered.has(id)));
+    const auto=$('lrStoryLongMemoryAuto'),interval=$('lrStoryLongMemoryInterval'),memo=$('lrStoryLongMemoryText'),status=$('lrStoryLongMemoryStatus');
+    if(auto)auto.checked=story.longMemory.autoEnabled!==false;
+    if(interval)interval.value=String(story.longMemory.interval||15);
+    if(memo)memo.value=branch.summary||'';
+    if(status){const coveredCount=units.filter(unit=>unit.entryIds.every(id=>covered.has(id))).length;status.textContent=`当前分支：${units.length} 条对话消息 · 已纳入长记忆 ${coveredCount} 条 · 待总结 ${pending.length} 条。自动总结${story.longMemory.autoEnabled===false?'已关闭':`已开启，每 ${story.longMemory.interval} 条整理一次`}${branch.lastSummaryAt?' · 最近整理 '+new Date(branch.lastSummaryAt).toLocaleString():''}。`;}
+  }
+  async function saveLongMemory(){
+    if(!activeStory)return;
+    const story=activeStory,branch=ensureLongMemory(story);
+    story.longMemory.autoEnabled=$('lrStoryLongMemoryAuto')?.checked!==false;
+    story.longMemory.interval=Math.max(2,Math.min(100,Math.round(Number($('lrStoryLongMemoryInterval')?.value)||15)));
+    branch.summary=textLimit($('lrStoryLongMemoryText')?.value,18000);branch.manuallyEditedAt=Date.now();
+    await saveMeta(story);renderLongMemory(story);notify('当前分支的长记忆已保存。');
+  }
+  let longMemoryBusy=false;
+  async function summarizeLongMemory(story=activeStory,{automatic=false}={}){
+    if(!story||longMemoryBusy)return false;
+    const branchId=String(story.activeBranchId||'main'),branch=ensureLongMemory(story),units=longMemoryUnits(story,activeEntries),covered=new Set(branch.coveredEntryIds);
+    const pending=units.filter(unit=>unit.entryIds.some(id=>!covered.has(id)));
+    const interval=Math.max(2,Math.min(100,Number(story.longMemory.interval)||15));
+    if(automatic&&(story.longMemory.autoEnabled===false||pending.length<interval))return false;
+    if(!pending.length){if(!automatic)notify('当前分支没有待整理的新消息。');return false;}
+    const batch=pending.slice(0,automatic?interval:Math.min(60,Math.max(interval,pending.length)));
+    const api=bridge()?.callAPI;if(typeof api!=='function'){if(!automatic)notify('当前 SPACE AI 接口不可用，请检查 API 设置。');return false;}
+    const system=`你是 LOVE RECORD SPACE 的长篇剧情记忆整理助手。你的工作是把新增对话整合进已有长记忆，供后续续写保持连续。只输出整理后的记忆正文，不要输出开场白或解释。必须忠于原文，不能编造、猜测或把可能性写成事实；保留人物姓名、关系、时间、地点、承诺、重要物品、已确认事件、人物状态变化、尚未解决的冲突与伏笔。若新消息明确修正旧信息，以最新明确内容为准。优先保留后续剧情真正需要的事实，合并重复信息，避免流水账。使用清晰的小标题：当前进度、人物与关系、已确认事实、重要经历、未解决事项与伏笔。控制在约 1200—2600 个中文字符，信息不足时可以更短。`;
+    const user=JSON.stringify({storyTitle:story.title||'',branchName:currentBranch(story).name||'主线',existingLongMemory:branch.summary||'（尚无既有长记忆）',storyPremise:story.premise||'',fixedNotes:story.notes||'',timeline:(story.timeline||[]).filter(x=>!x.branchId||x.branchId===branchId).slice(-30).map(x=>({title:x.title,note:x.note,at:x.at})),newMessages:batch.map((unit,index)=>({index:index+1,role:unit.role==='user'?'用户输入':'SPACE剧情回复',content:textLimit(unit.content,2200),at:unit.at}))});
+    longMemoryBusy=true;
+    const status=$('lrStoryLongMemoryStatus');if(status)status.textContent=`正在整理 ${batch.length} 条新消息……原始剧情不会删除。`;
+    try{
+      const raw=await api(system,user,'正在整理故事长记忆…',false,90000);
+      const result=String(raw||'').trim();if(!result)throw new Error('AI 没有返回有效的记忆摘要。');
+      // Store into the exact branch whose messages were summarized, even if the UI changes branch mid-request.
+      story.longMemory=story.longMemory||{autoEnabled:true,interval:15,branches:{}};story.longMemory.branches=story.longMemory.branches||{};
+      const target=story.longMemory.branches[branchId]||(story.longMemory.branches[branchId]={summary:'',coveredEntryIds:[],lastSummaryAt:0,totalSummarized:0});
+      target.summary=textLimit(result,18000);target.coveredEntryIds=[...new Set([...(target.coveredEntryIds||[]),...batch.flatMap(x=>x.entryIds)])];target.lastSummaryAt=Date.now();target.totalSummarized=(Number(target.totalSummarized)||0)+batch.length;
+      await saveMeta(story);
+      if(activeStory?.id===story.id){if(String(activeStory.activeBranchId||'main')===branchId)renderLongMemory(activeStory);else renderLongMemory(activeStory);}
+      const left=longMemoryUnits(story,activeEntries).filter(unit=>unit.entryIds.some(id=>!new Set(target.coveredEntryIds).has(id))).length;
+      if(!automatic)notify(`长记忆已更新，整理了 ${batch.length} 条消息${left?`，还有 ${left} 条待整理`:''}。`);
+      return true;
+    }catch(err){console.error('[SPACE long memory]',err);if(status)status.textContent='长记忆整理失败：'+(err.message||'未知错误')+'。原始剧情没有受到影响，可以稍后重试。';if(!automatic)notify('长记忆整理失败：'+(err.message||'请检查 API 设置'));return false;}
+    finally{longMemoryBusy=false;if(activeStory?.id===story.id)renderLongMemory(activeStory);}
+  }
+  async function maybeAutoLongMemory(story){
+    if(!story||story.longMemory?.autoEnabled===false||longMemoryBusy)return;
+    const branch=ensureLongMemory(story),pending=longMemoryUnits(story,activeEntries).filter(unit=>unit.entryIds.some(id=>!new Set(branch.coveredEntryIds).has(id)));
+    if(pending.length>=Math.max(2,Number(story.longMemory.interval)||15))await summarizeLongMemory(story,{automatic:true});
+  }
+  function renderTimeline(story){const box=$('lrStoryTimelineList');if(!box)return;const rows=Array.isArray(story.timeline)?story.timeline.slice().sort((a,b)=>(a.at||0)-(b.at||0)):[];box.innerHTML=rows.length?rows.map(ev=>`<article class="lr-story-msg"><div class="lr-story-msg-head"><b>${esc(ev.title||'剧情节点')}</b><time>${esc(new Date(ev.at||Date.now()).toLocaleString())}</time></div><div class="lr-story-msg-body" style="font:12px/1.7 sans-serif">${esc(ev.note||'')}</div><div class="lr-story-msg-actions"><button class="lr-story-pixel-btn" data-story-action="remove-timeline-event" data-event-id="${esc(ev.id)}">移除节点</button></div></article>`).join(''):'<p class="lr-story-muted">还没有记录重要节点。可以手动添加相遇、旅行、关系变化或其他关键事件。</p>';renderLongMemory(story)}
   async function addTimelineEvent(){if(!activeStory)return;const title=prompt('剧情节点名称：','重要事件');if(!title)return;const note=prompt('事件摘要（可选）：','');activeStory.timeline=Array.isArray(activeStory.timeline)?activeStory.timeline:[];activeStory.timeline.push({id:uid('event'),title:textLimit(title,100),note:textLimit(note,1200),at:Date.now(),branchId:activeStory.activeBranchId||'main'});await saveMeta(activeStory);renderTimeline(activeStory);notify('剧情时间轴已记录。')}
   async function removeTimelineEvent(id){if(!activeStory||!confirm('确定移除这个剧情时间轴节点吗？'))return;activeStory.timeline=(activeStory.timeline||[]).filter(x=>x.id!==id);await saveMeta(activeStory);renderTimeline(activeStory)}
   function renderBranches(story){const sel=$('lrStoryBranchSelect');if(!sel)return;sel.innerHTML=(story.branches||[]).map(b=>`<option value="${esc(b.id)}" ${b.id===story.activeBranchId?'selected':''}>${esc(b.name||'故事分支')}</option>`).join('')}
@@ -435,8 +534,8 @@ body.lr-story-settings-open{overflow:hidden}
     const userControl={user:'用户完全控制自己的角色。绝对不要替用户角色编造台词、决定思想、情绪、动作、选择或身体反应；只回应用户已经给出的行动，并为用户留下空间。',assist:'AI 可以帮助润色用户明确给出的行动和表达，但不得擅自决定用户未表达的重要选择、立场和情绪。',ai:'此故事允许 AI 控制用户角色；仍需遵守用户明确给出的限制和人物设定。'}[story.userControl]||'用户完全控制';
     const mode=story.mode==='interactive'?'互动长文模式：保留用户自由输入，剧情可以有更明显的互动节点，但不使用固定选项限制用户。':'小说沉浸模式：以连贯、完整、具有章节感的文学叙事为主，用户在每段生成后决定下一步。';
     const flow='生成方式允许完整长文与角色轮流行动/对白并存。根据当前场景自然选择：安静场景可用连续叙述，群体对话或冲突场景可让角色逐一回应；不要强迫所有角色同时发言。';
-    const system=`你是 LOVE RECORD SPACE 的长期长篇剧情写作引擎。只输出本轮新增的中文剧情正文，不要解释写作过程、不要输出设置摘要或 JSON。\n\n故事：${story.title}\n模式：${mode}\n叙事视角：${story.narrativeView==='first'?'第一人称':'第三人称'}。节奏：${story.pace==='slow'?'慢节奏':story.pace==='fast'?'快节奏':'正常节奏'}。默认文风：细腻文学风。\n连贯性：${rules.continuity}\n描写：${rules.detail}\n主动性：${rules.initiative}\n用户角色权限：${userControl}\n生成调度：${flow}\n故事专属规则：${story.extraRules||'无额外规则'}\n关联城市：${story.cityId?'已关联城市；城市信息仅作为场景与居民状态参考，禁止擅自修改城市中的重大状态。':'未关联城市'}\n\n核心要求：人物必须遵循各自人设、语言习惯、背景和关系；人物只知道自己有机会知道的信息；场景、时间、物品、动作保持连贯；不得无缘无故跳地点、瞬间改变关系或遗忘已发生事件。多角色时让每个人有独立反应，不要所有人同声附和。NPC 创建策略为 ${story.npcPolicy}；当 NPC 策略允许 AI 创建时，如果剧情确实需要一位有姓名且可能再次出现的配角，请在整段正文末尾追加单独机器标记 [[LR_STORY_NPC:{\"name\":\"姓名\",\"role\":\"身份\",\"personality\":\"性格\",\"speech\":\"说话方式\",\"background\":\"背景\"}]]；不要为一次性路人创建档案，不要把标记解释给用户。手动模式下禁止追加标记。不要重复之前的段落，不要为了字数重复描写或灌水。\n本轮目标字数约 ${promptChunk} 个中文字符（不计空格），尽量接近目标；允许自然浮动，优先故事质量与自然收束。若本轮是续段，必须直接承接上一段最后的动作、对白或场景，不复述、不另起炉灶。`;
-    const citySnapshot=story.cityId?bridge()?.getCitySnapshot?.(story.cityId)?.snapshot||null:null;const context={storyPremise:story.premise||'',worldBooks:world,characters,npcs:npcList,userPersona:persona,linkedCity:citySnapshot?{name:citySnapshot.name,worldNow:citySnapshot.worldNow,weather:citySnapshot.weather,season:citySnapshot.season,currentLocation:citySnapshot.currentLocation,currentLocationName:citySnapshot.currentLocationName,buildings:citySnapshot.buildings,residents:citySnapshot.residents,relationships:citySnapshot.relationships,families:citySnapshot.families,worldBooks:citySnapshot.worldBooks}:null,recentStory:recent,storySummary:story.summary||'',storyNotes:story.notes||'',pendingOriginalUserInput:generation.userPrompt||'',alreadyGeneratedThisTurn:generation.generatedChars||0,previousGeneratedSegment:generation.lastSegment||'',instruction:generation.generatedChars?'请接着本轮已经生成的最后一句自然继续，保持同一场景与叙事节奏。':'根据用户本轮输入与故事设定开始创作。',targetLength:promptChunk};
+    const system=`你是 LOVE RECORD SPACE 的长期长篇剧情写作引擎。只输出本轮新增的中文剧情正文，不要解释写作过程、不要输出设置摘要或 JSON。\n\n故事：${story.title}\n模式：${mode}\n叙事视角：${story.narrativeView==='first'?'第一人称':'第三人称'}。节奏：${story.pace==='slow'?'慢节奏':story.pace==='fast'?'快节奏':'正常节奏'}。默认文风：细腻文学风。\n连贯性：${rules.continuity}\n描写：${rules.detail}\n主动性：${rules.initiative}\n用户角色权限：${userControl}\n生成调度：${flow}\n故事专属规则：${story.extraRules||'无额外规则'}\n长记忆：后续上下文中的 longMemory 是当前分支的累积长期记忆；优先遵守其中已确认事实，同时以本轮明确的新信息修正已变化状态。\n关联城市：${story.cityId?'已关联城市；城市信息仅作为场景与居民状态参考，禁止擅自修改城市中的重大状态。':'未关联城市'}\n\n核心要求：人物必须遵循各自人设、语言习惯、背景和关系；人物只知道自己有机会知道的信息；场景、时间、物品、动作保持连贯；不得无缘无故跳地点、瞬间改变关系或遗忘已发生事件。多角色时让每个人有独立反应，不要所有人同声附和。NPC 创建策略为 ${story.npcPolicy}；当 NPC 策略允许 AI 创建时，如果剧情确实需要一位有姓名且可能再次出现的配角，请在整段正文末尾追加单独机器标记 [[LR_STORY_NPC:{\"name\":\"姓名\",\"role\":\"身份\",\"personality\":\"性格\",\"speech\":\"说话方式\",\"background\":\"背景\"}]]；不要为一次性路人创建档案，不要把标记解释给用户。手动模式下禁止追加标记。不要重复之前的段落，不要为了字数重复描写或灌水。\n本轮目标字数约 ${promptChunk} 个中文字符（不计空格），尽量接近目标；允许自然浮动，优先故事质量与自然收束。若本轮是续段，必须直接承接上一段最后的动作、对白或场景，不复述、不另起炉灶。`;
+    const citySnapshot=story.cityId?bridge()?.getCitySnapshot?.(story.cityId)?.snapshot||null:null;const context={storyPremise:story.premise||'',worldBooks:world,characters,npcs:npcList,userPersona:persona,linkedCity:citySnapshot?{name:citySnapshot.name,worldNow:citySnapshot.worldNow,weather:citySnapshot.weather,season:citySnapshot.season,currentLocation:citySnapshot.currentLocation,currentLocationName:citySnapshot.currentLocationName,buildings:citySnapshot.buildings,residents:citySnapshot.residents,relationships:citySnapshot.relationships,families:citySnapshot.families,worldBooks:citySnapshot.worldBooks}:null,recentStory:recent,storySummary:story.summary||'',storyNotes:story.notes||'',longMemory:ensureLongMemory(story).summary||'',pendingOriginalUserInput:generation.userPrompt||'',alreadyGeneratedThisTurn:generation.generatedChars||0,previousGeneratedSegment:generation.lastSegment||'',instruction:generation.generatedChars?'请接着本轮已经生成的最后一句自然继续，保持同一场景与叙事节奏。':'根据用户本轮输入与故事设定开始创作。',targetLength:promptChunk};
     return {system,user:JSON.stringify(context)};
   }
   function extractNpcMarkers(raw,story){
@@ -472,7 +571,7 @@ body.lr-story-settings-open{overflow:hidden}
       else if(pending.status!=='partial'){pending.status='partial';story.pendingGeneration=pending;status.textContent=`已保存 ${pending.generatedChars} / ${target} 字，点击继续补完本次目标。`}
       await saveMeta(story);$('lrStoryGenerate').textContent=story.pendingGeneration?'继续补完本次目标':'生成下一段剧情';$('lrStoryGenerationStatus').textContent=status.textContent;liveStatus.textContent='';await renderHub();
     }catch(e){console.error('[SPACE story generation]',e);pending.status='partial';story.pendingGeneration=pending;await saveMeta(story);status.textContent='生成中断：'+(e.message||'未知错误')+'。已经生成的段落已保存，可以继续。';liveStatus.textContent='请求中断';live.hidden=true}
-    finally{generationBusy=false;$('lrStoryGenerate').disabled=false;$('lrStoryCancelGeneration').hidden=true;}
+    finally{generationBusy=false;$('lrStoryGenerate').disabled=false;$('lrStoryCancelGeneration').hidden=true;if(!story.pendingGeneration&&activeStory?.id===story.id){Promise.resolve().then(()=>maybeAutoLongMemory(story)).catch(err=>console.warn('[SPACE auto long memory]',err));}}
   }
   async function saveWorkspaceSettings(){if(!activeStory)return;activeStory.mode=$('lrStoryWorkspaceMode').value==='interactive'?'interactive':'novel';activeStory.targetLength=Math.max(300,Math.min(12000,Number($('lrStoryWorkspaceTarget').value)||2000));activeStory.detail=$('lrStoryWorkspaceDetail').value;activeStory.continuity=$('lrStoryWorkspaceContinuity').value;activeStory.initiative=$('lrStoryWorkspaceInitiative').value;activeStory.userControl=$('lrStoryWorkspaceUserControl').value;activeStory.npcPolicy=$('lrStoryWorkspaceNpcPolicy').value;activeStory.narrativeView=$('lrStoryWorkspaceView').value;activeStory.pace=$('lrStoryWorkspacePace').value;activeStory.extraRules=textLimit($('lrStoryWorkspaceRules').value,5000);activeStory.summary=textLimit($('lrStoryWorkspaceSummary').value,9000);activeStory.notes=textLimit($('lrStoryWorkspaceNotes').value,9000);await saveMeta(activeStory);const manualNpc=document.querySelector('[data-story-action=\"manual-npc\"]'),aiNpc=document.querySelector('[data-story-action=\"ai-npc\"]');if(manualNpc)manualNpc.hidden=activeStory.npcPolicy==='ai';if(aiNpc)aiNpc.hidden=activeStory.npcPolicy==='manual';$('lrStoryContextMeta').textContent=`${(activeStory.characters||[]).length} 位主页 CHAR · ${(activeStory.npcs||[]).length} 位故事 NPC · ${(activeStory.worldBooks||[]).length} 本世界书 · 目标 ${activeStory.targetLength} 字`;notify('本故事写作设置已保存。')}
   async function rerollGeneration(generationId){
@@ -490,21 +589,21 @@ body.lr-story-settings-open{overflow:hidden}
     const copiedUser={...originalUser,id:uid('entry'),branchId,seq:Math.max(0,...all.map(x=>Number(x.seq)||0))+1,generationId:newGenerationId,createdAt:now,rerolledFrom:generationId};
     await put(ENTRY_STORE,copiedUser);
     story.pendingGeneration={id:newGenerationId,userEntryId:copiedUser.id,userPrompt:originalUser.content,targetLength:Math.max(300,Math.min(12000,Number(story.targetLength)||2000)),generatedChars:0,lastSegment:'',status:'pending',chunks:0,createdAt:now,streamMode:$('lrStoryQuickStreamMode')?.value||story.streamMode||'stream'};
-    await saveMeta(story);activeEntries=await loadStoryEntries(story.id);renderBranches(story);renderTranscript(story);$('lrStoryUserInput').value='';$('lrStoryGenerationStatus').textContent='已创建重 roll 分支，正在使用原始用户输入重新生成；旧版本仍保留在原分支。';
+    ensureLongMemory(story);await saveMeta(story);activeEntries=await loadStoryEntries(story.id);renderBranches(story);renderTranscript(story);renderLongMemory(story);$('lrStoryUserInput').value='';$('lrStoryGenerationStatus').textContent='已创建重 roll 分支，正在使用原始用户输入重新生成；旧版本仍保留在原分支。';
     await generateStory();
   }
-  async function createBranch(entryId){if(!activeStory)return;const rows=visibleEntries(activeStory,activeEntries),idx=rows.findIndex(x=>x.id===entryId);if(idx<0)return;const name=prompt('给新分支取个名字：','另一种发展');if(!name)return;const branch={id:uid('branch'),name:textLimit(name,60),baseEntryIds:rows.slice(0,idx+1).map(x=>x.id),parentBranchId:activeStory.activeBranchId,forkEntryId:entryId,createdAt:Date.now()};activeStory.branches.push(branch);activeStory.activeBranchId=branch.id;await saveMeta(activeStory);renderBranches(activeStory);renderTranscript(activeStory);notify('已从指定剧情节点创建新分支，原故事线保留不变。')}
+  async function createBranch(entryId){if(!activeStory)return;const rows=visibleEntries(activeStory,activeEntries),idx=rows.findIndex(x=>x.id===entryId);if(idx<0)return;const name=prompt('给新分支取个名字：','另一种发展');if(!name)return;const branch={id:uid('branch'),name:textLimit(name,60),baseEntryIds:rows.slice(0,idx+1).map(x=>x.id),parentBranchId:activeStory.activeBranchId,forkEntryId:entryId,createdAt:Date.now()};activeStory.branches.push(branch);activeStory.activeBranchId=branch.id;ensureLongMemory(activeStory);await saveMeta(activeStory);renderBranches(activeStory);renderTranscript(activeStory);renderLongMemory(activeStory);notify('已从指定剧情节点创建新分支，原故事线保留不变。')}
   function downloadFile(filename,content,mime){const blob=new Blob([content],{type:mime||'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
   async function exportStory(story,format='md'){
     const all=await loadStoryEntries(story.id),rows=visibleEntries(story,all),safe=(story.title||'SPACE故事').replace(/[\\/:*?"<>|]/g,'_');
-    const plain=[story.title||'未命名故事',story.premise||'',`模式：${story.mode==='interactive'?'互动长文':'小说沉浸'} · CHAR：${profileSummary(story)}`,...(story.timeline||[]).map(e=>`[时间轴] ${e.title} · ${e.note||''}`),'',...rows.map(x=>x.role==='user'?`【用户】\n${x.content}`:x.content)].join('\n\n');
+    const exportMemory=story.longMemory?.branches?.[String(story.activeBranchId||'main')]?.summary||'';const plain=[story.title||'未命名故事',story.premise||'',`模式：${story.mode==='interactive'?'互动长文':'小说沉浸'} · CHAR：${profileSummary(story)}`,exportMemory?`[长记忆]\n${exportMemory}`:'',...(story.timeline||[]).map(e=>`[时间轴] ${e.title} · ${e.note||''}`),'',...rows.map(x=>x.role==='user'?`【用户】\n${x.content}`:x.content)].join('\n\n');
     if(format==='txt'){downloadFile(safe+'.txt',plain,'text/plain;charset=utf-8');return}
     if(format==='json'){const bundle={format:'LOVE_RECORD_SPACE_STORY',version:2,exportedAt:Date.now(),story,entries:all};downloadFile(safe+'.space-story.json',JSON.stringify(bundle,null,2),'application/json;charset=utf-8');return}
     if(format==='pdf'){
       const win=window.open('','_blank');if(!win){notify('浏览器阻止了打印窗口，请允许弹窗后再导出 PDF。');return}
-      win.document.write(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>${esc(story.title)}</title><style>body{max-width:760px;margin:40px auto;padding:0 24px;font:16px/2 Georgia,'Noto Serif SC',serif;color:#333}h1{font-size:26px}article{white-space:pre-wrap;margin:24px 0;page-break-inside:avoid}.user{color:#765b7c;background:#f7f0f7;padding:12px}small{color:#888}@media print{body{margin:18mm auto}}</style><h1>${esc(story.title)}</h1><p>${esc(story.premise||'')}</p>${rows.map(x=>`<article class="${x.role==='user'?'user':''}"><small>${x.role==='user'?'用户':'剧情'} · ${esc(new Date(x.createdAt).toLocaleString())}</small><div>${esc(x.content)}</div></article>`).join('')}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></html>`);win.document.close();return
+      const pdfMemory=exportMemory?`<section class="long-memory"><h2>长记忆</h2><div>${esc(exportMemory)}</div></section>`:'';win.document.write(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>${esc(story.title)}</title><style>body{max-width:760px;margin:40px auto;padding:0 24px;font:16px/2 Georgia,'Noto Serif SC',serif;color:#333}h1{font-size:26px}.long-memory{padding:14px;margin:22px 0;background:#f7f0f7;border:1px solid #d8c7d8;white-space:pre-wrap}.long-memory h2{font-size:17px;margin:0 0 8px}article{white-space:pre-wrap;margin:24px 0;page-break-inside:avoid}.user{color:#765b7c;background:#f7f0f7;padding:12px}small{color:#888}@media print{body{margin:18mm auto}}</style><h1>${esc(story.title)}</h1><p>${esc(story.premise||'')}</p>${pdfMemory}${rows.map(x=>`<article class="${x.role==='user'?'user':''}"><small>${x.role==='user'?'用户':'剧情'} · ${esc(new Date(x.createdAt).toLocaleString())}</small><div>${esc(x.content)}</div></article>`).join('')}<script>window.onload=()=>setTimeout(()=>window.print(),250)<\/script></html>`);win.document.close();return
     }
-    const content=[`# ${story.title}`,``,story.premise||'',``,`模式：${story.mode==='interactive'?'互动长文':'小说沉浸'} · CHAR：${profileSummary(story)}`,``,`---`,``,...rows.map(x=>x.role==='user'?`**用户**\n\n${x.content}`:`${x.content}`).flatMap(x=>[x,'','---',''])].join('\n');downloadFile(safe+'.md',content,'text/markdown;charset=utf-8')
+    const content=[`# ${story.title}`,``,story.premise||'',``,`模式：${story.mode==='interactive'?'互动长文':'小说沉浸'} · CHAR：${profileSummary(story)}`,exportMemory?'## 长记忆\n\n'+exportMemory:'',``,`---`,``,...rows.map(x=>x.role==='user'?`**用户**\n\n${x.content}`:`${x.content}`).flatMap(x=>[x,'','---',''])].join('\n');downloadFile(safe+'.md',content,'text/markdown;charset=utf-8')
   }
   async function importStoryBackupFile(file){
     if(!file)return;
@@ -518,6 +617,7 @@ body.lr-story-settings-open{overflow:hidden}
     story.branches=(Array.isArray(story.branches)?story.branches:[]).map(branch=>({...branch,baseEntryIds:(branch.baseEntryIds||[]).map(id=>idMap.get(String(id))).filter(Boolean),forkEntryId:idMap.get(String(branch.forkEntryId))||null}));
     if(!story.branches.length)story.branches=[{id:'main',name:'主线',baseEntryIds:[],createdAt:Date.now()}];
     if(!story.branches.some(b=>b.id===story.activeBranchId))story.activeBranchId=story.branches[0].id;
+    if(story.longMemory?.branches&&typeof story.longMemory.branches==='object'){Object.values(story.longMemory.branches).forEach(memory=>{if(Array.isArray(memory.coveredEntryIds))memory.coveredEntryIds=memory.coveredEntryIds.map(id=>idMap.get(String(id))).filter(Boolean)})}
     const restored=entries.map(entry=>({...entry,id:idMap.get(String(entry.id)),storyId:newStoryId,importedAt:Date.now()}));
     try{await saveMeta(story);for(const entry of restored)await put(ENTRY_STORE,entry);await renderLibrary();await renderHub();notify(`故事「${story.title||'未命名故事'}」已导入。`)}catch(e){console.error('[SPACE story import]',e);notify('导入未能完整完成：'+(e.message||'本地数据库写入失败'))}
   }
@@ -539,6 +639,8 @@ body.lr-story-settings-open{overflow:hidden}
     case 'import-css':$('lrSpaceCssFile').click();break;
     case 'add-timeline-event':await addTimelineEvent();break;
     case 'remove-timeline-event':await removeTimelineEvent(el.dataset.eventId);break;
+    case 'save-long-memory':await saveLongMemory();break;
+    case 'summarize-long-memory':await summarizeLongMemory(activeStory,{automatic:false});break;
     case 'edit':await openCreate(id);break;
     case 'edit-active':if(activeStory)await openCreate(activeStory.id);break;
     case 'show-settings':openOfflineSettings();break;
@@ -579,7 +681,7 @@ body.lr-story-settings-open{overflow:hidden}
     });
     document.addEventListener('input',e=>{if(e.target?.id==='lrStorySearch')renderLibrary()});
     document.addEventListener('change',e=>{if(e.target?.id==='lrStoryBackupFile'){const file=e.target.files?.[0];if(file)importStoryBackupFile(file);e.target.value=''}if(e.target?.id==='lrSpaceCssEnabled'){try{const raw=localStorage.getItem(SPACE_CSS_KEY)||'';applyCustomCss(raw,e.target.checked);localStorage.setItem(SPACE_CSS_KEY+':enabled',String(e.target.checked));$('lrSpaceCustomCssStatus').textContent=e.target.checked?'已启用自定义 CSS。':'已停用自定义 CSS，默认样式已恢复。'}catch(err){e.target.checked=false;$('lrSpaceCustomCssStatus').textContent='CSS 应用失败：'+err.message}}if(e.target?.id==='lrSpaceCssFile'){const f=e.target.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{$('lrSpaceCustomCssInput').value=String(reader.result||'');$('lrSpaceCustomCssStatus').textContent='文件已读取，请点击保存并应用。'};reader.onerror=()=>{$('lrSpaceCustomCssStatus').textContent='CSS 文件读取失败。'};reader.readAsText(f);e.target.value=''}});
-    document.addEventListener('change',async e=>{if(e.target?.id==='lrStoryWorkspaceMode'&&activeStory){activeStory.mode=e.target.value==='interactive'?'interactive':'novel';$('lrStoryComposerHint').textContent=activeStory.mode==='interactive'?'互动长文 · 输入你的动作、对白或想法，CHAR 会根据你的参与继续推进。':'小说沉浸 · 阅读完整段落后，再决定故事接下来往哪里走。';$('lrStoryUserInput').placeholder=activeStory.mode==='interactive'?'写下你的行动、对白或临时剧情方向……':'写下你希望下一段发生的事，或让故事自然继续……';await saveMeta(activeStory)}if(e.target?.id==='lrStoryBranchSelect'&&activeStory){activeStory.activeBranchId=e.target.value;await saveMeta(activeStory);renderTranscript(activeStory)}if(e.target?.id==='lrStoryQuickStreamMode'&&activeStory){activeStory.streamMode=e.target.value==='complete'?'complete':'stream';$('lrStoryOutputHint').textContent=activeStory.streamMode==='stream'?'流式：正文会随模型输出逐步出现。':'非流式：等待本段完整生成后，再显示正文。';await saveMeta(activeStory)}});
+    document.addEventListener('change',async e=>{if(e.target?.id==='lrStoryWorkspaceMode'&&activeStory){activeStory.mode=e.target.value==='interactive'?'interactive':'novel';$('lrStoryComposerHint').textContent=activeStory.mode==='interactive'?'互动长文 · 输入你的动作、对白或想法，CHAR 会根据你的参与继续推进。':'小说沉浸 · 阅读完整段落后，再决定故事接下来往哪里走。';$('lrStoryUserInput').placeholder=activeStory.mode==='interactive'?'写下你的行动、对白或临时剧情方向……':'写下你希望下一段发生的事，或让故事自然继续……';await saveMeta(activeStory)}if(e.target?.id==='lrStoryBranchSelect'&&activeStory){activeStory.activeBranchId=e.target.value;await saveMeta(activeStory);renderTranscript(activeStory);renderLongMemory(activeStory)}if(e.target?.id==='lrStoryQuickStreamMode'&&activeStory){activeStory.streamMode=e.target.value==='complete'?'complete':'stream';$('lrStoryOutputHint').textContent=activeStory.streamMode==='stream'?'流式：正文会随模型输出逐步出现。':'非流式：等待本段完整生成后，再显示正文。';await saveMeta(activeStory)}});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lrStorySettingsPanel')?.hidden){closeOfflineSettings();return}if(e.target?.id==='lrStoryUserInput'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();generateStory()}});
     window.addEventListener('lr-worldbooks-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
     window.addEventListener('lr-contacts-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
