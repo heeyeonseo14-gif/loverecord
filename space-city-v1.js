@@ -26,14 +26,15 @@
     {id:'studio',name:'兴趣工作室',icon:'🎨',type:'studio',x:81,y:70,desc:'音乐、阅读和创作',open:'08:00–22:00'}
   ];
   const CLOTHES={
-    hair:[['hair-short','清爽短发'],['hair-long','柔顺长发'],['hair-wave','微卷长发'],['hair-bob','齐肩短发'],['hair-curl','蓬松卷发'],['hair-tie','低马尾']],
-    top:[['top-tee','基础 T 恤'],['top-shirt','日常衬衫'],['top-knit','柔软针织衫'],['top-hoodie','连帽卫衣'],['top-cardigan','开衫'],['top-sweater','宽松毛衣']],
-    bottom:[['bottom-pants','直筒长裤'],['bottom-jeans','牛仔裤'],['bottom-skirt','半身裙'],['bottom-shorts','短裤'],['bottom-wide','阔腿裤']],
-    dress:[['dress-simple','简约连衣裙'],['dress-knit','针织连衣裙'],['dress-shirt','衬衫裙']],
-    outer:[['outer-none','不穿外套'],['outer-jacket','短夹克'],['outer-coat','长风衣'],['outer-cardigan','薄外套']],
-    shoes:[['shoes-sneaker','休闲运动鞋'],['shoes-leather','皮鞋'],['shoes-boots','短靴'],['shoes-sandal','凉鞋']],
-    accessory:[['acc-none','不佩戴配饰'],['acc-glasses','眼镜'],['acc-hat','帽子'],['acc-bag','斜挎包'],['acc-necklace','项链'],['acc-earrings','耳饰']],
-    sleep:[['sleep-set','睡衣套装'],['sleep-nightgown','柔软睡裙'],['sleep-tee','宽松家居服']]
+    hair:[['hair-short','清爽短发'],['hair-pixie','精灵短发'],['hair-bob','齐肩短发'],['hair-long','顺直长发'],['hair-wave','柔软波浪长发'],['hair-curl','蓬松卷发'],['hair-tie','低束发'],['hair-sidepart','侧分短发'],['hair-middle','中分长发'],['hair-ponytail','高马尾'],['hair-highponytail','活力高马尾'],['hair-lowponytail','低马尾'],['hair-twin','双马尾'],['hair-bun','丸子头'],['hair-halfup','半扎发'],['hair-braid','双侧编发'],['hair-frenchbraid','法式编发'],['hair-wolf','层次狼尾'],['hair-mullet','短狼尾'],['hair-curtain','八字刘海']],
+    top:[['top-tee','基础 T 恤'],['top-shirt','日常衬衫'],['top-knit','柔软针织衫'],['top-hoodie','连帽卫衣'],['top-cardigan','开衫'],['top-sweater','宽松毛衣'],['top-blouse','荷叶边衬衫'],['top-turtleneck','高领针织'],['top-offshoulder','露肩上衣'],['top-sailor','水手领上衣'],['top-polo','POLO 衫'],['top-vest','针织背心']],
+    bottom:[['bottom-pants','直筒长裤'],['bottom-jeans','牛仔裤'],['bottom-skirt','A 字半身裙'],['bottom-shorts','休闲短裤'],['bottom-wide','阔腿裤'],['bottom-cargo','工装裤'],['bottom-pleated','百褶短裙'],['bottom-long-skirt','飘逸长裙'],['bottom-leggings','贴身长裤'],['bottom-culottes','西装阔腿短裤']],
+    dress:[['dress-simple','简约连衣裙'],['dress-knit','针织连衣裙'],['dress-shirt','衬衫裙'],['dress-floral','碎花连衣裙'],['dress-summer','夏日吊带裙'],['dress-pinafore','背带裙'],['dress-party','派对裙'],['dress-long','长款连衣裙']],
+    outer:[['outer-none','不穿外套'],['outer-jacket','短夹克'],['outer-coat','长风衣'],['outer-cardigan','薄开衫'],['outer-denim','牛仔外套'],['outer-puffer','轻羽绒服'],['outer-blazer','西装外套'],['outer-hooded','连帽外套']],
+    shoes:[['shoes-sneaker','休闲运动鞋'],['shoes-leather','复古皮鞋'],['shoes-boots','短靴'],['shoes-sandal','凉鞋'],['shoes-loafer','乐福鞋'],['shoes-canvas','帆布鞋']],
+    accessory:[['acc-none','不佩戴配饰'],['acc-glasses','眼镜'],['acc-hat','帽子'],['acc-bag','斜挎包'],['acc-necklace','项链'],['acc-earrings','耳饰'],['acc-ribbon','发带蝴蝶结'],['acc-beret','贝雷帽']],
+    sleep:[['sleep-set','睡衣套装'],['sleep-nightgown','柔软睡裙'],['sleep-tee','宽松家居服'],['sleep-pajama','棉质睡衣'],['sleep-robe','轻柔浴袍'],['sleep-shorts','短袖短裤套装']],
+    face:[]
   };
   const REL_LABELS={friend:'朋友',lover:'恋人',spouse:'夫妻',family:'家人',parent:'父母 → 子女',child:'子女 → 父母',sibling:'兄弟姐妹',grandparent:'祖父母 / 外祖父母 → 孙辈',grandchild:'孙辈 → 祖父母 / 外祖父母',relative:'其他亲属'};
   const COLORS=['#d9b6c9','#a9c1d8','#b5c6a7','#e5c58d','#b9a4ce','#e6a9a9','#8b8797','#f1e4d0','#596a86','#a46e64','#f5f0e8','#33313a'];
@@ -92,11 +93,24 @@
     if(a.kind==='char'&&b.kind==='char')return manual;
     return false;
   }
-  function makeResident({kind='npc',sourceId='',name='新居民',age=24,role='',personality='',avatar='',outfit={},id}={}){
-    const base=clone(DEFAULT_OUTFIT);
-    const merged={...base,...(outfit||{})};
+  function makeResident({kind='npc',sourceId='',name='新居民',age=24,role='',personality='',avatar='',gender='',outfit={},id}={}){
+    const base=clone(DEFAULT_OUTFIT),input=outfit||{},merged={...base,...input};
+    const seedText=String(name||'resident')+'|'+String(sourceId||id||kind),seed=[...seedText].reduce((n,ch)=>(n*31+ch.charCodeAt(0))>>>0,17);
+    const pick=(arr,offset=0)=>arr[(seed+offset)%arr.length];
+    const hairStyles=['hair-short','hair-pixie','hair-bob','hair-long','hair-wave','hair-curl','hair-sidepart','hair-middle','hair-ponytail','hair-lowponytail','hair-twin','hair-bun','hair-halfup','hair-braid','hair-frenchbraid','hair-wolf','hair-mullet','hair-curtain'];
+    const hairColors=['#493d4c','#5b473b','#3a4652','#80624e','#6b4a5a','#a16e48','#34323e','#9a7560'];
+    const outfitColors=['#c4a4d3','#9eb9cf','#c5a58f','#b4c49f','#d5a5b0','#d0b776','#8c9daf','#c7b7a0'];
+    const genderText=String(gender||'');
+    if(!Object.prototype.hasOwnProperty.call(input,'hair'))merged.hair=pick(hairStyles,1);
+    if(!Object.prototype.hasOwnProperty.call(input,'hairColor'))merged.hairColor=pick(hairColors,2);
+    if(!Object.prototype.hasOwnProperty.call(input,'topColor'))merged.topColor=pick(outfitColors,3);
+    if(!Object.prototype.hasOwnProperty.call(input,'skin'))merged.skin=pick(SKIN_TONES,4);
+    if(!Object.prototype.hasOwnProperty.call(input,'faceShape'))merged.faceShape=pick(['oval','round','soft-square'],5);
+    if(!Object.prototype.hasOwnProperty.call(input,'eyeShape'))merged.eyeShape=pick(['almond','round','narrow','down'],6);
+    if(!Object.prototype.hasOwnProperty.call(input,'browShape'))merged.browShape=pick(['soft','straight','arched'],7);
+    if(!Object.prototype.hasOwnProperty.call(input,'bodyShape'))merged.bodyShape=/女|female|woman/i.test(genderText)?'feminine':/男|male|man/i.test(genderText)?'masculine':'balanced';
     const sleep={...clone(merged),top:'top-tee',topColor:'#d9c9d8',bottom:'bottom-shorts',bottomColor:'#b9a6bd',sleepwear:'sleep-set'};
-    return {id:id||uid('resident'),kind,sourceId:String(sourceId||''),name:String(name||'新居民').slice(0,40),age:clamp(age,1,100)||24,role:String(role||''),personality:String(personality||''),avatar:avatar||'',outfit:merged,wardrobe:{presets:[],auto:true,dayOutfit:clone(merged),sleepOutfit:sleep},expression:'neutral',pose:'idle',homeId:'home',jobId:'cafe',position:{x:48+Math.floor(Math.random()*7),y:51+Math.floor(Math.random()*5)},buildingId:'home',status:'居家',controlled:false,createdAt:now(),birthdayMonth:1+Math.floor(Math.random()*12),birthdayDay:1+Math.floor(Math.random()*28),familyId:''};
+    return {id:id||uid('resident'),kind,sourceId:String(sourceId||''),name:String(name||'新居民').slice(0,40),age:clamp(age,1,100)||24,role:String(role||''),personality:String(personality||''),gender:String(gender||''),avatar:avatar||'',outfit:merged,wardrobe:{presets:[],auto:true,dayOutfit:clone(merged),sleepOutfit:sleep},expression:'neutral',pose:'idle',homeId:'home',jobId:'cafe',position:{x:48+Math.floor(Math.random()*7),y:51+Math.floor(Math.random()*5)},buildingId:'home',status:'居家',controlled:false,createdAt:now(),birthdayMonth:1+Math.floor(Math.random()*12),birthdayDay:1+Math.floor(Math.random()*28),familyId:''};
   }
   function worldTemplate(name,selectedIds=[],personaId=''){
     const contacts=people(),selected=contacts.filter(p=>selectedIds.includes(String(p.id)));
@@ -106,10 +120,10 @@
     // A player character must come from a self-persona explicitly created on the homepage.
     // Never synthesize one from the account/display name.
     if(persona){
-      const user=makeResident({kind:'user',sourceId:persona.id,name:persona.name,age:Number(persona.age)||24,role:persona.role||'用户自设',personality:persona.personality||persona.description||'',avatar:persona.avatar||''});
+      const user=makeResident({kind:'user',sourceId:persona.id,name:persona.name,gender:persona.gender||persona.sex||'',age:Number(persona.age)||24,role:persona.role||'用户自设',personality:persona.personality||persona.description||'',avatar:persona.avatar||''});
       user.personaSnapshot=clone(persona);user.role=persona.role||'用户自设';residents.push(user);
     }
-    selected.forEach((p,i)=>residents.push(makeResident({kind:'char',sourceId:p.id,name:p.name,role:p.role||'CHAR',personality:p.personality||p.description||'',avatar:p.avatar||'',age:Number(p.age)||24,outfit:{...clone(DEFAULT_OUTFIT),topColor:COLORS[(i+1)%COLORS.length],hairColor:['#453845','#5b473b','#3a4652','#80624e'][i%4]}})));
+    selected.forEach((p,i)=>residents.push(makeResident({kind:'char',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',role:p.role||'CHAR',personality:p.personality||p.description||'',avatar:p.avatar||'',age:Number(p.age)||24,outfit:{topColor:COLORS[(i+1)%COLORS.length],hairColor:['#453845','#5b473b','#3a4652','#80624e'][i%4]}})));
     residents.forEach((r,i)=>{r.position={x:18+(i%4)*20,y:50+Math.floor(i/4)*8};});
     const perf=Number(navigator.deviceMemory||4),cores=Number(navigator.hardwareConcurrency||4);
     const suggested=clamp(Math.round(Math.min(48,Math.max(12,perf*5+cores*1.5))),8,48);
@@ -142,7 +156,7 @@
         w.id='city-migrated-'+meta.id;w.name=(meta.name||'旧版城市')+' · 迁移';
         const ids=Array.isArray(snap.selectedPeople)?snap.selectedPeople:meta.peopleIds||[];
         const selected=people().filter(p=>ids.includes(p.id));
-        selected.forEach(p=>w.residents.push(makeResident({kind:'char',sourceId:p.id,name:p.name,role:p.role,personality:p.personality,avatar:p.avatar})));
+        selected.forEach(p=>w.residents.push(makeResident({kind:'char',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',role:p.role,personality:p.personality,avatar:p.avatar})));
         (snap.locations||[]).forEach((loc,i)=>{if(i<10)w.map.buildings.push({id:'legacy-'+loc.id,name:loc.name||'旧地点',icon:'📍',type:'legacy',x:20+(i%4)*20,y:25+Math.floor(i/4)*28,desc:loc.description||''})});
         (snap.activityLog||[]).slice(0,30).forEach(a=>w.logs.push({id:uid('migrated'),at:a.at||now(),title:a.title||'旧版动态',detail:a.detail||a.description||'',kind:'migrated'}));
         w.logs.unshift({id:uid('migration'),at:now(),title:'旧版 SPACE 城市已保留',detail:'原有地点和生活记录已迁入独立城市档案；旧剧情与记忆资料仍保留在原模块。',kind:'system'});
@@ -267,7 +281,8 @@
 #space.lr-space-city-shell .sc-clothes-item:active{transform:scale(.98)}
 #space.lr-space-city-shell .sc-clothes-item.active{border:2px solid #a987ae;background:linear-gradient(145deg,#f7edf7,#eee2f0);box-shadow:0 3px 0 #d4c2d6}
 #space.lr-space-city-shell .sc-cloth-thumb{flex:none;width:45px;height:58px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(145deg,#f0e8f1,#fffaf5);border:1px solid #e5dbe6}
-#space.lr-space-city-shell .sc-cloth-thumb svg{width:100%;height:100%}
+#space.lr-space-city-shell .sc-cloth-thumb svg{width:100%;height:100%;shape-rendering:crispEdges;image-rendering:pixelated}
+#space.lr-space-city-shell .sc-cloth-thumb .sc-pixel-item{width:100%;height:100%;}
 #space.lr-space-city-shell .sc-cloth-name{font:10px/1.4 sans-serif;color:#6e5e73;flex:1;text-align:left}
 #space.lr-space-city-shell .sc-cloth-check{position:absolute;right:6px;top:5px;font:7px sans-serif;color:#a28ba5}
 #space.lr-space-city-shell .sc-clothes-item.active .sc-cloth-check{color:#785d81;font-weight:700}
@@ -301,51 +316,215 @@
 @media(max-width:390px){#space.lr-space-city-shell .sc-closet-stage{padding-left:9px;padding-right:9px}#space.lr-space-city-shell .sc-closet-mirror{width:142px;height:178px}#space.lr-space-city-shell .sc-clothes-item{gap:6px;padding:6px;min-height:84px}#space.lr-space-city-shell .sc-cloth-thumb{width:39px;height:52px}#space.lr-space-city-shell .sc-profile-expression-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 @media(max-width:430px){#space.lr-space-city-shell .sc-building-grid{gap:13px 5px;padding:23px 7px}#space.lr-space-city-shell .sc-building{height:130px}#space.lr-space-city-shell .sc-building-art{height:78px}#space.lr-space-city-shell .sc-furniture{height:96px;width:31%;min-width:72px}}
+/* TRUE PIXEL character system: grid-aligned rectangular color clusters only. */
+#space.lr-space-city-shell .sc-pixel-character{display:block;width:100%;height:100%;overflow:visible;shape-rendering:crispEdges;image-rendering:pixelated;}
+#space.lr-space-city-shell .sc-closet-avatar{width:120px;height:168px;}
+#space.lr-space-city-shell .sc-closet-avatar .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-sprite{width:40px!important;height:56px!important;}
+#space.lr-space-city-shell .sc-sprite .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-room-person{width:40px;height:56px;}
+#space.lr-space-city-shell .sc-room-person .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-profile-preview{height:168px;}
+#space.lr-space-city-shell .sc-profile-preview .sc-pixel-character{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-clothes-item{min-height:100px;}
+#space.lr-space-city-shell .sc-cloth-thumb{width:54px;height:76px;overflow:hidden;}
+#space.lr-space-city-shell .sc-cloth-pixel-preview{width:100%;height:100%;display:grid;place-items:center;overflow:hidden;}
+#space.lr-space-city-shell .sc-cloth-pixel-preview .sc-pixel-character{width:145%;height:145%;max-width:none;image-rendering:pixelated;}
+#space.lr-space-city-shell .sc-face-editor{display:grid;gap:9px;grid-column:1/-1;}
+#space.lr-space-city-shell .sc-face-feature{padding:9px;border:1px solid #e6d9e6;border-radius:9px;background:#fffdf9;}
+#space.lr-space-city-shell .sc-face-feature>b{display:block;margin-bottom:7px;font:600 10px sans-serif;color:#705b76;}
+#space.lr-space-city-shell .sc-face-feature>div{display:flex;flex-wrap:wrap;gap:6px;}
+#space.lr-space-city-shell .sc-face-feature button{padding:7px 9px;border:1px solid #e0d4e0;border-radius:7px;background:#fff;color:#88768b;font:9px sans-serif;}
+#space.lr-space-city-shell .sc-face-feature button.active{border-color:#9674a0;background:#eee3f0;color:#624b6b;box-shadow:0 2px 0 #d4c1d7;}
+#space.lr-space-city-shell .sc-face-grid{display:block;}
 `;
     document.head.appendChild(st);
   }
+  function normalizePixelLooks(){
+    if(!world)return;
+    const hairStyles=['hair-short','hair-pixie','hair-bob','hair-long','hair-wave','hair-curl','hair-sidepart','hair-middle','hair-ponytail','hair-lowponytail','hair-twin','hair-bun','hair-halfup','hair-braid','hair-frenchbraid','hair-wolf','hair-mullet','hair-curtain'];
+    const hairColors=['#493d4c','#5b473b','#3a4652','#80624e','#6b4a5a','#a16e48','#34323e','#9a7560'];
+    const tops=['#c4a4d3','#9eb9cf','#c5a58f','#b4c49f','#d5a5b0','#d0b776','#8c9daf','#c7b7a0'];
+    (world.residents||[]).forEach(r=>{
+      r.outfit={...clone(DEFAULT_OUTFIT),...(r.outfit||{})};
+      if(r._pixelLookVersion===1)return;
+      const seed=[...(String(r.name||'')+'|'+String(r.id||''))].reduce((n,ch)=>(n*31+ch.charCodeAt(0))>>>0,17);
+      const isDefaultHair=r.outfit.hair==='hair-wave'&&r.outfit.hairColor==='#493d4c';
+      const isDefaultTop=r.outfit.topColor==='#c4a4d3';
+      if(isDefaultHair){r.outfit.hair=hairStyles[seed%hairStyles.length];r.outfit.hairColor=hairColors[(seed+2)%hairColors.length]}
+      if(isDefaultTop)r.outfit.topColor=tops[(seed+3)%tops.length];
+      if(!r.outfit.faceShape)r.outfit.faceShape=['oval','round','soft-square'][seed%3];
+      if(!r.outfit.eyeShape)r.outfit.eyeShape=['almond','round','narrow','down'][seed%4];
+      if(!r.outfit.browShape)r.outfit.browShape=['soft','straight','arched'][seed%3];
+      if(!r.outfit.bodyShape)r.outfit.bodyShape=/女|female|woman/i.test(String(r.gender||r.personaSnapshot?.gender||''))?'feminine':/男|male|man/i.test(String(r.gender||r.personaSnapshot?.gender||''))?'masculine':'balanced';
+      if(r.wardrobe){if(r.wardrobe.dayOutfit){r.wardrobe.dayOutfit={...clone(r.outfit),...r.wardrobe.dayOutfit};if(isDefaultHair){r.wardrobe.dayOutfit.hair=r.outfit.hair;r.wardrobe.dayOutfit.hairColor=r.outfit.hairColor}if(isDefaultTop)r.wardrobe.dayOutfit.topColor=r.outfit.topColor}if(r.wardrobe.sleepOutfit){['hair','hairColor','faceShape','eyeShape','browShape','bodyShape'].forEach(k=>{if(r.wardrobe.sleepOutfit[k]===undefined||isDefaultHair&&['hair','hairColor'].includes(k))r.wardrobe.sleepOutfit[k]=r.outfit[k]})}}
+      r._pixelLookVersion=1;
+    });
+  }
   function sprite(r){
     const o={...DEFAULT_OUTFIT,...(r?.outfit||{})};
-    const sleeping=!!o.isSleeping,shirt=o.topColor||'#c4a4d3',pants=o.bottomColor||'#667b9a',hair=o.hairColor||'#493d4c',skin=o.skin||'#f1c9ac',shoe=o.shoeColor||'#f2eee8';
-    const expression=r?.expression||'neutral',pose=r?.pose||'idle';
-    const sleepDress=sleeping&&o.sleepwear==='sleep-nightgown';
-    const dressStyle=o.dress||'';
-    const isDress=!!dressStyle||sleepDress;
-    const dress=(isDress)?(dressStyle==='dress-knit'?`<path d="M18 37H46V58L49 75H15L18 58Z" fill="${shirt}"/><path d="M20 60H44M19 65H45M17 70H47" stroke="#fff" stroke-opacity=".25"/>`:(dressStyle==='dress-shirt'?`<path d="M18 37H46V57L52 75H12L18 57Z" fill="${shirt}"/><path d="M26 37L32 44 38 37M32 44V68" fill="none" stroke="#fff" stroke-width="1.5"/>`:`<path d="M18 37H46V58L52 75H12L18 58Z" fill="${shirt}"/><path d="M18 57H46" stroke="#806b83" stroke-width="1"/>`)):`<rect x="18" y="37" width="28" height="22" fill="${shirt}"/>`;
-    const topDetails={
-      'top-tee':'<path d="M25 38H39" stroke="#fff" stroke-opacity=".38" stroke-width="1"/>',
-      'top-shirt':'<path d="M27 37L32 43 37 37M32 43V58" fill="none" stroke="#f8eee7" stroke-width="2"/><rect x="35" y="47" width="6" height="6" fill="none" stroke="#f8eee7" stroke-width="1"/>',
-      'top-knit':'<path d="M20 43H44M20 49H44M20 55H44" stroke="#fff" stroke-opacity=".25" stroke-width="1"/>',
-      'top-hoodie':'<path d="M27 37Q32 29 37 37M32 39V53M29 45L32 49 35 45" fill="none" stroke="#806b83" stroke-width="1.5"/><rect x="26" y="52" width="12" height="5" fill="none" stroke="#806b83" stroke-width="1"/>',
-      'top-cardigan':'<path d="M32 37V59M24 44H29M35 44H40" stroke="#f8eee7" stroke-width="1.5"/><circle cx="32" cy="46" r="1" fill="#806b83"/><circle cx="32" cy="52" r="1" fill="#806b83"/>',
-      'top-sweater':'<path d="M20 42H44M20 47H44M20 52H44M20 57H44" stroke="#fff" stroke-opacity=".35" stroke-width="1"/>'
-    }[o.top]||'';
-    const visibleTopDetails=isDress?'':topDetails;
-    const lower=isDress?'':({
-      'bottom-pants':'<rect x="19" y="59" width="12" height="15" fill="'+pants+'"/><rect x="33" y="59" width="12" height="15" fill="'+pants+'"/>',
-      'bottom-jeans':'<path d="M19 58H31L29 74H18ZM33 58H45L46 74H35Z" fill="'+pants+'" stroke="#526982" stroke-width="1"/><path d="M25 59V72M39 59V72" stroke="#d6e0e8" stroke-opacity=".5"/>',
-      'bottom-skirt':'<path d="M19 57H45L52 74H12Z" fill="'+pants+'" stroke="#806b83" stroke-width="1"/><path d="M24 60L22 72M32 60V73M40 60L43 72" stroke="#fff" stroke-opacity=".35"/>',
-      'bottom-shorts':'<path d="M19 57H45L44 68H33L32 63 30 68H19Z" fill="'+pants+'"/><path d="M32 59V68" stroke="#526982"/>',
-      'bottom-wide':'<path d="M18 57H31L29 74H14ZM33 57H46L50 74H35Z" fill="'+pants+'"/><path d="M24 60V72M40 60V72" stroke="#fff" stroke-opacity=".25"/>'
-    }[o.bottom]||'<rect x="19" y="57" width="12" height="17" fill="'+pants+'"/><rect x="33" y="57" width="12" height="17" fill="'+pants+'"');
-    const eyes={neutral:'<rect x="25" y="23" width="4" height="4" fill="#584753"/><rect x="36" y="23" width="4" height="4" fill="#584753"/>',happy:'<path d="M24 27h6l-3-4zM35 27h6l-3-4z" fill="#584753"/>',sad:'<rect x="25" y="25" width="4" height="3" fill="#584753"/><rect x="36" y="25" width="4" height="3" fill="#584753"/><path d="M24 22l6 2M35 24l6-2" stroke="#584753" stroke-width="2"/>',angry:'<rect x="25" y="24" width="4" height="4" fill="#584753"/><rect x="36" y="24" width="4" height="4" fill="#584753"/><path d="M23 21l8 3M42 21l-8 3" stroke="#584753" stroke-width="3"/>',surprised:'<rect x="25" y="22" width="4" height="5" fill="#584753"/><rect x="36" y="22" width="4" height="5" fill="#584753"/>',sleepy:'<path d="M24 26h7M35 26h7" stroke="#584753" stroke-width="3"/>'}[expression]||'';
-    const mouth={neutral:'<rect x="29" y="31" width="7" height="2" fill="#b9767d"/>',happy:'<path d="M27 30h3v2h9v-2h3v5H27z" fill="#b9767d"/>',sad:'<path d="M28 34q5-6 10 0" fill="none" stroke="#b9767d" stroke-width="2"/>',angry:'<rect x="29" y="32" width="8" height="2" fill="#9f5f69"/>',surprised:'<rect x="29" y="29" width="8" height="7" fill="#9f5f69"/>',sleepy:'<path d="M29 33h8" stroke="#b9767d" stroke-width="2"/>'}[expression]||'';
-    const hairShapes={'hair-short':'<path d="M17 24V13L24 5h18l7 9v13H43l-2-9H23l-2 9z"/>','hair-long':'<path d="M15 25V13L23 4h19l8 10v48H42V20H22v42h-7z"/>','hair-wave':'<path d="M14 28V14L23 4h20l9 11v42l-7 5V22H22v40l-8-6z"/>','hair-bob':'<path d="M16 26V13L24 5h17l8 9v24l-8 7V20H23v25l-7-7z"/>','hair-curl':'<path d="M14 27V13l7-9 7 2 5-4 7 4 7 0 5 12v28l-7 12V22H22v36l-8-12z"/>','hair-tie':'<path d="M16 26V13L24 5h18l8 10v42h-8V20H22v40h-6z"/>'};
-    const hairTop=hairShapes[o.hair]||hairShapes['hair-wave'];
-    let arms='<rect x="12" y="39" width="8" height="18" fill="'+skin+'"/><rect x="44" y="39" width="8" height="18" fill="'+skin+'"/>',legs='';
-    if(pose==='wave')arms='<path d="M18 42L13 33 17 29 24 39Z" fill="'+skin+'"/><rect x="44" y="39" width="8" height="18" fill="'+skin+'"/><rect x="12" y="26" width="6" height="6" fill="'+skin+'"/>';
-    if(pose==='dance')arms='<path d="M18 43L10 30 14 26 24 39Z" fill="'+skin+'"/><path d="M46 43L54 30 50 26 40 39Z" fill="'+skin+'"/>';
-    if(pose==='read')arms='<path d="M18 41L25 50 28 49 22 38Z" fill="'+skin+'"/><path d="M46 41L39 50 36 49 42 38Z" fill="'+skin+'"/><rect x="26" y="48" width="12" height="8" fill="#d5b2ce" stroke="#826d88" stroke-width="1"/>';
-    if(pose==='work')arms='<path d="M18 41L26 50 30 48 22 38Z" fill="'+skin+'"/><path d="M46 41L38 50 34 48 42 38Z" fill="'+skin+'"/><rect x="25" y="49" width="14" height="5" fill="#cba478"/><path d="M39 47l5-7" stroke="#6f596f" stroke-width="2"/>';
-    if(pose==='eat')arms='<path d="M18 41L27 34 30 37 22 48Z" fill="'+skin+'"/><path d="M46 41L37 34 34 37 42 48Z" fill="'+skin+'"/><rect x="28" y="32" width="8" height="5" fill="#e9d6b4"/>';
-    if(pose==='talk')arms='<path d="M18 41L10 34 14 30 24 39Z" fill="'+skin+'"/><rect x="44" y="39" width="8" height="18" fill="'+skin+'"/>';
-    if(pose==='sit')legs='<rect x="19" y="68" width="13" height="7" fill="'+pants+'"/><rect x="33" y="68" width="13" height="7" fill="'+pants+'"/><rect x="18" y="75" width="12" height="7" fill="'+shoe+'"/><rect x="34" y="75" width="12" height="7" fill="'+shoe+'"/>';
-    if(pose==='walk')legs='<path d="M20 57h11l-5 17H15zM33 57h12l6 17H38z" fill="'+pants+'"/><rect x="14" y="73" width="12" height="8" fill="'+shoe+'"/><rect x="39" y="73" width="12" height="8" fill="'+shoe+'"/>';
-    const acc=o.accessory==='acc-glasses'?'<path d="M18 28h12v7H18zM34 28h12v7H34zM30 30h4" fill="none" stroke="#584c5b" stroke-width="2"/>':o.accessory==='acc-hat'?'<path d="M15 17h34v5H15zM21 8h22v10H21z" fill="#b694bd"/>':o.accessory==='acc-bag'?'<path d="M42 42h11v18H42z" fill="#b98c71" stroke="#80645b" stroke-width="2"/>':o.accessory==='acc-necklace'?'<path d="M26 39l6 9 6-9" fill="none" stroke="#d3b46f" stroke-width="2"/>':o.accessory==='acc-earrings'?'<rect x="15" y="31" width="3" height="5" fill="#e4c17a"/><rect x="46" y="31" width="3" height="5" fill="#e4c17a"/>':'';
-    const outer=o.outer==='outer-coat'?`<path d="M16 37H48L45 75H19Z" fill="${o.outerColor||'#a98eb8'}" opacity=".9"/><path d="M32 39V74" stroke="#f5e8ef" stroke-width="1"/>`:o.outer==='outer-cardigan'?`<path d="M16 38H48V64H16Z" fill="${o.outerColor||'#a98eb8'}" opacity=".78"/><path d="M32 39V63M20 45H25M39 45H44" stroke="#f5e8ef" stroke-width="1"/>`:o.outer&&o.outer!=='outer-none'?`<path d="M16 38H48L45 65H19Z" fill="${o.outerColor||'#a98eb8'}" opacity=".88"/><path d="M19 42L25 49M45 42L39 49" stroke="#f5e8ef" stroke-width="1"/>`:'';
-    const shoes=o.shoes==='shoes-boots'?`<path d="M18 69H30V81H16Q14 78 16 74ZM34 69H46V81H32Q30 78 32 74Z" fill="${shoe}" stroke="#766274" stroke-width="1"/>`:o.shoes==='shoes-sandal'?`<path d="M18 74H30V82H17Q14 80 18 74ZM34 74H46V82H33Q30 80 34 74Z" fill="${shoe}" stroke="#766274" stroke-width="1"/><path d="M20 74L26 80M36 74L42 80" stroke="#a78d74" stroke-width="2"/>`:`<rect x="19" y="73" width="11" height="9" rx="1" fill="${shoe}"/><rect x="34" y="73" width="11" height="9" rx="1" fill="${shoe}"/>`;
-    return `<svg viewBox="0 0 64 88" shape-rendering="crispEdges" aria-hidden="true"><rect x="25" y="4" width="15" height="4" fill="${hair}"/><rect x="20" y="10" width="24" height="25" fill="${skin}"/><rect x="19" y="15" width="4" height="12" fill="${skin}"/><rect x="41" y="15" width="4" height="12" fill="${skin}"/>${eyes}${mouth}${hairTop.replace(/<path /,'<path fill="'+hair+'" ')}${arms}${dress}${visibleTopDetails}${lower}${legs}${shoes}${outer}${acc}${pose==='read'?'<path d="M29 50h6" stroke="#8b6a8b" stroke-width="2"/>':''}${pose==='sleep'?'<text x="48" y="17" font-size="9" fill="#6b7e9c">z</text>':''}</svg>`;
+    const W=40,H=56,grid=Array.from({length:H},()=>Array(W).fill(''));
+    const safeHex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;
+    const skin=safeHex(o.skin,'#edc5a8'),hair=safeHex(o.hairColor,'#493d4c'),top=safeHex(o.topColor,'#c4a4d3'),bottom=safeHex(o.bottomColor,'#667b9a'),shoe=safeHex(o.shoeColor,'#f2eee8'),outerColor=safeHex(o.outerColor,'#ad91bc'),accColor=safeHex(o.accessoryColor,'#d5b77e');
+    const shade=(hex,amt)=>{const n=parseInt(hex.slice(1),16),r=clamp((n>>16)+amt,0,255),g=clamp(((n>>8)&255)+amt,0,255),b=clamp((n&255)+amt,0,255);return '#'+[r,g,b].map(x=>Math.round(x).toString(16).padStart(2,'0')).join('')};
+    const skinLight=shade(skin,16),skinShadow=shade(skin,-25),hairLight=shade(hair,28),hairShadow=shade(hair,-24),clothLight=shade(top,22),clothShadow=shade(top,-24),pantsShadow=shade(bottom,-22),outline='#594852',ink='#443b49';
+    const paint=(x,y,w,h,c)=>{for(let yy=Math.max(0,y);yy<Math.min(H,y+h);yy++)for(let xx=Math.max(0,x);xx<Math.min(W,x+w);xx++)grid[yy][xx]=c};
+    const rowShape=(cx,y,widths,c)=>widths.forEach((w,i)=>{if(w>0)paint(Math.round(cx-w/2),y+i,w,1,c)});
+    const pixel=(x,y,c)=>paint(x,y,1,1,c);
+    const rows=(cx,y,widths,colors)=>widths.forEach((w,i)=>{if(w>0)paint(Math.round(cx-w/2),y+i,w,1,Array.isArray(colors)?colors[i%colors.length]:colors)});
+    const expr=r?.expression||'neutral',pose=r?.pose||'idle',hairId=o.hair||'hair-wave',topId=o.top||'top-knit',bottomId=o.bottom||'bottom-pants';
+    const hairType=hairId.replace('hair-','');
+    const longHair=['long','wave','curl','ponytail','highponytail','lowponytail','twin','halfup','braid','frenchbraid','wolf','mullet','curtain'].includes(hairType);
+    const midHair=['bob','sidepart','middle','bun','pixie','short','tie','sailor'].includes(hairType);
+    const bodyChoice=o.bodyShape||'auto';const bodyShape=bodyChoice!=='auto'?bodyChoice:((/女|female|woman/i.test(String(r?.gender||r?.personaSnapshot?.gender||r?.personaSnapshot?.sex||'')))?'feminine':(/男|male|man/i.test(String(r?.gender||r?.personaSnapshot?.gender||r?.personaSnapshot?.sex||'')))?'masculine':'balanced');
+
+    // Hair behind the body: stepped pixel masses, never vector curves or strokes.
+    if(longHair){rowShape(20,3,[8,14,18,20,22,22,22,22,22,22,22,20,20,18,18,16,16,14,14,12,12,10,10,8],hair);paint(10,18,3,14,hairShadow);paint(27,18,3,15,hairShadow);}
+    else if(midHair){rowShape(20,3,[8,14,18,20,22,22,22,22,20,20,18,16,14,12,10],hair);}
+    else {rowShape(20,3,[8,14,18,20,22,22,20,18,16,14,12],hair);}
+    // Distinct silhouettes for 20 hairstyles.
+    if(['ponytail','highponytail'].includes(hairType)){paint(28,hairType==='highponytail'?2:9,6,5,hair);paint(31,hairType==='highponytail'?6:13,4,17,hair);paint(33,hairType==='highponytail'?9:17,2,10,hairShadow);}
+    if(hairType==='lowponytail'){paint(27,16,5,6,hair);paint(30,20,6,16,hair);paint(34,31,3,7,hairShadow)}
+    if(hairType==='twin'){paint(7,9,6,8,hair);paint(6,15,5,16,hair);paint(27,9,6,8,hair);paint(29,15,5,16,hair)}
+    if(hairType==='bun'){paint(15,0,10,5,hair);paint(17,1,6,3,hairLight);}
+    if(hairType==='halfup'){paint(14,3,12,5,hairLight);paint(16,1,8,3,hair)}
+    if(['braid','frenchbraid'].includes(hairType)){for(let i=0;i<6;i++){paint(10+(i%2),17+i*3,3,3,i%2?hairLight:hairShadow);paint(27-(i%2),17+i*3,3,3,i%2?hairShadow:hairLight)}}
+    if(hairType==='wolf'||hairType==='mullet'){paint(9,17,4,15,hairShadow);paint(27,17,4,16,hairShadow);paint(13,23,3,8,hairLight)}
+
+    // Legs, body and shoes. Four-head silhouette with visible limbs.
+    const isSit=pose==='sit',isWalk=pose==='walk'||pose==='run';
+    const fem=bodyShape==='feminine',masc=bodyShape==='masculine';
+    const shoulder=fem?18:masc?22:20,waist=fem?13:masc?17:15,hip=fem?18:masc?16:17;
+    // legs: pixel clusters with step-shaped hems
+    if(isSit){paint(14,40,12,5,bottom);paint(12,44,12,4,bottom);paint(22,40,10,5,bottom);paint(25,44,9,4,bottom);paint(10,47,10,4,shoe);paint(27,47,10,4,shoe)}
+    else {
+      if(['bottom-skirt','bottom-pleated','bottom-long-skirt','bottom-culottes'].includes(bottomId)||o.dress){
+        rowShape(20,38,[hip,hip+3,hip+7,hip+9,hip+11,hip+11,hip+9,hip+7],bottom);
+        for(let x=14;x<=25;x+=4)paint(x,41,1,4,pantsShadow);
+        if(o.dress){rowShape(20,26,[shoulder,shoulder+4,shoulder+2,waist,waist,hip,hip+4,hip+7,hip+9,hip+9,hip+7,hip+5],top)}
+        else {paint(15,47,4,5,skin);paint(21,47,4,5,skin)}
+      }else{
+        const leg1=isWalk?13:14,leg2=isWalk?22:22;
+        if(bottomId==='bottom-shorts'){paint(leg1,39,6,8,bottom);paint(leg2,39,6,8,bottom);paint(15,46,4,5,skin);paint(22,46,4,5,skin)}
+        else {paint(leg1,39,6,11,bottom);paint(leg2,39,6,11,bottom);paint(leg1,48,6,2,pantsShadow);paint(leg2,48,6,2,pantsShadow)}
+        if(bottomId==='bottom-jeans'){paint(15,40,1,8,clothLight);paint(23,40,1,8,clothLight)}
+        if(bottomId==='bottom-cargo'){paint(13,43,3,4,clothLight);paint(24,43,3,4,clothLight)}
+        if(isWalk){paint(12,49,8,2,skin);paint(23,48,7,2,skin)}
+      }
+      // shoes with pixels, soles and highlights
+      paint(isWalk?11:13,51,8,3,shoe);paint(isWalk?23:21,51,8,3,shoe);paint(isWalk?11:13,53,8,1,outline);paint(isWalk?23:21,53,8,1,outline);
+      paint(isWalk?13:15,51,3,1,shade(shoe,20));paint(isWalk?25:23,51,3,1,shade(shoe,20));
+    }
+
+    // Arms and neck (all contours made from pixel clusters).
+    paint(18,21,4,5,skinShadow);paint(19,21,2,4,skinLight);
+    paint(9,27,4,10,skin);paint(27,27,4,10,skin);paint(10,34,3,3,skinShadow);paint(27,34,3,3,skinShadow);
+    if(pose==='wave'){paint(27,25,4,5,skin);paint(29,20,3,7,skin);paint(30,18,3,3,skinLight);}
+    if(pose==='run'){paint(8,31,5,4,skin);paint(6,28,4,4,skinLight);paint(27,30,5,4,skin);paint(30,27,4,4,skinLight)}
+    if(pose==='hug'){paint(11,31,7,3,skin);paint(22,31,7,3,skin);paint(16,32,8,3,skinLight)}
+    if(pose==='shop'){paint(10,31,6,4,skin);paint(24,31,6,4,skin);paint(28,34,7,7,'#b98b73');paint(29,35,5,5,'#d7b79a')}
+    if(pose==='dance'){paint(8,25,4,5,skin);paint(6,21,4,6,skin);paint(28,25,4,5,skin);paint(30,21,4,6,skin)}
+    if(['read','work','eat','talk'].includes(pose)){paint(10,33,5,3,skin);paint(25,33,5,3,skin);paint(13,34,6,3,skinLight);paint(22,34,6,3,skinLight)}
+
+    // Torso base and clothing silhouette.
+    rowShape(20,25,[shoulder-3,shoulder+1,shoulder+3,shoulder+1,waist,waist,waist,waist+2,waist+2,waist+2,waist+2,waist+2,waist+2,waist+2],skinShadow);
+    rowShape(20,25,[shoulder-5,shoulder-1,shoulder+1,shoulder-1,waist-2,waist-2,waist-2,waist,waist,waist,waist,waist,waist,waist],skin);
+    const dressId=o.dress||'';
+    if(dressId){
+      rowShape(20,25,[shoulder,shoulder+4,shoulder+2,waist+3,waist+3,hip,hip+3,hip+5,hip+7,hip+7,hip+5,hip+3,hip+1],top);
+      paint(19,27,2,2,clothLight);paint(19,36,2,1,clothShadow);
+      if(dressId==='dress-shirt')paint(20,28,1,8,'#f6e9e5');
+      if(dressId==='dress-knit')for(let y=33;y<39;y+=3)paint(14,y,12,1,clothLight);
+      if(['dress-floral','dress-summer','dress-party','dress-long','dress-pinafore'].includes(dressId)){pixel(15,35,'#f4d4cf');pixel(24,38,'#f4d4cf');pixel(18,42,'#e8c4cf')}
+      if(dressId==='dress-pinafore'){paint(15,27,3,2,clothShadow);paint(22,27,3,2,clothShadow)}
+      if(dressId==='dress-party'){paint(14,36,12,2,clothLight);pixel(20,32,'#f3d58e')}
+    }else{
+      rowShape(20,25,[shoulder,shoulder+4,shoulder+2,waist+2,waist,waist,waist,waist,waist,waist,waist,waist,waist,waist],top);
+      paint(12,27,4,5,top);paint(24,27,4,5,top);paint(12,31,3,4,clothShadow);paint(25,31,3,4,clothShadow);
+      paint(14,27,2,2,clothLight);paint(24,27,2,2,clothLight);
+      if(['top-shirt','top-blouse','top-polo','top-sailor','top-vest'].includes(topId)){paint(18,25,4,3,'#f8eee8');paint(19,28,2,8,shade(top,-6));for(let y=29;y<36;y+=3)pixel(21,y,'#f7e5cd')}
+      if(['top-knit','top-sweater','top-turtleneck'].includes(topId)){paint(17,26,6,2,clothLight);for(let y=31;y<38;y+=3){paint(15,y,2,1,clothLight);paint(23,y,2,1,clothLight)}}
+      if(topId==='top-hoodie'){paint(17,23,6,4,clothShadow);paint(18,25,4,2,clothLight);paint(17,35,6,2,clothShadow)}
+      if(topId==='top-cardigan'){paint(19,27,2,11,clothShadow);for(let y=29;y<37;y+=3)pixel(21,y,'#f4e5d8')}
+      if(topId==='top-offshoulder'){paint(14,26,12,2,shade(top,-15));paint(17,27,6,1,skin)}
+      if(topId==='top-vest'){paint(15,27,3,9,clothShadow);paint(22,27,3,9,clothShadow)}
+      if(topId==='top-blouse'){pixel(14,30,'#f4e3df');pixel(25,30,'#f4e3df');paint(18,27,4,1,clothLight)}
+      if(topId==='top-turtleneck'){paint(17,24,6,3,clothShadow);paint(18,24,4,1,clothLight)}
+      if(topId==='top-polo'){paint(18,26,4,2,'#f4eee5');pixel(21,29,'#f4eee5')}
+      if(topId==='top-sailor'){paint(16,26,8,3,'#f4eee8');paint(18,28,4,2,'#7183a0');pixel(20,30,'#f0c6c6')}
+    }
+
+    // Outerwear layer: distinct pixel panels over the base outfit.
+    if(o.outer&&o.outer!=='outer-none'){
+      const oc=outerColor,os=shade(oc,-22),ol=shade(oc,20);
+      paint(10,27,4,12,oc);paint(26,27,4,12,oc);paint(12,28,3,9,os);paint(25,28,3,9,ol);
+      paint(15,26,3,12,oc);paint(22,26,3,12,oc);paint(18,26,4,12,oc);
+      if(o.outer==='outer-coat'){paint(14,37,12,4,oc);paint(14,40,12,1,os)}
+      if(o.outer==='outer-denim'||o.outer==='outer-blazer'){paint(14,29,2,2,'#dbe4e9');paint(24,29,2,2,'#dbe4e9');paint(19,27,2,10,ol)}
+      if(o.outer==='outer-hooded'){paint(16,24,8,4,os);paint(18,24,4,2,ol)}
+      if(o.outer==='outer-puffer'){paint(14,30,12,2,ol);paint(14,34,12,2,ol);paint(14,38,12,2,os)}
+      if(o.outer==='outer-cardigan')for(let y=29;y<38;y+=3){paint(15,y,10,1,ol)}
+    }
+
+    // Head outline and face shape.
+    const faceShape=o.faceShape&&o.faceShape!=='auto'?o.faceShape:'oval';
+    const widths=faceShape==='round'?[8,12,16,18,20,20,20,20,18,16,14,10]:faceShape==='soft-square'?[10,16,18,18,18,18,18,18,18,16,14,10]:[8,14,18,20,20,20,20,18,18,16,12,8];
+    rowShape(20,7,widths.map(w=>w+2),outline);
+    rowShape(20,8,widths,skin);
+    paint(12,12,2,5,skinShadow);paint(26,12,2,5,skinShadow);paint(15,9,8,1,skinLight);paint(17,19,6,1,skinShadow);
+    // Brows and eyes use square pixel clusters; expression changes actual pixels.
+    const brow=o.browShape&&o.browShape!=='auto'?o.browShape:'soft';
+    if(expr==='angry'){paint(14,12,5,1,ink);paint(22,12,5,1,ink);pixel(15,11,ink);pixel(25,11,ink)}
+    else if(brow==='straight'){paint(14,12,5,1,ink);paint(22,12,5,1,ink)}
+    else if(brow==='arched'){paint(14,11,4,1,ink);pixel(14,10,ink);paint(22,11,4,1,ink);pixel(25,10,ink)}
+    else {paint(14,12,4,1,ink);paint(22,12,4,1,ink);}
+    if(expr==='sleepy'||expr==='sleep'||expr==='laugh'){paint(14,15,5,1,ink);paint(22,15,5,1,ink)}
+    else if(expr==='wink'){paint(14,15,5,1,ink);paint(22,14,5,2,ink);pixel(24,13,'#fff7ee')}
+    else if(expr==='happy'||expr==='blush'||expr==='shy'){paint(14,14,5,1,ink);pixel(15,13,ink);paint(22,14,5,1,ink);pixel(25,13,ink)}
+    else if(expr==='surprised'){paint(15,13,3,4,ink);paint(23,13,3,4,ink);pixel(16,14,'#fff5e9');pixel(24,14,'#fff5e9')}
+    else if(expr==='sad'||expr==='cry'){paint(15,14,3,2,ink);paint(23,14,3,2,ink);pixel(14,13,ink);pixel(26,13,ink);pixel(27,17,'#91c9da');if(expr==='cry'){paint(27,17,1,4,'#91c9da');paint(12,17,1,3,'#91c9da')}}
+    else {const eye=o.eyeShape&&o.eyeShape!=='auto'?o.eyeShape:'almond';if(eye==='round'){paint(15,13,3,4,ink);paint(23,13,3,4,ink);pixel(16,13,'#fff7ee');pixel(24,13,'#fff7ee')}
+      else if(eye==='narrow'){paint(14,14,5,2,ink);paint(22,14,5,2,ink);}
+      else if(eye==='down'){paint(14,13,4,2,ink);paint(23,13,4,2,ink);pixel(17,15,ink);pixel(23,15,ink)}
+      else {paint(14,14,5,2,ink);paint(22,14,5,2,ink);pixel(15,13,ink);pixel(24,13,ink);pixel(16,14,'#fff7ee');pixel(24,14,'#fff7ee')}
+    }
+    if(expr==='blush'||expr==='shy'||expr==='happy'||expr==='laugh'){paint(12,17,3,1,'#e99b9e');paint(25,17,3,1,'#e99b9e')}
+    pixel(20,17,skinShadow);
+    if(expr==='surprised'){paint(19,19,3,3,'#ad6270')}
+    else if(expr==='sad'||expr==='cry'){paint(18,20,4,1,'#a96371');paint(19,19,2,1,'#a96371')}
+    else if(expr==='happy'||expr==='laugh'||expr==='shy'){paint(18,19,4,2,'#a96371');pixel(17,19,'#a96371');pixel(22,19,'#a96371')}
+    else {paint(19,20,3,1,'#a96371')}
+
+    // Front hair, bangs and side locks. Pixel masses create the silhouette.
+    const fringe=hairType==='sidepart'||hairType==='curtain'?[12,16,13,9]:hairType==='middle'?[9,12,7,7]:hairType==='pixie'?[14,12,8]:[16,17,16,12,7];
+    rowShape(20,4,fringe,hair);paint(10,8,4,7,hair);paint(26,8,4,7,hair);
+    if(hairType==='curtain'||hairType==='middle'){paint(18,7,3,7,hairLight);paint(21,7,3,7,hairShadow)}
+    if(hairType==='sidepart'){paint(14,5,7,6,hairLight);paint(22,7,6,7,hairShadow)}
+    if(hairType==='braid'||hairType==='frenchbraid'){paint(10,18,3,10,hairLight);paint(27,18,3,10,hairShadow)}
+    // Pixel highlights, not stroked lines.
+    paint(15,5,3,1,hairLight);paint(18,4,4,1,hairLight);paint(26,8,2,2,hairShadow);
+    if(longHair){paint(10,28,3,5,hairLight);paint(27,29,3,4,hairShadow)}
+
+    // Accessories and small clothing details.
+    const acc=o.accessory||'acc-none';
+    if(acc==='acc-glasses'){paint(13,14,6,1,outline);paint(13,14,1,4,outline);paint(18,14,1,4,outline);paint(22,14,1,4,outline);paint(27,14,1,4,outline);paint(18,15,4,1,outline)}
+    if(acc==='acc-hat'){paint(11,4,18,3,accColor);paint(15,0,10,5,shade(accColor,-14));paint(12,6,16,1,shade(accColor,-22))}
+    if(acc==='acc-bag'){paint(27,31,5,9,shade(accColor,-15));paint(28,32,3,6,accColor);pixel(29,34,shade(accColor,28))}
+    if(acc==='acc-necklace'){paint(17,27,1,3,accColor);paint(22,27,1,3,accColor);paint(19,30,3,1,accColor);pixel(20,31,'#f7e3a5')}
+    if(acc==='acc-earrings'){pixel(11,18,accColor);pixel(28,18,accColor);pixel(11,20,shade(accColor,-18));pixel(28,20,shade(accColor,-18))}
+    if(acc==='acc-ribbon'){paint(10,6,4,3,accColor);paint(26,6,4,3,accColor);pixel(19,7,shade(accColor,-20));pixel(20,7,shade(accColor,-20))}
+    if(acc==='acc-beret'){paint(12,4,16,4,accColor);paint(15,1,10,4,shade(accColor,15));pixel(25,3,shade(accColor,-20))}
+    // Pose-specific hands and props; all marks remain pixel clusters.
+    if(pose==='read'){paint(17,34,6,1,'#9a789f');paint(16,35,8,4,'#f1e4cb');paint(19,35,1,4,'#9f879d')}
+    if(pose==='work'){paint(17,36,7,2,'#a9856b');paint(18,35,4,1,'#e2cda9')}
+    if(pose==='eat'){paint(18,18,4,1,'#f2d8a8')}
+    if(pose==='sleep'||expr==='sleepy'){paint(30,7,1,1,'#8d87a8');paint(32,5,1,1,'#8d87a8');paint(34,3,1,1,'#8d87a8')}
+
+    // Compact each horizontal run into pixel rectangles. Every visible element is a hard-edged pixel.
+    let out='';for(let y=0;y<H;y++){let x=0;while(x<W){const c=grid[y][x];if(!c){x++;continue}let end=x+1;while(end<W&&grid[y][end]===c)end++;out+=`<rect x="${x}" y="${y}" width="${end-x}" height="1" fill="${c}"/>`;x=end}}
+    return `<svg class="sc-pixel-character" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(r?.name||'像素居民')}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">${out}</svg>`;
   }
+
   function buildingSvg(type='home'){
     const palette={home:['#b78b9c','#f2d8b7','#76576b'],cafe:['#c98f76','#f6dfb8','#805b50'],shop:['#88a6aa','#f2ddb5','#557378'],park:['#84a86f','#d8e5ad','#52764b'],school:['#8b91bd','#f1d8a5','#5c638a'],studio:['#bc9a70','#f4dfb8','#876b4c'],legacy:['#9c8daf','#f0dfb7','#6e5c7a']};
     const [roof,wall,trim]=palette[type]||palette.home;
@@ -398,7 +577,7 @@
       world._needsPersonaNotice=true;
     }
   }
-  function openWorld(id){const found=worlds.find(w=>w.id===id);if(!found)return;world=found;activeId=id;world.settings={...clone(DEFAULT_SETTINGS),...(world.settings||{})};if(!world.map)world.map={buildings:clone(BUILDINGS),unlockedAreas:['中心城区']};if(!Array.isArray(world.map.buildings))world.map.buildings=clone(BUILDINGS);if(!Array.isArray(world.residents))world.residents=[];if(!Array.isArray(world.relationships))world.relationships=[];if(!Array.isArray(world.families))world.families=[];if(!Array.isArray(world.logs))world.logs=[];if(!world.worldNow)world.worldNow=now();if(!world.lastRealAt)world.lastRealAt=now();normalizePlayerResident();normalizeExistingCoupleHomes();const needsPersonaNotice=!!world._needsPersonaNotice;delete world._needsPersonaNotice;$('space').classList.add('sc-city-immersive');$('scLobby').hidden=true;$('scCreatePanel').hidden=true;$('lrSpaceV2Directory').hidden=false;$('scWorld').hidden=false;$('scInterior').hidden=true;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);setTab('map');advanceTime();renderMap();renderLatestLogs();fillController();persist();startTicker();if(needsPersonaNotice)notify('旧版自动生成的用户角色已移除，请添加你在主页创建的自设。')}
+  function openWorld(id){const found=worlds.find(w=>w.id===id);if(!found)return;world=found;activeId=id;world.settings={...clone(DEFAULT_SETTINGS),...(world.settings||{})};if(!world.map)world.map={buildings:clone(BUILDINGS),unlockedAreas:['中心城区']};if(!Array.isArray(world.map.buildings))world.map.buildings=clone(BUILDINGS);if(!Array.isArray(world.residents))world.residents=[];if(!Array.isArray(world.relationships))world.relationships=[];if(!Array.isArray(world.families))world.families=[];if(!Array.isArray(world.logs))world.logs=[];if(!world.worldNow)world.worldNow=now();if(!world.lastRealAt)world.lastRealAt=now();normalizePlayerResident();normalizePixelLooks();normalizeExistingCoupleHomes();const needsPersonaNotice=!!world._needsPersonaNotice;delete world._needsPersonaNotice;$('space').classList.add('sc-city-immersive');$('scLobby').hidden=true;$('scCreatePanel').hidden=true;$('lrSpaceV2Directory').hidden=false;$('scWorld').hidden=false;$('scInterior').hidden=true;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);setTab('map');advanceTime();renderMap();renderLatestLogs();fillController();persist();startTicker();if(needsPersonaNotice)notify('旧版自动生成的用户角色已移除，请添加你在主页创建的自设。')}
   function createCity(){const personaId=$('scPersonaSelect').value;const persona=personas().find(p=>String(p.id)===String(personaId));if(!persona){notify('请先在主页创建并选择一个自设，SPACE CITY 不会自动生成用户角色。');return}const name=$('scNewCityName').value.trim()||'我的像素城市';const ids=[...document.querySelectorAll('#scContactChoices input:checked')].map(x=>x.value);const w=worldTemplate(name,ids,personaId);worlds.push(w);activeId=w.id;world=w;persist().then(ok=>{if(ok){renderCityList();openWorld(w.id);notify('城市创建成功！已使用你选择的主页自设。')}else notify('城市创建失败，请检查浏览器存储。')})}
   function renderMap(){if(!world)return;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);$('scClock').textContent=timeLabel(world.worldNow);$('scWeather').textContent=({sunny:'☀ 晴天',cloudy:'☁ 多云',rain:'☂ 下雨',snow:'❄ 下雪',wind:'༄ 微风'}[world.settings.weather]||'☀ 晴天');$('scSeason').textContent=({spring:'春季',summer:'夏季',autumn:'秋季',winter:'冬季'}[world.settings.season]||'春季');$('scResidentCount').textContent=world.residents.length+' 位居民';$('scAreaName').textContent=world.map.activeArea||'中心城区';const areaSelect=$('scAreaSelect');if(areaSelect){areaSelect.innerHTML=(world.map.unlockedAreas||['中心城区']).map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');areaSelect.value=world.map.activeArea||'中心城区'}
     const buildings=(world.map.buildings||[]).filter(x=>x.area===(world.map.activeArea||'中心城区')||!x.area);
@@ -529,36 +708,89 @@
   function modal(title,body,kicker='SPACE CITY'){ $('scModalTitle').textContent=title;$('scModalKicker').textContent=kicker;$('scModalBody').innerHTML='<div class="sc-modal-content">'+body+'</div>';$('scModal').hidden=false;openModal=title; }
   function closeModal(){$('scModal').hidden=true;openModal=''}
   let closetSlot='hair';
-  function clothingArt(slot,item,color){
-    const c=esc(color||({hair:'#493d4c',top:'#c4a4d3',bottom:'#667b9a',dress:'#d9b6c9',outer:'#ad91bc',shoes:'#f2eee8',accessory:'#d5b77e',sleep:'#d9c9d8'}[slot]||'#c4a4d3'));
-    const shapes={
-      hair:`<path d="M24 16L32 7 47 7 56 18 53 33 47 28 45 17 31 17 29 31 23 34Z" fill="${c}"/><rect x="28" y="20" width="23" height="26" fill="#f1c9ac"/>`,
-      top:`<path d="M26 15L34 11H46L54 15 63 27 54 33 51 26V60H27V26L24 33 15 27Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M34 13L40 21 46 13" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>`,
-      bottom:`<path d="M27 10H53L57 61H44L40 33 36 61H22Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M40 14V33" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>`,
-      dress:`<path d="M31 10H49L54 21 49 29 62 62H18L31 29 26 21Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M31 12L40 23 49 12" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>`,
-      outer:`<path d="M29 10H51L61 23 53 31 49 24V62H31V24L27 31 19 23Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M40 12V60M34 18H38M42 18H46" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>`,
-      shoes:`<path d="M13 40H35V51Q34 59 25 59H11Q6 58 8 51Z M43 40H65V51Q64 59 55 59H41Q36 58 38 51Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M10 52H33M40 52H63" stroke="#fff" stroke-width="2"/>`,
-      accessory:`<circle cx="40" cy="35" r="17" fill="none" stroke="${c}" stroke-width="4"/><path d="M24 34H56M40 18V52" stroke="#806b83" stroke-width="2"/>`,
-      sleep:`<path d="M27 11H53L60 24 53 31 49 25V61H31V25L27 31 20 24Z" fill="${c}" stroke="#806b83" stroke-width="2"/><path d="M34 17L40 23 46 17M40 24V59" fill="none" stroke="#fff" stroke-opacity=".65" stroke-width="2"/>`
-    };
-    return `<svg viewBox="0 0 80 72" aria-hidden="true" shape-rendering="crispEdges">${shapes[slot]||shapes.top}</svg>`;
+  const SKIN_TONES=['#f9dfc8','#edc5a8','#d9a782','#bd8968','#91634d','#704b3d'];
+  function clothingArt(slot,item,color,baseResident){
+    const outfit=baseResident?.outfit||DEFAULT_OUTFIT;
+    const safeHex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;
+    const c=safeHex(color||({hair:outfit.hairColor,top:outfit.topColor,bottom:outfit.bottomColor,dress:outfit.topColor,outer:outfit.outerColor,shoes:outfit.shoeColor,accessory:outfit.accessoryColor,sleep:outfit.topColor,face:outfit.skin}[slot]),'#c4a4d3');
+    const dark='#5a4b60',light=safeHex((baseResident?.outfit?.skin),'#edc5a8'),shade=(hex,amt)=>{const n=parseInt(hex.slice(1),16),a=[(n>>16)+amt,((n>>8)&255)+amt,(n&255)+amt].map(v=>clamp(v,0,255));return '#'+a.map(v=>Math.round(v).toString(16).padStart(2,'0')).join('')};
+    const grid=Array.from({length:48},()=>Array(40).fill(''));
+    const paint=(x,y,w,h,col)=>{for(let yy=Math.max(0,y);yy<48&&yy<y+h;yy++)for(let xx=Math.max(0,x);xx<40&&xx<x+w;xx++)grid[yy][xx]=col};
+    const row=(cy,y,widths,col)=>widths.forEach((w,i)=>{if(w)paint(cy-Math.floor(w/2),y+i,w,1,col)});
+    const skinShadow=shade(light,-22),cl=shade(c,22),cd=shade(c,-24),hair=safeHex(outfit.hairColor,'#493d4c');
+    if(slot==='hair'||slot==='face'){
+      row(20,8,[10,16,20,20,20,18,16,14,12,10],slot==='face'?skin:hair);
+      if(slot==='hair'){
+        const length=item.includes('long')||item.includes('wave')||item.includes('curl')||/ponytail|twin|braid|wolf|mullet|curtain/.test(item);
+        if(length){paint(9,16,4,19,hair);paint(27,16,4,19,shade(hair,-18))}
+        if(item.includes('twin')){paint(5,14,5,17,hair);paint(30,14,5,17,hair)}
+        if(item.includes('bun'))paint(14,3,12,6,hair);
+        if(item.includes('ponytail'))paint(29,10,6,20,hair);
+        if(item.includes('braid'))for(let y=18;y<34;y+=4){paint(9,y,4,3,y%2?shade(hair,20):hair);paint(27,y,4,3,y%2?hair:shade(hair,20))}
+        paint(12,12,16,4,hair);paint(14,10,6,2,shade(hair,25));paint(12,18,3,6,shade(hair,-20));
+      }else{
+        paint(14,19,4,2,dark);paint(22,19,4,2,dark);paint(19,25,3,1,'#a96371');paint(13,24,3,1,'#e99b9e');paint(24,24,3,1,'#e99b9e');
+      }
+    }else if(slot==='top'||slot==='outer'){
+      row(20,7,[8,14,20,24,22,18,18,18,18,18,18,18,18,18,18,18,18,18,18],c);
+      paint(7,13,7,8,c);paint(26,13,7,8,c);paint(11,15,3,15,cd);paint(27,15,3,15,cl);
+      paint(17,7,6,3,slot==='outer'?cd:'#f1dedc');paint(19,10,2,15,cl);
+      if(item.includes('shirt')||item.includes('blouse')||item.includes('blazer')){paint(18,9,4,3,'#fbf1e7');for(let y=13;y<29;y+=4)paint(20,y,1,1,'#f5e1c2')}
+      if(item.includes('knit')||item.includes('sweater'))for(let y=14;y<31;y+=4){paint(12,y,16,1,cl)}
+      if(item.includes('hoodie')){paint(15,5,10,5,cd);paint(18,8,4,2,cl)}
+      if(item.includes('cardigan'))paint(19,10,2,22,cd);
+      if(item.includes('turtleneck'))paint(16,5,8,4,cd);
+    }else if(slot==='bottom'){
+      paint(10,8,20,4,cd);
+      if(/skirt|pleated|long-skirt|culottes/.test(item)){
+        const widths=item.includes('long')?[18,20,22,24,26,28,28,26,24,22,20,18,18,18]:[18,20,22,24,26,28,28,26,24];row(20,12,widths,c);
+        for(let x=13;x<=25;x+=5)paint(x,17,1,widths.length-3,cl);
+      }else{
+        paint(11,12,8,30,c);paint(21,12,8,30,c);paint(12,13,2,23,cl);paint(26,13,2,23,cd);
+        if(item.includes('jeans')){paint(15,14,1,24,'#d9e2ec');paint(24,14,1,24,'#d9e2ec')}
+        if(item.includes('cargo')){paint(9,25,5,5,cl);paint(26,25,5,5,cl)}
+        if(item.includes('leggings')){paint(13,18,4,20,cl);paint(23,18,4,20,cl)}
+      }
+    }else if(slot==='dress'||slot==='sleep'){
+      row(20,5,[8,14,20,24,22,20,18,18,18,18,18,20,22,24,26,26,24,22,20,18,18,16,14,12,10,8],c);
+      paint(10,11,6,7,c);paint(24,11,6,7,c);paint(17,7,6,2,cl);
+      paint(13,20,2,14,cd);paint(25,20,2,14,cl);
+      if(item.includes('floral')||item.includes('party')){paint(14,31,2,2,'#f1d5d9');paint(24,36,2,2,'#f1d5d9');paint(19,26,2,2,'#e7cc8e')}
+    }else if(slot==='shoes'){
+      paint(7,17,12,18,c);paint(22,17,12,18,c);paint(7,31,13,4,dark);paint(22,31,13,4,dark);paint(9,19,5,2,cl);paint(24,19,5,2,cl);
+      if(item.includes('boots')){paint(8,8,9,12,c);paint(23,8,9,12,c);paint(8,8,9,2,cd);paint(23,8,9,2,cd)}
+      if(item.includes('sandal')){paint(8,24,10,2,'#d6b38d');paint(23,24,10,2,'#d6b38d')}
+    }else if(slot==='accessory'){
+      if(item.includes('glasses')){paint(5,18,12,2,c);paint(5,18,2,9,c);paint(15,18,2,9,c);paint(23,18,2,9,c);paint(33,18,2,9,c);paint(17,21,6,2,dark)}
+      else if(item.includes('hat')){paint(6,17,28,4,c);paint(11,8,18,10,c);paint(12,8,16,2,cl)}
+      else if(item.includes('bag')){paint(11,10,18,30,c);paint(13,13,14,24,cl);paint(17,18,4,4,cd)}
+      else if(item.includes('necklace')){paint(12,10,2,18,c);paint(26,10,2,18,c);paint(17,26,7,2,c);paint(19,28,3,4,cl)}
+      else if(item.includes('earrings')){paint(8,14,3,9,c);paint(29,14,3,9,c);paint(9,22,1,4,cl);paint(30,22,1,4,cl)}
+      else if(item.includes('ribbon')){paint(7,12,11,7,c);paint(22,12,11,7,c);paint(17,14,6,4,cd)}
+      else {paint(8,15,24,5,c);paint(13,8,14,8,cl);paint(18,14,4,3,cd)}
+    }
+    let out='';for(let y=0;y<48;y++){let x=0;while(x<40){const col=grid[y][x];if(!col){x++;continue}let end=x+1;while(end<40&&grid[y][end]===col)end++;out+=`<rect x="${x}" y="${y}" width="${end-x}" height="1" fill="${col}"/>`;x=end}}
+    return `<svg class="sc-pixel-item" viewBox="0 0 40 48" shape-rendering="crispEdges" aria-hidden="true">${out}</svg>`;
   }
   function closetModal(id,slot='hair'){
     const r=currentResident(id||selectedResidentId);if(!r)return;selectedResidentId=r.id;closetSlot=slot;
-    const cats=[['hair','发型','✦'],['top','上衣','▱'],['bottom','下装','▤'],['dress','连衣裙','♧'],['outer','外套','◇'],['shoes','鞋子','⌑'],['accessory','配饰','✧'],['sleep','睡衣','☾']];
+    const cats=[['hair','发型','✦'],['top','上衣','▱'],['bottom','下装','▤'],['dress','连衣裙','♧'],['outer','外套','◇'],['shoes','鞋子','⌑'],['accessory','配饰','✧'],['sleep','睡衣','☾'],['face','面容','☻']];
     const activeCat=cats.find(c=>c[0]===closetSlot)||cats[0];
     const selectedItem=closetSlot==='sleep'?(r.wardrobe.sleepOutfit?.sleepwear||'sleep-set'):(r.outfit[closetSlot]||'');
     const colorKey={hair:'hairColor',top:'topColor',bottom:'bottomColor',dress:'topColor',outer:'outerColor',shoes:'shoeColor',accessory:'accessoryColor',sleep:'topColor'}[closetSlot];
-    const currentColor=(closetSlot==='sleep'?r.wardrobe.sleepOutfit?.[colorKey]:r.outfit[colorKey])||COLORS[0];
-    const choices=(CLOTHES[closetSlot]||[]).map(([item,label],i)=>`<button class="sc-clothes-item ${selectedItem===item?'active':''}" data-sc-cloth="${item}" data-slot="${closetSlot}"><span class="sc-cloth-thumb">${clothingArt(closetSlot,item,currentColor)}</span><span class="sc-cloth-name">${esc(label)}</span><span class="sc-cloth-check">${selectedItem===item?'✓':'选择'}</span></button>`).join('');
+    const currentColor=closetSlot==='face'?(r.outfit.skin||SKIN_TONES[1]):((closetSlot==='sleep'?r.wardrobe.sleepOutfit?.[colorKey]:r.outfit[colorKey])||COLORS[0]);
+    const choices=(CLOTHES[closetSlot]||[]).map(([item,label])=>`<button class="sc-clothes-item ${selectedItem===item?'active':''}" data-sc-cloth="${item}" data-slot="${closetSlot}"><span class="sc-cloth-thumb">${clothingArt(closetSlot,item,currentColor,r)}</span><span class="sc-cloth-name">${esc(label)}</span><span class="sc-cloth-check">${selectedItem===item?'✓':'选择'}</span></button>`).join('');
     const previewSprite=closetSlot==='sleep'?sprite({...r,outfit:{...(r.wardrobe.sleepOutfit||r.outfit),isSleeping:true}}):sprite(r);
+    const faceGroups=[['faceShape','脸型',[['oval','鹅蛋脸'],['round','圆脸'],['soft-square','柔和方脸'],['auto','自动']]],['eyeShape','眼型',[['almond','杏眼'],['round','圆眼'],['narrow','细长眼'],['down','下垂眼'],['auto','默认']]],['browShape','眉形',[['soft','自然眉'],['straight','平眉'],['arched','弯眉'],['auto','默认']]],['bodyShape','身形轮廓',[['auto','根据角色资料'],['feminine','偏女性轮廓'],['masculine','偏男性轮廓'],['balanced','中性匀称']]]];
+    const faceEditor=faceGroups.map(([key,label,opts])=>`<div class="sc-face-feature"><b>${label}</b><div>${opts.map(([v,n])=>`<button class="${(r.outfit[key]||'auto')===v?'active':''}" data-sc-face-feature="${key}" data-sc-face-value="${v}">${n}</button>`).join('')}</div></div>`).join('');
+    const itemChoices=closetSlot==='face'?`<div class="sc-face-editor">${faceEditor}<p class="sc-note">面容由真实像素色块组合，调整后会同步到衣柜、地图、室内和居民档案。</p></div>`:choices;
     const outfitLabel=Object.values(CLOTHES).flat().find(([key])=>key===selectedItem)?.[1]||'自定义搭配';
     $('scModalTitle').textContent=r.name+' · 专属衣帽间';$('scModalKicker').textContent='THE LITTLE WARDROBE · STYLE STUDIO';$('scModal').hidden=false;openModal='衣柜';
     $('scModalBody').dataset.closetResident=r.id;
     $('scModalBody').innerHTML=`<div class="sc-modal-content sc-closet-content">
       <section class="sc-closet-stage"><div class="sc-closet-stage-top"><span>DAILY LOOK</span><span class="sc-closet-live">● LIVE PREVIEW</span></div><div class="sc-closet-mirror"><div class="sc-closet-mirror-glow"></div><div class="sc-closet-avatar">${previewSprite}</div><div class="sc-closet-plinth"></div></div><div class="sc-closet-caption"><div><small>正在试穿</small><b>${esc(outfitLabel)}</b></div><span class="sc-closet-star">✦</span></div></section>
-      <section class="sc-closet-section"><div class="sc-closet-section-head"><div><small>COLLECTION</small><h3>挑选单品</h3></div><span>${(CLOTHES[closetSlot]||[]).length} 件可选</span></div><div class="sc-closet-categories">${cats.map(([k,n,ico])=>`<button class="${closetSlot===k?'active':''}" data-sc-slot="${k}"><i>${ico}</i><span>${n}</span></button>`).join('')}</div><div class="sc-closet-picked"><b>${activeCat[1]}</b><span>点击单品，即时预览效果</span></div><div class="sc-clothes-grid">${choices}</div></section>
-      <section class="sc-closet-section sc-color-section"><div class="sc-closet-section-head"><div><small>COLOR PALETTE</small><h3>专属配色</h3></div><span>12 种颜色</span></div><div class="sc-color-row">${COLORS.map(c=>`<button class="sc-color-swatch ${currentColor===c?'active':''}" style="--swatch:${c};background:${c}" data-sc-color="${c}" data-slot="${closetSlot}" aria-label="选择颜色 ${c}"></button>`).join('')}</div></section>
+      <section class="sc-closet-section"><div class="sc-closet-section-head"><div><small>COLLECTION</small><h3>挑选单品</h3></div><span>${closetSlot==='face'?'4 项面容设置':(CLOTHES[closetSlot]||[]).length+' 件可选'}</span></div><div class="sc-closet-categories">${cats.map(([k,n,ico])=>`<button class="${closetSlot===k?'active':''}" data-sc-slot="${k}"><i>${ico}</i><span>${n}</span></button>`).join('')}</div><div class="sc-closet-picked"><b>${activeCat[1]}</b><span>点击单品，即时预览效果</span></div><div class="sc-clothes-grid ${closetSlot==='face'?'sc-face-grid':''}">${itemChoices}</div></section>
+      <section class="sc-closet-section sc-color-section"><div class="sc-closet-section-head"><div><small>COLOR PALETTE</small><h3>${closetSlot==='face'?'肤色选择':'专属配色'}</h3></div><span>${closetSlot==='face'?SKIN_TONES.length+' 种肤色':COLORS.length+' 种颜色'}</span></div><div class="sc-color-row">${(closetSlot==='face'?SKIN_TONES:COLORS).map(c=>`<button class="sc-color-swatch ${currentColor===c?'active':''}" style="--swatch:${c};background:${c}" data-sc-color="${c}" data-slot="${closetSlot}" aria-label="选择颜色 ${c}"></button>`).join('')}</div></section>
       <section class="sc-closet-section"><div class="sc-closet-section-head"><div><small>MY LOOKBOOK</small><h3>我的穿搭收藏</h3></div><span>${(r.wardrobe.presets||[]).length} 套</span></div><div class="sc-closet-presets">${(r.wardrobe.presets||[]).map((p,i)=>`<button class="sc-lookbook-card" data-sc-outfit-preset="${i}"><span>${sprite({...r,outfit:p.outfit})}</span><b>${esc(p.name)}</b><small>点击套用</small></button>`).join('')||'<div class="sc-closet-empty">还没有收藏穿搭。完成搭配后，可以保存到这里。</div>'}</div></section>
       <div class="sc-closet-actions"><button class="sc-btn sc-soft" data-sc-action="save-outfit">＋ 保存搭配</button><button class="sc-btn sc-soft" data-sc-action="share-outfit">分享穿搭</button><button class="sc-btn ${r.wardrobe.auto===false?'sc-soft':'sc-primary'}" data-sc-action="toggle-auto-outfit">${r.wardrobe.auto===false?'开启自动换装':'自动换装：开启'}</button></div><button class="sc-btn sc-primary sc-full sc-closet-done" data-sc-action="close-modal">完成搭配</button></div>`;
   }
@@ -569,24 +801,24 @@
   function applySharedOutfit(){const source=selectedResidentId,target=currentResident($('scOutfitTarget')?.value);const from=currentResident(source);if(!from||!target)return;target.outfit=clone(from.outfit);target.wardrobe.dayOutfit=clone(from.wardrobe?.dayOutfit||from.outfit);target.wardrobe.sleepOutfit=clone(from.wardrobe?.sleepOutfit||from.outfit);target.wardrobe.auto=from.wardrobe?.auto!==false;target.wardrobe.presets=target.wardrobe.presets||[];target.wardrobe.presets.push({name:'来自 '+from.name+' 的穿搭',outfit:clone(from.outfit),createdAt:now()});log('分享穿搭',from.name+' 把一套穿搭分享给 '+target.name+'。','wardrobe',target.id);persist();closetModal(from.id,closetSlot);notify('穿搭已分享给 '+target.name+'。')}
   function renderProfile(id){
     const r=currentResident(id);if(!r)return;
-    const expressions=[['neutral','自然','😐'],['happy','开心','😊'],['sad','难过','🥺'],['angry','生气','😠'],['surprised','惊讶','😲'],['sleepy','困倦','😴']];
-    const poses=[['idle','站立','🧍'],['walk','行走','🚶'],['wave','挥手','👋'],['sit','坐下','🪑'],['read','阅读','📖'],['dance','跳舞','💃'],['sleep','睡觉','💤'],['work','工作','🧰'],['eat','用餐','🍽️'],['talk','聊天','💬']];
+    const expressions=[['neutral','自然','😐'],['happy','开心','😊'],['laugh','大笑','😆'],['shy','害羞','☺️'],['wink','眨眼','😉'],['sad','难过','🥺'],['cry','哭泣','😭'],['angry','生气','😠'],['surprised','惊讶','😲'],['sleepy','困倦','😴']];
+    const poses=[['idle','站立','🧍'],['walk','行走','🚶'],['run','小跑','🏃'],['wave','挥手','👋'],['hug','拥抱','🫂'],['sit','坐下','🪑'],['read','阅读','📖'],['dance','跳舞','💃'],['sleep','睡觉','💤'],['work','工作','🧰'],['eat','用餐','🍽️'],['talk','聊天','💬'],['shop','购物','🛍️']];
     modal(r.name+' · 居民档案',`<div class="sc-outfit-preview sc-profile-preview" id="scProfilePreview">${sprite(r)}</div><p><b>${esc(r.name)}</b> · ${r.age} 岁</p><p>${esc(r.kind==='user'?'用户自设':r.kind==='char'?'主页 CHAR':'NPC')} · ${esc(r.role||'居民')}</p><p>${esc(r.personality||'还没有填写性格资料。')}</p><p>当前状态：<strong id="scProfileStatus">${esc(r.status||'自由活动')}</strong></p><section class="sc-expression-panel"><div class="sc-profile-pick-head"><b>人物表情</b><small>点击立即应用</small></div><div class="sc-profile-expression-grid">${expressions.map(([v,n,ico])=>`<button class="sc-profile-option ${r.expression===v?'active':''}" data-sc-expression="${v}" data-sc-id="${esc(id)}"><span>${ico}</span><b>${n}</b></button>`).join('')}</div><div class="sc-profile-pick-head"><b>人物动作</b><small>点击立即应用</small></div><div class="sc-profile-pose-grid">${poses.map(([v,n,ico])=>`<button class="sc-profile-option ${r.pose===v?'active':''}" data-sc-pose="${v}" data-sc-id="${esc(id)}"><span>${ico}</span><b>${n}</b></button>`).join('')}</div></section><div class="sc-short-actions"><button class="sc-btn sc-primary" data-sc-action="closet-one" data-id="${esc(id)}">换装</button><button class="sc-btn sc-soft" data-sc-action="control-one" data-id="${esc(id)}">手动控制</button><button class="sc-btn sc-soft" data-sc-action="edit-resident" data-id="${esc(id)}">编辑资料</button></div>`);
   }
   function applyProfileVisual(id,kind,value){
     const r=currentResident(id);if(!r)return;
     if(kind==='expression')r.expression=value;else if(kind==='pose')r.pose=value;
     const preview=$('scProfilePreview');if(preview)preview.innerHTML=sprite(r);const editPreview=$('scEditPreview');if(editPreview)editPreview.innerHTML=sprite(r);
-    const status=$('scProfileStatus')||$('scEditStatus');if(status&&kind==='pose'){const labels={idle:'站立中',walk:'正在行走',wave:'正在挥手',sit:'坐下休息',read:'正在阅读',dance:'正在跳舞',sleep:'正在睡觉',work:'正在工作',eat:'正在用餐',talk:'正在交谈'};r.status=labels[value]||r.status;status.textContent=r.status;}
+    const status=$('scProfileStatus')||$('scEditStatus');if(status&&kind==='pose'){const labels={idle:'站立中',walk:'正在行走',run:'正在小跑',wave:'正在挥手',hug:'正在拥抱',sit:'坐下休息',read:'正在阅读',dance:'正在跳舞',sleep:'正在睡觉',work:'正在工作',eat:'正在用餐',talk:'正在交谈',shop:'正在购物'};r.status=labels[value]||r.status;status.textContent=r.status;}
     document.querySelectorAll('[data-sc-expression]').forEach(el=>el.classList.toggle('active',el.dataset.scExpression===r.expression));
     document.querySelectorAll('[data-sc-pose]').forEach(el=>el.classList.toggle('active',el.dataset.scPose===r.pose));
     log('角色状态更新',r.name+' 的'+(kind==='expression'?'表情':'动作')+'已调整。','appearance',r.id);
     renderMap();renderResidents();if(!$('scInterior').hidden)renderInteriorResidents();persist();notify(kind==='expression'?'表情已即时更换。':'动作已即时切换。');
   }
-  function addResidentModal(){const contacts=people().filter(p=>!world.residents.some(r=>r.kind==='char'&&r.sourceId===p.id));const ps=personas().filter(p=>!world.residents.some(r=>r.kind==='user'&&r.sourceId===p.id));modal('添加居民',`<div class="sc-tabs-inline"><button class="active" data-sc-add-tab="npc">创建 NPC</button><button data-sc-add-tab="char">添加主页 CHAR</button><button data-sc-add-tab="persona">添加用户自设</button></div><div id="scAddResidentForm"><div class="sc-form-row"><label>居民姓名</label><input id="scNpcName" placeholder="输入姓名"></div><div class="sc-form-row"><label>年龄（固定）</label><input id="scNpcAge" type="number" min="1" max="100" value="24"></div><div class="sc-form-row"><label>职业 / 身份</label><input id="scNpcRole" placeholder="例如：咖啡师、学生、插画师"></div><div class="sc-form-row"><label>性格与兴趣</label><textarea id="scNpcPersonality" placeholder="例如：慢热、喜欢音乐和散步"></textarea></div><button class="sc-btn sc-primary sc-full" data-sc-action="create-npc">创建 NPC</button></div><div id="scAddCharList" hidden>${contacts.map(p=>`<button class="sc-clothes-item sc-full" data-sc-add-char="${esc(p.id)}">${esc(p.name)} · 添加为 CHAR</button>`).join('')||'<p>没有尚未加入城市的主页 CHAR。</p>'}</div><div id="scAddPersonaList" hidden>${ps.map(p=>`<button class="sc-clothes-item sc-full" data-sc-add-persona="${esc(p.id)}">${esc(p.name)} · 添加为用户角色</button>`).join('')||'<p class="sc-note">没有尚未加入城市的自设。请先在主页【自设】创建。</p>'}</div>`)}
-  function addPersona(id){const p=personas().find(x=>String(x.id)===String(id));if(!p)return;if(world.residents.some(r=>r.kind==='user')){notify('这座城市已经有一个用户自设。请先移除现有用户角色，再添加其他自设。');return}if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'user',sourceId:p.id,name:p.name,age:p.age||24,role:p.role||'用户自设',personality:p.personality||p.description||'',avatar:p.avatar||''});r.personaSnapshot=clone(p);world.personaRef={id:p.id,snapshot:clone(p)};r.position={x:48,y:52};world.residents.unshift(r);world.currentController=r.id;controlResidentId=r.id;log('用户自设加入城市',p.name+' 已作为用户角色加入城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('已添加你创建的自设。')}
-  function createNpc(){const name=$('scNpcName')?.value.trim();if(!name){notify('请先填写 NPC 姓名。');return}if(world.residents.length>=world.settings.residentLimit){notify('已经达到当前居民数量上限。');return}const r=makeResident({kind:'npc',name,age:$('scNpcAge').value,role:$('scNpcRole').value,personality:$('scNpcPersonality').value});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('新居民入住',r.name+' 加入了这座城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('NPC 已加入城市。')}
-  function addChar(id){const p=people().find(x=>x.id===id);if(!p)return;if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'char',sourceId:p.id,name:p.name,role:p.role,personality:p.personality||p.description,avatar:p.avatar,age:p.age||24});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('CHAR 加入城市',p.name+' 加入了城市生活。','resident');closeModal();renderResidents();renderMap();persist()}
+  function addResidentModal(){const contacts=people().filter(p=>!world.residents.some(r=>r.kind==='char'&&r.sourceId===p.id));const ps=personas().filter(p=>!world.residents.some(r=>r.kind==='user'&&r.sourceId===p.id));modal('添加居民',`<div class="sc-tabs-inline"><button class="active" data-sc-add-tab="npc">创建 NPC</button><button data-sc-add-tab="char">添加主页 CHAR</button><button data-sc-add-tab="persona">添加用户自设</button></div><div id="scAddResidentForm"><div class="sc-form-row"><label>居民姓名</label><input id="scNpcName" placeholder="输入姓名"></div><div class="sc-form-row"><label>年龄（固定）</label><input id="scNpcAge" type="number" min="1" max="100" value="24"></div><div class="sc-form-row"><label>人物身形倾向</label><select id="scNpcGender" class="sc-input"><option value="">中性 / 不指定</option><option value="女性">偏女性轮廓</option><option value="男性">偏男性轮廓</option></select></div><div class="sc-form-row"><label>职业 / 身份</label><input id="scNpcRole" placeholder="例如：咖啡师、学生、插画师"></div><div class="sc-form-row"><label>性格与兴趣</label><textarea id="scNpcPersonality" placeholder="例如：慢热、喜欢音乐和散步"></textarea></div><button class="sc-btn sc-primary sc-full" data-sc-action="create-npc">创建 NPC</button></div><div id="scAddCharList" hidden>${contacts.map(p=>`<button class="sc-clothes-item sc-full" data-sc-add-char="${esc(p.id)}">${esc(p.name)} · 添加为 CHAR</button>`).join('')||'<p>没有尚未加入城市的主页 CHAR。</p>'}</div><div id="scAddPersonaList" hidden>${ps.map(p=>`<button class="sc-clothes-item sc-full" data-sc-add-persona="${esc(p.id)}">${esc(p.name)} · 添加为用户角色</button>`).join('')||'<p class="sc-note">没有尚未加入城市的自设。请先在主页【自设】创建。</p>'}</div>`)}
+  function addPersona(id){const p=personas().find(x=>String(x.id)===String(id));if(!p)return;if(world.residents.some(r=>r.kind==='user')){notify('这座城市已经有一个用户自设。请先移除现有用户角色，再添加其他自设。');return}if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'user',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',age:p.age||24,role:p.role||'用户自设',personality:p.personality||p.description||'',avatar:p.avatar||''});r.personaSnapshot=clone(p);world.personaRef={id:p.id,snapshot:clone(p)};r.position={x:48,y:52};world.residents.unshift(r);world.currentController=r.id;controlResidentId=r.id;log('用户自设加入城市',p.name+' 已作为用户角色加入城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('已添加你创建的自设。')}
+  function createNpc(){const name=$('scNpcName')?.value.trim();if(!name){notify('请先填写 NPC 姓名。');return}if(world.residents.length>=world.settings.residentLimit){notify('已经达到当前居民数量上限。');return}const r=makeResident({kind:'npc',name,gender:$('scNpcGender')?.value||'',age:$('scNpcAge').value,role:$('scNpcRole').value,personality:$('scNpcPersonality').value});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('新居民入住',r.name+' 加入了这座城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('NPC 已加入城市。')}
+  function addChar(id){const p=people().find(x=>x.id===id);if(!p)return;if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'char',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',role:p.role,personality:p.personality||p.description,avatar:p.avatar,age:p.age||24});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('CHAR 加入城市',p.name+' 加入了城市生活。','resident');closeModal();renderResidents();renderMap();persist()}
   function interactResident(id){const r=currentResident(id);if(!r)return;world.residents.forEach(x=>{if(x.id!==id&&x.kind==='npc'&&r.kind==='npc'){const rel=relationship(id,x.id);if(rel)rel.affinity=clamp(rel.affinity+8,0,100);else if(Math.random()<.5)addRelationship(id,x.id,'friend','auto',28)}});r.status='正在社交';log('居民互动',r.name+' 与其他居民进行了一次日常交流。','social',id);persist();renderResidents();renderRelations();notify('互动已记录，关系亲密度可能有所变化。')}
   function saveRelation(){const a=currentResident($('scRelA').value),b=currentResident($('scRelB').value),type=$('scRelType').value;if(!a||!b||a.id===b.id){notify('请选择两位不同居民。');return}if(['lover','spouse'].includes(type)&&!relationAllowed(a,b,true)){notify('这组角色不能由用户设定为恋爱关系：只允许用户与 CHAR、CHAR 与 CHAR（手动确认），以及 NPC 与 NPC。');return}addRelationship(a.id,b.id,type,'user',type==='friend'?25:100);if(type==='lover'||type==='spouse'){const fam=makeCoupleFamily(a,b);log('共同住所已安排',a.name+' 与 '+b.name+' 已成为'+(type==='spouse'?'夫妻':'恋人')+'，共同居住于 '+(world.map.buildings.find(x=>x.id===fam?.sharedHomeId)?.name||'居民公寓')+'。','family');}renderRelations();renderResidents();renderMap();persist();notify(['lover','spouse'].includes(type)?'关系已保存，双方已安排共同居住。':'关系设置已保存。')}
   function createFamily(){const opts=world.residents.map(r=>`<label class="sc-choice"><input type="checkbox" value="${esc(r.id)}"><span>${esc(r.name)}</span></label>`).join('');const homes=(world.map.buildings||[]).filter(b=>b.type==='home');const homeOpts=homes.map(b=>`<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');modal('建立家庭',`<div class="sc-form-row"><label>家庭名称</label><input id="scFamilyName" placeholder="例如：云朵公寓"></div><div class="sc-form-row"><label>选择共同住所</label><select id="scFamilyHome" class="sc-input">${homeOpts||'<option value="home">居民公寓</option>'}</select></div><div class="sc-form-row"><label>选择家庭成员</label><div class="sc-choice-grid">${opts}</div></div><p class="sc-note">创建后，所有家庭成员会共享这处住所，并在居家时间回到这里。</p><button class="sc-btn sc-primary sc-full" data-sc-action="save-family">建立家庭并安排共同居住</button>`)}
@@ -601,8 +833,8 @@
   function saveBuilding(){const name=$('scBuildingName')?.value.trim();if(!name){notify('请填写建筑名称。');return}const type=$('scBuildingType').value;const places=[[15,20],[48,17],[80,22],[20,69],[52,70],[83,69],[33,42],[67,43]];const used=new Set(world.map.buildings.filter(b=>(b.area||'中心城区')===(world.map.activeArea||'中心城区')).map(b=>b.x+','+b.y));const pos=places.find(p=>!used.has(p[0]+','+p[1]))||[10+Math.random()*80,15+Math.random()*70];const icons={home:'🏠',cafe:'☕',shop:'🛍️',park:'🌳',school:'🏫',studio:'🎨'};world.map.buildings.push({id:uid('building'),name,icon:icons[type]||'🏡',type,x:pos[0],y:pos[1],area:world.map.activeArea||'中心城区',desc:$('scBuildingDesc').value.trim(),open:'全天'});log('新建筑落成',name+' 已加入 '+(world.map.activeArea||'中心城区')+'。','city');closeModal();renderMap();persist();notify('新建筑已添加。')}
   function editResidentModal(id){
     const r=currentResident(id);if(!r)return;
-    const expressions=[['neutral','自然','😐'],['happy','开心','😊'],['sad','难过','🥺'],['angry','生气','😠'],['surprised','惊讶','😲'],['sleepy','困倦','😴']];
-    const poses=[['idle','站立','🧍'],['walk','行走','🚶'],['wave','挥手','👋'],['sit','坐下','🪑'],['read','阅读','📖'],['dance','跳舞','💃'],['sleep','睡觉','💤'],['work','工作','🧰'],['eat','用餐','🍽️'],['talk','聊天','💬']];
+    const expressions=[['neutral','自然','😐'],['happy','开心','😊'],['laugh','大笑','😆'],['shy','害羞','☺️'],['wink','眨眼','😉'],['sad','难过','🥺'],['cry','哭泣','😭'],['angry','生气','😠'],['surprised','惊讶','😲'],['sleepy','困倦','😴']];
+    const poses=[['idle','站立','🧍'],['walk','行走','🚶'],['run','小跑','🏃'],['wave','挥手','👋'],['hug','拥抱','🫂'],['sit','坐下','🪑'],['read','阅读','📖'],['dance','跳舞','💃'],['sleep','睡觉','💤'],['work','工作','🧰'],['eat','用餐','🍽️'],['talk','聊天','💬'],['shop','购物','🛍️']];
     modal('编辑居民资料',`<div class="sc-outfit-preview sc-profile-preview" id="scEditPreview">${sprite(r)}</div><div class="sc-form-row"><label>姓名</label><input id="scEditName" value="${esc(r.name)}"></div><div class="sc-form-row"><label>固定年龄</label><input id="scEditAge" type="number" min="1" max="100" value="${r.age}"></div><div class="sc-form-row"><label>职业 / 身份</label><input id="scEditRole" value="${esc(r.role||'')}"></div><div class="sc-form-row"><label>性格与兴趣</label><textarea id="scEditPersonality">${esc(r.personality||'')}</textarea></div><section class="sc-expression-panel"><div class="sc-profile-pick-head"><b>人物表情</b><small>点击即时预览并保存</small></div><div class="sc-profile-expression-grid">${expressions.map(([v,n,ico])=>`<button class="sc-profile-option ${r.expression===v?'active':''}" data-sc-expression="${v}" data-sc-id="${esc(id)}"><span>${ico}</span><b>${n}</b></button>`).join('')}</div><div class="sc-profile-pick-head"><b>人物动作</b><small>点击即时预览并保存</small></div><div class="sc-profile-pose-grid">${poses.map(([v,n,ico])=>`<button class="sc-profile-option ${r.pose===v?'active':''}" data-sc-pose="${v}" data-sc-id="${esc(id)}"><span>${ico}</span><b>${n}</b></button>`).join('')}</div></section><button class="sc-btn sc-primary sc-full" data-sc-action="save-resident" data-id="${esc(id)}">保存资料</button>`);
   }
   function saveResident(id){const r=currentResident(id);if(!r)return;r.name=$('scEditName').value.trim()||r.name;r.age=clamp($('scEditAge').value,1,100)||r.age;r.role=$('scEditRole').value.trim();r.personality=$('scEditPersonality').value.trim();log('居民资料更新',r.name+' 的资料已由用户更新。','resident',r.id);closeModal();renderResidents();renderMap();persist()}
@@ -637,7 +869,8 @@
       const resident=e.target.closest?.('[data-sc-resident]');if(resident){renderProfile(resident.dataset.scResident);return}
       const furniture=e.target.closest?.('[data-sc-furniture]');if(furniture){const name=furniture.dataset.scFurniture;if(['服装架','试衣镜'].includes(name)){closetModal(controlResidentId||world.residents[0]?.id);notify('打开衣柜，可以为当前角色试穿搭配。')}else useFurniture(name,furniture);return}
       const cloth=e.target.closest?.('[data-sc-cloth]');if(cloth){const r=currentResident($('scModalBody').dataset.closetResident);if(r){const slot=cloth.dataset.slot;if(slot==='sleep'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit.sleepwear=cloth.dataset.scCloth;if(r.outfit.isSleeping)r.outfit.sleepwear=cloth.dataset.scCloth}else{r.outfit[slot]=cloth.dataset.scCloth;if(slot==='dress'&&cloth.dataset.scCloth)r.outfit.top='';if(['top','bottom'].includes(slot))r.outfit.dress='';if(slot==='hair'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit.hair=cloth.dataset.scCloth;}if(r.wardrobe.auto!==false)r.wardrobe.dayOutfit=clone(r.outfit)}closetModal(r.id,closetSlot);persist()}return}
-      const color=e.target.closest?.('[data-sc-color]');if(color){const r=currentResident($('scModalBody').dataset.closetResident);if(r){const key={hair:'hairColor',top:'topColor',bottom:'bottomColor',dress:'topColor',outer:'outerColor',shoes:'shoeColor',accessory:'accessoryColor',sleep:'topColor'}[color.dataset.slot];if(color.dataset.slot==='sleep'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit[key]=color.dataset.scColor;if(r.outfit.isSleeping)r.outfit[key]=color.dataset.scColor}else{r.outfit[key]=color.dataset.scColor;if(color.dataset.slot==='hair'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit[key]=color.dataset.scColor;}if(r.wardrobe.auto!==false)r.wardrobe.dayOutfit=clone(r.outfit)}closetModal(r.id,closetSlot);persist()}return}
+      const faceFeature=e.target.closest?.('[data-sc-face-feature]');if(faceFeature){const r=currentResident($('scModalBody').dataset.closetResident);if(r){r.outfit[faceFeature.dataset.scFaceFeature]=faceFeature.dataset.scFaceValue;if(r.wardrobe?.auto!==false)r.wardrobe.dayOutfit=clone(r.outfit);if(r.wardrobe?.sleepOutfit){['faceShape','eyeShape','browShape','bodyShape'].forEach(k=>r.wardrobe.sleepOutfit[k]=r.outfit[k])}closetModal(r.id,'face');persist();renderMap();renderResidents();if(!$('scInterior').hidden)renderInteriorResidents()}return}
+      const color=e.target.closest?.('[data-sc-color]');if(color){const r=currentResident($('scModalBody').dataset.closetResident);if(r){const key={hair:'hairColor',top:'topColor',bottom:'bottomColor',dress:'topColor',outer:'outerColor',shoes:'shoeColor',accessory:'accessoryColor',sleep:'topColor',face:'skin'}[color.dataset.slot];if(color.dataset.slot==='sleep'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit[key]=color.dataset.scColor;if(r.outfit.isSleeping)r.outfit[key]=color.dataset.scColor}else{r.outfit[key]=color.dataset.scColor;if(color.dataset.slot==='hair'||color.dataset.slot==='face'){r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||clone(r.outfit);r.wardrobe.sleepOutfit[key]=color.dataset.scColor;}if(r.wardrobe.auto!==false)r.wardrobe.dayOutfit=clone(r.outfit)}closetModal(r.id,closetSlot);persist()}return}
       const slot=e.target.closest?.('[data-sc-slot]');if(slot){const id=$('scModalBody').dataset.closetResident;closetModal(id,slot.dataset.scSlot);return}
       const preset=e.target.closest?.('[data-sc-outfit-preset]');if(preset){const r=currentResident($('scModalBody').dataset.closetResident);const p=r?.wardrobe?.presets?.[Number(preset.dataset.scOutfitPreset)];if(r&&p){r.outfit=clone(p.outfit);if(r.wardrobe.auto!==false)r.wardrobe.dayOutfit=clone(r.outfit);closetModal(r.id,closetSlot);persist()}return}
       const addtab=e.target.closest?.('[data-sc-add-tab]');if(addtab){const tab=addtab.dataset.scAddTab;$('scAddResidentForm').hidden=tab!=='npc';$('scAddCharList').hidden=tab!=='char';$('scAddPersonaList').hidden=tab!=='persona';document.querySelectorAll('[data-sc-add-tab]').forEach(x=>x.classList.toggle('active',x===addtab));return}
