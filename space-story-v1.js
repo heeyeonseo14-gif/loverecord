@@ -184,7 +184,7 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
     if(!$('lrSpaceStoryHub')){
       const head=dir.querySelector('.lr-space-v2-head');
       const hub=document.createElement('section');hub.id='lrSpaceStoryHub';hub.className='lr-story-hub';
-      hub.innerHTML=`<div class="lr-story-hub-head"><div><div class="lr-story-pixel-label">PIXEL STORY ENGINE · SPACE</div><h2>剧情工作台</h2><p>把 CHAR、你的自设与世界书带进故事，开启一段可以长期保存的长篇剧情。</p></div><div class="lr-story-hub-mark">▣</div></div><div class="lr-story-hub-actions"><button class="lr-story-pixel-btn primary" type="button" data-story-action="new">＋ 创建新故事</button><button class="lr-story-pixel-btn" type="button" data-story-action="library">我的故事档案</button><button class="lr-story-pixel-btn" type="button" data-story-action="custom-css">自定义 CSS</button></div><div id="lrSpaceStoryRecent" class="lr-story-hub-recent"><div class="lr-story-muted">正在读取故事档案…</div></div>`;
+      hub.innerHTML=`<div class="lr-story-hub-head"><div><div class="lr-story-pixel-label">PIXEL STORY ENGINE · SPACE</div><h2>剧情工作台</h2><p>把 CHAR、你的自设与世界书带进故事，开启一段可以长期保存的长篇剧情。</p></div><div class="lr-story-hub-mark">▣</div></div><div class="lr-story-hub-actions"><button class="lr-story-pixel-btn primary" type="button" data-story-action="new">＋ 创建新故事</button><button class="lr-story-pixel-btn" type="button" data-story-action="library">我的故事档案</button></div><div id="lrSpaceStoryRecent" class="lr-story-hub-recent"><div class="lr-story-muted">正在读取故事档案…</div></div>`;
       if(head)head.insertAdjacentElement('afterend',hub);else dir.prepend(hub);
     }
   }
@@ -213,7 +213,30 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
             <button type="button" class="lr-story-theme-card" data-offline-theme-select="rain" aria-pressed="false"><span class="lr-story-theme-preview rain"><i></i><b></b><em></em></span><strong>雨幕玻璃</strong><small>RAIN GLASS</small><span class="lr-story-theme-check">✓</span></button>
             <button type="button" class="lr-story-theme-card" data-offline-theme-select="cream" aria-pressed="false"><span class="lr-story-theme-preview cream"><i></i><b></b><em></em></span><strong>奶油黑白</strong><small>CREAM MONO</small><span class="lr-story-theme-check">✓</span></button>
             <button type="button" class="lr-story-theme-card" data-offline-theme-select="yuzu" aria-pressed="false"><span class="lr-story-theme-preview yuzu"><i></i><b></b><em></em></span><strong>柚子汽水</strong><small>YUZU SODA</small><span class="lr-story-theme-check">✓</span></button>
-          </div><div class="lr-story-theme-controls"><label class="lr-story-theme-motion"><input id="lrStoryThemeMotion" type="checkbox" checked><span><b>动态效果</b><small>启用主题专属的轻量动画</small></span></label><label class="lr-story-theme-rain-control" id="lrStoryRainControl"><span>雨势强度</span><select id="lrStoryRainIntensity" class="lr-story-select"><option value="light">小雨 · 轻柔细密</option><option value="medium" selected>中雨 · 雨丝与水滴</option><option value="heavy">大雨 · 密集雨幕</option></select></label></div><div class="lr-story-theme-status" id="lrStoryThemeStatus" role="status" aria-live="polite">当前使用：原始像素</div><p class="lr-story-theme-note">动画只在故事阅读页运行；离开故事、切换页面或关闭动态效果时会暂停。支持系统减少动态效果设置。</p></details>
+          </div><div class="lr-story-theme-controls"><label class="lr-story-theme-motion"><input id="lrStoryThemeMotion" type="checkbox" checked><span><b>动态效果</b><small>启用主题专属的轻量动画</small></span></label><label class="lr-story-theme-rain-control" id="lrStoryRainControl"><span>雨势强度</span><select id="lrStoryRainIntensity" class="lr-story-select"><option value="light">小雨 · 轻柔细密</option><option value="medium" selected>中雨 · 雨丝与水滴</option><option value="heavy">大雨 · 密集雨幕</option></select></label></div><div class="lr-story-theme-status" id="lrStoryThemeStatus" role="status" aria-live="polite">当前使用：原始像素</div><p class="lr-story-theme-note">动画只在故事阅读页运行；离开故事、切换页面或关闭动态效果时会暂停。支持系统减少动态效果设置。</p>
+          <section class="lr-story-custom-theme-builder" id="lrStoryCustomThemeBuilder">
+            <div class="lr-story-custom-theme-head"><div><h3>自定义 CSS 主题</h3><p>在这里编写自己的线下模式主题，保存后会成为可重复选择的个人预设，最多保存 30 套。主题保存在当前浏览器，可导出 CSS 与他人分享。CSS 仅作用于 SPACE 线下故事阅读区域，不影响其他 APP、SPACE CITY 地图或主页。</p></div><span class="lr-story-custom-theme-badge">MY THEMES</span></div>
+            <div class="lr-story-custom-theme-list-wrap"><div class="lr-story-custom-theme-list-title">我的主题预设</div><div id="lrStoryCustomThemeList" class="lr-story-custom-theme-list"><div class="lr-story-custom-theme-empty">还没有自定义主题，下面可以创建第一套。</div></div></div>
+            <div class="lr-story-custom-theme-editor">
+              <div class="lr-story-custom-theme-fields">
+                <label class="lr-story-field"><span class="lr-story-label">编辑已保存主题</span><select id="lrSpaceCustomThemeSelect" class="lr-story-select"><option value="">选择已保存主题进行编辑…</option></select></label>
+                <label class="lr-story-field"><span class="lr-story-label">主题名称</span><input id="lrSpaceCustomThemeName" class="lr-story-input" maxlength="32" placeholder="例如：雾蓝玻璃日记"></label>
+                <label class="lr-story-field"><span class="lr-story-label">基础预设</span><select id="lrSpaceCustomThemeBase" class="lr-story-select"><option value="pixel">原始像素</option><option value="rain">雨幕玻璃</option><option value="cream">奶油黑白</option><option value="yuzu">柚子汽水</option></select></label>
+              </div>
+              <label class="lr-story-field"><span class="lr-story-label">编辑 CSS</span><textarea id="lrSpaceCustomCssInput" class="lr-story-textarea lr-story-custom-css-input" maxlength="24000" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="这里已经准备了可直接修改的示例 CSS……"></textarea></label>
+              <div class="lr-story-custom-theme-toolbar">
+                <button class="lr-story-pixel-btn primary" type="button" data-story-action="save-custom-theme">保存为新主题并应用</button>
+                <button class="lr-story-pixel-btn" type="button" data-story-action="update-custom-theme">更新所选主题</button>
+                <button class="lr-story-pixel-btn" type="button" data-story-action="new-custom-theme">新建</button>
+                <button class="lr-story-pixel-btn" type="button" data-story-action="delete-custom-theme">删除所选</button>
+                <button class="lr-story-pixel-btn" type="button" data-story-action="export-css">导出 CSS</button>
+                <button class="lr-story-pixel-btn" type="button" data-story-action="import-css">导入 CSS</button>
+                <input id="lrSpaceCssFile" type="file" accept=".css,text/css" hidden>
+              </div>
+              <div id="lrSpaceCustomCssStatus" class="lr-story-status" role="status" aria-live="polite">示例 CSS 已准备好。修改后点击「保存为新主题并应用」。</div>
+              <details class="lr-story-custom-theme-help"><summary>CSS 编写说明与示例说明</summary><ul><li>只需写选择器和样式声明，不需要写 HTML 或 JavaScript。</li><li>可使用 #lrSpaceStoryWorkspace 定义整页变量，或使用 .lr-story-msg、.lr-story-composer 等类名微调对应区域。新建后点击「保存为新主题并应用」，它会出现在上方「我的主题预设」中。</li><li>所有选择器会自动限定在线下故事工作区内；不允许外部 URL、@import、脚本或全局页面选择器。主题最多保存 30 套，默认保存在当前浏览器；换设备可导出 CSS 再导入。</li><li>需要覆盖内置主题的视觉属性时，可以在对应声明后添加 <code>!important</code>。</li></ul></details>
+            </div>
+          </section></details>
           <details class="lr-story-settings-group" open><summary>故事管理</summary><div class="lr-story-settings-actions"><button class="lr-story-pixel-btn" data-story-action="library">‹ 返回故事档案</button><button class="lr-story-pixel-btn" data-story-action="edit-active">编辑故事资料</button></div><label class="lr-story-field"><span class="lr-story-label">当前剧情分支</span><select id="lrStoryBranchSelect" class="lr-story-select" aria-label="当前分支"></select></label></details>
           <details class="lr-story-settings-group"><summary>导出与备份</summary><div class="lr-story-settings-actions"><button class="lr-story-pixel-btn" data-story-action="export">导出 MD</button><button class="lr-story-pixel-btn" data-story-action="export-txt">导出 TXT</button><button class="lr-story-pixel-btn" data-story-action="export-json">完整备份</button><button class="lr-story-pixel-btn" data-story-action="export-pdf">导出 PDF</button></div></details>
           <details class="lr-story-settings-group"><summary>角色与主页资料</summary><div id="lrStoryCastDetails" class="lr-story-settings-content"><div class="lr-story-cast" id="lrStoryCast"></div><div class="lr-story-toolbar"><button class="lr-story-pixel-btn" data-story-action="add-contact">＋ 添加 CHAR</button><button class="lr-story-pixel-btn" data-story-action="manual-npc">＋ 手动 NPC</button><button class="lr-story-pixel-btn" data-story-action="ai-npc">✦ AI 创建 NPC</button></div><div id="lrStorySourceChanges"></div><div class="lr-story-muted" id="lrStoryContextMeta"></div></div></details>
@@ -233,20 +256,23 @@ body:has(#space.active) #systemAppbarAction{display:none!important}
         <div id="lrStoryEditEntryModal" class="lr-story-profile-modal"><section class="lr-story-profile-sheet"><h3>编辑剧情内容</h3><textarea id="lrStoryEditEntryText" class="lr-story-textarea" style="min-height:220px"></textarea><div class="lr-story-toolbar"><button class="lr-story-pixel-btn" data-story-action="close-modal">取消</button><button class="lr-story-pixel-btn primary" data-story-action="save-entry">保存修改</button></div></section></div></div>`;
       root.appendChild(work);
     }
-    if(!$('lrSpaceStoryCssEditor')){
-      const cssPage=document.createElement('section');cssPage.id='lrSpaceStoryCssEditor';cssPage.className='lr-space-v2-screen lr-story-screen';cssPage.hidden=true;cssPage.innerHTML=`<header class="lr-story-top"><button class="lr-story-pixel-btn" data-story-action="home">‹ 返回 SPACE</button><h1>自定义 CSS</h1><span></span></header><section class="lr-story-panel"><h2>SPACE CUSTOM CSS</h2><p class="lr-story-muted">这是 SPACE 全局 CSS：会作用于 SPACE 的故事工作台、档案、正文和原有像素界面，不影响其他 LOVE RECORD APP，也不会执行 JavaScript。内置示例可以直接修改；支持常规 CSS、@media、@supports 与动画关键帧，外部资源载入会被阻止。</p><label class="lr-story-option"><input id="lrSpaceCssEnabled" type="checkbox" checked><span><b>启用自定义 CSS</b><br><small>关闭后仍会保留代码，再次开启即可恢复。</small></span></label><div class="lr-story-field"><label for="lrSpaceCustomCssInput">CSS 代码</label><textarea id="lrSpaceCustomCssInput" class="lr-story-textarea" spellcheck="false" autocapitalize="off" autocomplete="off" style="min-height:360px;font:12px/1.65 ui-monospace,monospace" placeholder="编辑下方已提供的全局 CSS 示例……"></textarea></div><div class="lr-story-toolbar"><button class="lr-story-pixel-btn primary" data-story-action="save-css">保存并应用</button><button class="lr-story-pixel-btn" data-story-action="export-css">导出 CSS</button><button class="lr-story-pixel-btn" data-story-action="import-css">导入 CSS</button><button class="lr-story-pixel-btn" data-story-action="reset-css">恢复默认</button><input id="lrSpaceCssFile" type="file" accept=".css,text/css" hidden></div><div id="lrSpaceCustomCssStatus" class="lr-story-status" role="status">CSS 尚未修改。</div></section></section>`;root.appendChild(cssPage);
-    }
   }
   const OFFLINE_THEME_KEY='love-record-offline-theme-v1';
   const OFFLINE_THEME_MOTION_KEY='love-record-offline-theme-motion-v1';
   const OFFLINE_THEME_RAIN_KEY='love-record-offline-theme-rain-v1';
+  const OFFLINE_CUSTOM_THEMES_KEY='love-record-offline-custom-themes-v1';
   const OFFLINE_THEME_NAMES={pixel:'原始像素',rain:'雨幕玻璃',cream:'奶油黑白',yuzu:'柚子汽水'};
   let offlineThemeRaf=0,offlineThemeLastFrame=0,offlineThemeParticles=[],offlineThemeDrops=[],offlineThemeClouds=[],offlineThemeCanvasSize={w:0,h:0,dpr:1},offlineThemeLifecycleBound=false;
-  function readOfflineThemePrefs(){let theme='pixel',motion=true,rain='medium';try{const t=localStorage.getItem(OFFLINE_THEME_KEY);if(Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,t))theme=t;motion=localStorage.getItem(OFFLINE_THEME_MOTION_KEY)!=='false';rain=['light','medium','heavy'].includes(localStorage.getItem(OFFLINE_THEME_RAIN_KEY))?localStorage.getItem(OFFLINE_THEME_RAIN_KEY):'medium'}catch(e){}return {theme,motion,rain}}
+  function getOfflineCustomThemes(){try{const list=JSON.parse(localStorage.getItem(OFFLINE_CUSTOM_THEMES_KEY)||'[]');return Array.isArray(list)?list.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.css==='string'&&Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,x.baseTheme)):[]}catch(e){return []}}
+  function saveOfflineCustomThemes(list){if(!Array.isArray(list)||list.length>30)throw new Error('最多保存 30 套自定义主题。');localStorage.setItem(OFFLINE_CUSTOM_THEMES_KEY,JSON.stringify(list))}
+  function findOfflineCustomTheme(id){return getOfflineCustomThemes().find(x=>x.id===id)||null}
+  function readOfflineThemePrefs(){let theme='pixel',selectedTheme='pixel',customTheme=null,motion=true,rain='medium';try{const t=localStorage.getItem(OFFLINE_THEME_KEY);if(Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,t)){theme=t;selectedTheme=t}else if(typeof t==='string'&&t.startsWith('custom:')){const id=t.slice(7),found=findOfflineCustomTheme(id);if(found){customTheme=found;theme=found.baseTheme;selectedTheme=t}}motion=localStorage.getItem(OFFLINE_THEME_MOTION_KEY)!=='false';rain=['light','medium','heavy'].includes(localStorage.getItem(OFFLINE_THEME_RAIN_KEY))?localStorage.getItem(OFFLINE_THEME_RAIN_KEY):'medium'}catch(e){}return {theme,selectedTheme,customTheme,customThemeId:customTheme?.id||'',isCustom:!!customTheme,motion,rain}}
   function writeOfflineThemePref(key,value){try{localStorage.setItem(key,String(value))}catch(e){console.warn('[SPACE offline theme] preference could not be saved',e)}}
-  function renderOfflineThemeControls(){const prefs=readOfflineThemePrefs();document.querySelectorAll('[data-offline-theme-select]').forEach(btn=>{const selected=btn.dataset.offlineThemeSelect===prefs.theme;btn.classList.toggle('is-selected',selected);btn.setAttribute('aria-pressed',String(selected))});const motion=$('lrStoryThemeMotion');if(motion)motion.checked=prefs.motion;const rain=$('lrStoryRainIntensity');if(rain)rain.value=prefs.rain;const rainControl=$('lrStoryRainControl');if(rainControl)rainControl.hidden=prefs.theme!=='rain';const status=$('lrStoryThemeStatus');if(status){const rainName={light:'小雨',medium:'中雨',heavy:'大雨'}[prefs.rain];status.textContent=`当前使用：${OFFLINE_THEME_NAMES[prefs.theme]} · ${prefs.motion?'动态效果已开启':'动态效果已关闭'}${prefs.theme==='rain'?' · '+rainName:''}`}}
-  function applyOfflineTheme(){const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace'),reader=work?.querySelector('.lr-story-reader'),space=$('space'),app=space?.closest('.app');const active=!!work&&!work.hidden;if(work){work.dataset.offlineTheme=prefs.theme;work.classList.toggle('lr-offline-motion-off',!prefs.motion)}if(reader)reader.dataset.offlineTheme=prefs.theme;if(space){if(active)space.dataset.offlineTheme=prefs.theme;else delete space.dataset.offlineTheme}if(document.body){if(active)document.body.dataset.lrOfflineTheme=prefs.theme;else delete document.body.dataset.lrOfflineTheme}if(app){if(active)app.dataset.lrOfflineTheme=prefs.theme;else delete app.dataset.lrOfflineTheme}const canvas=$('lrStoryThemeCanvas');if(canvas){canvas.style.opacity=({pixel:'.92',rain:'1',cream:'.48',yuzu:'.88'})[prefs.theme]||'.85'}renderOfflineThemeControls();if(active&&prefs.motion&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)startOfflineThemeAnimation();else stopOfflineThemeAnimation()}
+  function renderOfflineCustomThemeList(prefs){const box=$('lrStoryCustomThemeList');if(!box)return;const list=getOfflineCustomThemes();if(!list.length){box.innerHTML='<div class="lr-story-custom-theme-empty">还没有自定义主题。编辑下面的示例 CSS，即可保存为自己的主题预设。</div>'}else{box.innerHTML=list.map(t=>`<button type="button" class="lr-story-custom-theme-chip ${prefs.customThemeId===t.id?'is-selected':''}" data-offline-custom-theme-select="${esc(t.id)}" aria-pressed="${prefs.customThemeId===t.id?'true':'false'}"><span class="lr-story-custom-theme-swatch" data-base="${esc(t.baseTheme)}"></span><span class="lr-story-custom-theme-chip-copy"><strong>${esc(t.name)}</strong><small>${esc(OFFLINE_THEME_NAMES[t.baseTheme]||'原始像素')} · 自定义主题</small></span><span class="lr-story-custom-theme-chip-action">${prefs.customThemeId===t.id?'使用中':'应用'}</span></button>`).join('')}}
+  function renderOfflineThemeControls(){const prefs=readOfflineThemePrefs();document.querySelectorAll('[data-offline-theme-select]').forEach(btn=>{const selected=!prefs.isCustom&&btn.dataset.offlineThemeSelect===prefs.theme;btn.classList.toggle('is-selected',selected);btn.setAttribute('aria-pressed',String(selected))});const motion=$('lrStoryThemeMotion');if(motion)motion.checked=prefs.motion;const rain=$('lrStoryRainIntensity');if(rain)rain.value=prefs.rain;const rainControl=$('lrStoryRainControl');if(rainControl)rainControl.hidden=prefs.theme!=='rain';const status=$('lrStoryThemeStatus');if(status){const rainName={light:'小雨',medium:'中雨',heavy:'大雨'}[prefs.rain],name=prefs.customTheme?.name||OFFLINE_THEME_NAMES[prefs.theme];status.textContent=`当前使用：${name} · ${prefs.motion?'动态效果已开启':'动态效果已关闭'}${prefs.theme==='rain'?' · '+rainName:''}`};renderOfflineCustomThemeList(prefs);const select=$('lrSpaceCustomThemeSelect');if(select){const current=select.value;select.innerHTML='<option value="">选择已保存主题进行编辑…</option>'+getOfflineCustomThemes().map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');if(getOfflineCustomThemes().some(t=>t.id===current))select.value=current}}
+  function applyOfflineTheme(){const prefs=readOfflineThemePrefs(),work=$('lrSpaceStoryWorkspace'),reader=work?.querySelector('.lr-story-reader'),space=$('space'),app=space?.closest('.app');const active=!!work&&!work.hidden;if(work){work.dataset.offlineTheme=prefs.theme;work.dataset.offlineCustomTheme=prefs.customThemeId||'';work.classList.toggle('lr-offline-motion-off',!prefs.motion)}if(reader)reader.dataset.offlineTheme=prefs.theme;if(space){if(active)space.dataset.offlineTheme=prefs.theme;else delete space.dataset.offlineTheme}if(document.body){if(active)document.body.dataset.lrOfflineTheme=prefs.theme;else delete document.body.dataset.lrOfflineTheme}if(app){if(active)app.dataset.lrOfflineTheme=prefs.theme;else delete app.dataset.lrOfflineTheme}applyCustomCss(prefs.customTheme?.css||'',!!prefs.customTheme&&active);const canvas=$('lrStoryThemeCanvas');if(canvas){canvas.style.opacity=({pixel:'.92',rain:'1',cream:'.48',yuzu:'.88'})[prefs.theme]||'.85'}renderOfflineThemeControls();if(active&&prefs.motion&&!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)startOfflineThemeAnimation();else stopOfflineThemeAnimation()}
   function setOfflineTheme(theme){if(!Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,theme))return;writeOfflineThemePref(OFFLINE_THEME_KEY,theme);applyOfflineTheme();const status=$('lrStoryThemeStatus');if(status)status.textContent=`已切换并保存：${OFFLINE_THEME_NAMES[theme]}`}
+  function setOfflineCustomTheme(id){const item=findOfflineCustomTheme(id);if(!item)return;writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+id);applyOfflineTheme();const select=$('lrSpaceCustomThemeSelect');if(select)select.value=id;loadCustomThemeIntoEditor(id);const status=$('lrStoryThemeStatus');if(status)status.textContent=`已应用并保存：${item.name}`}
   function makeThemeParticles(theme,w,h){
     const prefs=readOfflineThemePrefs();offlineThemeDrops=[];offlineThemeClouds=[];
     if(theme==='rain'){
@@ -606,95 +632,108 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
     window.scrollTo({top:0,behavior:'auto'});
     if(id==='lrSpaceStoryWorkspace'){applyOfflineTheme()}else{stopOfflineThemeAnimation();const space=$('space');if(space)delete space.dataset.offlineTheme;}
   }
-  const SPACE_CSS_KEY='love-record-space-custom-css-v1';
-  const SPACE_CSS_STARTER=`/* SPACE 全局 CSS 示例模板
-   只影响 LOVE RECORD 的 SPACE，不影响其他 APP。
-   修改下面的颜色、圆角、间距和字体，就能调整 SPACE 的整体外观。
+  const LEGACY_SPACE_CSS_KEY='love-record-space-custom-css-v1';
+  const SPACE_CSS_STARTER=`/* LOVE RECORD · OFFLINE CUSTOM THEME
+   这份 CSS 只会作用于 SPACE 的线下故事阅读器。
+   可修改颜色、透明度、边框、圆角、阴影与字体。
+   需要覆盖内置主题的属性时，使用 !important。
 */
-:root {
-  --lr-space-bg: #f6f0e4;
-  --lr-space-panel: #fffaf0;
-  --lr-space-card: #fffdf8;
-  --lr-space-text: #594d5b;
-  --lr-space-muted: #99899a;
-  --lr-space-accent: #a985ae;
-  --lr-space-border: #826a83;
-  --lr-space-shadow: #d8c8d5;
+#lrSpaceStoryWorkspace {
+  --lr-theme-page: #eaf3f8 !important;
+  --lr-theme-surface: rgba(255,255,255,.72) !important;
+  --lr-theme-card: rgba(255,255,255,.56) !important;
+  --lr-theme-user: rgba(207,231,245,.66) !important;
+  --lr-theme-composer: rgba(244,250,254,.78) !important;
+  --lr-theme-input: rgba(255,255,255,.82) !important;
+  --lr-theme-text: #314b60 !important;
+  --lr-theme-muted: #7893a8 !important;
+  --lr-theme-heading: #385d76 !important;
+  --lr-theme-border: rgba(255,255,255,.88) !important;
+  --lr-theme-accent: #8bb8d1 !important;
+  --lr-theme-accent-strong: #477c9f !important;
+  --lr-theme-button: rgba(255,255,255,.78) !important;
+  --lr-theme-button-text: #426c86 !important;
+  --lr-theme-shadow: rgba(71,118,149,.16) !important;
+  --lr-theme-radius: 20px !important;
+  --lr-theme-soft: rgba(224,240,249,.72) !important;
 }
 
-/* SPACE 页面整体 */
-.lr-space-v2-screen,
-.lr-story-screen {
-  background: var(--lr-space-bg);
-  color: var(--lr-space-text);
+/* 用户输入卡片 */
+.lr-story-msg.user {
+  background: rgba(205,231,246,.60) !important;
+  border: 1px solid rgba(178,214,235,.90) !important;
+  border-radius: 22px !important;
 }
 
-/* 故事工作台、档案卡片与资料面板 */
-.lr-story-hub,
-.lr-story-panel,
-.lr-story-card,
-.lr-space-v2-panel {
-  background: var(--lr-space-panel);
-  border-color: var(--lr-space-border);
-  color: var(--lr-space-text);
+/* AI 剧情正文卡片与折叠标题 */
+.lr-story-msg.assistant {
+  background: rgba(255,255,255,.58) !important;
+  border: 1px solid rgba(255,255,255,.92) !important;
+  border-radius: 22px !important;
+  backdrop-filter: blur(20px) saturate(1.35) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.35) !important;
 }
-
-/* SPACE 按钮 */
-.lr-story-pixel-btn,
-.lr-space-primary,
-.lr-space-secondary {
-  border-radius: 4px;
-  border-color: var(--lr-space-border);
-  box-shadow: 3px 3px 0 var(--lr-space-shadow);
+.lr-story-msg-fold > summary {
+  background: rgba(255,255,255,.48) !important;
+  border-radius: 14px !important;
 }
-
-.lr-story-pixel-btn.primary,
-.lr-space-primary {
-  background: var(--lr-space-accent);
-}
-
-/* 剧情正文卡片 */
-.lr-story-msg {
-  background: var(--lr-space-card);
-  border-color: var(--lr-space-border);
-  border-radius: 4px;
-}
-
 .lr-story-msg-body {
-  color: var(--lr-space-text);
-  font-size: 16px;
-  line-height: 2;
+  color: var(--lr-theme-text) !important;
+  line-height: 2 !important;
+  letter-spacing: .02em;
 }
 
-/* 表单控件 */
-.lr-story-input,
-.lr-story-textarea,
-.lr-story-select,
+/* 底部回复栏与输入框 */
+.lr-story-composer {
+  background: rgba(244,250,254,.78) !important;
+  border: 1px solid rgba(255,255,255,.9) !important;
+  border-radius: 22px !important;
+  backdrop-filter: blur(24px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.4) !important;
+}
 .lr-story-composer textarea {
-  border-radius: 4px;
-  background: var(--lr-space-card);
-  color: var(--lr-space-text);
+  background: rgba(255,255,255,.82) !important;
+  border-radius: 15px !important;
+}
+.lr-story-composer #lrStoryGenerate {
+  background: #477c9f !important;
+  border-radius: 14px !important;
+  color: #fff !important;
 }
 
-/* 手机端正文间距 */
-@media (max-width: 600px) {
-  .lr-story-msg { padding: 12px; }
-  .lr-story-msg-body { font-size: 15px; line-height: 1.95; }
-}`;
+/* 设置面板也会使用这套自定义主题 */
+.lr-story-settings-sheet,
+.lr-story-settings-group {
+  border-radius: 20px !important;
+}
+`;
   function scopeCustomCss(input){
     let css=String(input||'').replace(/\/\*[\s\S]*?\*\//g,'').trim();
     if(!css)return '';
-    if(/@import|@namespace|@charset|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding|\\x3c\s*\/\s*style/i.test(css))throw new Error('不允许导入外部资源、执行表达式或使用脚本相关内容。');
+    if(css.length>24000)throw new Error('CSS 最多 24,000 个字符。');
+    if(/@import|@namespace|@charset|@font-face|url\s*\(|expression\s*\(|javascript\s*:|behavior\s*:|-moz-binding|@document|@page/i.test(css))throw new Error('不允许导入外部资源、字体文件、执行表达式或使用全局页面规则。');
+    const scope='#space.lr-space-v2 #lrSpaceStoryWorkspace';
+    const keyframeMap=new Map();
+    const hash=Array.from(css).reduce((h,ch)=>((h*33)^ch.charCodeAt(0))>>>0,5381).toString(36);
     function splitSelectors(value){const out=[];let buf='',depth=0,quote='';for(let i=0;i<value.length;i++){const c=value[i];if(quote){buf+=c;if(c===quote&&value[i-1]!=='\\')quote='';continue}if(c==='"'||c==="'"){quote=c;buf+=c;continue}if(c==='('||c==='[')depth++;if(c===')'||c===']')depth=Math.max(0,depth-1);if(c===','&&depth===0){out.push(buf.trim());buf='';}else buf+=c}if(buf.trim())out.push(buf.trim());return out}
-    function parseBlock(source){let out='',i=0;while(i<source.length){while(i<source.length&&/\s/.test(source[i]))i++;if(i>=source.length)break;let open=-1,quote='',paren=0;for(let j=i;j<source.length;j++){const c=source[j];if(quote){if(c===quote&&source[j-1]!=='\\')quote='';continue}if(c==='"'||c==="'"){quote=c;continue}if(c==='('||c==='[')paren++;if(c===')'||c===']')paren=Math.max(0,paren-1);if(c==='{'&&paren===0){open=j;break}if(c===';'&&paren===0){const at=source.slice(i,j).trim();if(at)throw new Error('当前 CSS 编辑器不支持独立的 @ 语句。');i=j+1;break}}if(open<0){if(i<source.length&&source.slice(i).trim())throw new Error('CSS 语法不完整：缺少规则块。');break}const header=source.slice(i,open).trim();let depth=1,j=open+1,q='';for(;j<source.length&&depth;j++){const c=source[j];if(q){if(c===q&&source[j-1]!=='\\')q='';continue}if(c==='"'||c==="'"){q=c;continue}if(c==='{')depth++;else if(c==='}')depth--}if(depth!==0)throw new Error('CSS 语法不完整：缺少右花括号。');const body=source.slice(open+1,j-1);if(/^@(media|supports|container|layer)\b/i.test(header)){out+=header+'{'+parseBlock(body)+'}'}else if(/^@(?:-webkit-)?keyframes\b/i.test(header)){out+=header+'{'+body+'}'}else if(header.startsWith('@')){throw new Error('暂不支持此类 CSS 指令：'+header.split(/\s/)[0])}else{const selectors=splitSelectors(header).map(sel=>{if(!sel)throw new Error('CSS 选择器不能为空。');if(/^:root\b/.test(sel))return sel.replace(/^:root\b/,'#space.lr-space-v2');if(/^#space(?:\b|\.)/.test(sel))return sel;return '#space.lr-space-v2 '+sel});out+=selectors.join(',')+'{'+body+'}'}i=j}return out}
-    return parseBlock(css);
+    function parseBlock(source){let out='',i=0;while(i<source.length){while(i<source.length&&/\s/.test(source[i]))i++;if(i>=source.length)break;let open=-1,quote='',paren=0;for(let j=i;j<source.length;j++){const c=source[j];if(quote){if(c===quote&&source[j-1]!=='\\')quote='';continue}if(c==='"'||c==="'"){quote=c;continue}if(c==='('||c==='[')paren++;if(c===')'||c===']')paren=Math.max(0,paren-1);if(c==='{'&&paren===0){open=j;break}if(c===';'&&paren===0){const at=source.slice(i,j).trim();if(at)throw new Error('不支持独立的 @ 语句。');i=j+1;break}}if(open<0){if(i<source.length&&source.slice(i).trim())throw new Error('CSS 语法不完整：缺少规则块。');break}const header=source.slice(i,open).trim();let depth=1,j=open+1,q='';for(;j<source.length&&depth;j++){const c=source[j];if(q){if(c===q&&source[j-1]!=='\\')q='';continue}if(c==='"'||c==="'"){q=c;continue}if(c==='{')depth++;else if(c==='}')depth--}if(depth!==0)throw new Error('CSS 语法不完整：缺少右花括号。');const body=source.slice(open+1,j-1);if(/^@(media|supports|container)\b/i.test(header)){out+=header+'{'+parseBlock(body)+'}'}else if(/^@(?:-webkit-)?keyframes\b/i.test(header)){const match=header.match(/^(@(?:-webkit-)?keyframes)\s+([\w-]+)/i);if(!match)throw new Error('关键帧名称无效。');const safeName='lrOfflineTheme_'+hash+'_'+match[2];keyframeMap.set(match[2],safeName);out+=match[1]+' '+safeName+'{'+body+'}'}else if(header.startsWith('@')){throw new Error('暂不支持此类 CSS 指令：'+header.split(/\s/)[0])}else{const selectors=splitSelectors(header).map(sel=>{if(!sel)throw new Error('CSS 选择器不能为空。');if(/(^|[\s>+~,(])(?:html|body|:root|#home|#chat|#space)(?=$|[\s.#:[>+~,)])/i.test(sel))throw new Error('请使用线下模式专属类名，例如 .lr-story-reader，不要直接选择 html、body、主页或其他 APP。');if(sel.includes('</style')||sel.includes('\\'))throw new Error('选择器包含不允许的内容。');if(sel==='#lrSpaceStoryWorkspace')return scope;if(sel.startsWith('#lrSpaceStoryWorkspace '))return scope+sel.slice('#lrSpaceStoryWorkspace'.length);return scope+' '+sel});out+=selectors.join(',')+'{'+body+'}'}i=j}return out}
+    let compiled=parseBlock(css);
+    if(keyframeMap.size){compiled=compiled.replace(/((?:-webkit-)?animation(?:-name)?\s*:\s*)([^;}]+)/gi,(all,head,value)=>{let next=value;for(const [name,safeName] of keyframeMap){const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');next=next.replace(new RegExp('\\b'+escaped+'\\b','g'),safeName)}return head+next})}
+    return compiled;
   }
-  function applyCustomCss(css,enabled=true){let node=$('lrSpaceCustomCssStyle');if(!node){node=document.createElement('style');node.id='lrSpaceCustomCssStyle';document.head.appendChild(node)}node.textContent=enabled?scopeCustomCss(css):'';return node.textContent}
-  function openCustomCss(){ensureScreens();let raw='';try{raw=localStorage.getItem(SPACE_CSS_KEY)||''}catch(e){}$('lrSpaceCustomCssInput').value=raw||SPACE_CSS_STARTER;$('lrSpaceCssEnabled').checked=localStorage.getItem(SPACE_CSS_KEY+':enabled')!=='false';$('lrSpaceCustomCssStatus').textContent=raw?'已读取本机保存的全局 CSS。':'已载入 SPACE 全局示例模板，可直接修改后点击保存并应用。';showScreen('lrSpaceStoryCssEditor')}
-  function saveCustomCss(){const input=$('lrSpaceCustomCssInput').value;try{const enabled=$('lrSpaceCssEnabled').checked;applyCustomCss(input,enabled);localStorage.setItem(SPACE_CSS_KEY,input);localStorage.setItem(SPACE_CSS_KEY+':enabled',String(enabled));$('lrSpaceCustomCssStatus').textContent=enabled?'CSS 检查通过，已保存并应用。':'CSS 已保存，目前处于停用状态。';notify('SPACE 自定义 CSS 已保存。')}catch(e){$('lrSpaceCustomCssStatus').textContent='CSS 未应用：'+e.message;notify('CSS 检查失败：'+e.message)}}
-  function loadCustomCssAtBoot(){try{const raw=localStorage.getItem(SPACE_CSS_KEY)||'';const enabled=localStorage.getItem(SPACE_CSS_KEY+':enabled')!=='false';if(raw)applyCustomCss(raw,enabled)}catch(e){console.warn('[SPACE] custom CSS skipped',e)}}
-  function exportCustomCss(){const raw=$('lrSpaceCustomCssInput').value;downloadFile('LOVE_RECORD_SPACE_custom.css',raw,'text/css;charset=utf-8')}
-  function resetCustomCss(){if(!confirm('确定清除已保存的 CSS，并恢复 SPACE 默认外观吗？'))return;localStorage.removeItem(SPACE_CSS_KEY);localStorage.removeItem(SPACE_CSS_KEY+':enabled');$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;$('lrSpaceCssEnabled').checked=true;applyCustomCss('',false);$('lrSpaceCustomCssStatus').textContent='已恢复默认外观；示例模板已重新载入编辑框，可再次修改。';notify('SPACE 已恢复默认外观。')}
+  function applyCustomCss(css,enabled=true){let node=$('lrSpaceCustomCssStyle');if(!node){node=document.createElement('style');node.id='lrSpaceCustomCssStyle';node.dataset.scope='offline-story-only';document.head.appendChild(node)}node.textContent=enabled?scopeCustomCss(css):'';return node.textContent}
+  function makeCustomThemeId(){return 'offline-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
+  function loadCustomThemeIntoEditor(id){const item=findOfflineCustomTheme(id);if(!item)return;const name=$('lrSpaceCustomThemeName'),base=$('lrSpaceCustomThemeBase'),input=$('lrSpaceCustomCssInput'),select=$('lrSpaceCustomThemeSelect');if(name)name.value=item.name;if(base)base.value=item.baseTheme;if(input)input.value=item.css;if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`已载入「${item.name}」，可修改后更新，或另存为新主题。`}
+  function renderCustomThemeEditor(){const input=$('lrSpaceCustomCssInput');if(input&&!input.value)input.value=SPACE_CSS_STARTER;renderOfflineThemeControls()}
+  function saveCustomTheme(update=false){const name=$('lrSpaceCustomThemeName')?.value.trim()||'',baseTheme=$('lrSpaceCustomThemeBase')?.value||'pixel',css=$('lrSpaceCustomCssInput')?.value||'',select=$('lrSpaceCustomThemeSelect');if(!name){notify('请先填写主题名称。');$('lrSpaceCustomThemeName')?.focus?.();return}if(!Object.prototype.hasOwnProperty.call(OFFLINE_THEME_NAMES,baseTheme))throw new Error('请选择有效的基础预设。');if(!css.trim())throw new Error('CSS 内容不能为空。');if(!scopeCustomCss(css).trim())throw new Error('CSS 中没有可应用的样式规则，请检查示例或补充有效声明。');let list=getOfflineCustomThemes(),item;if(update){const id=select?.value||'';const index=list.findIndex(x=>x.id===id);if(index<0)throw new Error('请先从「我的主题预设」选择一套主题，再更新。');if(list.some((x,i)=>i!==index&&x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称。');item={...list[index],name,baseTheme,css,updatedAt:Date.now()};list[index]=item}else{if(list.some(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase()))throw new Error('已经有同名主题，请换一个名称，或选择原主题进行更新。');if(list.length>=30)throw new Error('最多保存 30 套自定义主题。');item={id:makeCustomThemeId(),name,baseTheme,css,createdAt:Date.now(),updatedAt:Date.now()};list.push(item)}saveOfflineCustomThemes(list);writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+item.id);applyOfflineTheme();renderOfflineThemeControls();if(select)select.value=item.id;const status=$('lrSpaceCustomCssStatus');if(status)status.textContent=`「${item.name}」已保存并应用。它只会作用于线下故事阅读区域。`;notify(`自定义主题「${item.name}」已保存并应用。`)}
+  function deleteCustomTheme(){const id=$('lrSpaceCustomThemeSelect')?.value||'';const item=findOfflineCustomTheme(id);if(!item){notify('请先选择要删除的自定义主题。');return}if(!confirm(`确定删除自定义主题「${item.name}」吗？`))return;const wasActive=readOfflineThemePrefs().customThemeId===id;const list=getOfflineCustomThemes().filter(x=>x.id!==id);saveOfflineCustomThemes(list);if(wasActive)writeOfflineThemePref(OFFLINE_THEME_KEY,'pixel');$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomThemeBase').value='pixel';$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;applyOfflineTheme();renderOfflineThemeControls();$('lrSpaceCustomCssStatus').textContent='已删除主题；官方四套预设不受影响。';notify('自定义主题已删除。')}
+  function openCustomCss(){openOfflineSettings();const group=$('lrStoryCustomThemeBuilder')?.closest('details');if(group)group.open=true;$('lrStoryCustomThemeBuilder')?.scrollIntoView?.({block:'nearest',behavior:'smooth'});renderCustomThemeEditor()}
+  function saveCustomCss(){saveCustomTheme(false)}
+  function loadCustomCssAtBoot(){try{const legacy=localStorage.getItem(LEGACY_SPACE_CSS_KEY)||'';if(!legacy)return;const wasEnabled=localStorage.getItem(LEGACY_SPACE_CSS_KEY+':enabled')!=='false';const list=getOfflineCustomThemes();let migrated=list.find(x=>x.legacy)||null;if(!migrated){const css=legacy.replace(/:root\b/g,'.lr-story-reader').replace(/#space(?:\.lr-space-v2)?/g,'.lr-story-reader');const compiled=scopeCustomCss(css);if(compiled.trim()){migrated={id:'legacy-'+Date.now().toString(36),name:'旧版自定义主题',baseTheme:'pixel',css,legacy:true,createdAt:Date.now(),updatedAt:Date.now()};list.push(migrated);saveOfflineCustomThemes(list)}}if(wasEnabled&&migrated)writeOfflineThemePref(OFFLINE_THEME_KEY,'custom:'+migrated.id);localStorage.removeItem(LEGACY_SPACE_CSS_KEY);localStorage.removeItem(LEGACY_SPACE_CSS_KEY+':enabled')}catch(e){console.warn('[SPACE] legacy CSS migration skipped',e)}}
+  function exportCustomCss(){const css=$('lrSpaceCustomCssInput')?.value||'';downloadFile('LOVE_RECORD_OFFLINE_custom_theme.css',css,'text/css;charset=utf-8')}
+  function newCustomThemeDraft(){$('lrSpaceCustomCssInput').value=SPACE_CSS_STARTER;$('lrSpaceCustomThemeName').value='';$('lrSpaceCustomThemeSelect').value='';$('lrSpaceCustomThemeBase').value='pixel';$('lrSpaceCustomCssStatus').textContent='已新建主题草稿。编辑名称和 CSS 后，可以保存为新的个人预设。'}
+  function resetCustomCss(){if(!confirm('清空当前编辑框并载入官方示例 CSS？已保存的主题不会删除。'))return;newCustomThemeDraft()}
+  function importCustomCssFile(file){if(!file)return;const reader=new FileReader();reader.onload=()=>{const value=String(reader.result||'');try{scopeCustomCss(value);$('lrSpaceCustomCssInput').value=value;$('lrSpaceCustomCssStatus').textContent='CSS 文件已载入并通过作用域检查；填写主题名称后可以保存。'}catch(err){$('lrSpaceCustomCssStatus').textContent='CSS 导入失败：'+err.message}};reader.onerror=()=>$('lrSpaceCustomCssStatus').textContent='CSS 文件读取失败。';reader.readAsText(file)}
   function checkSelections(selector){return [...document.querySelectorAll(selector+':checked')].map(x=>x.value)}
   function renderCreateSources(story=null){
     const people=contacts(),personaList=personas(),books=worldBooks();
@@ -979,6 +1018,10 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
   async function handleAction(action,el){const id=el.dataset.storyId;switch(action){
     case 'new':await openCreate();break;
     case 'custom-css':openCustomCss();break;
+    case 'save-custom-theme':saveCustomTheme(false);break;
+    case 'update-custom-theme':saveCustomTheme(true);break;
+    case 'new-custom-theme':newCustomThemeDraft();break;
+    case 'delete-custom-theme':deleteCustomTheme();break;
     case 'import-backup':$('lrStoryBackupFile')?.click();break;
     case 'save-css':saveCustomCss();break;
     case 'reset-css':resetCustomCss();break;
@@ -1021,21 +1064,52 @@ body:has(#space.active[data-offline-theme="yuzu"]),body:has(#space.active[data-o
   function bindEvents(){if(window.__LR_SPACE_STORY_EVENTS__)return;window.__LR_SPACE_STORY_EVENTS__=true;
     document.addEventListener('click',async e=>{
       if(e.target?.id==='lrStorySettingsPanel'){closeOfflineSettings();return}
-      const themeButton=e.target.closest?.('[data-offline-theme-select]');if(themeButton){e.preventDefault();e.stopPropagation();setOfflineTheme(themeButton.dataset.offlineThemeSelect);return}
+      const customThemeButton=e.target.closest?.('[data-offline-custom-theme-select]');if(customThemeButton){e.preventDefault();e.stopPropagation();setOfflineCustomTheme(customThemeButton.dataset.offlineCustomThemeSelect);return}const themeButton=e.target.closest?.('[data-offline-theme-select]');if(themeButton){e.preventDefault();e.stopPropagation();setOfflineTheme(themeButton.dataset.offlineThemeSelect);return}
       const act=e.target.closest?.('[data-story-action]');if(act){e.preventDefault();e.stopPropagation();try{await handleAction(act.dataset.storyAction,act)}catch(err){console.error('[SPACE story action]',err);notify('操作失败：'+(err.message||'请稍后重试'))}return}
       if(e.target?.id==='lrStoryCreateSave'){await createStory();return}
       if(e.target?.id==='lrStoryGenerate'){await generateStory();return}
       if(e.target?.id==='lrStoryCancelGeneration'){cancelRequested=true;$('lrStoryGenerationStatus').textContent='正在结束当前段落，之后不会继续自动生成…';return}
     });
     document.addEventListener('input',e=>{if(e.target?.id==='lrStorySearch')renderLibrary()});
-    document.addEventListener('change',e=>{if(e.target?.id==='lrStoryBackupFile'){const file=e.target.files?.[0];if(file)importStoryBackupFile(file);e.target.value=''}if(e.target?.id==='lrSpaceCssEnabled'){try{const raw=localStorage.getItem(SPACE_CSS_KEY)||'';applyCustomCss(raw,e.target.checked);localStorage.setItem(SPACE_CSS_KEY+':enabled',String(e.target.checked));$('lrSpaceCustomCssStatus').textContent=e.target.checked?'已启用自定义 CSS。':'已停用自定义 CSS，默认样式已恢复。'}catch(err){e.target.checked=false;$('lrSpaceCustomCssStatus').textContent='CSS 应用失败：'+err.message}}if(e.target?.id==='lrSpaceCssFile'){const f=e.target.files?.[0];if(!f)return;const reader=new FileReader();reader.onload=()=>{$('lrSpaceCustomCssInput').value=String(reader.result||'');$('lrSpaceCustomCssStatus').textContent='文件已读取，请点击保存并应用。'};reader.onerror=()=>{$('lrSpaceCustomCssStatus').textContent='CSS 文件读取失败。'};reader.readAsText(f);e.target.value=''}});
+    document.addEventListener('change',e=>{if(e.target?.id==='lrStoryBackupFile'){const file=e.target.files?.[0];if(file)importStoryBackupFile(file);e.target.value=''}if(e.target?.id==='lrSpaceCustomThemeSelect'&&e.target.value)loadCustomThemeIntoEditor(e.target.value);if(e.target?.id==='lrSpaceCssFile'){const f=e.target.files?.[0];if(f)importCustomCssFile(f);e.target.value=''}});
     document.addEventListener('change',async e=>{if(e.target?.id==='lrStoryThemeMotion'){writeOfflineThemePref(OFFLINE_THEME_MOTION_KEY,e.target.checked);renderOfflineThemeControls();applyOfflineTheme();}if(e.target?.id==='lrStoryRainIntensity'){writeOfflineThemePref(OFFLINE_THEME_RAIN_KEY,e.target.value);renderOfflineThemeControls();if(readOfflineThemePrefs().theme==='rain'&&!$('lrSpaceStoryWorkspace')?.hidden)startOfflineThemeAnimation();}if(e.target?.id==='lrStoryWorkspaceMode'&&activeStory){activeStory.mode=e.target.value==='interactive'?'interactive':'novel';$('lrStoryComposerHint').textContent=activeStory.mode==='interactive'?'互动长文 · 输入你的动作、对白或想法，CHAR 会根据你的参与继续推进。':'小说沉浸 · 阅读完整段落后，再决定故事接下来往哪里走。';$('lrStoryUserInput').placeholder=activeStory.mode==='interactive'?'写下你的行动、对白或临时剧情方向……':'写下你希望下一段发生的事，或让故事自然继续……';await saveMeta(activeStory)}if(e.target?.id==='lrStoryBranchSelect'&&activeStory){activeStory.activeBranchId=e.target.value;await saveMeta(activeStory);renderTranscript(activeStory);renderLongMemory(activeStory)}if(e.target?.id==='lrStoryQuickStreamMode'&&activeStory){activeStory.streamMode=e.target.value==='complete'?'complete':'stream';$('lrStoryOutputHint').textContent=activeStory.streamMode==='stream'?'流式：正文会随模型输出逐步出现。':'非流式：等待本段完整生成后，再显示正文。';await saveMeta(activeStory)}});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lrStorySettingsPanel')?.hidden){closeOfflineSettings();return}if(e.target?.id==='lrStoryUserInput'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();generateStory()}});
     window.addEventListener('lr-worldbooks-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
     window.addEventListener('lr-contacts-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
     window.addEventListener('lr-self-personas-updated',()=>{if(activeStory)renderSourceChanges(activeStory)});
   }
-  async function onSpaceReady(){injectStyles();injectOfflineFocusStyles();injectOfflineThemeStyles();injectOfflineThemeQualityStyles();injectOfflineThemeControlStyles();ensureScreens();ensureHub();renderOfflineThemeControls();loadCustomCssAtBoot();bindEvents();await renderHub();if(!offlineThemeLifecycleBound){offlineThemeLifecycleBound=true;window.addEventListener('resize',()=>{if(!$('lrSpaceStoryWorkspace')?.hidden&&readOfflineThemePrefs().motion)resizeOfflineThemeCanvas()},{passive:true});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopOfflineThemeAnimation();else if(!$('lrSpaceStoryWorkspace')?.hidden)startOfflineThemeAnimation()});}}
+  function injectOfflineCustomThemeStyles(){if($('lrStoryOfflineCustomThemeStyles'))return;const st=document.createElement('style');st.id='lrStoryOfflineCustomThemeStyles';st.textContent=`
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-builder{margin:18px 0 2px;padding:15px;border:1px solid var(--lr-theme-border,#d7c7d5);border-radius:16px;background:var(--lr-theme-surface,rgba(255,255,255,.55));color:var(--lr-theme-text,#554a57)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:13px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-head h3{margin:0 0 5px;font-size:14px;color:var(--lr-theme-heading,#59475e)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-head p{margin:0;font-size:11px;line-height:1.7;color:var(--lr-theme-muted,#927f96)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-badge{flex:none;padding:5px 7px;border-radius:7px;background:var(--lr-theme-soft,#f5edf6);color:var(--lr-theme-muted,#927f96);font:700 8px/1.2 ui-monospace,monospace;letter-spacing:.07em}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-list-wrap{margin:12px 0 15px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-list-title{margin:0 0 8px;font-size:11px;font-weight:750;color:var(--lr-theme-heading,#59475e)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-list{display:grid;grid-template-columns:1fr;gap:7px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:10px;border:1px solid var(--lr-theme-border,#d7c7d5);border-radius:12px;background:var(--lr-theme-card,#fffdf8);color:var(--lr-theme-text,#554a57);text-align:left}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip.is-selected{outline:2px solid var(--lr-theme-accent,#a985ae);outline-offset:1px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-swatch{width:36px;height:36px;flex:none;border-radius:9px;background:linear-gradient(135deg,#f2e9f5,#c9b6d3)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-swatch[data-base="rain"]{background:linear-gradient(135deg,#9fc6dd,#f3fbff 54%,#90b6ce)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-swatch[data-base="cream"]{background:linear-gradient(135deg,#242422,#f7f6f0)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-swatch[data-base="yuzu"]{background:linear-gradient(135deg,#b9d4ac,#f4edb6 60%,#f8fbf1)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip-copy strong{font-size:12px;overflow-wrap:anywhere}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip-copy small{font-size:9px;color:var(--lr-theme-muted,#927f96)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-chip-action{flex:none;font-size:10px;font-weight:700;color:var(--lr-theme-accent-strong,#846f83)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-empty{padding:12px;border:1px dashed var(--lr-theme-border,#d7c7d5);border-radius:10px;color:var(--lr-theme-muted,#927f96);font-size:10px;line-height:1.6}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-fields .lr-story-field{min-width:0}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-css-input{min-height:260px;max-height:55vh;resize:vertical;padding:12px;font:11px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:2;overflow:auto}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-toolbar{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-toolbar button{flex:1 1 42%;min-width:0}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-help{margin-top:10px;padding:10px;border-radius:10px;background:var(--lr-theme-soft,#f5edf6);color:var(--lr-theme-muted,#927f96)}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-help summary{font-size:10px;font-weight:700;cursor:pointer}
+#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-help ul{padding-left:18px;margin:8px 0 0;font-size:10px;line-height:1.7}
+@media(max-width:390px){#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-builder{padding:11px}#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-fields{grid-template-columns:1fr}#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-css-input{min-height:230px;font-size:10px}#space.lr-space-v2 #lrSpaceStoryWorkspace .lr-story-custom-theme-toolbar button{flex-basis:100%}}
+`;document.head.appendChild(st)}
+
+  async function onSpaceReady(){injectStyles();injectOfflineFocusStyles();injectOfflineThemeStyles();injectOfflineThemeQualityStyles();injectOfflineThemeControlStyles();injectOfflineCustomThemeStyles();ensureScreens();ensureHub();loadCustomCssAtBoot();renderOfflineThemeControls();renderCustomThemeEditor();bindEvents();await renderHub();if(!offlineThemeLifecycleBound){offlineThemeLifecycleBound=true;window.addEventListener('resize',()=>{if(!$('lrSpaceStoryWorkspace')?.hidden&&readOfflineThemePrefs().motion)resizeOfflineThemeCanvas()},{passive:true});document.addEventListener('visibilitychange',()=>{if(document.hidden)stopOfflineThemeAnimation();else if(!$('lrSpaceStoryWorkspace')?.hidden)startOfflineThemeAnimation()});}}
   window.addEventListener('lr-space-v2-ready',()=>{onSpaceReady().catch(e=>console.error('[SPACE story ready]',e))});
   // Also initialize in case the module is evaluated after SPACE has already been opened.
   if($('space')?.classList.contains('lr-space-v2'))onSpaceReady().catch(e=>console.error('[SPACE story init]',e));
