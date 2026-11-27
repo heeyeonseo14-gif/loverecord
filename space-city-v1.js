@@ -1,4 +1,4 @@
-/* LOVE RECORD · SPACE CITY v1
+/* LOVE RECORD · SPACE CITY v1 · LIVING PIXEL 2.0
  * Offline-first pixel life simulation. No AI API is required for everyday city behavior.
  * Contacts/personas are read from the existing LOVE RECORD homepage as source snapshots.
  */
@@ -41,6 +41,7 @@
   const DEFAULT_OUTFIT={hair:'hair-wave',hairColor:'#493d4c',skin:'#f1c9ac',top:'top-knit',topColor:'#c4a4d3',bottom:'bottom-pants',bottomColor:'#667b9a',dress:'',outer:'outer-none',outerColor:'#ad91bc',shoes:'shoes-sneaker',shoeColor:'#f2eee8',accessory:'acc-none',accessoryColor:'#d5b77e',sleepwear:'sleep-set'};
   const legacySpaceBridge=window.LRSpaceStoryBridge||{};
   let worlds=[],activeId='',world=null,dbPromise=null,tickTimer=null,openModal='',selectedResidentId='',controlResidentId='',currentScreen='map',interiorBuildingId='',toastTimer=null;
+  let livingMapLayout={area:'',boxes:{}};
   const DEFAULT_SETTINGS={speed:'standard',customSpeed:20,paused:false,residentLimit:24,weather:'sunny',season:'spring',lastRealAt:now(),realMultiplier:20};
   const pixelPngCache=new Map();
   function pixelCanvasUrl(cacheKey,width,height,draw){
@@ -365,8 +366,61 @@
 #space.lr-space-city-shell .sc-cloth-pixel-preview .sc-pixel-character{width:100%;height:100%;max-width:none;object-fit:contain;image-rendering:pixelated;}
 #space.lr-space-city-shell .sc-furniture-art img{width:100%;height:100%;max-width:100px;object-fit:contain;image-rendering:pixelated;}
 #space.lr-space-city-shell .sc-building-art img{width:min(100%,112px);height:88px;object-fit:contain;image-rendering:pixelated;}
+/* LIVING PIXEL 2.0 · 4-frame raster sprite animation */
+#space.lr-space-city-shell .sc-pixel-animated{position:relative;display:block;width:100%;height:100%;overflow:visible;isolation:isolate;}
+#space.lr-space-city-shell .sc-pixel-animated .sc-pixel-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;animation-duration:var(--sc-frame-duration,1.05s);animation-iteration-count:infinite;animation-timing-function:steps(1,end);animation-fill-mode:both;}
+#space.lr-space-city-shell .sc-pixel-frame-0{animation-name:scPixelFrame0;}
+#space.lr-space-city-shell .sc-pixel-frame-1{animation-name:scPixelFrame1;}
+#space.lr-space-city-shell .sc-pixel-frame-2{animation-name:scPixelFrame2;}
+#space.lr-space-city-shell .sc-pixel-frame-3{animation-name:scPixelFrame3;}
+@keyframes scPixelFrame0{0%,24.99%{opacity:1}25%,100%{opacity:0}}
+@keyframes scPixelFrame1{0%,24.99%{opacity:0}25%,49.99%{opacity:1}50%,100%{opacity:0}}
+@keyframes scPixelFrame2{0%,49.99%{opacity:0}50%,74.99%{opacity:1}75%,100%{opacity:0}}
+@keyframes scPixelFrame3{0%,74.99%{opacity:0}75%,100%{opacity:1}}
+#space.lr-space-city-shell .sc-sprite .sc-pixel-animated,#space.lr-space-city-shell .sc-room-person .sc-pixel-animated{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-closet-avatar .sc-pixel-animated,#space.lr-space-city-shell .sc-profile-preview .sc-pixel-animated{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-cloth-pixel-preview .sc-pixel-animated{width:100%;height:100%;}
+#space.lr-space-city-shell .sc-sprite{will-change:left,top;}
+#space.lr-space-city-shell .sc-room-person{will-change:left,top;}
+@media(prefers-reduced-motion:reduce){#space.lr-space-city-shell .sc-pixel-animated .sc-pixel-frame{animation:none!important;opacity:0!important}#space.lr-space-city-shell .sc-pixel-animated .sc-pixel-frame-0{opacity:1!important}}
 `;
+    st.textContent += css;
     document.head.appendChild(st);
+  }
+  function normalizeLivingData(){
+    if(!world)return;
+    world.settings=world.settings||{};
+    world.settings.livingEngineVersion=2;
+    (world.residents||[]).forEach(r=>{
+      if(!r.motion||typeof r.motion!=='object')r.motion={};
+      const m=r.motion;
+      m.action=ANIMATED_POSES.has(m.action)?m.action:(ANIMATED_POSES.has(r.pose)?r.pose:'idle');
+      m.facing=['down','up','left','right'].includes(m.facing)?m.facing:'down';
+      m.path=Array.isArray(m.path)?m.path.filter(p=>Number.isFinite(Number(p?.x))&&Number.isFinite(Number(p?.y))).slice(0,80):[];
+      m.pathIndex=clamp(m.pathIndex||0,0,m.path.length);
+      m.targetBuildingId=typeof m.targetBuildingId==='string'?m.targetBuildingId:'';
+      m.targetStatus=typeof m.targetStatus==='string'?m.targetStatus:'';
+      m.targetAction=ANIMATED_POSES.has(m.targetAction)?m.targetAction:'';
+      m.scheduleKey=typeof m.scheduleKey==='string'?m.scheduleKey:'';
+      m.targetExpression=typeof m.targetExpression==='string'?m.targetExpression:'';
+      m.activityUntil=Number(m.activityUntil)||0;
+      m.nextAmbientAt=Number(m.nextAmbientAt)||0;
+      m.socialCooldownUntil=Number(m.socialCooldownUntil)||0;
+      m.partnerId=typeof m.partnerId==='string'?m.partnerId:'';
+      m.roomPath=Array.isArray(m.roomPath)?m.roomPath.filter(p=>Number.isFinite(Number(p?.x))&&Number.isFinite(Number(p?.y))).slice(0,80):[];
+      m.roomPathIndex=clamp(m.roomPathIndex||0,0,m.roomPath.length);
+      m.roomTargetAction=ANIMATED_POSES.has(m.roomTargetAction)?m.roomTargetAction:'';
+      m.roomTargetStatus=typeof m.roomTargetStatus==='string'?m.roomTargetStatus:'';
+      m.roomTargetFurniture=typeof m.roomTargetFurniture==='string'?m.roomTargetFurniture:'';
+      m.occupiedFurniture=typeof m.occupiedFurniture==='string'?m.occupiedFurniture:'';
+      const oldNeeds=m.needs&&typeof m.needs==='object'?m.needs:{};
+      m.needs={energy:clamp(oldNeeds.energy??58,0,100),social:clamp(oldNeeds.social??42,0,100),fun:clamp(oldNeeds.fun??38,0,100),comfort:clamp(oldNeeds.comfort??46,0,100)};
+      m.needsUpdatedAt=Number(m.needsUpdatedAt)||Number(world.worldNow)||now();
+      if(m.roomPath.length&&m.roomPathIndex>=m.roomPath.length){m.roomPath=[];m.roomPathIndex=0;m.roomTargetAction='';m.roomTargetFurniture=''}
+      if(m.path.length&&m.pathIndex>=m.path.length){m.path=[];m.pathIndex=0;m.targetBuildingId=''}
+      if(!r.position||!Number.isFinite(Number(r.position.x))||!Number.isFinite(Number(r.position.y)))r.position={x:50,y:60};
+      r.position={x:clamp(r.position.x,3,97),y:clamp(r.position.y,5,95)};
+    });
   }
   function normalizePixelLooks(){
     if(!world)return;
@@ -389,7 +443,10 @@
       r._pixelLookVersion=1;
     });
   }
-  function sprite(r){
+  function spriteFrame(r,frameOverride=0){
+    const motionFrame=((Number(frameOverride)||0)%4+4)%4;
+    const motion=r?.motion||{};
+    const facing=motion.facing||r?.facing||'down';
     const o={...DEFAULT_OUTFIT,...(r?.outfit||{})};
     const W=40,H=56,grid=Array.from({length:H},()=>Array(W).fill(''));
     const safeHex=(v,f)=>/^#[0-9a-f]{6}$/i.test(String(v||''))?String(v):f;
@@ -400,7 +457,7 @@
     const rowShape=(cx,y,widths,c)=>widths.forEach((w,i)=>{if(w>0)paint(Math.round(cx-w/2),y+i,w,1,c)});
     const pixel=(x,y,c)=>paint(x,y,1,1,c);
     const rows=(cx,y,widths,colors)=>widths.forEach((w,i)=>{if(w>0)paint(Math.round(cx-w/2),y+i,w,1,Array.isArray(colors)?colors[i%colors.length]:colors)});
-    const expr=r?.expression||'neutral',pose=r?.pose||'idle',hairId=o.hair||'hair-wave',topId=o.top||'top-knit',bottomId=o.bottom||'bottom-pants';
+    const expr=r?.expression||'neutral',pose=motion.action||r?.pose||'idle',hairId=o.hair||'hair-wave',topId=o.top||'top-knit',bottomId=o.bottom||'bottom-pants';
     const hairType=hairId.replace('hair-','');
     const longHair=['long','wave','curl','ponytail','highponytail','lowponytail','twin','halfup','braid','frenchbraid','wolf','mullet','curtain'].includes(hairType);
     const midHair=['bob','sidepart','middle','bun','pixie','short','tie','sailor'].includes(hairType);
@@ -432,12 +489,12 @@
         if(o.dress){rowShape(20,26,[shoulder,shoulder+4,shoulder+2,waist,waist,hip,hip+4,hip+7,hip+9,hip+9,hip+7,hip+5],top)}
         else {paint(15,47,4,5,skin);paint(21,47,4,5,skin)}
       }else{
-        const leg1=isWalk?13:14,leg2=isWalk?22:22;
+        const gait=[-2,1,2,-1][motionFrame],leg1=isWalk?13+gait:14,leg2=isWalk?22-gait:22;
         if(bottomId==='bottom-shorts'){paint(leg1,39,6,8,bottom);paint(leg2,39,6,8,bottom);paint(15,46,4,5,skin);paint(22,46,4,5,skin)}
         else {paint(leg1,39,6,11,bottom);paint(leg2,39,6,11,bottom);paint(leg1,48,6,2,pantsShadow);paint(leg2,48,6,2,pantsShadow)}
         if(bottomId==='bottom-jeans'){paint(15,40,1,8,clothLight);paint(23,40,1,8,clothLight)}
         if(bottomId==='bottom-cargo'){paint(13,43,3,4,clothLight);paint(24,43,3,4,clothLight)}
-        if(isWalk){paint(12,49,8,2,skin);paint(23,48,7,2,skin)}
+        if(isWalk){const swing=[-1,1,2,-2][motionFrame];paint(12+swing,49,8,2,skin);paint(23-swing,48,7,2,skin)}
       }
       // shoes with pixels, soles and highlights
       paint(isWalk?11:13,51,8,3,shoe);paint(isWalk?23:21,51,8,3,shoe);paint(isWalk?11:13,53,8,1,outline);paint(isWalk?23:21,53,8,1,outline);
@@ -447,8 +504,12 @@
     // Arms and neck (all contours made from pixel clusters).
     paint(18,21,4,5,skinShadow);paint(19,21,2,4,skinLight);
     paint(9,27,4,10,skin);paint(27,27,4,10,skin);paint(10,34,3,3,skinShadow);paint(27,34,3,3,skinShadow);
-    if(pose==='wave'){paint(27,25,4,5,skin);paint(29,20,3,7,skin);paint(30,18,3,3,skinLight);}
+    if(pose==='wave'){paint(27,25,4,5,skin);paint(29,20-(motionFrame%2),3,7,skin);paint(30,18-(motionFrame%2),3,3,skinLight);}
     if(pose==='run'){paint(8,31,5,4,skin);paint(6,28,4,4,skinLight);paint(27,30,5,4,skin);paint(30,27,4,4,skinLight)}
+    if(isWalk){const armSwing=[0,2,0,-2][motionFrame];paint(9,29+armSwing,3,5,skin);paint(28,29-armSwing,3,5,skin);}
+    if(pose==='dance'){const danceLift=[0,2,1,-1][motionFrame];paint(7,21-danceLift,5,5,skin);paint(29,21+danceLift,5,5,skin);}
+    if(pose==='talk'&&motionFrame%2===1){paint(18,19,4,3,'#ad6270');paint(19,20,2,1,'#f5c1b8');}
+    if((pose==='sleep'||pose==='sleepy')&&motionFrame===3){paint(17,38,6,1,shade(top,10));}
     if(pose==='hug'){paint(11,31,7,3,skin);paint(22,31,7,3,skin);paint(16,32,8,3,skinLight)}
     if(pose==='shop'){paint(10,31,6,4,skin);paint(24,31,6,4,skin);paint(28,34,7,7,'#b98b73');paint(29,35,5,5,'#d7b79a')}
     if(pose==='dance'){paint(8,25,4,5,skin);paint(6,21,4,6,skin);paint(28,25,4,5,skin);paint(30,21,4,6,skin)}
@@ -548,8 +609,39 @@
     if(pose==='eat'){paint(18,18,4,1,'#f2d8a8')}
     if(pose==='sleep'||expr==='sleepy'){paint(30,7,1,1,'#8d87a8');paint(32,5,1,1,'#8d87a8');paint(34,3,1,1,'#8d87a8')}
 
+    // Small frame-to-frame details make non-travel actions feel alive as well.
+    if(pose==='idle'&&motionFrame===3){paint(14,15,5,1,ink);paint(22,15,5,1,ink);}
+    if(pose==='sit'){const breath=[0,1,1,0][motionFrame];paint(16,27+breath,8,1,clothLight);}
+    if(pose==='read'){paint(16+(motionFrame%2),35,2,4,'#fff7e6');paint(22-(motionFrame%2),36,2,3,'#d6c7da');}
+    if(pose==='work'){paint(18+(motionFrame%2),35,4,2,'#b98e6c');paint(19,37+(motionFrame%2),2,1,'#f1d6a8');}
+    if(pose==='eat'){paint(15+(motionFrame%2),32,4,3,skinLight);paint(24-(motionFrame%2),32,4,3,skinLight);}
+    if(pose==='hug'){const squeeze=motionFrame===1||motionFrame===2?1:0;paint(12-squeeze,31,7+squeeze,3,skin);paint(21,31,7+squeeze,3,skin);}
+    if(pose==='shop'){const swing=[0,1,0,-1][motionFrame];paint(28+swing,34,7,7,'#b98b73');}
+    // Directional pixel views: rear view redraws the head as hair; profile views hide the far eye.
+    if(facing==='up'){
+      for(let y=7;y<=24;y++)for(let x=8;x<32;x++)grid[y][x]='';
+      const backRows=[10,14,18,20,22,22,22,22,22,22,20,18,16,14,12,10,8,6];
+      rowShape(20,6,backRows,hair);paint(10,12,4,12,hairShadow);paint(26,12,4,12,hairShadow);
+      if(longHair){paint(10,19,4,12,hair);paint(26,19,4,12,hair);paint(13,22,14,5,hairLight)}
+      paint(14,8,4,1,hairLight);paint(21,7,5,1,hairLight);
+    }else if(facing==='left'||facing==='right'){
+      if(facing==='right')for(let y=0;y<H;y++)grid[y]=grid[y].slice().reverse();
+      for(let y=12;y<=21;y++)for(let x=22;x<=27;x++)grid[y][x]='';
+      grid[15][16]=ink;grid[16][16]=ink;grid[17][14]=skinShadow;grid[17][15]=skinShadow;grid[18][15]=skinShadow;grid[19][17]='#a96371';grid[19][18]='#a96371';
+    }
+    // Sleep is a real horizontal pixel pose, not a standing sprite with a Z icon.
+    if(pose==='sleep'){
+      grid.forEach(row=>row.fill(''));
+      const breath=[0,1,1,0][motionFrame];
+      paint(5,37,10,10,outline);paint(6,38,8,8,'#f3e7dc');paint(7,39,6,6,'#fff8ef');
+      paint(10,34,8,10,outline);paint(11,35,6,8,skin);paint(10,33,8,3,hair);paint(8,36,4,5,hairShadow);paint(15,36,3,2,hairLight);
+      paint(17,35+breath,14,11,outline);paint(18,36+breath,12,9,top);paint(19,37+breath,9,2,clothLight);paint(25,39+breath,3,5,clothShadow);
+      paint(28,36,8,8,outline);paint(29,37,6,6,bottom);paint(34,40,5,5,shoe);paint(34,44,5,1,outline);
+      paint(16,41+breath,4,3,skin);paint(17,42+breath,3,2,skinLight);
+      if(motionFrame===3){paint(32,23,2,2,'#8d87a8');paint(34,20,2,2,'#8d87a8');paint(36,17,2,2,'#8d87a8');}
+    }
     // Rasterize the actual colour grid to a transparent PNG. No SVG, paths or strokes are emitted.
-    const cacheKey='character:'+JSON.stringify([o,expr,pose,bodyShape,r?.gender||r?.personaSnapshot?.gender||'']);
+    const cacheKey='character:'+JSON.stringify([o,expr,pose,bodyShape,motionFrame,facing,r?.gender||r?.personaSnapshot?.gender||'']);
     const png=pixelCanvasUrl(cacheKey,W,H,(ctx)=>{
       const image=ctx.createImageData(W,H);
       for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -562,6 +654,18 @@
     return pixelImg('sc-pixel-character',png,r?.name||'像素居民');
   }
 
+  const ANIMATED_POSES=new Set(['idle','walk','run','wave','hug','sit','read','dance','sleep','work','eat','talk','shop']);
+  function spriteSignature(r){
+    const m=r?.motion||{};
+    return [r?.pose||'idle',r?.expression||'neutral',m.action||'',m.facing||'down',JSON.stringify(r?.outfit||{})].join('|');
+  }
+  function sprite(r){
+    const motion=r?.motion||{},action=ANIMATED_POSES.has(motion.action)?motion.action:(r?.pose||'idle');
+    const frameDuration=({walk:.52,run:.38,dance:.68,idle:1.8,sleep:2.2,talk:.82,wave:.72,hug:1.05})[action]||1.05;
+    const framed={...r,motion:{...motion,action}};
+    const frames=[0,1,2,3].map(i=>spriteFrame(framed,i).replace('class="sc-pixel-character"','class="sc-pixel-character sc-pixel-frame sc-pixel-frame-'+i+'"'));
+    return `<span class="sc-pixel-animated sc-motion-${esc(action)}" style="--sc-frame-duration:${frameDuration}s" aria-label="${esc(r?.name||'像素居民')}">${frames.join('')}</span>`;
+  }
   function buildingPng(type='home'){
     const palettes={home:['#bd8197','#f0d7ad','#77546c','#9fc9d0'],cafe:['#c88970','#f3dfbf','#80564b','#f2c985'],shop:['#78a9aa','#f4dfb7','#536e70','#a6d3cf'],park:['#79a96f','#cce0a5','#4f774d','#9bc98b'],school:['#8e91bf','#f2dfb0','#5e6388','#a8cbd4'],studio:['#bd9a70','#f3dfbf','#806549','#b3c6ac'],legacy:['#9d8caf','#f0dfb7','#6e5c7a','#a9c6d1']};
     const [roof,wall,trim,glass]=palettes[type]||palettes.home;
@@ -650,17 +754,18 @@
       world._needsPersonaNotice=true;
     }
   }
-  function openWorld(id){const found=worlds.find(w=>w.id===id);if(!found)return;world=found;activeId=id;world.settings={...clone(DEFAULT_SETTINGS),...(world.settings||{})};if(!world.map)world.map={buildings:clone(BUILDINGS),unlockedAreas:['中心城区']};if(!Array.isArray(world.map.buildings))world.map.buildings=clone(BUILDINGS);if(!Array.isArray(world.residents))world.residents=[];if(!Array.isArray(world.relationships))world.relationships=[];if(!Array.isArray(world.families))world.families=[];if(!Array.isArray(world.logs))world.logs=[];if(!world.worldNow)world.worldNow=now();if(!world.lastRealAt)world.lastRealAt=now();normalizePlayerResident();normalizePixelLooks();normalizeExistingCoupleHomes();const needsPersonaNotice=!!world._needsPersonaNotice;delete world._needsPersonaNotice;$('space').classList.add('sc-city-immersive');$('scLobby').hidden=true;$('scCreatePanel').hidden=true;$('lrSpaceV2Directory').hidden=false;$('scWorld').hidden=false;$('scInterior').hidden=true;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);setTab('map');advanceTime();renderMap();renderLatestLogs();fillController();persist();startTicker();if(needsPersonaNotice)notify('旧版自动生成的用户角色已移除，请添加你在主页创建的自设。')}
+  function openWorld(id){const found=worlds.find(w=>w.id===id);if(!found)return;world=found;activeId=id;world.settings={...clone(DEFAULT_SETTINGS),...(world.settings||{})};if(!world.map)world.map={buildings:clone(BUILDINGS),unlockedAreas:['中心城区']};if(!Array.isArray(world.map.buildings))world.map.buildings=clone(BUILDINGS);if(!Array.isArray(world.residents))world.residents=[];if(!Array.isArray(world.relationships))world.relationships=[];if(!Array.isArray(world.families))world.families=[];if(!Array.isArray(world.logs))world.logs=[];if(!world.worldNow)world.worldNow=now();if(!world.lastRealAt)world.lastRealAt=now();normalizePlayerResident();normalizeLivingData();normalizePixelLooks();normalizeExistingCoupleHomes();const needsPersonaNotice=!!world._needsPersonaNotice;delete world._needsPersonaNotice;$('space').classList.add('sc-city-immersive');$('scLobby').hidden=true;$('scCreatePanel').hidden=true;$('lrSpaceV2Directory').hidden=false;$('scWorld').hidden=false;$('scInterior').hidden=true;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);setTab('map');renderMap();advanceTime();renderMap();renderLatestLogs();fillController();persist();startTicker();if(needsPersonaNotice)notify('旧版自动生成的用户角色已移除，请添加你在主页创建的自设。')}
   function createCity(){const personaId=$('scPersonaSelect').value;const persona=personas().find(p=>String(p.id)===String(personaId));if(!persona){notify('请先在主页创建并选择一个自设，SPACE CITY 不会自动生成用户角色。');return}const name=$('scNewCityName').value.trim()||'我的像素城市';const ids=[...document.querySelectorAll('#scContactChoices input:checked')].map(x=>x.value);const w=worldTemplate(name,ids,personaId);worlds.push(w);activeId=w.id;world=w;persist().then(ok=>{if(ok){renderCityList();openWorld(w.id);notify('城市创建成功！已使用你选择的主页自设。')}else notify('城市创建失败，请检查浏览器存储。')})}
   function renderMap(){if(!world)return;$('scWorldName').textContent=world.name;$('scWorldDate').textContent=dateLabel(world.worldNow);$('scClock').textContent=timeLabel(world.worldNow);$('scWeather').textContent=({sunny:'☀ 晴天',cloudy:'☁ 多云',rain:'☂ 下雨',snow:'❄ 下雪',wind:'༄ 微风'}[world.settings.weather]||'☀ 晴天');$('scSeason').textContent=({spring:'春季',summer:'夏季',autumn:'秋季',winter:'冬季'}[world.settings.season]||'春季');$('scResidentCount').textContent=world.residents.length+' 位居民';$('scAreaName').textContent=world.map.activeArea||'中心城区';const areaSelect=$('scAreaSelect');if(areaSelect){areaSelect.innerHTML=(world.map.unlockedAreas||['中心城区']).map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('');areaSelect.value=world.map.activeArea||'中心城区'}
     const buildings=(world.map.buildings||[]).filter(x=>x.area===(world.map.activeArea||'中心城区')||!x.area);
     const b=$('scBuildings');b.innerHTML=buildings.map(x=>`<button class="sc-building" data-sc-building="${esc(x.id)}" aria-label="进入${esc(x.name)}"><span class="sc-building-art">${buildingPng(x.type)}</span><b>${esc(x.name)}</b><small>${esc(x.open||'全天')}</small></button>`).join('');
-    const sprites=$('scSprites');sprites.innerHTML=world.residents.map(r=>{const p=r.position||{x:50,y:52};return `<button class="sc-sprite" style="left:${clamp(p.x,2,96)}%;top:${clamp(p.y,8,94)}%" data-sc-resident="${esc(r.id)}" aria-label="${esc(r.name)}">${sprite(r)}<span class="sc-sprite-label">${esc(r.name)}</span></button>`}).join('');
+    cacheLivingMapLayout();
+    const sprites=$('scSprites');sprites.innerHTML=world.residents.map(r=>{const p=r.position||{x:50,y:52};return `<button class="sc-sprite" style="left:${clamp(p.x,2,96)}%;top:${clamp(p.y,8,94)}%" data-sc-resident="${esc(r.id)}" data-sc-render-key="${esc(spriteSignature(r))}" aria-label="${esc(r.name)}">${sprite(r)}<span class="sc-sprite-label">${esc(r.name)}</span></button>`}).join('');
     fillController();$('scTownMap').dataset.area=world.map.activeArea||'中心城区';}
   function renderLatestLogs(){const box=$('scLatestLogs');if(!box||!world)return;box.innerHTML=(world.logs||[]).slice(0,3).map(l=>`<div class="sc-log"><b>${esc(l.title)}</b><small>${esc(timeLabel(l.at))} · ${esc(l.kind||'生活')}</small><p>${esc(l.detail)}</p></div>`).join('')||'<div class="sc-note">居民正在熟悉这座城市。</div>'}
   function fillController(){const s=$('scControllerSelect');if(!s||!world)return;s.innerHTML=world.residents.map(r=>`<option value="${esc(r.id)}">${esc(r.name)} · ${r.kind==='user'?'用户':r.kind==='char'?'CHAR':'NPC'}</option>`).join('');controlResidentId=world.currentController||world.residents.find(r=>r.kind==='user')?.id||world.residents[0]?.id||'';s.value=controlResidentId}
-  function enterInterior(id){const b=world.map.buildings.find(x=>x.id===id);if(!b)return;interiorBuildingId=id;world.currentLocation=id;const moving=currentResident(controlResidentId);if(moving){moving.buildingId=id;moving.status='在 '+b.name+' 活动';moveResident(moving,50,83)}persist();$('space').classList.add('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=false;$('scInteriorName').textContent=b.name;$('scRoomFurniture').innerHTML=furnitureList(b.type).map(f=>`<button class="sc-furniture" style="left:${f[1]}%;top:${f[2]}%" data-sc-furniture="${esc(f[0])}" aria-label="${esc(f[0])}"><span class="sc-furniture-art">${furniturePng(f[0])}</span><span class="sc-furniture-label">${esc(f[0])}</span></button>`).join('');renderInteriorResidents();} 
-  function renderInteriorResidents(){const box=$('scRoomResidents');if(!box)return;const here=world.residents.filter(r=>(r.buildingId||r.homeId||'home')===interiorBuildingId);box.innerHTML=here.map((r,i)=>{const p=r.roomPosition||{x:18+(i%4)*20,y:78-Math.floor(i/4)*22};return `<button class="sc-room-person" style="left:${p.x}%;top:${p.y}%" data-sc-resident="${esc(r.id)}" aria-label="查看 ${esc(r.name)} 档案">${sprite(r)}</button>`}).join('')}
+  function enterInterior(id){const b=world.map.buildings.find(x=>x.id===id);if(!b)return;interiorBuildingId=id;world.currentLocation=id;const moving=currentResident(controlResidentId);if(moving){moving.buildingId=id;moving.status='在 '+b.name+' 活动';moveResident(moving,50,83);moving.roomPosition={x:50,y:79};livingMotion(moving).occupiedFurniture='';setResidentAction(moving,'idle','neutral',moving.status)}persist();$('space').classList.add('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=false;$('scInteriorName').textContent=b.name;$('scRoomFurniture').innerHTML=furnitureList(b.type).map(f=>`<button class="sc-furniture" style="left:${f[1]}%;top:${f[2]}%" data-sc-furniture="${esc(f[0])}" aria-label="${esc(f[0])}"><span class="sc-furniture-art">${furniturePng(f[0])}</span><span class="sc-furniture-label">${esc(f[0])}</span></button>`).join('');renderInteriorResidents();} 
+  function renderInteriorResidents(){const box=$('scRoomResidents');if(!box||!world)return;const here=world.residents.filter(r=>(r.buildingId||r.homeId||'home')===interiorBuildingId);box.innerHTML=here.map((r,i)=>{const p=r.roomPosition||{x:18+(i%4)*20,y:78-Math.floor(i/4)*22};return `<button class="sc-room-person" style="left:${p.x}%;top:${p.y}%" data-sc-resident="${esc(r.id)}" data-sc-render-key="${esc(spriteSignature(r))}" aria-label="查看 ${esc(r.name)} 档案">${sprite(r)}</button>`}).join('')}
   function renderResidents(){const box=$('scResidentList');if(!box||!world)return;box.innerHTML=world.residents.map(r=>`<article class="sc-resident-card"><div class="sc-resident-avatar">${sprite(r)}</div><div class="sc-resident-info"><b>${esc(r.name)}</b><small>${r.kind==='user'?'用户角色':r.kind==='char'?'主页 CHAR':'NPC'} · ${r.age} 岁 · ${esc(r.role||'居民')}<br>${esc(r.status||'自由活动')} · ${esc(world.map.buildings.find(b=>b.id===r.buildingId)?.name||'城市')}</small><span class="sc-tag">${r.wardrobe?.auto===false?'手动穿搭':'自动换装'}</span></div><div class="sc-resident-actions"><button data-sc-action="profile" data-id="${esc(r.id)}">档案</button><button data-sc-action="closet-one" data-id="${esc(r.id)}">换装</button><button data-sc-action="control-one" data-id="${esc(r.id)}">控制</button><button data-sc-action="interact" data-id="${esc(r.id)}">互动</button></div></article>`).join('')}
   function renderRelations(){const a=$('scRelA'),b=$('scRelB');if(!world)return;const opts=world.residents.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');a.innerHTML=opts;b.innerHTML=opts;if(world.residents[1])b.value=world.residents[1].id;const fam=$('scFamilyList');fam.innerHTML=(world.families||[]).map(f=>`<article class="sc-family-card"><b>${esc(f.name)}</b><p>${(f.memberIds||[]).map(id=>displayResident(currentResident(id))).join('、')}</p><small class="sc-family-home">⌂ 共同住所：${esc(world.map.buildings.find(x=>x.id===f.sharedHomeId)?.name||'居民公寓')}</small></article>`).join('')||'<div class="sc-note">还没有家庭档案。</div>';const rel=$('scRelationshipList');rel.innerHTML=world.relationships.length?world.relationships.map(r=>`<div class="sc-rel-card"><span>${esc(displayResident(currentResident(r.a)))} ⇄ ${esc(displayResident(currentResident(r.b)))}</span><b>${(REL_LABELS[r.type]||r.type)} · ${clamp(r.affinity,0,100)}%</b></div>`).join(''):'<div class="sc-note">目前还没有明确的关系。</div>'}
   function renderRecords(tab='logs'){
@@ -672,14 +777,314 @@
   }
   function fillSettings(){if(!world)return;const s=world.settings;$('scSpeed').value=s.speed||'standard';$('scCustomSpeed').value=s.customSpeed||20;$('scCustomSpeedValue').textContent=(s.customSpeed||20)+'×';$('scCustomSpeedWrap').hidden=s.speed!=='custom';$('scPaused').checked=!!s.paused;$('scResidentLimit').value=s.residentLimit||24;$('scWeatherSelect').value=s.weather||'sunny';$('scSeasonSelect').value=s.season||'spring';const device=Number(navigator.deviceMemory||4),suggest=Math.min(48,Math.round(device*5+(Number(navigator.hardwareConcurrency)||4)*1.5));$('scCapacityNote').textContent='当前设备建议容量约 '+suggest+' 位；可自行调整，最高 150 位。超过建议容量时，系统会减少非可见居民的更新频率。离线补算最多处理 180 个城市日，以避免长时间离线后手机运算过重。'}
   function speedMultiplier(){const s=world.settings;return ({realtime:1,slow:5,standard:20,fast:60,custom:clamp(s.customSpeed,1,120)})[s.speed]||20}
-  function scheduleFor(r,hour){let dest=r.homeId||'home',status='居家';if(hour>=7&&hour<9){dest=r.homeId||'home';status='准备出门'}else if(hour>=9&&hour<17){dest=r.kind==='npc'&&r.role.includes('学生')?'school':(r.jobId||'cafe');status=r.role.includes('学生')?'学习中':'工作中'}else if(hour>=17&&hour<21){dest=['cafe','park','studio'][Math.abs((r.name||'').length)%3];status='外出活动'}else if(hour>=21){dest=r.homeId||'home';status=hour>=23?'休息中':'居家放松'}else{dest=r.homeId||'home';status='睡眠中'}return {dest,status}}
-  function moveResident(r,x,y){r.position={x:clamp(x,4,96),y:clamp(y,10,92)};}
+  const PATH_STEP=2;
+  const GRID_MAX=Math.floor(100/PATH_STEP);
+  function livingMotion(r){
+    if(!r.motion||typeof r.motion!=='object')r.motion={action:'idle',facing:'down',path:[],pathIndex:0};
+    if(!Array.isArray(r.motion.path))r.motion.path=[];
+    return r.motion;
+  }
+  function setResidentAction(r,action='idle',expression='',status='',duration=0){
+    if(!r)return;
+    const m=livingMotion(r);
+    m.action=ANIMATED_POSES.has(action)?action:'idle';
+    m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';
+    m.roomPath=[];m.roomPathIndex=0;m.roomTargetAction='';m.roomTargetStatus='';m.roomTargetFurniture='';
+    m.activityUntil=duration>0?now()+duration:0;
+    r.pose=m.action;
+    if(expression)r.expression=expression;
+    if(status)r.status=status;
+  }
+  function mapRect(){const el=$('scTownMap');return el?.getBoundingClientRect?.()||null}
+  function cacheLivingMapLayout(){
+    if(!world)return;
+    const rect=mapRect();if(!rect?.width||!rect?.height)return;
+    const boxes={};
+    Array.from($('scBuildings')?.querySelectorAll('[data-sc-building]')||[]).forEach(btn=>{
+      const art=btn.querySelector('.sc-building-art')||btn,rr=art.getBoundingClientRect();
+      boxes[btn.dataset.scBuilding]={left:(rr.left-rect.left)/rect.width*100,right:(rr.right-rect.left)/rect.width*100,top:(rr.top-rect.top)/rect.height*100,bottom:(rr.bottom-rect.top)/rect.height*100};
+    });
+    livingMapLayout={area:world.map.activeArea||'中心城区',boxes};
+  }
+  function buildingWaypoint(buildingId,r){
+    const area=world.map.activeArea||'中心城区',box=livingMapLayout.area===area?livingMapLayout.boxes[String(buildingId)]:null;
+    if(!box)return null;
+    const residents=world.residents.filter(x=>x.id!==r?.id&&(x.buildingId===buildingId||x.motion?.targetBuildingId===buildingId));
+    const slot=residents.length%5,offset=[-5,5,-10,10,0][slot];
+    return {x:clamp((box.left+box.right)/2+offset,4,96),y:clamp(box.bottom+7.5,7,94)};
+  }
+  function mapObstacles(rect){
+    const area=world?.map?.activeArea||'中心城区';
+    if(livingMapLayout.area===area&&Object.keys(livingMapLayout.boxes).length){
+      return Object.values(livingMapLayout.boxes).map(b=>({left:b.left-1.2,right:b.right+1.2,top:b.top-.8,bottom:b.bottom+.8}));
+    }
+    if(!rect?.width||!rect?.height)return [];
+    return Array.from($('scBuildings')?.querySelectorAll('[data-sc-building]')||[]).map(btn=>{
+      const art=btn.querySelector('.sc-building-art')||btn,rr=art.getBoundingClientRect();
+      return {left:(rr.left-rect.left)/rect.width*100-1.2,right:(rr.right-rect.left)/rect.width*100+1.2,top:(rr.top-rect.top)/rect.height*100-.8,bottom:(rr.bottom-rect.top)/rect.height*100+.8};
+    });
+  }
+  function roomRect(){const el=$('scRoom');return el?.getBoundingClientRect?.()||null}
+  function roomFurnitureObstacles(rect,exceptName=''){
+    if(!rect?.width||!rect?.height)return [];
+    return Array.from($('scRoomFurniture')?.querySelectorAll('[data-sc-furniture]')||[]).filter(btn=>btn.dataset.scFurniture!==String(exceptName)).map(btn=>{
+      const rr=btn.getBoundingClientRect();
+      return {left:(rr.left-rect.left)/rect.width*100-1.2,right:(rr.right-rect.left)/rect.width*100+1.2,top:(rr.top-rect.top)/rect.height*100-1.5,bottom:(rr.bottom-rect.top)/rect.height*100+1.5};
+    });
+  }
+  function queueResidentToRoomPoint(r,x,y,options={}){
+    if(!world||!r)return false;
+    const m=livingMotion(r),target={x:clamp(x,5,95),y:clamp(y,9,91)};
+    if(!r.roomPosition||!Number.isFinite(Number(r.roomPosition.x))||!Number.isFinite(Number(r.roomPosition.y)))r.roomPosition={x:50,y:83};
+    const start=r.roomPosition;
+    if(Math.hypot(target.x-start.x,target.y-start.y)<1.2){
+      r.roomPosition=target;m.roomPath=[];m.roomPathIndex=0;m.roomTargetFurniture='';m.occupiedFurniture=options.furnitureName||m.occupiedFurniture||'';
+      setResidentAction(r,options.targetAction||'idle',options.expression||'',options.targetStatus||r.status,options.actionDuration||0);
+      return true;
+    }
+    const obstacles=roomFurnitureObstacles(roomRect(),options.furnitureName||'');
+    const path=findLivingPath(start,target,obstacles);
+    if(!path.length){m.roomPath=[];m.roomPathIndex=0;m.roomTargetAction='';m.roomTargetStatus='';m.roomTargetFurniture='';if(m.action==='walk'){m.action='idle';r.pose='idle';}if(options.manual)notify('这个家具附近暂时没有可用路线。');return false;}
+    m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';m.manual=false;
+    m.occupiedFurniture='';m.roomPath=path;m.roomPathIndex=0;m.roomTargetAction=ANIMATED_POSES.has(options.targetAction)?options.targetAction:'idle';
+    m.roomTargetStatus=options.targetStatus||'';m.roomTargetFurniture=options.furnitureName||'';
+    m.action='walk';m.activityUntil=0;r.pose='walk';if(options.targetStatus)r.status='正在前往'+options.targetStatus;
+    return true;
+  }
+  function queueResidentToRoomFurniture(r,furnitureName,action='idle',expression='neutral',status='正在活动',button=null){
+    const targetButton=button||Array.from($('scRoomFurniture')?.querySelectorAll('[data-sc-furniture]')||[]).find(x=>x.dataset.scFurniture===String(furnitureName));
+    if(!targetButton)return false;
+    const left=Number.parseFloat(targetButton.style.left),top=Number.parseFloat(targetButton.style.top);
+    if(!Number.isFinite(left)||!Number.isFinite(top))return false;
+    const sameSpot=(world.residents||[]).filter(x=>x.id!==r.id&&x.buildingId===interiorBuildingId&&(x.motion?.roomTargetFurniture===furnitureName||x.motion?.occupiedFurniture===furnitureName)).length;
+    const offset=[-5,5,0,-8,8][sameSpot%5];
+    return queueResidentToRoomPoint(r,left+offset,top+16,{furnitureName,targetAction:action,expression,targetStatus:status,actionDuration:22000});
+  }
+  function pointBlocked(x,y,obstacles){return obstacles.some(o=>x>=o.left&&x<=o.right&&y>=o.top&&y<=o.bottom)}
+  function nearestWalkableCell(x,y,obstacles){
+    const sx=Math.round(x/PATH_STEP),sy=Math.round(y/PATH_STEP);
+    let best=null,bestScore=Infinity;
+    for(let gy=1;gy<GRID_MAX;gy++)for(let gx=1;gx<GRID_MAX;gx++){
+      const px=gx*PATH_STEP,py=gy*PATH_STEP;if(pointBlocked(px,py,obstacles))continue;
+      const score=(gx-sx)**2+(gy-sy)**2;
+      if(score<bestScore){bestScore=score;best={x:gx,y:gy};}
+    }
+    return best;
+  }
+  function findLivingPath(start,target,obstacles){
+    const sx=clamp(start.x,3,97),sy=clamp(start.y,5,95),tx=clamp(target.x,3,97),ty=clamp(target.y,5,95);
+    const s=nearestWalkableCell(sx,sy,obstacles),goal=nearestWalkableCell(tx,ty,obstacles);
+    if(!s||!goal)return [];
+    const key=(x,y)=>x+','+y,heuristic=(x,y)=>Math.hypot(goal.x-x,goal.y-y);
+    const open=[],came=new Map(),gScore=new Map([[key(s.x,s.y),0]]),closed=new Set();
+    const push=node=>{open.push(node);let i=open.length-1;while(i>0){const p=(i-1)>>1;if(open[p].f<=node.f)break;open[i]=open[p];i=p;}open[i]=node;};
+    const pop=()=>{const first=open[0],last=open.pop();if(open.length){let i=0;while(true){let c=i*2+1;if(c>=open.length)break;if(c+1<open.length&&open[c+1].f<open[c].f)c++;if(open[c].f>=last.f)break;open[i]=open[c];i=c;}open[i]=last;}return first;};
+    push({x:s.x,y:s.y,g:0,f:heuristic(s.x,s.y)});
+    const dirs=[[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+    let found=false,iterations=0;
+    while(open.length&&iterations++<5000){
+      const cur=pop(),ck=key(cur.x,cur.y);
+      if(closed.has(ck))continue;
+      if(cur.x===goal.x&&cur.y===goal.y){found=true;break;}
+      closed.add(ck);
+      for(const [dx,dy] of dirs){
+        const nx=cur.x+dx,ny=cur.y+dy;if(nx<1||ny<1||nx>=GRID_MAX||ny>=GRID_MAX)continue;
+        const px=nx*PATH_STEP,py=ny*PATH_STEP;if(pointBlocked(px,py,obstacles))continue;
+        if(dx&&dy&&(pointBlocked((cur.x+dx)*PATH_STEP,cur.y*PATH_STEP,obstacles)||pointBlocked(cur.x*PATH_STEP,(cur.y+dy)*PATH_STEP,obstacles)))continue;
+        const nk=key(nx,ny);if(closed.has(nk))continue;
+        const ng=cur.g+(dx&&dy?1.4142:1);if(ng>=(gScore.get(nk)??Infinity))continue;
+        came.set(nk,ck);gScore.set(nk,ng);push({x:nx,y:ny,g:ng,f:ng+heuristic(nx,ny)});
+      }
+    }
+    if(!found)return [];
+    const cells=[];let k=key(goal.x,goal.y),guard=0;
+    while(k&&guard++<700){const [x,y]=k.split(',').map(Number);cells.push({x:x*PATH_STEP,y:y*PATH_STEP});if(k===key(s.x,s.y))break;k=came.get(k);}
+    cells.reverse();
+    // Keep corner points only; motion interpolation still travels along the exact grid path.
+    const compact=[];
+    for(let i=0;i<cells.length;i++){
+      if(i===0||i===cells.length-1){compact.push(cells[i]);continue;}
+      const a=cells[i-1],b=cells[i],c=cells[i+1];
+      if((b.x-a.x)*(c.y-b.y)!==(b.y-a.y)*(c.x-b.x))compact.push(b);
+    }
+    compact.push({x:tx,y:ty});
+    return compact.slice(0,81);
+  }
+  function queueResidentToPoint(r,x,y,options={}){
+    if(!world||!r)return false;
+    const m=livingMotion(r),target={x:clamp(x,3,97),y:clamp(y,5,95)};
+    const start=r.position||{x:50,y:60};
+    if(Math.hypot(target.x-start.x,target.y-start.y)<1.2){
+      r.position=target;
+      if(options.destinationBuildingId)r.buildingId=options.destinationBuildingId;
+      setResidentAction(r,options.targetAction||'idle',options.expression||'',options.targetStatus||r.status,options.actionDuration||0);
+      return true;
+    }
+    const rect=mapRect(),obstacles=mapObstacles(rect);
+    const path=findLivingPath(start,target,obstacles);
+    if(!path.length){m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';if(m.action==='walk'){m.action='idle';r.pose='idle';}if(options.manual)notify('这个位置暂时无法规划路线，请选择建筑外的空地。');return false;}
+    m.roomPath=[];m.roomPathIndex=0;m.roomTargetAction='';m.roomTargetStatus='';m.roomTargetFurniture='';m.occupiedFurniture='';
+    m.path=path;m.pathIndex=0;m.targetBuildingId=options.destinationBuildingId||'';m.targetStatus=options.targetStatus||'正在前往目的地';m.targetAction=ANIMATED_POSES.has(options.targetAction)?options.targetAction:'idle';m.targetExpression=options.expression||'';m.manual=!!options.manual;m.action='walk';m.activityUntil=0;
+    r.pose='walk';r.status=m.targetStatus;
+    return true;
+  }
+  function queueResidentToBuilding(r,buildingId,activity={}){
+    const target=buildingWaypoint(buildingId,r);
+    if(!target){const m=livingMotion(r);m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';if(m.action==='walk'){m.action='idle';r.pose='idle';}return false;}
+    return queueResidentToPoint(r,target.x,target.y,{destinationBuildingId:buildingId,targetStatus:activity.status||'正在前往目的地',targetAction:activity.action||'idle',expression:activity.expression||''});
+  }
+  function roomSlotForActivity(buildingId,action,r){
+    const b=world.map.buildings.find(x=>x.id===buildingId),items=furnitureList(b?.type||'home');
+    const preferred={sleep:'床',sit:'沙发',read:'书架',work:'工作台',eat:'餐桌',shop:'服装架',dance:'沙发',talk:'餐桌',hug:'沙发'}[action];
+    const item=items.find(x=>x[0]===preferred)||items[0];
+    if(item)return {x:clamp(item[1]+(r.id.charCodeAt(0)%3-1)*3,10,90),y:clamp(item[2]+14,18,88),furniture:item[0]};
+    return {x:50,y:78};
+  }
+  function finishResidentRoute(r){
+    const m=livingMotion(r),destination=m.targetBuildingId,targetStatus=m.targetStatus,targetAction=m.targetAction||'idle',expression=m.targetExpression;
+    if(destination){r.buildingId=destination;const slot=roomSlotForActivity(destination,targetAction,r);r.roomPosition={x:slot.x,y:slot.y};m.occupiedFurniture=slot.furniture||'';}
+    m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';m.manual=false;
+    if(targetStatus)r.status=targetStatus;
+    m.action=targetAction;r.pose=targetAction;
+    if(expression)r.expression=expression;
+    m.activityUntil=now()+12000;m.nextAmbientAt=now()+16000+Math.random()*12000;
+    if(destination)log(r.name+' · 抵达目的地',(world.map.buildings.find(b=>b.id===destination)?.name||'城市')+'，开始'+(targetStatus||'新的活动')+'。','routine',r.id);
+  }
+  function updateResidentMovement(r,dt){
+    const m=livingMotion(r);
+    if(m.roomPath?.length&&m.roomPathIndex<m.roomPath.length){
+      let roomRemaining=Math.max(0,Math.min(.12,dt))*((m.action==='run')?15:8.5),roomMoved=false;
+      while(roomRemaining>0&&m.roomPathIndex<m.roomPath.length){
+        const target=m.roomPath[m.roomPathIndex],p=r.roomPosition||(r.roomPosition={x:50,y:83}),dx=target.x-p.x,dy=target.y-p.y,dist=Math.hypot(dx,dy);
+        if(dist<.05){p.x=target.x;p.y=target.y;m.roomPathIndex++;continue;}
+        if(Math.abs(dx)>Math.abs(dy))m.facing=dx<0?'left':'right';else m.facing=dy<0?'up':'down';
+        const travel=Math.min(dist,roomRemaining),ratio=travel/dist;p.x=clamp(p.x+dx*ratio,5,95);p.y=clamp(p.y+dy*ratio,9,91);roomRemaining-=travel;roomMoved=true;
+        if(travel>=dist-.01){p.x=target.x;p.y=target.y;m.roomPathIndex++;}
+      }
+      if(m.roomPathIndex>=m.roomPath.length){
+        const action=m.roomTargetAction||'idle',status=m.roomTargetStatus,furniture=m.roomTargetFurniture;
+        m.roomPath=[];m.roomPathIndex=0;m.roomTargetAction='';m.roomTargetStatus='';m.roomTargetFurniture='';
+        m.action=action;r.pose=action;if(status)r.status=status;m.occupiedFurniture=furniture||m.occupiedFurniture||'';m.activityUntil=now()+22000;m.nextAmbientAt=m.activityUntil+4000;
+        if(furniture)log('家具互动',r.name+' 到达 '+furniture+' 附近，'+(status||'开始活动')+'。','interaction',r.id);
+      }
+      return roomMoved;
+    }
+    if(!m.path.length||m.pathIndex>=m.path.length)return false;
+    let remaining=Math.max(0,Math.min(.12,dt))*((m.action==='run')?15:8.5),moved=false;
+    while(remaining>0&&m.pathIndex<m.path.length){
+      const target=m.path[m.pathIndex],p=r.position||(r.position={x:50,y:60}),dx=target.x-p.x,dy=target.y-p.y,dist=Math.hypot(dx,dy);
+      if(dist<.05){p.x=target.x;p.y=target.y;m.pathIndex++;continue;}
+      if(Math.abs(dx)>Math.abs(dy))m.facing=dx<0?'left':'right';else m.facing=dy<0?'up':'down';
+      const travel=Math.min(dist,remaining),ratio=travel/dist;p.x=clamp(p.x+dx*ratio,3,97);p.y=clamp(p.y+dy*ratio,5,95);remaining-=travel;moved=true;
+      if(travel>=dist-.01){p.x=target.x;p.y=target.y;m.pathIndex++;}
+    }
+    if(m.pathIndex>=m.path.length)finishResidentRoute(r);
+    return moved;
+  }
+  function livingNeeds(r){
+    const m=livingMotion(r),n=m.needs&&typeof m.needs==='object'?m.needs:(m.needs={});
+    for(const [key,value] of Object.entries({energy:58,social:42,fun:38,comfort:46}))n[key]=clamp(Number.isFinite(Number(n[key]))?Number(n[key]):value,0,100);
+    return n;
+  }
+  function updateResidentNeeds(r){
+    if(!world||!r)return;
+    const m=livingMotion(r),needs=livingNeeds(r),simNow=Number(world.worldNow)||now();
+    const last=Number(m.needsUpdatedAt)||simNow,elapsedHours=clamp((simNow-last)/3600000,0,6);
+    if(elapsedHours<=0){m.needsUpdatedAt=simNow;return;}
+    const action=m.action||'idle';
+    needs.energy=clamp(needs.energy-3.2*elapsedHours+(action==='sleep'?19:action==='sit'?2:0)*elapsedHours,0,100);
+    needs.social=clamp(needs.social+3.5*elapsedHours-(['talk','hug'].includes(action)?22:0)*elapsedHours,0,100);
+    needs.fun=clamp(needs.fun+3*elapsedHours-(action==='dance'?24:['read','work'].includes(action)?2:0)*elapsedHours,0,100);
+    needs.comfort=clamp(needs.comfort+2.5*elapsedHours-(['sleep','sit'].includes(action)?8:0)*elapsedHours,0,100);
+    m.needsUpdatedAt=simNow;
+  }
+  function ambientActionFor(r){
+    const building=world.map.buildings.find(b=>b.id===r.buildingId),type=building?.type||'home',hour=new Date(world.worldNow||now()).getHours();
+    const pools={home:hour<7?['sleep','idle']:hour<10?['eat','sit']:['sit','read','work'],cafe:['sit','eat','talk'],park:['idle','wave','dance','sit'],shop:['shop','idle','talk'],school:['read','work','sit'],studio:['work','read','dance','sit']};
+    const pool=pools[type]||['idle','sit'];
+    const personality=String(r.personality||'').toLowerCase(),needs=livingNeeds(r);
+    if(needs.energy<=18)return type==='home'?'sleep':'sit';
+    if(needs.social>=82&&!/内向|安静|introvert/.test(personality))return 'talk';
+    if(needs.fun>=84&&(pool.includes('dance')||type==='park'))return 'dance';
+    if(needs.comfort>=84&&pool.includes('sit'))return 'sit';
+    if(/内向|安静|introvert/.test(personality)&&pool.includes('talk'))return Math.random()<.8?'read':'sit';
+    if(/外向|活泼|社交|extrovert/.test(personality)&&pool.includes('talk'))return 'talk';
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function startAutonomousSocialPairs(){
+    const time=now(),npcs=world.residents.filter(r=>r.kind==='npc'&&!r.controlled&&!livingMotion(r).path.length&&!livingMotion(r).roomPath.length&&livingMotion(r).activityUntil<=time);
+    for(let i=0;i<npcs.length;i++){
+      const a=npcs[i],ma=livingMotion(a);if(ma.socialCooldownUntil>time||ma.partnerId||ma.activityUntil>time)continue;
+      for(let j=i+1;j<npcs.length;j++){
+        const b=npcs[j],mb=livingMotion(b);if(mb.socialCooldownUntil>time||mb.partnerId||mb.roomPath.length||mb.activityUntil>time||a.buildingId!==b.buildingId)continue;
+        const pa=a.position||{x:50,y:60},pb=b.position||{x:50,y:60};if(Math.hypot(pa.x-pb.x,pa.y-pb.y)>18)continue;
+        const rel=relationship(a.id,b.id),affection=rel&&['lover','spouse'].includes(rel.type),action=affection?'hug':'talk';
+        ma.partnerId=b.id;mb.partnerId=a.id;ma.socialCooldownUntil=time+30000;mb.socialCooldownUntil=time+30000;ma.activityUntil=time+8500;mb.activityUntil=time+8500;
+        ma.action=action;mb.action=action;a.pose=action;b.pose=action;a.expression='happy';b.expression='happy';a.status=affection?'与 '+b.name+' 共度时光':'与 '+b.name+' 交谈';b.status=affection?'与 '+a.name+' 共度时光':'与 '+a.name+' 交谈';
+        ma.facing=pa.x<=pb.x?'right':'left';mb.facing=pa.x<=pb.x?'left':'right';
+        livingNeeds(a).social=clamp(livingNeeds(a).social-24,0,100);livingNeeds(b).social=clamp(livingNeeds(b).social-24,0,100);
+        if(rel)rel.affinity=clamp((rel.affinity||0)+1,0,100);
+        else if(Math.random()<.28&&relationAllowed(a,b,false))addRelationship(a.id,b.id,'friend','auto',22);
+        log(affection?'居民亲密互动':'居民偶遇交谈',a.name+' 和 '+b.name+' 在 '+(world.map.buildings.find(x=>x.id===a.buildingId)?.name||'城市')+' '+(affection?'亲密相处。':'聊了一会儿。'),'social',a.id);
+        break;
+      }
+    }
+  }
+  function runAutonomousPulse(){
+    if(!world||world.settings.paused)return;
+    const time=now();
+    world.residents.forEach(r=>{
+      const m=livingMotion(r);updateResidentNeeds(r);if(r.controlled||m.path.length||m.roomPath?.length)return;
+      if(m.partnerId&&m.activityUntil<=time){const partner=currentResident(m.partnerId);m.partnerId='';if(partner&&partner.motion)partner.motion.partnerId='';m.action='idle';r.pose='idle';r.expression='neutral';m.nextAmbientAt=time+7000;return;}
+      if(m.activityUntil>time)return;
+      if(m.nextAmbientAt<=time){
+        const action=ambientActionFor(r),expression=action==='talk'||action==='dance'?'happy':'neutral',status=({sleep:'正在休息',sit:'正在放松',read:'正在阅读',work:'正在工作',eat:'正在用餐',shop:'正在浏览商品',talk:'正在交谈',dance:'正在娱乐',wave:'正在打招呼'})[action]||'正在活动';
+        if(!$('scInterior')?.hidden&&r.buildingId===interiorBuildingId){
+          const type=world.map.buildings.find(b=>b.id===r.buildingId)?.type||'home';
+          const choices={sleep:['床'],sit:['沙发','长椅'],read:['书架','课桌'],work:['工作台','书桌','画架','黑板'],eat:['餐桌','咖啡机'],shop:['服装架','收银台'],talk:['餐桌','沙发'],dance:['沙发']};
+          const available=choices[action]||[];const target=available.find(name=>Array.from($('scRoomFurniture')?.querySelectorAll('[data-sc-furniture]')||[]).some(btn=>btn.dataset.scFurniture===name));
+          if(target&&queueResidentToRoomFurniture(r,target,action,expression,status)){r.expression=expression;return;}
+        }
+        m.action=action;r.pose=action;r.expression=expression;m.activityUntil=time+9000+Math.random()*10000;m.nextAmbientAt=m.activityUntil+2500;
+      }
+    });
+    startAutonomousSocialPairs();
+  }
+  function scheduleFor(r,hour){
+    const home=r.homeId||'home',student=r.kind==='npc'&&/学生|student/i.test(String(r.role||'')),personality=String(r.personality||'').toLowerCase();
+    if(hour<7)return {dest:home,status:'睡眠中',action:'sleep'};
+    if(hour<9)return {dest:home,status:'早餐与准备',action:hour<8?'eat':'idle'};
+    if(hour<12)return {dest:student?'school':(r.jobId||'cafe'),status:student?'学习中':'工作中',action:student?'read':'work'};
+    if(hour<14)return {dest:'cafe',status:'午餐与休息',action:'eat'};
+    if(hour<17)return {dest:student?'school':(r.jobId||'studio'),status:student?'继续学习':'下午工作',action:student?'read':'work'};
+    if(hour<20){const dest=/内向|安静|introvert/.test(personality)?'studio':(/运动|活泼|outgoing|extrovert/.test(personality)?'park':['cafe','park','studio'][Math.abs((r.name||'').length)%3]);return {dest,status:'下班后的自由活动',action:dest==='cafe'?'sit':dest==='park'?'idle':'read'};}
+    if(hour<22)return {dest:home,status:'回家放松',action:'sit'};
+    return {dest:home,status:'睡眠中',action:'sleep'};
+  }
+  function moveResident(r,x,y){
+    r.position={x:clamp(x,3,97),y:clamp(y,5,95)};
+    if(r.motion){r.motion.path=[];r.motion.pathIndex=0;r.motion.targetBuildingId='';r.motion.targetStatus='';r.motion.targetAction='';r.motion.action=r.pose||'idle';}
+  }
   function dailyRoutine(){
-    if(!world)return;const hour=stamp().getHours();
-    world.residents.forEach((r,i)=>{
+    if(!world)return;const hour=new Date(world.worldNow||now()).getHours();
+    world.residents.forEach(r=>{
       if(r.controlled)return;
-      const target=scheduleFor(r,hour);if(r.buildingId!==target.dest||r.status!==target.status){r.buildingId=target.dest;r.status=target.status;const b=world.map.buildings.find(x=>x.id===target.dest)||world.map.buildings[i%world.map.buildings.length];if(b)moveResident(r,20+(i%4)*19+(Math.random()*4-2),49+Math.floor(i/4)*8+(Math.random()*3-1.5));log(r.name+' · '+target.status,(world.map.buildings.find(x=>x.id===target.dest)?.name||'城市')+'，按自己的日程开始活动。','routine',r.id);}
-      if(r.wardrobe?.auto!==false){r.wardrobe.dayOutfit=r.wardrobe.dayOutfit||clone(r.outfit);r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||{...clone(r.outfit),top:'top-tee',topColor:'#d9c9d8',bottom:'bottom-shorts',bottomColor:'#b9a6bd',sleepwear:'sleep-set'};const isSleep=hour>=22||hour<7;const targetOutfit=isSleep?r.wardrobe.sleepOutfit:r.wardrobe.dayOutfit;if(targetOutfit){r.outfit=clone(targetOutfit);r.outfit.isSleeping=isSleep;}}
+      const m=livingMotion(r),target=scheduleFor(r,hour),pending=m.targetBuildingId===target.dest;
+      const scheduleKey=[target.dest,target.status,target.action].join('|');
+      if(!pending&&r.buildingId!==target.dest){
+        const previous=r.buildingId,b=world.map.buildings.find(x=>x.id===target.dest);
+        const ok=queueResidentToBuilding(r,target.dest,{status:target.status,action:target.action,expression:target.action==='sleep'?'sleepy':'neutral'});
+        if(ok){m.scheduleKey=scheduleKey;if(previous!==target.dest)log(r.name+' · '+target.status,(b?.name||'城市')+'，开始前往新的日常地点。','routine',r.id);}
+      }else if(pending){m.scheduleKey=scheduleKey;}
+      else if(r.buildingId===target.dest&&!m.path.length&&m.scheduleKey!==scheduleKey){
+        r.status=target.status;m.action=target.action;r.pose=target.action;m.activityUntil=now()+12000;m.nextAmbientAt=now()+15000;m.scheduleKey=scheduleKey;
+      }
+      if(r.wardrobe?.auto!==false){
+        r.wardrobe.dayOutfit=r.wardrobe.dayOutfit||clone(r.outfit);
+        r.wardrobe.sleepOutfit=r.wardrobe.sleepOutfit||{...clone(r.outfit),top:'top-tee',topColor:'#d9c9d8',bottom:'bottom-shorts',bottomColor:'#b9a6bd',sleepwear:'sleep-set'};
+        const isSleep=hour>=22||hour<7,targetOutfit=isSleep?r.wardrobe.sleepOutfit:r.wardrobe.dayOutfit;
+        if(targetOutfit){const changed=JSON.stringify(r.outfit)!==JSON.stringify({...clone(targetOutfit),isSleeping:isSleep});r.outfit=clone(targetOutfit);r.outfit.isSleeping=isSleep;if(changed)m.outfitRefreshAt=now();}
+      }
     });
   }
   function autoNpcRelationships(){
@@ -729,12 +1134,12 @@
     const npcs=world.residents.filter(r=>r.kind==='npc');if(!npcs.length){if(!silent)notify('城市里还没有 NPC，添加 NPC 后就会出现更多自主事件。');return}
     const r=npcs[Math.floor(Math.random()*npcs.length)],type=['friend','trip','job','move'][Math.floor(Math.random()*4)];let event;
     if(type==='friend'){const other=npcs.find(x=>x.id!==r.id&&!relationship(x.id,r.id));if(!other){if(!silent)notify('NPC 之间已经有不少关系了。');return}event={title:'结识新朋友',detail:r.name+' 在日常活动中认识了 '+other.name+'。',apply:()=>addRelationship(r.id,other.id,'friend','auto',30)}}
-    else if(type==='trip')event={title:'短途旅行',detail:r.name+' 想在周末去附近走走，暂时离开日常路线。',apply:()=>{r.status='短途旅行';r.buildingId='park';moveResident(r,76,45)}};
+    else if(type==='trip')event={title:'短途旅行',detail:r.name+' 想在周末去附近走走，暂时离开日常路线。',apply:()=>{r.status='短途旅行';queueResidentToBuilding(r,'park',{status:'短途旅行',action:'idle',expression:'happy'})}};
     else if(type==='job')event={title:'工作安排变化',detail:r.name+' 收到新的工作机会，想把工作地点调整到兴趣工作室。',apply:()=>{r.jobId='studio';r.role=r.role||'自由职业者'}};
     else event={title:'考虑搬家',detail:r.name+' 想换一个居住环境，计划搬到居民公寓。',apply:()=>{r.homeId='home';r.buildingId='home'}};
     event.id=uid('event');event.at=world.worldNow;event.residentId=r.id;event.status='approved';event.apply();world.events.unshift(event);log(event.title,event.detail,'event',r.id);if(!silent)persist().then(()=>{renderRecords('events');renderMap();notify('发生了一个 NPC 人生事件。')});
   }
-  function approveEvent(id,yes){const e=world.events.find(x=>x.id===id);if(!e||e.status!=='pending')return;e.status=yes?'approved':'rejected';if(yes){const r=currentResident(e.residentId);if(r){if(e.kind==='move'){r.homeId='home';r.buildingId='home';r.status='已搬入新住所'}if(e.kind==='job'){r.jobId='studio';r.status='工作安排已更新'};if(e.kind==='trip'){r.status='短途旅行';r.buildingId='park';moveResident(r,76,45)}}log('已确认人生事件',e.title,'event',r?.id||'')}else log('人生事件暂缓',e.title,'event');persist().then(()=>renderRecords('events'))}
+  function approveEvent(id,yes){const e=world.events.find(x=>x.id===id);if(!e||e.status!=='pending')return;e.status=yes?'approved':'rejected';if(yes){const r=currentResident(e.residentId);if(r){if(e.kind==='move'){r.homeId='home';r.buildingId='home';r.status='已搬入新住所'}if(e.kind==='job'){r.jobId='studio';r.status='工作安排已更新'};if(e.kind==='trip'){r.status='短途旅行';queueResidentToBuilding(r,'park',{status:'短途旅行',action:'idle',expression:'happy'})}}log('已确认人生事件',e.title,'event',r?.id||'')}else log('人生事件暂缓',e.title,'event');persist().then(()=>renderRecords('events'))}
   function proposeCharEvent(){
     const chars=world.residents.filter(r=>r.kind==='char');if(!chars.length)return;
     const r=chars[Math.floor(Math.random()*chars.length)],kind=['move','job','trip'][Math.floor(Math.random()*3)];
@@ -744,10 +1149,7 @@
     world.events.unshift({id:uid('event'),at:world.worldNow,residentId:r.id,title,detail,kind,status:'pending'});
     log('等待用户确认',detail,'event',r.id);
   }
-  function ambientMovement(){
-    if(!world||world.settings.paused)return;
-    world.residents.forEach(r=>{if(r.controlled||r.status==='睡眠中'||Math.random()>.28)return;const p=r.position||{x:50,y:50};moveResident(r,p.x+(Math.random()-.5)*2.2,p.y+(Math.random()-.5)*2.2)});
-  }
+  function ambientMovement(){if(!world||world.settings.paused)return;runAutonomousPulse();}
   function advanceTime(){
     if(!world)return;
     const realNow=now(),last=Number(world.lastRealAt)||realNow;
@@ -755,6 +1157,7 @@
     if(world.settings.paused||elapsed<=0)return;
     const DAY=86400000,HOUR=3600000,MAX_CATCHUP_DAYS=180;
     let remaining=Math.min(elapsed*speedMultiplier(),MAX_CATCHUP_DAYS*DAY);
+    const compactCatchup=remaining>6*HOUR;
     let currentDay=new Date(world.worldNow||realNow).toDateString();
     let guard=0;
     while(remaining>0&&guard++<MAX_CATCHUP_DAYS*24+24){
@@ -762,7 +1165,7 @@
       const nextHour=new Date(d.getFullYear(),d.getMonth(),d.getDate(),d.getHours()+1,0,0,0).getTime();
       const step=Math.max(1,Math.min(remaining,nextHour-(Number(world.worldNow)||realNow)));
       world.worldNow=(Number(world.worldNow)||realNow)+step;remaining-=step;
-      dailyRoutine();
+      if(!compactCatchup)dailyRoutine();
       const dayNow=new Date(world.worldNow).toDateString();
       if(dayNow!==currentDay){
         currentDay=dayNow;autoNpcRelationships();socialPulse();
@@ -773,11 +1176,53 @@
         world.settings.season=month>=3&&month<=5?'spring':month>=6&&month<=8?'summer':month>=9&&month<=11?'autumn':'winter';
       }
     }
+    if(compactCatchup)dailyRoutine();
     ambientMovement();
   }
-  function startTicker(){clearInterval(tickTimer);tickTimer=setInterval(()=>{if(!world||!$('space')?.classList.contains('active'))return;advanceTime();renderMap();renderLatestLogs();if($('scInterior')&&!$('scInterior').hidden)renderInteriorResidents();persist()},10000)}
-  function moveControlled(dx,dy){const r=currentResident(controlResidentId);if(!r||!world)return;r.controlled=true;world.currentController=r.id;const p=r.position||{x:50,y:50};moveResident(r,p.x+dx,p.y+dy);r.status='手动控制中';renderMap();persist()}
-  function moveToPoint(e){const rect=$('scTownMap').getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width*100,y=(e.clientY-rect.top)/rect.height*100;if(e.target.closest('.sc-building,.sc-sprite'))return;const r=currentResident(controlResidentId);if(!r)return;r.controlled=true;moveResident(r,x,y);r.status='手动移动中';renderMap();persist()}
+  let livingRaf=0,livingLastFrame=0,livingLastPulse=0,livingLastSave=0;
+  function visibleSpriteNodes(){
+    const mapNodes=!$('scViewMap')?.hidden?Array.from($('scSprites')?.querySelectorAll('.sc-sprite[data-sc-resident]')||[]):[];
+    const roomNodes=!$('scInterior')?.hidden?Array.from($('scRoomResidents')?.querySelectorAll('.sc-room-person[data-sc-resident]')||[]):[];
+    return [...mapNodes,...roomNodes];
+  }
+  function refreshLivingDom(){
+    if(!world)return;const lookup=new Map(world.residents.map(r=>[String(r.id),r]));
+    visibleSpriteNodes().forEach(el=>{
+      const r=lookup.get(String(el.dataset.scResident));if(!r)return;
+      const key=spriteSignature(r);
+      if(el.dataset.scRenderKey!==key){
+        const label=el.classList.contains('sc-sprite')?`<span class="sc-sprite-label">${esc(r.name)}</span>`:'';
+        el.innerHTML=sprite(r)+label;el.dataset.scRenderKey=key;
+      }
+      if(el.classList.contains('sc-sprite')){
+        const p=r.position||{x:50,y:60};el.style.transition='none';el.style.left=clamp(p.x,2,97)+'%';el.style.top=clamp(p.y,5,95)+'%';
+      }else if(el.classList.contains('sc-room-person')&&r.roomPosition){el.style.left=clamp(r.roomPosition.x,5,95)+'%';el.style.top=clamp(r.roomPosition.y,10,92)+'%';}
+    });
+  }
+  function livingFrame(timestamp){
+    if(!world||!$('space')?.classList.contains('active')){livingRaf=0;return;}
+    const dt=livingLastFrame?Math.min(.12,(timestamp-livingLastFrame)/1000):0;livingLastFrame=timestamp;
+    if(!document.hidden&&!world.settings.paused){
+      let moved=false;world.residents.forEach(r=>{if(updateResidentMovement(r,dt))moved=true;});
+      if(timestamp-livingLastPulse>2200){runAutonomousPulse();livingLastPulse=timestamp;}
+      if(timestamp-livingLastSave>14000&&moved){persist();livingLastSave=timestamp;}
+      if(moved||timestamp%250<32)refreshLivingDom();
+    }
+    livingRaf=requestAnimationFrame(livingFrame);
+  }
+  function startLivingLoop(){
+    if(livingRaf)cancelAnimationFrame(livingRaf);
+    livingLastFrame=0;livingLastPulse=0;livingLastSave=0;
+    if(typeof requestAnimationFrame==='function')livingRaf=requestAnimationFrame(livingFrame);
+  }
+  function stopLivingLoop(){if(livingRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(livingRaf);livingRaf=0;livingLastFrame=0;}
+  function startTicker(){
+    clearInterval(tickTimer);
+    tickTimer=setInterval(()=>{if(!world||!$('space')?.classList.contains('active'))return;advanceTime();renderMap();renderLatestLogs();if($('scInterior')&&!$('scInterior').hidden)renderInteriorResidents();persist()},10000);
+    startLivingLoop();
+  }
+  function moveControlled(dx,dy){const r=currentResident(controlResidentId);if(!r||!world)return;r.controlled=true;world.currentController=r.id;const p=r.position||{x:50,y:60};queueResidentToPoint(r,p.x+dx*1.8,p.y+dy*1.8,{manual:true,targetStatus:'手动移动中',targetAction:'idle'});refreshLivingDom();persist()}
+  function moveToPoint(e){const rect=$('scTownMap').getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width*100,y=(e.clientY-rect.top)/rect.height*100;if(e.target.closest('.sc-building,.sc-sprite'))return;const r=currentResident(controlResidentId);if(!r)return;r.controlled=true;queueResidentToPoint(r,x,y,{manual:true,targetStatus:'手动移动中',targetAction:'idle'});refreshLivingDom();persist()}
   function modal(title,body,kicker='SPACE CITY'){ $('scModalTitle').textContent=title;$('scModalKicker').textContent=kicker;$('scModalBody').innerHTML='<div class="sc-modal-content">'+body+'</div>';$('scModal').hidden=false;openModal=title; }
   function closeModal(){$('scModal').hidden=true;openModal=''}
   let closetSlot='hair';
@@ -837,7 +1282,7 @@
   }
   function applyProfileVisual(id,kind,value){
     const r=currentResident(id);if(!r)return;
-    if(kind==='expression')r.expression=value;else if(kind==='pose')r.pose=value;
+    if(kind==='expression')r.expression=value;else if(kind==='pose'){const m=livingMotion(r);m.path=[];m.pathIndex=0;m.targetBuildingId='';m.action=ANIMATED_POSES.has(value)?value:'idle';m.activityUntil=now()+12000;r.pose=m.action;}
     const preview=$('scProfilePreview');if(preview)preview.innerHTML=sprite(r);const editPreview=$('scEditPreview');if(editPreview)editPreview.innerHTML=sprite(r);
     const status=$('scProfileStatus')||$('scEditStatus');if(status&&kind==='pose'){const labels={idle:'站立中',walk:'正在行走',run:'正在小跑',wave:'正在挥手',hug:'正在拥抱',sit:'坐下休息',read:'正在阅读',dance:'正在跳舞',sleep:'正在睡觉',work:'正在工作',eat:'正在用餐',talk:'正在交谈',shop:'正在购物'};r.status=labels[value]||r.status;status.textContent=r.status;}
     document.querySelectorAll('[data-sc-expression]').forEach(el=>el.classList.toggle('active',el.dataset.scExpression===r.expression));
@@ -849,7 +1294,7 @@
   function addPersona(id){const p=personas().find(x=>String(x.id)===String(id));if(!p)return;if(world.residents.some(r=>r.kind==='user')){notify('这座城市已经有一个用户自设。请先移除现有用户角色，再添加其他自设。');return}if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'user',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',age:p.age||24,role:p.role||'用户自设',personality:p.personality||p.description||'',avatar:p.avatar||''});r.personaSnapshot=clone(p);world.personaRef={id:p.id,snapshot:clone(p)};r.position={x:48,y:52};world.residents.unshift(r);world.currentController=r.id;controlResidentId=r.id;log('用户自设加入城市',p.name+' 已作为用户角色加入城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('已添加你创建的自设。')}
   function createNpc(){const name=$('scNpcName')?.value.trim();if(!name){notify('请先填写 NPC 姓名。');return}if(world.residents.length>=world.settings.residentLimit){notify('已经达到当前居民数量上限。');return}const r=makeResident({kind:'npc',name,gender:$('scNpcGender')?.value||'',age:$('scNpcAge').value,role:$('scNpcRole').value,personality:$('scNpcPersonality').value});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('新居民入住',r.name+' 加入了这座城市。','resident',r.id);closeModal();renderResidents();renderMap();persist();notify('NPC 已加入城市。')}
   function addChar(id){const p=people().find(x=>x.id===id);if(!p)return;if(world.residents.length>=world.settings.residentLimit){notify('已达到居民数量上限。');return}const r=makeResident({kind:'char',sourceId:p.id,name:p.name,gender:p.gender||p.sex||'',role:p.role,personality:p.personality||p.description,avatar:p.avatar,age:p.age||24});const n=world.residents.length;r.position={x:18+(n%4)*20,y:50+Math.floor(n/4)*8};world.residents.push(r);log('CHAR 加入城市',p.name+' 加入了城市生活。','resident');closeModal();renderResidents();renderMap();persist()}
-  function interactResident(id){const r=currentResident(id);if(!r)return;world.residents.forEach(x=>{if(x.id!==id&&x.kind==='npc'&&r.kind==='npc'){const rel=relationship(id,x.id);if(rel)rel.affinity=clamp(rel.affinity+8,0,100);else if(Math.random()<.5)addRelationship(id,x.id,'friend','auto',28)}});r.status='正在社交';log('居民互动',r.name+' 与其他居民进行了一次日常交流。','social',id);persist();renderResidents();renderRelations();notify('互动已记录，关系亲密度可能有所变化。')}
+  function interactResident(id){const r=currentResident(id);if(!r)return;world.residents.forEach(x=>{if(x.id!==id&&x.kind==='npc'&&r.kind==='npc'){const rel=relationship(id,x.id);if(rel)rel.affinity=clamp(rel.affinity+8,0,100);else if(Math.random()<.5)addRelationship(id,x.id,'friend','auto',28)}});setResidentAction(r,'talk','happy','正在社交',10000);log('居民互动',r.name+' 与其他居民进行了一次日常交流。','social',id);persist();renderResidents();renderRelations();notify('互动已记录，关系亲密度可能有所变化。')}
   function saveRelation(){const a=currentResident($('scRelA').value),b=currentResident($('scRelB').value),type=$('scRelType').value;if(!a||!b||a.id===b.id){notify('请选择两位不同居民。');return}if(['lover','spouse'].includes(type)&&!relationAllowed(a,b,true)){notify('这组角色不能由用户设定为恋爱关系：只允许用户与 CHAR、CHAR 与 CHAR（手动确认），以及 NPC 与 NPC。');return}addRelationship(a.id,b.id,type,'user',type==='friend'?25:100);if(type==='lover'||type==='spouse'){const fam=makeCoupleFamily(a,b);log('共同住所已安排',a.name+' 与 '+b.name+' 已成为'+(type==='spouse'?'夫妻':'恋人')+'，共同居住于 '+(world.map.buildings.find(x=>x.id===fam?.sharedHomeId)?.name||'居民公寓')+'。','family');}renderRelations();renderResidents();renderMap();persist();notify(['lover','spouse'].includes(type)?'关系已保存，双方已安排共同居住。':'关系设置已保存。')}
   function createFamily(){const opts=world.residents.map(r=>`<label class="sc-choice"><input type="checkbox" value="${esc(r.id)}"><span>${esc(r.name)}</span></label>`).join('');const homes=(world.map.buildings||[]).filter(b=>b.type==='home');const homeOpts=homes.map(b=>`<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');modal('建立家庭',`<div class="sc-form-row"><label>家庭名称</label><input id="scFamilyName" placeholder="例如：云朵公寓"></div><div class="sc-form-row"><label>选择共同住所</label><select id="scFamilyHome" class="sc-input">${homeOpts||'<option value="home">居民公寓</option>'}</select></div><div class="sc-form-row"><label>选择家庭成员</label><div class="sc-choice-grid">${opts}</div></div><p class="sc-note">创建后，所有家庭成员会共享这处住所，并在居家时间回到这里。</p><button class="sc-btn sc-primary sc-full" data-sc-action="save-family">建立家庭并安排共同居住</button>`)}
   function saveFamily(){const ids=[...document.querySelectorAll('#scModalBody input[type=checkbox]:checked')].map(x=>x.value);if(ids.length<2){notify('至少选择两位家庭成员。');return}const name=$('scFamilyName').value.trim()||'我们的家庭';const homeId=$('scFamilyHome')?.value||'home';const linked=(world.families||[]).filter(f=>(f.memberIds||[]).some(id=>ids.includes(id)));const f=linked[0]||{id:uid('family'),createdAt:world.worldNow};f.name=name;f.memberIds=Array.from(new Set([...ids,...linked.flatMap(x=>x.memberIds||[])]));f.sharedHomeId=homeId;world.families=world.families.filter(x=>x===f||!linked.includes(x));if(!linked.length)world.families.push(f);f.memberIds.forEach((id,i)=>{const r=currentResident(id);if(r){r.familyId=f.id;r.householdId=f.id;r.homeId=homeId;if(ids.includes(id)){r.buildingId=homeId;r.status='家庭共同居住';r.roomPosition={x:28+(i%4)*15,y:73};}}});for(let i=0;i<ids.length;i++)for(let j=i+1;j<ids.length;j++)if(!relationship(ids[i],ids[j]))addRelationship(ids[i],ids[j],'family','user',50);log('建立家庭',name+' 已建立，共同住所：'+(world.map.buildings.find(x=>x.id===homeId)?.name||'居民公寓')+'；成员：'+f.memberIds.map(id=>displayResident(currentResident(id))).join('、'),'family');closeModal();renderRelations();renderResidents();renderMap();persist();notify('家庭已建立，所有成员已经搬入共同住所。')}
@@ -871,18 +1316,19 @@
   function useFurniture(name,button){
     const here=world.residents.filter(x=>(x.buildingId||x.homeId||'home')===interiorBuildingId);
     let r=here.find(x=>x.id===controlResidentId)||here[0]||currentResident(controlResidentId)||world.residents[0];if(!r)return;
-    const poses={'床':['sleep','sleepy','休息中'],'沙发':['sit','happy','坐在沙发上休息'],'餐桌':['eat','happy','正在用餐'],'咖啡机':['eat','happy','正在喝咖啡'],'书架':['read','neutral','正在阅读'],'课桌':['read','neutral','正在学习'],'黑板':['work','neutral','正在上课'],'书桌':['work','neutral','正在工作'],'工作台':['work','happy','正在创作'],'画架':['work','happy','正在绘画'],'长椅':['sit','happy','坐在长椅上休息'],'喷泉':['idle','happy','在喷泉旁放松'],'花坛':['idle','happy','在花坛旁欣赏花朵'],'收银台':['work','neutral','正在整理店铺']};
+    const poses={'床':['sleep','sleepy','休息中'],'沙发':['sit','happy','坐在沙发上休息'],'餐桌':['eat','happy','正在用餐'],'咖啡机':['eat','happy','正在喝咖啡'],'书架':['read','neutral','正在阅读'],'课桌':['read','neutral','正在学习'],'黑板':['work','neutral','正在上课'],'书桌':['work','neutral','正在工作'],'工作台':['work','happy','正在创作'],'画架':['work','happy','正在绘画'],'长椅':['sit','happy','坐在长椅上休息'],'喷泉':['idle','happy','在喷泉旁放松'],'花坛':['idle','happy','在花坛旁欣赏花朵'],'收银台':['work','neutral','正在整理店铺'],'服装架':['shop','happy','正在挑选衣服'],'试衣镜':['idle','happy','正在整理穿搭']};
     const [pose,expression,status]=poses[name]||['idle','neutral','正在活动'];
-    const left=Number.parseFloat(button?.style?.left),top=Number.parseFloat(button?.style?.top);
-    if(button&&Number.isFinite(left)&&Number.isFinite(top))r.roomPosition={x:clamp(left,8,92),y:clamp(top+17,18,87)};
-    r.buildingId=interiorBuildingId;r.pose=pose;r.expression=expression;r.status=status;
-    log('家具互动',r.name+' '+status+'。','interaction',r.id);renderInteriorResidents();renderMap();renderLatestLogs();persist();notify(r.name+' '+status+'。');
+    if(!r.roomPosition)r.roomPosition={x:50,y:83};
+    const queued=queueResidentToRoomFurniture(r,name,pose,expression,status,button);
+    if(!queued){notify('这个家具附近暂时没有可用路线，请换一个位置试试。');return;}
+    r.buildingId=interiorBuildingId;
+    log('家具互动',r.name+' 开始前往'+name+'。','interaction',r.id);renderInteriorResidents();refreshLivingDom();renderMap();renderLatestLogs();persist();notify(r.name+' 正在前往'+name+'。');
   }
   function action(action,el){const id=el.dataset.id;switch(action){
-    case 'new-city':$('scCreatePanel').hidden=false;renderContactChoices();break;case 'cancel-create':$('scCreatePanel').hidden=true;break;case 'create-city':createCity();break;case 'enter-city':openWorld(id);break;case 'export-one':exportBackup(id);break;case 'back-lobby':clearInterval(tickTimer);persist();world=null;$('space').classList.remove('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=true;$('scLobby').hidden=false;renderCityList();break;
-    case 'world-settings':setTab('settings');break;case 'expand-area':expandArea();break;case 'add-building':addBuildingModal();break;case 'save-building':saveBuilding();break;case 'open-closet':closetModal(controlResidentId||world.residents[0]?.id);break;case 'add-resident':addResidentModal();break;case 'random-event':randomLifeEvent();break;case 'calendar':openCalendar();break;case 'stop-control':{const r=currentResident(controlResidentId);if(r){r.controlled=false;r.status='自主生活';renderMap();persist();notify(r.name+' 已恢复自主行动。')}break}
+    case 'new-city':$('scCreatePanel').hidden=false;renderContactChoices();break;case 'cancel-create':$('scCreatePanel').hidden=true;break;case 'create-city':createCity();break;case 'enter-city':openWorld(id);break;case 'export-one':exportBackup(id);break;case 'back-lobby':clearInterval(tickTimer);stopLivingLoop();persist();world=null;$('space').classList.remove('sc-city-immersive');$('scWorld').hidden=true;$('scInterior').hidden=true;$('scLobby').hidden=false;renderCityList();break;
+    case 'world-settings':setTab('settings');break;case 'expand-area':expandArea();break;case 'add-building':addBuildingModal();break;case 'save-building':saveBuilding();break;case 'open-closet':closetModal(controlResidentId||world.residents[0]?.id);break;case 'add-resident':addResidentModal();break;case 'random-event':randomLifeEvent();break;case 'calendar':openCalendar();break;case 'stop-control':{const r=currentResident(controlResidentId);if(r){r.controlled=false;const m=livingMotion(r);m.path=[];m.pathIndex=0;m.targetBuildingId='';m.action='idle';r.pose='idle';r.status='自主生活';renderMap();persist();notify(r.name+' 已恢复自主行动。')}break}
     case 'story':document.querySelector('#lrSpaceStoryHub [data-story-action="library"]')?.click();break;
-    case 'profile':renderProfile(id);break;case 'save-expression-pose':{const r=currentResident(id);if(r){r.expression=$('scExpressionSelect')?.value||'neutral';r.pose=$('scPoseSelect')?.value||'idle';log('角色状态更新',r.name+' 切换了表情与动作。','appearance',r.id);closeModal();renderMap();renderResidents();if(!$('scInterior').hidden)renderInteriorResidents();persist();notify('表情与动作已应用。')}break}case 'edit-resident':editResidentModal(id);break;case 'save-resident':saveResident(id);break;case 'closet-one':closetModal(id);break;case 'control-one':world.residents.forEach(x=>{x.controlled=false});controlResidentId=id;world.currentController=id;const rr=currentResident(id);if(rr){rr.controlled=true;rr.status='手动控制中'}fillController();setTab('map');renderMap();persist();closeModal();notify('已切换手动控制角色。');break;case 'interact':interactResident(id);break;case 'create-npc':createNpc();break;case 'create-family':createFamily();break;case 'save-family':saveFamily();break;case 'save-relation':saveRelation();break;case 'save-settings':saveSettings();break;case 'export-backup':exportBackup();break;case 'import-backup':$('scBackupFile').click();break;case 'delete-world':if(confirm('确定删除这座城市及其所有居民、关系、日志和照片吗？此操作不可撤销。')){worlds=worlds.filter(x=>x.id!==world.id);idbDelete(world.id).then(writeRegistry);world=null;$('space').classList.remove('sc-city-immersive');$('scWorld').hidden=true;$('scLobby').hidden=false;renderCityList()}break;
+    case 'profile':renderProfile(id);break;case 'save-expression-pose':{const r=currentResident(id);if(r){r.expression=$('scExpressionSelect')?.value||'neutral';const m=livingMotion(r);m.path=[];m.pathIndex=0;m.targetBuildingId='';m.action=ANIMATED_POSES.has($('scPoseSelect')?.value)?$('scPoseSelect').value:'idle';m.activityUntil=now()+12000;r.pose=m.action;log('角色状态更新',r.name+' 切换了表情与动作。','appearance',r.id);closeModal();renderMap();renderResidents();if(!$('scInterior').hidden)renderInteriorResidents();persist();notify('表情与动作已应用。')}break}case 'edit-resident':editResidentModal(id);break;case 'save-resident':saveResident(id);break;case 'closet-one':closetModal(id);break;case 'control-one':world.residents.forEach(x=>{x.controlled=false});controlResidentId=id;world.currentController=id;const rr=currentResident(id);if(rr){rr.controlled=true;rr.status='手动控制中'}fillController();setTab('map');renderMap();persist();closeModal();notify('已切换手动控制角色。');break;case 'interact':interactResident(id);break;case 'create-npc':createNpc();break;case 'create-family':createFamily();break;case 'save-family':saveFamily();break;case 'save-relation':saveRelation();break;case 'save-settings':saveSettings();break;case 'export-backup':exportBackup();break;case 'import-backup':$('scBackupFile').click();break;case 'delete-world':if(confirm('确定删除这座城市及其所有居民、关系、日志和照片吗？此操作不可撤销。')){stopLivingLoop();clearInterval(tickTimer);worlds=worlds.filter(x=>x.id!==world.id);idbDelete(world.id).then(writeRegistry);world=null;$('space').classList.remove('sc-city-immersive');$('scWorld').hidden=true;$('scLobby').hidden=false;renderCityList()}break;
     case 'leave-interior':$('scInterior').hidden=true;$('scWorld').hidden=false;$('space').classList.add('sc-city-immersive');renderMap();break;case 'close-modal':closeModal();break;case 'toggle-auto-outfit':{const r=currentResident($('scModalBody').dataset.closetResident);if(r){r.wardrobe.auto=r.wardrobe.auto===false;persist();closetModal(r.id,closetSlot)}break}case 'save-outfit':saveOutfit();break;case 'share-outfit':shareOutfit();break;case 'apply-shared-outfit':applySharedOutfit();break;case 'add-photo':$('scPhotoFile').click();break;case 'add-calendar':addCalendar();break;case 'approve-event':approveEvent(id,true);break;case 'reject-event':approveEvent(id,false);break;
     case 'save-outfit':saveOutfit();break;
   }}
@@ -909,7 +1355,7 @@
     window.addEventListener('lr-contacts-updated',()=>{if(world){renderResidents();renderContactChoices?.()}});
     }
     $('scTownMap')?.addEventListener('click',moveToPoint);
-    $('scAreaSelect')?.addEventListener('change',e=>{world.map.activeArea=e.target.value;renderMap();persist()});
+    $('scAreaSelect')?.addEventListener('change',e=>{world.map.activeArea=e.target.value;world.residents.forEach(r=>{const m=livingMotion(r);if(m.path.length){m.path=[];m.pathIndex=0;m.targetBuildingId='';m.targetStatus='';m.targetAction='';m.action='idle';r.pose='idle';}});renderMap();persist()});
     $('scControllerSelect')?.addEventListener('change',e=>{world.residents.forEach(x=>{x.controlled=false});controlResidentId=e.target.value;world.currentController=controlResidentId;const r=currentResident(controlResidentId);if(r){r.controlled=true;r.status='手动控制中'}renderMap();persist()});
     $('scSpeed')?.addEventListener('change',e=>{$('scCustomSpeedWrap').hidden=e.target.value!=='custom'});
     $('scCustomSpeed')?.addEventListener('input',e=>$('scCustomSpeedValue').textContent=e.target.value+'×');
