@@ -1,0 +1,132 @@
+/* LOVE RECORD · fixed editorial home layout */
+#launcher [hidden]{display:none!important}
+#launcher.page.active.launcher-page{
+  box-sizing:border-box!important;
+  height:calc(100dvh - 92px - env(safe-area-inset-bottom))!important;
+  min-height:0!important;max-height:none!important;
+  overflow-y:auto!important;overflow-x:hidden!important;
+  overscroll-behavior:contain;scrollbar-width:none;
+  padding:18px 0 150px!important;
+}
+#launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
+#launcher .launcher-screen{display:none;min-height:100%;padding:0 0 28px}
+#launcher .launcher-screen.is-active{display:block;animation:lrHomeScreenIn .24s ease both}
+@keyframes lrHomeScreenIn{from{opacity:.72;transform:translateX(7px)}to{opacity:1;transform:none}}
+#launcher .launcher-pages{
+  position:fixed!important;left:50%!important;right:auto!important;
+  bottom:calc(108px + env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;z-index:85!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  gap:11px!important;width:max-content!important;margin:0!important;padding:8px 12px!important;
+  border:1px solid rgba(255,255,255,.72);border-radius:999px;
+  background:rgba(255,255,255,.38);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+#launcher .launcher-pages button{width:8px;height:8px;min-width:8px;min-height:8px;padding:0;border:0;border-radius:50%;background:rgba(111,103,115,.3);font-size:0;line-height:1;touch-action:manipulation}
+#launcher .launcher-pages button.active{width:22px;min-width:22px;border-radius:8px;background:#29272b}
+#launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-rows:auto!important;grid-template-rows:none!important;grid-auto-flow:row!important;gap:20px 9px!important;align-content:start!important;position:relative!important;padding:4px 2px 12px!important;z-index:2!important}
+#launcher .launcher-grid .launcher-app{position:relative!important;left:auto!important;top:auto!important;transform:none!important;touch-action:manipulation!important;cursor:pointer!important;user-select:none!important;-webkit-user-select:none!important;-webkit-user-drag:none!important;will-change:auto!important}
+#launcher .launcher-grid .launcher-app .app-icon{pointer-events:none}
+#launcher .launcher-grid .launcher-app.is-dragging{transform:none!important;filter:none!important;opacity:1!important}
+#launcher .lr-home-profile{
+  position:relative;margin:0 1px 17px;overflow:hidden;border:1px solid rgba(255,255,255,.92);
+  border-radius:25px;background:rgba(255,255,255,.68);box-shadow:0 11px 32px rgba(72,60,82,.065);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)
+}
+#launcher .lr-profile-banner{height:112px;position:relative;overflow:hidden;background:linear-gradient(120deg,#eee8ef,#e9e4e9 55%,#e7e3e6)}
+#launcher .lr-profile-banner:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,.16),transparent 62%),linear-gradient(0deg,rgba(48,42,51,.10),transparent 55%);pointer-events:none}
+#launcher .lr-profile-banner img{width:100%;height:100%;display:block;object-fit:cover}
+#launcher .lr-profile-banner-edit{position:absolute;z-index:2;right:12px;top:12px;width:31px;height:31px;border:1px solid rgba(255,255,255,.75);border-radius:50%;background:rgba(255,255,255,.73);color:#5b535d;font-size:14px;backdrop-filter:blur(10px)}
+#launcher .lr-profile-lower{position:relative;display:grid;grid-template-columns:76px minmax(0,1fr) 31px;gap:12px;align-items:center;padding:0 15px 13px}
+#launcher .lr-profile-avatar{width:76px;height:76px;margin-top:-34px;position:relative;z-index:2;border:4px solid rgba(255,255,255,.96);border-radius:50%;overflow:hidden;background:#f0edf1;color:#847b88;display:grid;place-items:center;font:30px Georgia,serif;box-shadow:0 5px 17px rgba(52,44,58,.12);padding:0}
+#launcher .lr-profile-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+#launcher .lr-profile-avatar span{line-height:1}
+#launcher .lr-profile-copy{min-width:0;padding-top:10px}
+#launcher .lr-profile-kicker{font:9px Georgia,serif;letter-spacing:2.2px;color:#a097a1;text-transform:uppercase;margin-bottom:5px}
+#launcher .lr-profile-name{font:600 17px/1.35 Georgia,'Noto Serif SC',serif;color:#38333b;overflow-wrap:anywhere}
+#launcher .lr-profile-id{font:10px/1.5 Arial,sans-serif;letter-spacing:.6px;color:#938b95;margin-top:2px;overflow-wrap:anywhere}
+#launcher .lr-profile-bio{font-size:10px;line-height:1.55;color:#77717b;margin-top:6px;overflow-wrap:anywhere}
+#launcher .lr-profile-edit{width:31px;height:31px;border:1px solid rgba(105,95,110,.12);border-radius:50%;background:rgba(255,255,255,.74);color:#7e7482;font-size:14px;align-self:start;margin-top:13px}
+#launcher .lr-profile-phrase{padding:0 16px 13px;margin:0;font:italic 10px/1.5 Georgia,serif;letter-spacing:.55px;color:#9a909c}
+#launcher .lr-home-feature-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:13px;align-items:stretch;margin:0 1px}
+#launcher .lr-home-music-widget{
+  aspect-ratio:1/1;min-width:0;position:relative;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  padding:12px;border:1px solid rgba(255,255,255,.94);border-radius:22px;
+  background:rgba(255,255,255,.72);box-shadow:0 10px 26px rgba(65,54,74,.06);
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#49414e
+}
+#launcher .lr-home-music-top{display:flex;align-items:center;justify-content:space-between;gap:4px;font:8px Georgia,serif;letter-spacing:1.5px;color:#a095a3}
+#launcher .lr-home-music-disc{width:48px;height:48px;border-radius:15px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(145deg,#f1ebf3,#ddd3e2);color:#9888a0;font:23px Georgia,serif;flex:none}
+#launcher .lr-home-music-disc img{width:100%;height:100%;object-fit:cover;display:block}
+#launcher .lr-home-music-meta{min-width:0;margin:7px 0 3px}
+#launcher .lr-home-music-title{display:block;font-size:11px;font-weight:600;line-height:1.35;color:#4e4653;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#launcher .lr-home-music-artist{display:block;font-size:9px;line-height:1.35;color:#9b929f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+#launcher .lr-home-music-progress{width:100%;height:3px;min-height:3px;padding:0;margin:5px 0 3px;border:0;border-radius:9px;appearance:none;-webkit-appearance:none;background:#e9e3eb;accent-color:#8e7b97}
+#launcher .lr-home-music-progress::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:8px;height:8px;border-radius:50%;background:#88758f}
+#launcher .lr-home-music-progress::-moz-range-thumb{width:8px;height:8px;border:0;border-radius:50%;background:#88758f}
+#launcher .lr-home-music-times{display:flex;justify-content:space-between;font:8px Arial,sans-serif;color:#a69da8}
+#launcher .lr-home-music-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:3px}
+#launcher .lr-home-music-controls button{width:26px;height:26px;min-height:26px;padding:0;border:0;background:transparent;color:#81728a;font-size:13px;border-radius:50%}
+#launcher .lr-home-music-controls button[data-lr-music-action="play"]{width:31px;height:31px;background:#38343b;color:#fff;font-size:12px;box-shadow:0 4px 12px rgba(43,37,48,.13)}
+#launcher .lr-first-app-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,1fr)!important;gap:12px 6px!important;padding:4px 0!important;align-items:center}
+#launcher .lr-first-app-grid .launcher-app{align-self:center}
+#launcher .lr-screen-kicker{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 12px;font:9px Georgia,serif;letter-spacing:2.5px;color:#9a909c}
+#launcher .lr-photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:0 1px 16px}
+#launcher .lr-photo-slot{position:relative;display:block;aspect-ratio:1/1;overflow:hidden;padding:0;border:1px solid rgba(255,255,255,.95);border-radius:18px;background:linear-gradient(145deg,#f1edf2,#e8e3e9);box-shadow:0 8px 22px rgba(74,64,82,.055);color:#8d8491;text-align:center}
+#launcher .lr-photo-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+#launcher .lr-photo-slot-upload{position:absolute;inset:0;z-index:2;width:100%;height:100%;min-height:0;padding:0;border:0;border-radius:inherit;background:transparent;color:transparent}
+#launcher .lr-photo-slot-clear{z-index:3}
+#launcher .lr-photo-slot-badge{z-index:3;pointer-events:none}
+#launcher .lr-photo-slot-placeholder{z-index:1;pointer-events:none}
+#launcher .lr-photo-slot-placeholder{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font:9px Georgia,serif;letter-spacing:1.7px;color:#9d939f}
+#launcher .lr-photo-slot-placeholder b{font:24px Georgia,serif;font-weight:300}
+#launcher .lr-photo-slot-badge{position:absolute;left:9px;bottom:8px;padding:5px 7px;border-radius:7px;background:rgba(255,255,255,.75);backdrop-filter:blur(8px);font:8px Georgia,serif;letter-spacing:1px;color:#746b78}
+#launcher .lr-photo-slot-clear{position:absolute;right:8px;top:8px;width:23px;height:23px;min-height:23px;border:1px solid rgba(255,255,255,.8);border-radius:50%;background:rgba(255,255,255,.8);color:#5b535e;font-size:15px;line-height:1;padding:0}
+#launcher .lr-countdown-card{margin:0 1px 18px;padding:16px 17px 15px;border:1px solid rgba(255,255,255,.94);border-radius:22px;background:rgba(255,255,255,.72);box-shadow:0 10px 26px rgba(65,54,74,.055);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+#launcher .lr-countdown-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#launcher .lr-countdown-kicker{font:9px Georgia,serif;letter-spacing:2.2px;color:#9d929f}
+#launcher .lr-countdown-manage{border:0;background:transparent;color:#82768a;font-size:10px;padding:4px 0}
+#launcher .lr-countdown-main{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:12px}
+#launcher .lr-countdown-title{font:500 15px/1.4 Georgia,'Noto Serif SC',serif;color:#403a44;overflow-wrap:anywhere}
+#launcher .lr-countdown-date{font-size:9px;color:#a197a2;margin-top:4px}
+#launcher .lr-countdown-number{font:30px/1 Georgia,serif;color:#685b70;white-space:nowrap}
+#launcher .lr-countdown-number small{display:block;text-align:right;font:8px Arial,sans-serif;letter-spacing:1.7px;color:#a196a4;margin-top:5px}
+#launcher .lr-countdown-empty{font:12px/1.7 Georgia,'Noto Serif SC',serif;color:#968b9a;margin-top:12px}
+#launcher .lr-secondary-app-grid{margin-top:3px}
+#launcher .lr-third-page-title{margin:12px 3px 21px;font:400 21px Georgia,'Noto Serif SC',serif;color:#49414d}
+#launcher .lr-home-modal[hidden]{display:none!important}
+#launcher .lr-home-modal{position:fixed;inset:0;z-index:150000;display:flex;align-items:flex-end;justify-content:center;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(43,37,48,.27);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#launcher .lr-home-sheet{width:min(100%,540px);max-height:88dvh;overflow:auto;padding:20px 18px 22px;border:1px solid rgba(255,255,255,.92);border-radius:25px;background:rgba(255,255,255,.97);box-shadow:0 22px 65px rgba(39,32,45,.2);color:#3f3943}
+#launcher .lr-home-sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+#launcher .lr-home-sheet-head h2{margin:3px 0 0;font:500 20px Georgia,'Noto Serif SC',serif}
+#launcher .lr-home-sheet-close{width:34px;height:34px;min-height:34px;border:1px solid #eee8f0;border-radius:50%;background:#faf9fa;color:#776d7d;font-size:20px;padding:0}
+#launcher .lr-home-field{display:block;margin:12px 0}
+#launcher .lr-home-field span{display:block;font-size:10px;letter-spacing:1.2px;color:#978d9b;margin-bottom:6px}
+#launcher .lr-home-field input,#launcher .lr-home-field textarea{width:100%;min-height:42px;padding:11px 12px;border:1px solid #e9e3eb;border-radius:12px;background:#fff;color:#39343d;font:13px/1.5 inherit;outline:none}
+#launcher .lr-home-field textarea{min-height:72px;resize:vertical}
+#launcher .lr-home-actions{display:flex;gap:9px;margin-top:15px}
+#launcher .lr-home-actions button{flex:1;min-height:43px;border:1px solid #e7e1e9;border-radius:13px;background:#f7f5f8;color:#554d5a;font-size:12px}
+#launcher .lr-home-actions button.primary{background:#302d33;color:#fff;border-color:#302d33}
+#launcher .lr-profile-upload-row{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:11px 0}
+#launcher .lr-profile-upload-row button{min-height:39px;border:1px solid #e8e2ea;border-radius:12px;background:#faf9fb;color:#756b7a;font-size:11px}
+#launcher .lr-countdown-list{display:grid;gap:8px;margin:12px 0}
+#launcher .lr-countdown-list-item{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #eee8f0;border-radius:13px;background:#fbfafb}
+#launcher .lr-countdown-list-copy{flex:1;min-width:0}
+#launcher .lr-countdown-list-copy strong,.lr-countdown-list-copy small{display:block;overflow-wrap:anywhere}
+#launcher .lr-countdown-list-copy strong{font-size:12px;color:#4b434e}
+#launcher .lr-countdown-list-copy small{font-size:10px;color:#a096a2;margin-top:3px}
+#launcher .lr-countdown-list-item button{min-width:30px;height:30px;border:1px solid #eee8f0;border-radius:9px;background:#fff;color:#746a78;font-size:11px}
+@media(max-width:390px){
+ #launcher .lr-profile-banner{height:100px}
+ #launcher .lr-profile-lower{grid-template-columns:68px minmax(0,1fr) 29px;gap:9px;padding-left:12px;padding-right:12px}
+ #launcher .lr-profile-avatar{width:68px;height:68px;margin-top:-30px}
+ #launcher .lr-profile-name{font-size:16px}
+ #launcher .lr-home-feature-row{gap:10px}
+ #launcher .lr-home-music-widget{padding:10px;border-radius:19px}
+ #launcher .lr-home-music-controls{gap:10px}
+ #launcher .lr-first-app-grid{gap:8px 4px!important}
+}
+@media(prefers-reduced-motion:reduce){#launcher .launcher-screen.is-active{animation:none}}
+
+#launcher #lrProfileAvatarPreview{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #eee8f0;margin:8px 0}
+#launcher #lrProfileBannerPreview{display:block;width:100%;height:82px;object-fit:cover;border-radius:12px;margin:8px 0}
+#launcher #lrProfileBannerPreview[hidden],#launcher #lrProfileAvatarPreview[hidden]{display:none!important}

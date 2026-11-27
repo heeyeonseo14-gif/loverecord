@@ -23,7 +23,7 @@ function applyPlayerCover(data){
  if(data){img.src=data;art.classList.add('has-cover')}
  else{img.removeAttribute('src');art.classList.remove('has-cover')}
 }
-function chooseVinylCover(file){if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=async()=>{coverData=reader.result;applyPlayerCover(coverData);await saveVinylCover(coverData);toast('歌曲封面已更新 ♡')};reader.onerror=()=>toast('图片读取失败，请重试');reader.readAsDataURL(file)}
+function chooseVinylCover(file){if(!file||!file.type.startsWith('image/'))return;const reader=new FileReader();reader.onload=async()=>{coverData=reader.result;applyPlayerCover(coverData);publishMusicState();await saveVinylCover(coverData);toast('歌曲封面已更新 ♡')};reader.onerror=()=>toast('图片读取失败，请重试');reader.readAsDataURL(file)}
 function showPlayerView(){const page=$('music');if(page)page.classList.add('is-player-view');$('musicPlaybackView').hidden=false;renderLyrics()}
 function showLibraryView(){const page=$('music');if(page)page.classList.remove('is-player-view');$('musicPlaybackView').hidden=true}
 function publishMusicState(){
@@ -98,6 +98,15 @@ function addFiles(files){return (async()=>{let count=0;for(const f of [...files]
 async function addSelected(){const ids=[...document.querySelectorAll('.music-result-check:checked')].map(x=>Number(x.dataset.index));if(!ids.length){toast('请先勾选歌曲');return}const chosen=ids.map(i=>onlineResults[i]).filter(Boolean);let added=0;for(const t of chosen){const key='online-'+t.source+'-'+t.id;const saved={id:key,remoteId:t.id,title:t.title,artist:t.artist||'',album:t.album||'',source:t.source,url:t.url||'',kind:'online',added:Date.now()};const exists=tracks.some(x=>x.id===key);if(!exists){await put(saved);added++}if(!queue.some(x=>x.kind==='online'&&x.source===t.source&&String(x.id)===String(t.id)))queue.push({...t,kind:'online'})}await all();await saveState();$('musicSelectAll').checked=false;document.querySelectorAll('.music-result-check').forEach(x=>x.checked=false);toast('已加入我的歌单 '+added+' 首，并加入播放队列 ♡');if(!current&&queue.length)next();}
 function next(){if(queue.length){let t=queue.shift();if(t.kind==='local'){const found=tracks.find(x=>x.id===t.id);if(found)t={...found,kind:'local'}}history.push(current);saveState();if(t?.blob||t?.kind==='online')playTrack(t);else next();return}if(current?.kind==='local'&&tracks.length){const i=tracks.findIndex(t=>t.id===current.id);playTrack({...tracks[(i+1)%tracks.length],kind:'local'});return}audio.pause();toast('播放队列已结束')}
 function prev(){if(audio.currentTime>3){audio.currentTime=0;return}const t=history.pop();if(t)playTrack(t);else if(current?.kind==='local'&&tracks.length){const i=tracks.findIndex(x=>x.id===current.id);playTrack({...tracks[(i-1+tracks.length)%tracks.length],kind:'local'})}}
+
+// Read-only state + control bridge for the fixed home music surface.
+// All commands reuse this module's existing audio element and playback state.
+window.LRMusicController={
+ toggle,
+ previous:prev,
+ next,
+ seek(seconds){if(audio&&Number.isFinite(Number(seconds))){audio.currentTime=Math.max(0,Math.min(audio.duration||Infinity,Number(seconds)));}}
+};
 
 function parseLRC(text){
  const out=[];
@@ -274,6 +283,7 @@ function init(){
   for(const [name,handler] of Object.entries(actions)){try{navigator.mediaSession.setActionHandler(name,handler)}catch(_){}}
  }
  window.refreshLoveRecordListeningRoom=renderTogetherActive;
+ publishMusicState();
  audio.addEventListener('play',()=>{setButtons();renderLocal()});
  audio.addEventListener('pause',()=>{setButtons();renderLocal()});
  audio.addEventListener('loadedmetadata',publishMusicState);

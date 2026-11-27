@@ -54,7 +54,6 @@ body{background:#f7f7f7;color:#171717;padding:12px 13px 30px;font-family:var(--l
 .css-selector-guide{display:grid;grid-template-columns:max-content 1fr;align-items:center;gap:7px 12px;padding:10px 12px;background:#f7f7f7;border-radius:12px;margin-top:12px;font-size:11px}.css-selector-guide code{font-family:ui-monospace,monospace;color:#333}.css-selector-guide span{color:#888}
 .bubble-css-editor{display:block;width:100%;min-height:220px;resize:vertical;border:0!important;border-radius:12px!important;background:#171717!important;color:#eee!important;padding:13px!important;font:12px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace!important;letter-spacing:0!important;tab-size:2;outline:none}
 .bubble-css-select{width:100%;min-height:42px;margin-top:5px}
-.widget-setting-preview{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:13px}.widget-setting-sample{min-height:108px;border:1px solid #e5e5e5;border-radius:15px;background:linear-gradient(145deg,#fff,#f0f0f0);padding:12px;display:flex;flex-direction:column;justify-content:space-between;color:#222}.widget-setting-sample small{font-size:8px;letter-spacing:1px;color:#888}.widget-setting-sample strong{font:17px Georgia,serif}.widget-setting-sample span{font-size:10px;color:#777}.widget-setting-sample-dark{background:linear-gradient(145deg,#343434,#161616);color:#fff;border-color:#333}.widget-setting-sample-dark small,.widget-setting-sample-dark span{color:#bbb}
 .glass-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:13px 0}.glass-presets .action{min-width:0;font-size:11px;padding:10px 5px;background:#f8f8f8}
 .glass-zone{border:1px solid #eee;border-radius:15px;padding:13px;margin:11px 0;background:#fff}.glass-zone-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.glass-zone-title{font-size:13px;font-weight:750}.glass-zone-desc{font-size:10px;color:#999;margin-top:3px;line-height:1.5}
 .glass-toggle{display:flex;align-items:center;gap:7px;font-size:10px;color:#777;white-space:nowrap}.glass-toggle input{accent-color:#222;width:16px;height:16px;margin:0}
@@ -70,17 +69,16 @@ body{background:#f7f7f7;color:#171717;padding:12px 13px 30px;font-family:var(--l
   <a class="back" href="index.html" id="backHome" aria-label="返回主页">←</a>
   <div><div class="eyebrow">LOVE RECORD · PERSONALIZE</div><h1>设置</h1><div class="sub">把每个细节，调整成你喜欢的样子</div></div>
 </header>
-  <section class="panel settings-intro"><div class="settings-kicker">YOUR OWN LITTLE WORLD</div><h2>个性化设置中心</h2><p class="hint">主题、字体、桌面组件与聊天气泡，都可以按自己的喜好调整。</p></section>
+  <section class="panel settings-intro"><div class="settings-kicker">YOUR OWN LITTLE WORLD</div><h2>个性化设置中心</h2><p class="hint">主题、字体、桌面壁纸、APP 图标与聊天气泡，都可以按自己的喜好调整。</p></section>
   <div class="settings-grid" aria-label="设置分类">
     <button class="settings-tile" type="button" data-settings-open="theme"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-8a1 1 0 0 1-1-1V3Z"/><path d="M16 4.2a8.8 8.8 0 0 1 3.8 3.8"/></svg></span><strong>主题风格</strong><small>选择界面整体气质</small></button>
     <button class="settings-tile" type="button" data-settings-open="font"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v13M8 19h8M7.5 10h9"/></svg></span><strong>字体设置</strong><small>字体、字号与自定义字体</small></button>
     <button class="settings-tile" type="button" data-settings-open="wallpaper"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></span><strong>桌面壁纸</strong><small>上传照片与背景样式</small></button>
     <button class="settings-tile" type="button" data-settings-open="bubble"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.7-3A7.5 7.5 0 1 1 20 11.5Z"/><path d="M8 11h8M8 14h5"/></svg></span><strong>聊天气泡</strong><small>气泡颜色与自定义 CSS</small></button>
     <button class="settings-tile" type="button" data-settings-open="icons"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg></span><strong>APP 图标</strong><small>更换主页应用图标图片</small></button>
-    <button class="settings-tile" type="button" data-settings-open="widgets"><span class="settings-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span><strong>桌面组件</strong><small>创建、编辑与排列组件</small></button>
     <button class="settings-tile" type="button" data-settings-open="glass"><span class="settings-icon"><svg viewBox="0 0 24 24"><path d="M12 2 3.5 7v10L12 22l8.5-5V7L12 2Z"/><path d="m3.5 7 8.5 5 8.5-5M12 22V12"/></svg></span><strong>玻璃与透明度</strong><small>每个区域独立调整质感</small></button>
   </div>
-  <section class="panel settings-footer"><div class="settings-kicker">SETTINGS MANAGEMENT</div><div class="actions"><button class="action" id="reset" type="button">恢复外观默认</button><a class="action primary" href="index.html" id="saveBack">保存并返回主页</a></div><p class="hint" style="margin-top:10px">图标、字体与壁纸保存在当前浏览器。桌面组件使用 LOVE RECORD 原有组件库与本地数据库。</p></section>
+  <section class="panel settings-footer"><div class="settings-kicker">SETTINGS MANAGEMENT</div><div class="actions"><button class="action" id="reset" type="button">恢复外观默认</button><a class="action primary" href="index.html" id="saveBack">保存并返回主页</a></div><p class="hint" style="margin-top:10px">图标、字体与壁纸保存在当前浏览器。</p></section>
 </div>
 <div id="settingsView" hidden>
   <div class="settings-detail-head"><button class="detail-back" id="settingsBack" type="button" aria-label="返回设置">‹</button><div><div class="eyebrow">PERSONALIZE</div><h2 id="settingsViewTitle">主题风格</h2></div></div>
@@ -110,11 +108,8 @@ body{background:#f7f7f7;color:#171717;padding:12px 13px 30px;font-family:var(--l
   <div class="settings-content" data-settings-content="icons" hidden>
     <section class="panel" id="homeIconPanel"><h2>HOME ICONS · 更换 APP 图标图片</h2><p class="hint">更换主页应用图标，不会改变对应 APP 的功能。上传图片后自动保存。</p><div class="home-icon-grid" id="homeIconGrid"></div></section>
   </div>
-  <div class="settings-content" data-settings-content="widgets" hidden>
-    <section class="panel"><h2>WIDGET STUDIO · 桌面组件</h2><p class="hint">打开原有桌面组件工作室。可从组件库添加，也可以自由创作：编辑标题、文字、图片、图层、尺寸，并在桌面拖动排列。</p><div class="widget-setting-preview"><div class="widget-setting-sample"><small>LOVE RECORD · EVERYDAY</small><strong>A LITTLE MOMENT</strong><span>把喜欢的日常留在桌面。</span></div><div class="widget-setting-sample widget-setting-sample-dark"><small>YOUR LITTLE NOTE</small><strong>♡</strong><span>一张照片、一句话，或一段纪念。</span></div></div><button class="action primary" id="openWidgetStudio" type="button" style="width:100%;margin-top:14px">打开桌面组件工作室　→</button><p class="hint" style="margin-top:10px">现有组件和布局保存在 LOVE RECORD 原有本地数据库中，不会因这次设置中心改版而重置。</p></section>
-  </div>
   <div class="settings-content" data-settings-content="glass" hidden>
-    <section class="panel"><h2>GLASS EFFECTS · 独立质感控制</h2><p class="hint">每个区域单独保存。调整桌面图标，不会改变应用卡片、桌面组件或聊天气泡。默认关闭自定义覆盖，原有外观不变。</p><div class="glass-presets"><button type="button" class="action" data-glass-preset="clear">清透玻璃</button><button type="button" class="action" data-glass-preset="mist">柔雾磨砂</button><button type="button" class="action" data-glass-preset="liquid">液态玻璃</button><button type="button" class="action" data-glass-preset="solid">半透明纯色</button></div><div id="glassControls"></div><button class="action" id="glassResetAll" type="button" style="width:100%;margin-top:8px">恢复所有区域默认效果</button><p class="hint" style="margin-top:10px">聊天区域的玻璃参数与自定义 CSS 分别保存；CSS 可以进一步微调气泡的形状和材质。</p></section>
+    <section class="panel"><h2>GLASS EFFECTS · 独立质感控制</h2><p class="hint">每个区域单独保存。调整桌面图标，不会改变应用卡片或聊天气泡。默认关闭自定义覆盖，原有外观不变。</p><div class="glass-presets"><button type="button" class="action" data-glass-preset="clear">清透玻璃</button><button type="button" class="action" data-glass-preset="mist">柔雾磨砂</button><button type="button" class="action" data-glass-preset="liquid">液态玻璃</button><button type="button" class="action" data-glass-preset="solid">半透明纯色</button></div><div id="glassControls"></div><button class="action" id="glassResetAll" type="button" style="width:100%;margin-top:8px">恢复所有区域默认效果</button><p class="hint" style="margin-top:10px">聊天区域的玻璃参数与自定义 CSS 分别保存；CSS 可以进一步微调气泡的形状和材质。</p></section>
   </div>
 </div>
 <div class="status" id="status"><span>已自动保存</span></div>
@@ -221,16 +216,11 @@ async function init(){const legacy=readLegacy();try{const cfg=await assetGet('se
 // Settings-center navigation: the existing controls remain the source of truth.
 (function initSettingsCenterNavigation(){
  const home=$('settingsHome'),view=$('settingsView'),title=$('settingsViewTitle');
- const names={theme:'主题风格',font:'字体设置',wallpaper:'桌面壁纸',bubble:'聊天气泡',icons:'APP 图标',widgets:'桌面组件',glass:'玻璃与透明度'};
+ const names={theme:'主题风格',font:'字体设置',wallpaper:'桌面壁纸',bubble:'聊天气泡',icons:'APP 图标',glass:'玻璃与透明度'};
  function show(id){if(!names[id])return;home.hidden=true;view.hidden=false;document.querySelectorAll('[data-settings-content]').forEach(x=>x.hidden=x.dataset.settingsContent!==id);title.textContent=names[id];window.scrollTo({top:0,behavior:'smooth'});}
  function back(){view.hidden=true;home.hidden=false;window.scrollTo({top:0,behavior:'smooth'});}
  document.querySelectorAll('[data-settings-open]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.settingsOpen)));
  $('settingsBack').addEventListener('click',back);
- $('openWidgetStudio').addEventListener('click',()=>{
-   if(window.parent!==window){window.parent.postMessage({type:'LR_OPEN_WIDGET_STUDIO'},location.origin);return;}
-   if(typeof window.LRHomeWidgetsOpenStudio==='function'){window.LRHomeWidgetsOpenStudio();return;}
-   showSaved('请从 LOVE RECORD 桌面打开组件工作室');
- });
 })();
 
 // Independent glass parameters for each UI area. Disabled by default to preserve existing appearance.
@@ -238,7 +228,6 @@ const GLASS_KEY='lr-visual-zones-v1';
 const glassAreas=[
  {id:'desktop',name:'手机桌面 · APP 图标',desc:'只改变桌面应用图标表面的玻璃质感。'},
  {id:'appCards',name:'应用卡片',desc:'作用于各个 APP 内的通用内容卡片。'},
- {id:'widgets',name:'桌面组件',desc:'只改变桌面组件外壳，不修改组件内部排版。'},
  {id:'settings',name:'设置卡片',desc:'设置页面中的信息卡片和设置面板。'},
  {id:'chat',name:'聊天区域',desc:'控制聊天消息气泡的基础玻璃质感；自定义 CSS 可进一步覆盖。'}
 ];

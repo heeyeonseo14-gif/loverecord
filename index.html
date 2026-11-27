@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=1">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -583,10 +584,6 @@ body.launcher-open .page{padding-bottom:25px}
 .chat-compose textarea{flex:1;min-height:45px;max-height:110px;resize:vertical;border-radius:14px;background:#fff}
 .chat-compose .btn{white-space:nowrap}
 .chat-hint{font-size:11px;color:#9b91a0;margin-top:10px;text-align:center}
-.launcher-app[data-drag-id],.launcher-info[data-drag-id]{touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;will-change:transform}
-.launcher-app.is-dragging,.launcher-info.is-dragging{z-index:30;position:relative;cursor:grabbing;filter:drop-shadow(0 9px 14px rgba(75,57,88,.18))}
-.launcher-app.is-dragging .app-icon{transform:scale(1.04)}
-.launcher-info.is-dragging{outline:1px dashed rgba(160,130,177,.65);outline-offset:3px}
 @media(max-width:420px){.chat-bubble{font-size:13px}.chat-compose{bottom:86px}}
 
 /* WeChat-inspired chat refresh — Love Record lavender */
@@ -1341,41 +1338,136 @@ body.lr-theme-dark :is(#space,.community-root){
 <div class="app">
 
 <main id="launcher" class="page active launcher-page">
-  <section class="launcher-welcome">
-    <div class="launcher-kicker">LOVE RECORD</div>
-    <div class="launcher-greeting">我们的小宇宙</div>
-    <div class="launcher-sub">A LITTLE WORLD OF OUR OWN</div>
-  </section>
-  <section class="launcher-info" aria-label="我们的纪念日" data-drag-id="days-widget">
-    <div class="launcher-info-copy">
-      <div class="launcher-days"><strong id="launcherDays">0</strong><span>DAYS TOGETHER</span></div>
-      <div class="launcher-today"><span class="launcher-today-label">TODAY</span><span id="launcherToday">把今天也留在这里。</span></div>
-    </div>
-    <div class="home-moment-mini launcher-polaroid">
-      <div id="homePhoto" class="photo polaroid-photo" title="点击添加照片，长按照片删除">
-        <span class="polaroid-placeholder">＋</span>
+  <div class="launcher-screen-container" id="launcherScreenContainer">
+    <section class="launcher-screen is-active" data-launcher-screen="0" aria-label="主页第一页">
+      <section class="lr-home-profile" aria-label="个人资料">
+        <div class="lr-profile-banner">
+          <img id="lrProfileBannerImage" alt="个人主页背景" hidden>
+          <button class="lr-profile-banner-edit" id="lrProfileBannerOpen" type="button" aria-label="编辑个人主页背景">✎</button>
+        </div>
+        <div class="lr-profile-lower">
+          <button class="lr-profile-avatar" id="lrProfileAvatarOpen" type="button" aria-label="编辑个人头像">
+            <img id="lrProfileAvatarImage" alt="个人头像" hidden>
+            <span id="lrProfileAvatarFallback">♡</span>
+          </button>
+          <div class="lr-profile-copy">
+            <div class="lr-profile-kicker">MY PROFILE</div>
+            <div class="lr-profile-name" id="lrProfileName">妍妍</div>
+            <div class="lr-profile-id" id="lrProfileId">@yourname</div>
+            <div class="lr-profile-bio" id="lrProfileBio">把喜欢的日常，慢慢收藏起来。</div>
+          </div>
+          <button class="lr-profile-edit" id="lrProfileEdit" type="button" aria-label="编辑个人资料">✎</button>
+        </div>
+        <p class="lr-profile-phrase" id="lrProfilePhrase">EVERY LITTLE MOMENT MATTERS.</p>
+      </section>
+
+      <div class="lr-home-feature-row">
+        <section class="lr-home-music-widget" aria-label="音乐播放器">
+          <div class="lr-home-music-top"><span>NOW PLAYING</span><span>♫</span></div>
+          <div class="lr-home-music-disc">
+            <img id="lrHomeMusicCover" alt="歌曲封面" hidden>
+            <span id="lrHomeMusicCoverFallback">♫</span>
+          </div>
+          <div class="lr-home-music-meta">
+            <strong class="lr-home-music-title" id="lrHomeMusicTitle">还没有播放歌曲</strong>
+            <span class="lr-home-music-artist" id="lrHomeMusicArtist">从音乐库选择一首歌</span>
+          </div>
+          <input class="lr-home-music-progress" id="lrHomeMusicProgress" type="range" min="0" max="100" value="0" aria-label="音乐播放进度">
+          <div class="lr-home-music-times"><span id="lrHomeMusicCurrent">0:00</span><span id="lrHomeMusicDuration">0:00</span></div>
+          <div class="lr-home-music-controls">
+            <button type="button" data-lr-music-action="previous" aria-label="上一首">|◀</button>
+            <button type="button" data-lr-music-action="play" id="lrHomeMusicPlay" aria-label="播放">▶</button>
+            <button type="button" data-lr-music-action="next" aria-label="下一首">▶|</button>
+          </div>
+        </section>
+        <section class="launcher-grid lr-first-app-grid" data-launcher-grid="0" aria-label="核心应用">
+          <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
+          <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
+          <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
+          <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
+        </section>
       </div>
-      <div class="polaroid-caption">LOVE</div>
-      <button class="polaroid-add" id="homeUpload" type="button" aria-label="添加照片">＋</button>
-      <button class="polaroid-clear" id="homeClear" type="button" aria-label="清除照片">CLEAR</button>
-      <input id="homeFile" type="file" accept="image/*" hidden>
-    </div>
-  </section>
-  <section class="launcher-grid" aria-label="应用">
-    <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
-    <button class="launcher-app" data-launch-dream-fate type="button" data-drag-id="app-dream-fate"><span class="app-icon app-icon-dream-fate">✧</span><span class="app-label-dream-fate">寻梦</span></button>
-    <button class="launcher-app" data-launch-weather type="button" data-drag-id="app-weather"><span class="app-icon app-icon-weather">☼</span><span>天气</span></button>
-    <button class="launcher-app" data-launch-zodiac type="button" data-drag-id="app-zodiac"><span class="app-icon" style="background:linear-gradient(145deg,#f8fbfe,#d9e4ef);color:#6682a0;box-shadow:0 8px 24px rgba(102,130,160,.16)">✶</span><span>星盘</span></button>
-    <button class="launcher-app" data-space-v2-launch data-drag-id="app-space" type="button"><span class="app-icon icon-space">♡</span><span>空间</span></button>
-    <button class="launcher-app" data-launch-page="chat" type="button" data-drag-id="app-chat"><span class="app-icon icon-chat">♡</span><span>聊天</span></button>
-    <button class="launcher-app" data-launch-module="forum" type="button" data-drag-id="app-community"><span class="app-icon icon-weibo">◎</span><span>社区</span></button>
-    <button class="launcher-app" data-launch-page="music" type="button" data-drag-id="app-music"><span class="app-icon icon-music">♫</span><span>音乐</span></button>
-    <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
-    <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
-    <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
-    <button class="launcher-app" type="button" data-lr-store-launch data-drag-id="app-lr-store"><span class="app-icon" style="background:linear-gradient(145deg,#f7f1fb,#e7ddec);color:#826d98;box-shadow:0 8px 24px rgba(132,103,169,.13)">✧</span><span>LR STORE</span></button>
-  </section>
-  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面" style="display:flex;justify-content:center;align-items:center;gap:9px;padding:0 0 24px"></div>
+    </section>
+
+    <section class="launcher-screen" data-launcher-screen="1" aria-label="主页第二页">
+      <div class="lr-screen-kicker"><span>PHOTO DIARY</span><span>01 — 02</span></div>
+      <section class="lr-photo-grid" aria-label="生活照片">
+        <div class="lr-photo-slot">
+          <img id="lrHomePhoto1" alt="生活照片一" hidden>
+          <div class="lr-photo-slot-placeholder" id="lrHomePhotoPlaceholder1"><b>＋</b><span>ADD A MOMENT</span></div>
+          <span class="lr-photo-slot-badge">MOMENT 01</span>
+          <button class="lr-photo-slot-clear" id="lrHomePhotoClear1" type="button" data-lr-photo-clear="0" aria-label="移除第一张照片" hidden>×</button>
+          <button class="lr-photo-slot-upload" type="button" data-lr-photo-upload="0" aria-label="上传第一张照片"></button>
+          <input id="lrHomePhotoFile1" type="file" accept="image/*" hidden>
+        </div>
+        <div class="lr-photo-slot">
+          <img id="lrHomePhoto2" alt="生活照片二" hidden>
+          <div class="lr-photo-slot-placeholder" id="lrHomePhotoPlaceholder2"><b>＋</b><span>ADD A MOMENT</span></div>
+          <span class="lr-photo-slot-badge">MOMENT 02</span>
+          <button class="lr-photo-slot-clear" id="lrHomePhotoClear2" type="button" data-lr-photo-clear="1" aria-label="移除第二张照片" hidden>×</button>
+          <button class="lr-photo-slot-upload" type="button" data-lr-photo-upload="1" aria-label="上传第二张照片"></button>
+          <input id="lrHomePhotoFile2" type="file" accept="image/*" hidden>
+        </div>
+      </section>
+      <section class="lr-countdown-card" aria-label="倒数日">
+        <div class="lr-countdown-head">
+          <span class="lr-countdown-kicker">COUNTDOWN · SPECIAL DAYS</span>
+          <button class="lr-countdown-manage" id="lrCountdownManage" type="button">管理日期　↗</button>
+        </div>
+        <div id="lrCountdownDisplay"><div class="lr-countdown-empty">留下一个想认真期待的日子。</div></div>
+      </section>
+      <section class="launcher-grid lr-secondary-app-grid" data-launcher-grid="1" aria-label="第二页应用">
+        <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
+        <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
+        <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
+        <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
+      </section>
+    </section>
+
+    <section class="launcher-screen" data-launcher-screen="2" aria-label="主页第三页">
+      <div class="lr-third-page-title">More of your world.</div>
+      <section class="launcher-grid lr-secondary-app-grid" data-launcher-grid="2" aria-label="其他应用">
+        <button class="launcher-app" data-launch-dream-fate type="button" data-drag-id="app-dream-fate"><span class="app-icon app-icon-dream-fate">✧</span><span class="app-label-dream-fate">寻梦</span></button>
+        <button class="launcher-app" data-launch-weather type="button" data-drag-id="app-weather"><span class="app-icon app-icon-weather">☼</span><span>天气</span></button>
+        <button class="launcher-app" data-launch-zodiac type="button" data-drag-id="app-zodiac"><span class="app-icon" style="background:linear-gradient(145deg,#f8fbfe,#d9e4ef);color:#6682a0;box-shadow:0 8px 24px rgba(102,130,160,.16)">✶</span><span>星盘</span></button>
+        <button class="launcher-app" type="button" data-lr-store-launch data-drag-id="app-lr-store"><span class="app-icon" style="background:linear-gradient(145deg,#f7f1fb,#e7ddec);color:#826d98;box-shadow:0 8px 24px rgba(132,103,169,.13)">✧</span><span>LR STORE</span></button>
+      </section>
+    </section>
+  </div>
+  <div id="launcherPages" class="launcher-pages" aria-label="主屏幕页面"></div>
+
+  <div class="lr-home-modal" id="lrProfileModal" hidden>
+    <section class="lr-home-sheet" role="dialog" aria-modal="true" aria-labelledby="lrProfileModalTitle">
+      <header class="lr-home-sheet-head"><div><div class="eyebrow">PERSONAL PROFILE</div><h2 id="lrProfileModalTitle">编辑个人资料</h2></div><button class="lr-home-sheet-close" id="lrProfileModalClose" type="button" aria-label="关闭">×</button></header>
+      <form id="lrProfileForm">
+        <label class="lr-home-field"><span>昵称 · DISPLAY NAME</span><input id="lrProfileNameInput" maxlength="32" required></label>
+        <label class="lr-home-field"><span>用户名 · USERNAME</span><input id="lrProfileUsernameInput" maxlength="36" placeholder="@yourname"></label>
+        <label class="lr-home-field"><span>个人简介 · BIO</span><textarea id="lrProfileBioInput" maxlength="100"></textarea></label>
+        <label class="lr-home-field"><span>装饰短句 · PERSONAL NOTE</span><input id="lrProfilePhraseInput" maxlength="80"></label>
+        <div class="lr-profile-upload-row">
+          <button id="lrProfilePickAvatar" type="button">更换头像照片</button>
+          <button id="lrProfilePickBanner" type="button">更换顶部背景图</button>
+        </div>
+        <img id="lrProfileAvatarPreview" alt="头像预览" hidden>
+        <img id="lrProfileBannerPreview" alt="背景预览" hidden>
+        <input id="lrProfileAvatarFile" type="file" accept="image/*" hidden>
+        <input id="lrProfileBannerFile" type="file" accept="image/*" hidden>
+        <div class="lr-home-actions"><button class="primary" type="submit">保存资料</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="lr-home-modal" id="lrCountdownModal" hidden>
+    <section class="lr-home-sheet" role="dialog" aria-modal="true" aria-labelledby="lrCountdownModalTitle">
+      <header class="lr-home-sheet-head"><div><div class="eyebrow">IMPORTANT DATES</div><h2 id="lrCountdownModalTitle">管理倒数日</h2></div><button class="lr-home-sheet-close" id="lrCountdownModalClose" type="button" aria-label="关闭">×</button></header>
+      <div id="lrCountdownList" class="lr-countdown-list"></div>
+      <form id="lrCountdownForm">
+        <label class="lr-home-field"><span>日期名称</span><input id="lrCountdownTitleInput" maxlength="40" placeholder="例如：生日、旅行、纪念日" required></label>
+        <label class="lr-home-field"><span>日期</span><input id="lrCountdownDateInput" type="date" required></label>
+        <div class="lr-home-actions"><button id="lrCountdownReset" type="button">清空输入</button><button class="primary" id="lrCountdownSave" type="submit">添加日期</button></div>
+      </form>
+    </section>
+  </div>
 </main>
 
 
@@ -2670,240 +2762,7 @@ async function lrKVGet(key){const d=await lrKVOpen();return new Promise((resolve
 async function lrKVSet(key,value){const d=await lrKVOpen();return new Promise((resolve,reject)=>{const tx=d.transaction(LR_KV_STORE,'readwrite');tx.objectStore(LR_KV_STORE).put(value,key);tx.oncomplete=()=>resolve(true);tx.onerror=()=>reject(tx.error||new Error('IndexedDB write failed'));tx.onabort=()=>reject(tx.error||new Error('IndexedDB write aborted'))})}
 // Restore/migrate the independent world-book store before the editor is used.
 worldBooksReady=restoreWorldBooks();
-// Persistent Android-style multi-page launcher: smooth pointer dragging + fixed page dock.
-(function(){
- const launcher=document.getElementById('launcher'),grid=document.querySelector('#launcher .launcher-grid'),pages=document.querySelector('#launcherPages');
- if(!launcher||!grid||!pages)return;
- const getId=el=>el?.dataset?.dragId,getApps=()=>Array.from(grid.querySelectorAll('.launcher-app[data-drag-id]'));
- const LAYOUT_KV='launcher-layout-v3',LEGACY_KV='launcher-layout-v2';
- const COLS=4,ROWS=4,CELL_H=104,ROW_GAP=18;
- const defaultPage={'app-memories':1,'app-journal':1};
- let order=getApps().map(getId),pageMap={...defaultPage},cells={},currentPage=0,extraPages=2;
- let active=null,timer=null,dragged=false,writeSeq=0,layoutReady=false,dragFrame=0,pendingPoint=null;
- const style=document.createElement('style');style.id='lr-launcher-grid-v6';style.textContent=`
- #launcher{touch-action:pan-y}
- #launcher .launcher-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(${ROWS},${CELL_H}px)!important;grid-auto-rows:${CELL_H}px!important;grid-auto-flow:row!important;column-gap:10px!important;row-gap:${ROW_GAP}px!important;align-content:start!important;position:relative;touch-action:pan-y}
- #launcher.page.active.launcher-page{box-sizing:border-box;height:calc(100dvh - 172px - env(safe-area-inset-bottom));min-height:0;max-height:calc(100dvh - 172px - env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;padding-bottom:160px}
- #launcher.page.active.launcher-page::-webkit-scrollbar{display:none}
- #launcher .launcher-grid .launcher-app{min-width:0;min-height:0;position:relative!important;left:auto!important;top:auto!important;transform:none!important;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;will-change:transform}
- #launcher .launcher-grid .launcher-app.is-dragging{z-index:300!important;opacity:.94;filter:drop-shadow(0 14px 22px rgba(35,31,39,.22));transition:none!important;pointer-events:none}
- #launcher .launcher-grid .launcher-app .app-icon{pointer-events:none}
- #launcher .launcher-pages{
-   position:fixed!important;left:50%!important;right:auto!important;
-   bottom:calc(108px + env(safe-area-inset-bottom))!important;
-   transform:translateX(-50%)!important;z-index:85!important;
-   display:flex!important;align-items:center!important;justify-content:center!important;
-   gap:12px!important;width:max-content!important;max-width:80vw!important;
-   margin:0!important;padding:7px 12px!important;
-   border:1px solid rgba(255,255,255,.62);border-radius:999px;
-   background:rgba(255,255,255,.24);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-   pointer-events:auto!important;
- }
- #launcher .launcher-pages button{width:11px;height:11px;min-width:11px;min-height:11px;padding:0;border-radius:50%;border:0;background:rgba(135,128,139,.35);font-size:0;line-height:1;touch-action:manipulation}
- #launcher .launcher-pages button.active{width:25px;min-width:25px;border-radius:10px;background:#292927}
- #launcher .launcher-pages [data-launcher-add-page]{width:27px!important;height:27px!important;min-width:27px!important;min-height:27px!important;border:1px solid rgba(41,41,39,.16)!important;border-radius:50%!important;background:rgba(255,255,255,.92)!important;color:#292927!important;font-size:18px!important;line-height:1!important}
- #launcher .launcher-grid .launcher-app.is-dragging .app-icon{transform:scale(1.06);transition:transform .12s ease}
- `;
- document.head.appendChild(style);
- const occupiedKey=(p,r,c)=>`${p}:${r}:${c}`;
- function pageCount(){return Math.max(1,extraPages,...Object.values(pageMap).map(v=>Number.isInteger(Number(v))&&Number(v)>=0?Number(v)+1:2));}
- function firstFree(page,used){for(let r=1;r<=ROWS;r++)for(let c=1;c<=COLS;c++)if(!used.has(occupiedKey(page,r,c)))return {page,row:r,col:c};return {page:page+1,row:1,col:1}}
- function normalize(){
-  const ids=getApps().map(getId),seen=new Set();
-  order=(order||[]).filter(id=>ids.includes(id)&&!seen.has(id)&&seen.add(id));ids.forEach(id=>{if(!seen.has(id))order.push(id)});
-  const used=new Set();
-  ids.forEach(id=>{
-   const raw=Number(pageMap[id]),p=Number.isInteger(raw)&&raw>=0?raw:0;pageMap[id]=p;
-   let cell=cells[id];
-   if(!cell||!Number.isInteger(cell.row)||!Number.isInteger(cell.col)||cell.row<1||cell.row>ROWS||cell.col<1||cell.col>COLS||used.has(occupiedKey(p,cell.row,cell.col))){
-    cell=firstFree(p,used);cells[id]={row:cell.row,col:cell.col};if(cell.page!==p)pageMap[id]=cell.page;
-   }
-   used.add(occupiedKey(pageMap[id],cells[id].row,cells[id].col));
-  });
- }
- function render(){
-  normalize();
-  getApps().forEach(el=>{
-   const id=getId(el),cell=cells[id];el.hidden=pageMap[id]!==currentPage;
-   el.style.gridRow=String(cell.row);el.style.gridColumn=String(cell.col);el.style.order='0';
-   el.style.removeProperty('transform');el.classList.remove('is-dragging');
-  });
-  const visibleRows=getApps().filter(el=>pageMap[getId(el)]===currentPage).map(el=>cells[getId(el)].row);
-  const usedRows=Math.max(1,...visibleRows);
-  grid.style.setProperty('grid-template-rows',`repeat(${usedRows}, ${CELL_H}px)`,'important');
-  pages.querySelectorAll('[data-launcher-add-page],[data-launcher-page]').forEach(b=>b.remove());
-  for(let i=0;i<pageCount();i++){
-   const b=document.createElement('button');b.type='button';b.dataset.launcherPage=String(i);
-   b.setAttribute('aria-label',`第${i+1}页`);b.classList.toggle('active',i===currentPage);pages.appendChild(b);
-  }
-  window.__loveRecordLauncherCurrentPage=currentPage;
-  window.dispatchEvent(new CustomEvent('lr-launcher-page-change',{detail:{page:currentPage}}));
- }
- async function persist(){
-  const snap={order:order.slice(),pageMap:{...pageMap},cells:JSON.parse(JSON.stringify(cells)),pageCount:pageCount(),version:5,updatedAt:Date.now()},seq=++writeSeq;
-  try{await lrKVSet(LAYOUT_KV,snap);if(seq===writeSeq)window.dispatchEvent(new CustomEvent('lr-launcher-layout-saved',{detail:snap}))}
-  catch(e){console.warn('[LOVE RECORD] launcher layout IndexedDB save failed',e);if(typeof toast==='function')toast('图标布局保存失败，请检查浏览器储存权限')}
- }
- function setPage(n){if(!layoutReady)return;const target=Math.max(0,Math.floor(Number(n)||0));if(target>=pageCount()||target===currentPage)return;currentPage=target;render();persist()}
- function addPage(){if(!layoutReady)return;currentPage=pageCount();extraPages=currentPage+1;render();persist();closePageManager();if(typeof toast==='function')toast(`已添加第${currentPage+1}页`)}
- function deleteCurrentPage(){
-  if(!layoutReady||pageCount()<=1){if(typeof toast==='function')toast('至少保留两个桌面页面 ♡');closePageManager();return}
-  const removed=currentPage,fallback=Math.max(0,removed-1);
-  getApps().forEach(el=>{
-   const id=getId(el),p=Number(pageMap[id]||0);
-   if(p===removed&&fallback!==removed){const spot=freeCell(fallback);pageMap[id]=fallback;cells[id]={row:spot.row,col:spot.col};}
-   else if(p>removed)pageMap[id]=p-1;
-  });
-  extraPages=Math.max(1,pageCount()-1);currentPage=fallback;
-  normalize();render();persist();closePageManager();
-  if(typeof toast==='function')toast('已删除当前页面，图标已整理 ♡');
- }
- let pageManager=null,pageManagerTimer=null,pageManagerLong=false,pageManagerStart=null;
- function ensurePageManager(){
-  if(pageManager)return pageManager;
-  pageManager=document.createElement('div');pageManager.id='lrLauncherPageManager';
-  pageManager.innerHTML='<div class="lr-page-manager-card"><div class="lr-page-manager-title">桌面页面管理</div><button type="button" data-page-manager-add>＋ 添加页面</button><button type="button" data-page-manager-delete>－ 删除当前页面</button><button type="button" data-page-manager-close>完成</button></div>';
-  document.body.appendChild(pageManager);
-  pageManager.addEventListener('click',e=>{
-   if(e.target===pageManager||e.target.closest('[data-page-manager-close]'))closePageManager();
-   else if(e.target.closest('[data-page-manager-add]'))addPage();
-   else if(e.target.closest('[data-page-manager-delete]'))deleteCurrentPage();
-  });
-  return pageManager;
- }
- function openPageManager(){const panel=ensurePageManager();panel.classList.add('show');const del=panel.querySelector('[data-page-manager-delete]');del.disabled=pageCount()<=1;pageManagerLong=true;}
- function closePageManager(){if(pageManager)pageManager.classList.remove('show');}
- pages.addEventListener('pointerdown',e=>{
-  if(e.pointerType==='mouse'&&e.button!==0)return;
-  clearTimeout(pageManagerTimer);pageManagerLong=false;pageManagerStart={x:e.clientX,y:e.clientY,pointerId:e.pointerId};
-  pageManagerTimer=setTimeout(()=>{openPageManager();},480);
- });
- document.addEventListener('pointermove',e=>{
-  if(!pageManagerStart||e.pointerId!==pageManagerStart.pointerId)return;
-  if(Math.hypot(e.clientX-pageManagerStart.x,e.clientY-pageManagerStart.y)>10){clearTimeout(pageManagerTimer);pageManagerTimer=null;}
- },{passive:true});
- ['pointerup','pointercancel'].forEach(type=>document.addEventListener(type,()=>{clearTimeout(pageManagerTimer);pageManagerTimer=null;pageManagerStart=null;}));
- pages.addEventListener('contextmenu',e=>e.preventDefault());
- pages.addEventListener('click',e=>{
-  if(pageManagerLong){e.preventDefault();e.stopPropagation();pageManagerLong=false;return}
-  const b=e.target.closest('[data-launcher-page]');if(b)setPage(Number(b.dataset.launcherPage));
- });
- let swipeStart=null,swipeAxis=null,swipeFrame=0;
- const resetSwipeVisual=()=>{cancelAnimationFrame(swipeFrame);grid.style.transition='transform 180ms cubic-bezier(.22,.75,.25,1)';grid.style.transform='translate3d(0,0,0)';swipeFrame=requestAnimationFrame(()=>{grid.style.transition='';});};
- launcher.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1||e.target.closest('button,a,input,textarea,select,[contenteditable="true"],.launcher-app,#lrwStudioOverlay,.lrw-card')){swipeStart=null;swipeAxis=null;return}
-  const t=e.touches[0];swipeStart={x:t.clientX,y:t.clientY,time:Date.now()};swipeAxis=null;grid.style.transition='none';
- },{passive:true});
- launcher.addEventListener('touchmove',e=>{
-  if(!swipeStart||e.touches.length!==1)return;const t=e.touches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y;
-  if(!swipeAxis&&Math.max(Math.abs(dx),Math.abs(dy))>7)swipeAxis=Math.abs(dx)>Math.abs(dy)*1.12?'x':'y';
-  if(swipeAxis==='x'){if(e.cancelable)e.preventDefault();const atStart=currentPage===0&&dx>0,atEnd=currentPage>=pageCount()-1&&dx<0;grid.style.transform=`translate3d(${(atStart||atEnd)?dx*.28:dx}px,0,0)`;}
- },{passive:false});
- launcher.addEventListener('touchend',e=>{
-  if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.x,dy=t.clientY-swipeStart.y,dt=Date.now()-swipeStart.time;
-  const valid=swipeAxis==='x'&&Math.abs(dx)>Math.max(42,window.innerWidth*.13)&&Math.abs(dx)>Math.abs(dy)*1.18&&dt<1200;
-  if(valid){const target=currentPage+(dx<0?1:-1);if(target>=0&&target<pageCount()){
-    const width=Math.max(grid.getBoundingClientRect().width,window.innerWidth);grid.style.transition='transform 145ms cubic-bezier(.22,.75,.25,1)';grid.style.transform=`translate3d(${dx<0?-width:width}px,0,0)`;
-    window.setTimeout(()=>{setPage(target);grid.style.transition='none';grid.style.transform=`translate3d(${dx<0?width:-width}px,0,0)`;void grid.offsetWidth;requestAnimationFrame(()=>{grid.style.transition='transform 230ms cubic-bezier(.18,.72,.25,1)';grid.style.transform='translate3d(0,0,0)';requestAnimationFrame(()=>setTimeout(()=>{grid.style.transition='';},240));});},150);
-   }else resetSwipeVisual();
-  }else resetSwipeVisual();
-  swipeStart=null;swipeAxis=null;
- },{passive:true});
- launcher.addEventListener('touchcancel',()=>{swipeStart=null;swipeAxis=null;resetSwipeVisual();},{passive:true});
- function cellFromPoint(x,y){
-  const r=grid.getBoundingClientRect(),styles=getComputedStyle(grid),gap=parseFloat(styles.columnGap)||10,rowGap=parseFloat(styles.rowGap)||ROW_GAP;
-  const colW=(r.width-gap*(COLS-1))/COLS,stepX=colW+gap,stepY=CELL_H+rowGap;
-  const col=Math.max(1,Math.min(COLS,Math.floor((x-r.left)/stepX)+1));
-  const row=Math.max(1,Math.min(ROWS,Math.floor((y-r.top)/stepY)+1));
-  return {row,col};
- }
- function freeCell(page){const used=new Set(getApps().filter(a=>pageMap[getId(a)]===page).map(a=>occupiedKey(page,cells[getId(a)].row,cells[getId(a)].col)));return firstFree(page,used)}
- function beginDrag(e){
-  const el=e.target.closest('#launcher .launcher-app[data-drag-id]');
-  if(!el||el.hidden||(e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button:not(.launcher-app),input,textarea'))return;
-  clearTimeout(timer);
-  active={el,id:getId(el),pointerId:e.pointerId,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,
-   originPage:pageMap[getId(el)]??0,originCell:{...(cells[getId(el)]||{row:1,col:1})}};
-  dragged=false;
-  timer=setTimeout(()=>{
-   if(!active)return;
-   dragged=true;
-   try{el.setPointerCapture(e.pointerId)}catch(err){console.debug('[LOVE RECORD] launcher pointer capture unavailable',err)}
-   el.classList.add('is-dragging');
-   if(navigator.vibrate)navigator.vibrate(12);
-   queueDragVisual(active.lastX,active.lastY);
-  },260);
- }
- function queueDragVisual(x,y){
-  pendingPoint={x,y};
-  if(dragFrame)return;
-  dragFrame=requestAnimationFrame(()=>{
-   dragFrame=0;if(!active||!dragged||!pendingPoint)return;
-   const p=pendingPoint;pendingPoint=null;
-   active.el.style.setProperty('transform',`translate3d(${p.x-active.x}px,${p.y-active.y}px,0) scale(1.055)`,'important');
-  });
- }
- document.addEventListener('pointerdown',beginDrag);
- document.addEventListener('pointermove',e=>{
-  if(!active||e.pointerId!==active.pointerId)return;
-  active.lastX=e.clientX;active.lastY=e.clientY;
-  if(!dragged){
-   if(Math.hypot(e.clientX-active.x,e.clientY-active.y)>30){clearTimeout(timer);timer=null;active=null;}
-   return;
-  }
-  if(e.cancelable)e.preventDefault();queueDragVisual(e.clientX,e.clientY);
- },{passive:false});
- function finish(e){
-  clearTimeout(timer);timer=null;
-  if(dragFrame){cancelAnimationFrame(dragFrame);dragFrame=0;}
-  if(active&&dragged){
-   const el=active.el,id=active.id,x=Number.isFinite(e?.clientX)?e.clientX:active.lastX,y=Number.isFinite(e?.clientY)?e.clientY:active.lastY;
-   const dots=[...pages.querySelectorAll('[data-launcher-page]')];let targetPage=null,bestDotDistance=Infinity;
-   const pageRect=pages.getBoundingClientRect();
-   const overPageBar=x>=pageRect.left-24&&x<=pageRect.right+24&&y>=pageRect.top-30&&y<=pageRect.bottom+30;
-   for(const dot of dots){
-    const r=dot.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dist=Math.hypot(x-cx,y-cy);
-    if(dist<bestDotDistance&&dist<=(overPageBar?110:72)){bestDotDistance=dist;targetPage=Number(dot.dataset.launcherPage)}
-   }
-   let dest;
-   if(targetPage!==null){dest=targetPage===active.originPage?{...active.originCell}:freeCell(targetPage)}
-   else{
-    const r=grid.getBoundingClientRect();
-    if(x>=r.left-8&&x<=r.right+8&&y>=r.top-12&&y<=r.bottom+12){targetPage=currentPage;dest=cellFromPoint(x,y)}
-    else{targetPage=active.originPage;dest={...active.originCell}}
-   }
-   const other=getApps().find(a=>getId(a)!==id&&pageMap[getId(a)]===targetPage&&cells[getId(a)].row===dest.row&&cells[getId(a)].col===dest.col);
-   if(other){const oid=getId(other);pageMap[oid]=active.originPage;cells[oid]={row:active.originCell.row,col:active.originCell.col}}
-   pageMap[id]=targetPage;cells[id]={row:dest.row,col:dest.col};currentPage=targetPage;
-   el.classList.remove('is-dragging');el.style.removeProperty('transform');active=null;dragged=false;pendingPoint=null;
-   render();persist();window.__launcherJustDragged=Date.now();if(e?.cancelable)e.preventDefault();
-  }else{
-   if(active?.el){active.el.classList.remove('is-dragging');active.el.style.removeProperty('transform')}
-   active=null;dragged=false;pendingPoint=null;
-  }
- }
- document.addEventListener('pointerup',finish);document.addEventListener('pointercancel',finish);
- window.addEventListener('pagehide',()=>{if(layoutReady)persist()});
- document.addEventListener('input',e=>{if(e.target?.id==='lrPeopleSearch'){const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#moduleBody .lr-person-card').forEach(card=>{card.hidden=!card.textContent.toLowerCase().includes(q)})}});
-document.addEventListener('click',e=>{if(window.__launcherJustDragged&&Date.now()-window.__launcherJustDragged<750&&e.target.closest('#launcher .launcher-app[data-drag-id]')){e.preventDefault();e.stopImmediatePropagation()}},true);
- (async()=>{
-  let saved=null;try{saved=await lrKVGet(LAYOUT_KV);if(!saved)saved=await lrKVGet(LEGACY_KV)}catch(e){console.warn('[LOVE RECORD] launcher layout restore skipped',e)}
-  if(saved){
-   if(Number.isInteger(saved.pageCount)&&saved.pageCount>=1)extraPages=saved.pageCount;
-   if(Array.isArray(saved.order))order=saved.order.slice();
-   if(saved.pageMap&&typeof saved.pageMap==='object')pageMap={...pageMap,...saved.pageMap};
-   if(saved.cells&&typeof saved.cells==='object')cells={...saved.cells};
-  }
-  if(!Object.keys(cells).length){
-   const byPage={0:0,1:0};
-   order.forEach(id=>{if(pageMap[id]===undefined)pageMap[id]=0;const p=pageMap[id]===1?1:0,n=byPage[p]++,row=Math.floor(n/COLS)+1,col=n%COLS+1;cells[id]={row,col}});
-  }
-  normalize();layoutReady=true;render();if(!saved||saved.version!==5)persist();
- })();
- window.__loveRecordLauncherSetPage=setPage;window.__loveRecordLauncherAddPage=addPage;
- window.__loveRecordLauncherRefresh=()=>{render();persist()};
- window.__loveRecordLauncherCurrentPage=currentPage;
-})();
+// Fixed launcher layout and page navigation are provided by home-fixed-layout-v1.js.
 document.addEventListener('click',e=>{
 const spaceLaunch=e.target.closest('[data-space-v2-launch]');if(spaceLaunch){if(typeof window.openLoveRecordSpaceV2==='function'){e.preventDefault();e.stopImmediatePropagation();window.openLoveRecordSpaceV2();return}e.preventDefault();return}const launchPage=e.target.closest('[data-launch-page]');if(launchPage){nav(launchPage.dataset.launchPage);return}
 const launchModule=e.target.closest('[data-launch-module]');if(launchModule){openModule(launchModule.dataset.launchModule);return}
@@ -3048,9 +2907,6 @@ window.addEventListener('lr-life-order-created',e=>{const o=e.detail||{},ctx=(()
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
 $('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd();const b=e.target.closest('#chatConfirmPeople');if(b){e.preventDefault();confirmChatPeople()}});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if(!$('chat').classList.contains('active'))return;if($('chat').classList.contains('is-conversation'))openChatSettings();else openChatAdd()});
 $('chatSettingsBack').onclick=closeChatSettings;$('chatSaveSettings').onclick=saveChatSettings;$('chatChooseAvatar').onclick=()=>$('chatAvatarFile').click();$('chatChooseBackground').onclick=()=>$('chatBackgroundFile').click();$('chatClearBackground').onclick=()=>{editingChatMeta.background='#f7f3f9';editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.toggle('active',b.dataset.chatBg==='#f7f3f9'))};$('chatAvatarFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.avatar=await imageToChatData(f,640,.88);$('chatSettingsAvatarPreview').innerHTML='<img src="'+editingChatMeta.avatar+'" alt="">'}catch{toast('头像读取失败')}e.target.value=''};$('chatBackgroundFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{editingChatMeta.backgroundImage=await imageToChatData(f,2200,.94);document.querySelectorAll('.chat-bg-option').forEach(b=>b.classList.remove('active'))}catch{toast('背景读取失败')}e.target.value=''};document.querySelectorAll('.chat-bg-option').forEach(b=>b.onclick=()=>{editingChatMeta.background=b.dataset.chatBg;editingChatMeta.backgroundImage='';document.querySelectorAll('.chat-bg-option').forEach(x=>x.classList.toggle('active',x===b))});
-$('homeUpload').onclick=()=>$('homeFile').click();
-$('homeFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;for(const x of await getImages('home'))await deleteImage(x.id);await addImage('home',f,'');e.target.value='';renderHome();toast('Photo added')};
-$('homeClear').onclick=async()=>{for(const x of await getImages('home'))await deleteImage(x.id);renderHome();toast('Photo cleared')};
 
 $('saveSettings').onclick=()=>{state.startDate=$('setDate').value;state.today=$('setToday').value.trim()||defaults.today;state.language='zh';const ok=save();renderHome();renderScene();if(typeof window.refreshLoveRecordListeningRoom==='function')window.refreshLoveRecordListeningRoom();toast(ok?'已保存修改 ♡':'保存失败：浏览器储存空间不足')};
 
@@ -3107,79 +2963,6 @@ if(loveIntro){
 }
 </script>
 
-<script>
-(function(){
-  function bindPolaroid(){
-    const card=document.querySelector('#launcher .home-moment-mini');
-    const photo=document.getElementById('homePhoto');
-    const file=document.getElementById('homeFile');
-    const upload=document.getElementById('homeUpload');
-    const clear=document.getElementById('homeClear');
-    if(!card||!photo||!file||!upload||!clear)return;
-    if(card.dataset.polaroidBound)return;
-    card.dataset.polaroidBound='1';
-
-    function openPicker(e){
-      if(e)e.stopPropagation();
-      file.click();
-    }
-    upload.addEventListener('click',openPicker);
-
-    let timer=null, pressed=false, startX=0, startY=0;
-    function startPress(e){
-      if(e.type==='mousedown' && e.button!==0)return;
-      pressed=true;
-      if(e.touches){startX=e.touches[0].clientX;startY=e.touches[0].clientY;}
-      timer=setTimeout(()=>{
-        if(!pressed)return;
-        pressed=false;
-        clearTimeout(timer);
-        const hasImage=photo.querySelector('img');
-        if(hasImage){
-          if(confirm('删除这张照片吗？')) clear.click();
-        }else{
-          file.click();
-        }
-      },650);
-    }
-    function cancelPress(){
-      pressed=false;
-      clearTimeout(timer);
-    }
-    function movePress(e){
-      if(!pressed)return;
-      const p=e.touches?.[0];
-      if(!p)return;
-      if(Math.abs(p.clientX-startX)>12||Math.abs(p.clientY-startY)>12)cancelPress();
-    }
-
-    photo.addEventListener('touchstart',startPress,{passive:true});
-    photo.addEventListener('touchend',cancelPress);
-    photo.addEventListener('touchcancel',cancelPress);
-    photo.addEventListener('touchmove',movePress,{passive:true});
-    photo.addEventListener('mousedown',startPress);
-    photo.addEventListener('mouseup',cancelPress);
-    photo.addEventListener('mouseleave',cancelPress);
-
-    // A normal tap on the empty polaroid adds a photo; with an existing image,
-    // normal tap is intentionally inert so long-press is reserved for deletion.
-    photo.addEventListener('click',()=>{
-      if(!photo.querySelector('img'))file.click();
-    });
-
-    const observer=new MutationObserver(()=>{
-      card.classList.toggle('is-filled',!!photo.querySelector('img'));
-      card.classList.toggle('is-empty',!photo.querySelector('img'));
-    });
-    observer.observe(photo,{childList:true,subtree:true});
-    card.classList.toggle('is-filled',!!photo.querySelector('img'));
-    card.classList.toggle('is-empty',!photo.querySelector('img'));
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bindPolaroid,{once:true});
-  else bindPolaroid();
-  setTimeout(bindPolaroid,500);
-})();
-</script>
 
 
   <script src="./chat-storage-v6.js?v=99"></script>
@@ -3191,7 +2974,7 @@ if(loveIntro){
   <script src="./chat-ux-v13.js?v=99"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
-  <script src="./music.js?v=99"></script>
+  <script src="./music.js?v=100"></script>
 
 <script>
 (()=>{
@@ -3306,7 +3089,6 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./home-widgets-v1.js?v=110"></script>
 <script src="./lr-appearance-enhancements-v1.js?v=1"></script>
 <script src="./global-font.js?v=99"></script>
 
@@ -3410,11 +3192,6 @@ body.lr-external-app-open{overflow:hidden}
  window.addEventListener('message',function(event){
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
   if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP'){closeApp();return;}
-  if(event.data&&event.data.type==='LR_OPEN_WIDGET_STUDIO'){
-   closeApp();
-   if(typeof window.LRHomeWidgetsOpenStudio==='function')window.LRHomeWidgetsOpenStudio();
-   return;
-  }
   if(event.data&&event.data.type==='LR_APPEARANCE_SETTINGS_UPDATED'){
    if(typeof window.LRAppearanceEnhancementsApply==='function')window.LRAppearanceEnhancementsApply();
   }
@@ -3499,49 +3276,10 @@ body.lr-external-app-open{overflow:hidden}
   <script src="./welcome-tour-v1.js?v=1"></script>
 <script src="./lr-full-backup-v1.js?v=3"></script>
 
-<style id="lr-page-manager-v2">
-#launcher .launcher-pages [data-launcher-add-page]{display:none!important}
-#lrLauncherPageManager{position:fixed;inset:0;z-index:12000;display:none;align-items:flex-end;justify-content:center;padding:18px 18px calc(112px + env(safe-area-inset-bottom));background:rgba(28,26,30,.18);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
-#lrLauncherPageManager.show{display:flex}
-#lrLauncherPageManager .lr-page-manager-card{width:min(420px,100%);padding:20px;border:1px solid rgba(255,255,255,.85);border-radius:26px;background:rgba(255,255,255,.96);box-shadow:0 18px 55px rgba(30,25,35,.18);display:grid;gap:10px}
-#lrLauncherPageManager .lr-page-manager-title{font:600 16px/1.4 Georgia,"Noto Serif SC",serif;color:#292927;padding:0 3px 5px}
-#lrLauncherPageManager button{min-height:48px;border:1px solid rgba(41,41,39,.10);border-radius:15px;background:#f5f4f1;color:#292927;font:500 14px/1.3 Arial,"Noto Sans SC",sans-serif}
-#lrLauncherPageManager button:disabled{opacity:.38}
-#lrLauncherPageManager [data-page-manager-close]{background:#292927;color:#fff}
-</style>
-
-<style id="lr-page-dots-touch-v1">
-#launcher .launcher-pages{touch-action:none!important;user-select:none;-webkit-user-select:none}
-#launcher .launcher-pages [data-launcher-page]{touch-action:none!important;min-width:14px!important;min-height:14px!important}
-#launcher .launcher-grid .launcher-app{touch-action:none!important}
-#lrWidgetShelf .lrw-card,#launcher .launcher-welcome,#launcher .launcher-info{touch-action:none!important;user-select:none;-webkit-user-select:none}
-</style>
-
-<style id="lr-launcher-drag-repair-v7">
-#launcher .launcher-grid .launcher-app,
-#launcher .launcher-grid .launcher-app *{
-  touch-action:none!important;
-  -webkit-user-select:none!important;
-  user-select:none!important;
-  -webkit-user-drag:none!important;
-}
-#launcher .launcher-grid .launcher-app .app-icon{pointer-events:none!important}
-#launcher .launcher-grid .launcher-app.is-dragging{
-  z-index:999!important;
-  opacity:.96!important;
-  transition:none!important;
-  cursor:grabbing!important;
-}
-#launcher .launcher-pages{touch-action:none!important}
-</style>
 
 
-<style id="lr-v8-widget-blank-touch">
-#launcher{position:relative;touch-action:pan-y}
-#launcher .launcher-welcome,#launcher .launcher-info{display:none!important}
-#lrWidgetBoard{width:100%;min-height:0}
-#lrWidgetShelf{touch-action:pan-y}
-</style>
+
+
 <script id="lr-settings-diagnostics-v1">
 (function(){
  'use strict';
@@ -3586,6 +3324,7 @@ body.lr-user-app-open{overflow:hidden}
  <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
 </div>
 <script src="./lr-store-runtime.js?v=1"></script>
+<script src="./home-fixed-layout-v1.js?v=1"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
