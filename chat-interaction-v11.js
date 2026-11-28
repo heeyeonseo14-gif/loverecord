@@ -210,6 +210,8 @@
       .lr-thought-error{color:#986879;background:#fbf2f5;border-radius:14px;padding:12px;font-size:12px;line-height:1.65}
       #lrThoughtModal .lr-thought-sheet{padding:25px 23px;border-radius:28px}
       #lrThoughtText{min-height:75px;font-size:14px}
+      .lr-call-info-sheet{text-align:center}.lr-call-info-icon{width:58px;height:58px;margin:0 auto 13px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,#eee4f3,#d9c6e2);color:#8e70a1;font-size:26px}.lr-call-info-note{margin:0 0 15px;padding:11px 12px;border-radius:13px;background:#f7f3f9;color:#998ba0;font-size:11px;line-height:1.7;text-align:left}
+      .lr-call-info-sheet{text-align:center}.lr-call-info-icon{width:58px;height:58px;margin:0 auto 13px;display:grid;place-items:center;border-radius:20px;background:linear-gradient(145deg,#eee4f3,#d9c6e2);color:#8e70a1;font-size:26px}.lr-call-info-note{margin:0 0 15px;padding:11px 12px;border-radius:13px;background:#f7f3f9;color:#998ba0;font-size:11px;line-height:1.7;text-align:left}
       @media(max-width:420px){#lrChatPlus{width:42px;height:42px;flex-basis:42px}#lrAskAI{width:42px!important;height:42px!important;flex-basis:42px!important}.lr-action-sheet{padding:21px 18px}}
     `;
     document.head.appendChild(style);
@@ -223,7 +225,7 @@
     if(existing){const oldMenu=$('lrChatPlusMenu');if(oldMenu&&oldMenu.parentElement!==compose)oldMenu.remove();return;}
     const plus = document.createElement('button'); plus.type='button'; plus.id='lrChatPlus'; plus.textContent='＋'; plus.setAttribute('aria-label','更多聊天功能');
     const menu = document.createElement('div'); menu.id='lrChatPlusMenu'; menu.hidden=true;
-    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="sticker">♡　发送表情包</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="shiyi">✧　拾忆</button><button type="button" data-lr-action="journal">▤　日记</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
+    menu.innerHTML = `<button type="button" data-lr-action="image">▧　发送图片</button><button type="button" data-lr-action="sticker">♡　发送表情包</button><button type="button" data-lr-action="transfer">↗　转账</button><button type="button" data-lr-action="location">⌖　发送位置</button><button type="button" data-lr-action="voice-call">♬　语音通话</button><button type="button" data-lr-action="video-call">▣　视频通话</button><button type="button" data-lr-action="schedule">◷　角色行程</button><button type="button" data-lr-action="thought">♡　角色心声</button><button type="button" data-lr-action="shiyi">✧　拾忆</button><button type="button" data-lr-action="journal">▤　日记</button><button type="button" data-lr-action="market">🛍　生活集市 · 外卖 / 购物</button>`;
     const input = $('chatInput');
     compose.insertBefore(plus, input);
     compose.insertBefore(menu, plus);
@@ -248,6 +250,7 @@
       if(action==='location') sendLocation();
       if(action==='schedule') openSchedule();
       if(action==='thought') showInnerThought();
+      if(action==='voice-call'||action==='video-call'){const person=contactById(activeId());openCallInfo(action==='video-call'?'video':'voice','single',person?.name||'当前联系人');}
       if(action==='shiyi'){if(typeof window.LROpenExternalApp==='function')window.LROpenExternalApp('./shiyi.html');else location.href='./shiyi.html';}
       if(action==='journal'){
         if(typeof window.openModule==='function') window.openModule('journal');
@@ -570,6 +573,11 @@
     }catch(error){text.className='lr-thought-error';text.textContent='这次没有成功读取到心声：'+(error.message||'未知错误')+'。你可以检查 API 设置后再试。';$('lrThoughtRetry').hidden=false;}
     finally{thoughtBusy=false;}
   }
+  function openCallInfo(mode='voice',scope='single',displayName='') {
+    let modal=$('lrChatCallInfoModal');
+    if(!modal){modal=document.createElement('div');modal.id='lrChatCallInfoModal';modal.className='lr-action-overlay';modal.hidden=true;modal.innerHTML='<section class="lr-action-sheet lr-call-info-sheet"><div class="lr-action-kicker">LOVE RECORD · CALL</div><div class="lr-call-info-icon" id="lrCallInfoIcon">♬</div><div class="lr-action-title" id="lrCallInfoTitle">语音通话</div><div class="lr-action-desc" id="lrCallInfoDesc"></div><div class="lr-call-info-note">通话入口已加入单聊与群聊菜单；当前版本尚未接入实时音视频连接服务，因此现在无法实际拨出或接通。</div><div class="lr-action-buttons"><button type="button" id="lrCallInfoClose" class="primary">知道了</button></div></section>';document.body.appendChild(modal);$('lrCallInfoClose').onclick=()=>{modal.hidden=true};modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});}
+    const video=mode==='video';$('lrCallInfoIcon').textContent=video?'▣':'♬';$('lrCallInfoTitle').textContent=video?'视频通话':'语音通话';$('lrCallInfoDesc').textContent=(scope==='group'?'群聊「'+(displayName||'当前群聊')+'」':'与「'+(displayName||'当前联系人')+'」')+'的'+(video?'视频':'语音')+'通话入口。';modal.hidden=false;
+  }
   function exposeGroupActionBridge() {
     window.LRChatInteractionV11 = {
       saveAttachment,
@@ -578,7 +586,8 @@
       openTransferForGroup: onSend => sendTransfer(onSend),
       openLocationForGroup: onSend => sendLocation(onSend),
       openScheduleFor: contactId => openSchedule(String(contactId||'')),
-      openInnerThoughtFor: (contactId, context) => showInnerThought(String(contactId||''), String(context||''))
+      openInnerThoughtFor: (contactId, context) => showInnerThought(String(contactId||''), String(context||'')),
+      openCallInfo: (mode, scope, displayName) => openCallInfo(String(mode||'voice'), String(scope||'single'), String(displayName||''))
     };
     window.dispatchEvent(new CustomEvent('lr-chat-actions-ready'));
   }
