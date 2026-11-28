@@ -1,8 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // The user index document itself: /users/{uid}
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      // Private device, settings, character-context and message documents.
+      // Every descendant remains isolated to the authenticated UID.
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }

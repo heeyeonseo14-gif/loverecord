@@ -16,14 +16,21 @@ Firebase Console → `love-record-0928` → Build → Firestore Database → Rul
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
     }
   }
 }
 ```
 
-这条规则只允许已登录用户访问路径中属于自己 UID 的 `/users/{uid}/...` 数据。规则版本 2 的递归通配符覆盖用户根文档及其子集合。不要改成 `allow read, write: if true`。
+这份规则分别覆盖 `/users/{uid}` 用户索引文档和它下面的所有子集合；每位登录用户只能读写自己的 UID 路径。不要改成 `allow read, write: if true`。发布后请返回 LOVE RECORD 重新启用本机通知。
 
 ### 2. 在 GitHub Actions 添加服务账号 Secret
 

@@ -31,8 +31,9 @@
       #${EXTRA_ID}{margin-top:14px}
       #${EXTRA_ID} .lr-setting-card{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0}
       #${EXTRA_ID} .lr-setting-card h3{margin:0 0 12px;font-size:17px;font-weight:500}
-      #${EXTRA_ID} .lr-background-chat-card{display:flex;align-items:center;justify-content:space-between;gap:14px}
-      #${EXTRA_ID} .lr-background-chat-copy{min-width:0;flex:1}
+      #${EXTRA_ID} .lr-background-chat-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px}
+      #${EXTRA_ID} .lr-background-chat-copy{min-width:0;grid-column:1;grid-row:1}
+      #${EXTRA_ID} .lr-background-chat-card>.lr-switch{grid-column:2;grid-row:1;align-self:center;max-width:100%}
       #${EXTRA_ID} .lr-background-chat-copy h3{margin:0 0 6px;font-size:16px;font-weight:500;color:var(--ink)}
       #${EXTRA_ID} .lr-background-chat-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
       #${EXTRA_ID} .lr-narration-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px!important;border:1px solid rgba(183,150,197,.28)!important;background:linear-gradient(135deg,#fff 0%,#faf5fc 58%,#f4edf8 100%)!important;box-shadow:0 9px 24px rgba(113,85,128,.07)}
@@ -52,7 +53,7 @@
 
       #${EXTRA_ID} label{display:block;margin:10px 0 7px;color:var(--muted);font-size:13px}
       #${EXTRA_ID} input,#${EXTRA_ID} select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 13px;color:var(--ink);font:inherit;box-sizing:border-box}
-      #${EXTRA_ID} .lr-background-interval-setting{flex:1 0 100%;width:100%;margin-top:4px}
+      #${EXTRA_ID} .lr-background-interval-setting{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box;margin-top:2px}
       #${EXTRA_ID} .lr-background-interval-setting p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
       #${EXTRA_ID} .lr-avatar-row{display:flex;align-items:center;gap:13px}
       #${EXTRA_ID} .lr-my-avatar{width:58px;height:58px;border-radius:19px;background:#e9deef;display:grid;place-items:center;overflow:hidden;color:#8c7597;font-size:20px;flex:none}
@@ -70,6 +71,7 @@
       .lr-inline-narration{font-style:italic;color:inherit;opacity:.78}
       .lr-blocked-tag{font-size:10px;color:#9a5365;border:1px solid #dfc6ce;border-radius:99px;padding:2px 7px;margin-left:6px}
       @media(max-width:420px){#${EXTRA_ID} .lr-setting-card{padding:14px}}
+      body.chat-conversation-open #toast{max-width:calc(100vw - 40px);width:max-content;box-sizing:border-box;text-align:center;line-height:1.45;white-space:normal;border-radius:16px;padding:9px 14px}
     `;
     document.head.appendChild(style);
   }
@@ -336,7 +338,7 @@
     let cloudMessage = '';
     if (window.LRBackground?.setConversationControl) {
       const result = await window.LRBackground.setConversationControl('single', contactId, editingChatMeta.backgroundActivityEnabled, editingChatMeta.backgroundIntervalMinutes);
-      if (result?.cloud === false) cloudMessage = '（后台开关已保存在本机，该聊天的云端设置尚未同步）';
+      if (result?.cloud === false) cloudMessage = ' · 云端待同步';
     }
     closeChatSettings(); toast('聊天设置已保存 ♡' + cloudMessage);
   }
