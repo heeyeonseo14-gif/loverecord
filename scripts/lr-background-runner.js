@@ -51,6 +51,8 @@ function recentTranscript(conversation) {
 function makePrompt(userName, conversation, settings) {
   const time = new Date().toLocaleString('zh-CN', { timeZone: settings.timezone || 'Asia/Kuala_Lumpur', hour12: false });
   const transcript = recentTranscript(conversation) || '目前没有近期聊天记录。请以温和自然的方式开启一段简短对话。';
+  const oneOnly = String(settings.messagesPerRun || '2-3') === '1';
+  const countRule = oneOnly ? '本轮只生成 1 条消息。' : '本轮自然生成 2–3 条彼此衔接的独立聊天消息；每条都应像单独发送的气泡，不要把多条合并成一大段。不要为了凑数灌水；上下文不足时可以只发 1 条。';
   const baseRules = [
     '你是 LOVE RECORD 中持续存在的角色，不是客服或任务机器人。',
     '你的表达要符合人物设定、最近的真实聊天和长期记忆，不要编造用户已经做过的事。',
@@ -58,19 +60,20 @@ function makePrompt(userName, conversation, settings) {
     `世界书/共同世界：${text(conversation.worldContext, 12000) || '无'}`,
     `长期记忆：${text(conversation.longMemory, 10000) || '无'}`,
     `最近对话：\n${transcript}`,
-    '主动消息应简短自然，像真实聊天中主动想到对方时发出的一条消息。不要提及后台任务、定时器、API、云端或系统。不要替用户决定行动、想法、台词和情绪。只输出角色准备发送的消息正文。'
+    '主动消息应简短自然，像真实聊天中主动想到对方时发出的一组连续消息。不要提及后台任务、定时器、API、云端或系统。不要替用户决定行动、想法、台词和情绪。',
+    countRule
   ];
   if (conversation.type === 'group') {
     const members = (Array.isArray(conversation.members) ? conversation.members : []).slice(0, 12);
     const list = members.map((m) => `ID=${text(m.id, 180)}；名字=${text(m.name, 80)}；身份=${text(m.role, 180)}；性格=${text(m.personality, 1000)}；外貌=${text(m.appearance, 800)}；说话方式=${text(m.speech, 800)}；背景=${text(m.background, 1000)}；长期记忆=${text(m.longMemory, 5000)}；规则=${text(m.instructions, 1000)}`).join('\n');
     const self = conversation.userPersona || {};
-    const system = baseRules.join('\n') + `\n用户自设：${text(self.name, 100)}；${text(self.role, 500)}；${text(self.personality, 1000)}；${text(self.background, 1000)}。不要替用户说话。\n这是一个多人群聊。请从下面有效成员中选择一位最适合自然发言的角色。只返回 JSON：{"senderId":"成员ID","text":"消息正文"}。senderId 必须严格来自成员列表。\n成员列表：\n${list}`;
-    return { system, user: `群聊名称：${text(conversation.name, 120)}\n群公告：${text(conversation.announcement, 2000) || '无'}\n请根据上下文自然发出一条主动群消息。` };
+    const system = baseRules.join('\n') + `\n用户自设：${text(self.name, 100)}；${text(self.role, 500)}；${text(self.personality, 1000)}；${text(self.background, 1000)}。不要替用户说话。\n这是一个多人群聊。可以由同一位或不同成员连续发言；每条消息的 senderId 必须严格来自成员列表。只返回 JSON：{"messages":[{"senderId":"成员ID","text":"消息正文"}]}。messages 数组最多 3 项。\n成员列表：\n${list}`;
+    return { system, user: `群聊名称：${text(conversation.name, 120)}\n群公告：${text(conversation.announcement, 2000) || '无'}\n请根据上下文自然延续群聊，${oneOnly ? '返回 1 条' : '返回 2–3 条'}有衔接的独立消息。` };
   }
   const p = conversation.person || {};
   const self = conversation.userPersona || {};
   const system = baseRules.join('\n') + `\n你正在扮演：${text(p.name, 100)}。身份：${text(p.role, 500)}。性格：${text(p.personality, 2500)}。外貌：${text(p.appearance, 1200)}。说话方式：${text(p.speech, 1200)}。背景：${text(p.background, 1800)}。人物规则：${text(p.instructions, 1800)}。\n用户自设：${text(self.name, 100)}；${text(self.role, 500)}；${text(self.personality, 1000)}。不要代替用户说话。`;
-  return { system, user: '现在请你自然地主动给用户发一条消息。只输出消息正文，不要加角色名、引号或解释。' };
+  return { system, user: '现在请你自然地主动给用户发一组连续消息。只返回 JSON：{"messages":["第一条消息","第二条消息"]}，最多 3 条。每条分别是一条聊天气泡，不要加角色名、引号或解释。' };
 }
 async function callAi(api, prompt) {
   const base = text(api.apiBase, 500).replace(/\/+$/, '');
@@ -93,18 +96,47 @@ async function callAi(api, prompt) {
     return answer.trim().slice(0, 4000);
   } finally { clearTimeout(timer); }
 }
-function parseGroupAnswer(raw, members) {
+function parseJsonReply(raw) {
   const value = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
-  let parsed;
-  try { parsed = JSON.parse(value); } catch {
+  try { return JSON.parse(value); } catch {
     const start = value.indexOf('{'), end = value.lastIndexOf('}');
-    if (start < 0 || end <= start) throw new Error('Group character answer was not valid JSON.');
-    parsed = JSON.parse(value.slice(start, end + 1));
+    if (start >= 0 && end > start) return JSON.parse(value.slice(start, end + 1));
+    const a = value.indexOf('['), b = value.lastIndexOf(']');
+    if (a >= 0 && b > a) return JSON.parse(value.slice(a, b + 1));
+    throw new Error('CHAR batch response was not valid JSON.');
   }
-  const member = members.find((x) => String(x.id) === String(parsed.senderId));
-  const message = text(parsed.text, 4000).trim();
-  if (!member || !message) throw new Error('Group message did not match an active character.');
-  return { senderId: String(member.id), senderName: text(member.name || '角色', 80), text: message };
+}
+function parseSingleBatch(raw, max = 3) {
+  let parsed;
+  try { parsed = parseJsonReply(raw); }
+  catch {
+    const fallback = text(raw, 4000).trim();
+    if (!fallback) throw new Error('AI returned an empty single-chat response.');
+    return [{ senderId: '', senderName: '', text: fallback }];
+  }
+  const source = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.messages) ? parsed.messages : (parsed?.text ? [parsed.text] : []);
+  const messages = source.map((item) => text(typeof item === 'string' ? item : item?.text, 4000).trim()).filter(Boolean).slice(0, max);
+  if (!messages.length) throw new Error('AI returned no usable single-chat messages.');
+  return messages.map((message) => ({ senderId: '', senderName: '', text: message }));
+}
+function parseGroupBatch(raw, members, max = 3) {
+  let parsed;
+  try { parsed = parseJsonReply(raw); }
+  catch {
+    const fallback = text(raw, 4000).trim();
+    const firstMember = Array.isArray(members) ? members[0] : null;
+    if (!fallback || !firstMember?.id) throw new Error('Group batch response was not valid JSON and no fallback member is available.');
+    return [{ senderId: String(firstMember.id), senderName: text(firstMember.name || '角色', 80), text: fallback }];
+  }
+  const source = Array.isArray(parsed?.messages) ? parsed.messages : (parsed?.senderId && parsed?.text ? [parsed] : []);
+  const messages = source.slice(0, max).map((item) => {
+    const member = members.find((x) => String(x.id) === String(item?.senderId));
+    const message = text(item?.text, 4000).trim();
+    if (!member || !message) return null;
+    return { senderId: String(member.id), senderName: text(member.name || '角色', 80), text: message };
+  }).filter(Boolean);
+  if (!messages.length) throw new Error('Group batch did not match an active character.');
+  return messages;
 }
 async function sendToUserDevices(uid, payload) {
   const snap = await db.collection(`users/${uid}/devices`).where('active', '==', true).limit(30).get();
@@ -147,13 +179,14 @@ async function claimConversation(ref, intervalMinutes) {
   const now = Date.now();
   return db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
-    if (!snap.exists) return false;
+    if (!snap.exists) return { claimed: false, reason: 'missing-context' };
     const data = snap.data() || {};
     const last = Number(data.lastGeneratedAt) || 0;
     const lock = Number(data.lockUntil) || 0;
-    if (lock > now || (last && now - last < intervalMinutes * 60000)) return false;
+    if (lock > now) return { claimed: false, reason: 'locked' };
+    if (last && now - last < intervalMinutes * 60000) return { claimed: false, reason: 'interval-not-due' };
     tx.set(ref, { lockUntil: now + 7 * 60000, lastAttemptAt: now }, { merge: true });
-    return true;
+    return { claimed: true, reason: 'claimed' };
   });
 }
 async function runConversation(uid, userName, settings, controlDoc, api) {
@@ -163,38 +196,54 @@ async function runConversation(uid, userName, settings, controlDoc, api) {
   if (!id || control.enabled !== true) return;
   const contextRef = db.doc(`users/${uid}/background/conversations/items/${controlDoc.id}`);
   const contextSnap = await contextRef.get();
-  if (!contextSnap.exists) return;
+  if (!contextSnap.exists) { console.log(`Skip ${kind} ${id.slice(0, 24)}: cloud context missing.`); return; }
   const context = contextSnap.data() || {};
-  if (context.enabled !== true || context.conversationId !== id || context.type !== kind) return;
+  if (context.enabled !== true || context.conversationId !== id || context.type !== kind) { console.log(`Skip ${kind} ${id.slice(0, 24)}: context disabled or mismatched.`); return; }
   const perConversationInterval = Number(control.intervalMinutes);
   const globalDefaultInterval = Number(settings.intervalMinutes) || 120;
   const selectedInterval = Number.isFinite(perConversationInterval) && perConversationInterval > 0 ? perConversationInterval : globalDefaultInterval;
   const interval = Math.max(15, Math.min(720, Math.round(selectedInterval)));
-  if (!await claimConversation(contextRef, interval)) return;
+  const claim = await claimConversation(contextRef, interval);
+  if (!claim.claimed) { console.log(`Skip ${kind} ${id.slice(0, 24)}: ${claim.reason}; interval=${interval}m.`); return; }
   try {
+    const oneOnly = String(settings.messagesPerRun || '2-3') === '1';
+    const maxMessages = oneOnly ? 1 : 3;
     const prompt = makePrompt(userName, context, settings);
     const raw = await callAi(api, prompt);
-    let senderId = '', senderName = text(context.person?.name || '角色', 80), messageText = raw;
-    if (kind === 'group') {
-      const chosen = parseGroupAnswer(raw, Array.isArray(context.members) ? context.members : []);
-      senderId = chosen.senderId; senderName = chosen.senderName; messageText = chosen.text;
-    }
-    const messageRef = db.collection(`users/${uid}/background/messages/items`).doc();
+    const batch = kind === 'group'
+      ? parseGroupBatch(raw, Array.isArray(context.members) ? context.members : [], maxMessages)
+      : parseSingleBatch(raw, maxMessages);
     const createdAt = Date.now();
-    const message = {
-      type: kind, conversationId: id, senderId, senderName, text: messageText,
-      createdAt, status: 'pending', source: 'github-actions-char'
-    };
-    await messageRef.set(message);
+    const messageRefs = [];
+    for (let i = 0; i < batch.length; i++) {
+      const item = batch[i];
+      const messageRef = db.collection(`users/${uid}/background/messages/items`).doc();
+      const senderName = kind === 'group' ? item.senderName : text(context.person?.name || '角色', 80);
+      await messageRef.set({
+        type: kind, conversationId: id, senderId: kind === 'group' ? item.senderId : '',
+        senderName, text: item.text, createdAt: createdAt + i,
+        status: 'pending', source: 'github-actions-char', batchId: createdAt.toString(36), batchIndex: i, batchSize: batch.length
+      });
+      messageRefs.push(messageRef);
+    }
+    const first = batch[0];
+    const title = kind === 'group' ? (text(context.name || '群聊', 80) + ' · ' + first.senderName) : text(context.person?.name || '角色', 80);
+    const body = first.text.slice(0, 116) + (batch.length > 1 ? `（还有 ${batch.length - 1} 条新消息）` : '');
     const deviceCount = await sendToUserDevices(uid, {
-      title: kind === 'group' ? (text(context.name || '群聊', 80) + ' · ' + senderName) : senderName,
-      body: messageText.slice(0, 160), url: './index.html', conversationId: id,
-      conversationType: kind, tag: 'lr-char-' + kind + '-' + id.slice(0, 48), messageId: messageRef.id
+      title, body, url: './index.html', conversationId: id, conversationType: kind,
+      tag: `lr-char-${kind}-${id.slice(0, 32)}-${createdAt.toString(36)}`,
+      messageId: messageRefs[0].id, messageCount: batch.length
     });
-    const previous = Array.isArray(context.recentMessages) ? context.recentMessages.slice(-19) : [];
-    previous.push({ role: 'assistant', name: senderName, text: messageText.slice(0, 1800), at: createdAt });
-    await contextRef.set({ recentMessages: previous, lastGeneratedAt: createdAt, lastMessageId: messageRef.id, lockUntil: 0, lastRunStatus: 'sent', lastDeviceCount: deviceCount, lastError: FieldValue.delete() }, { merge: true });
-    console.log(`CHAR message generated for UID ${uid.slice(0, 8)} / ${kind} conversation; devices=${deviceCount}`);
+    const previous = Array.isArray(context.recentMessages) ? context.recentMessages.slice(-20) : [];
+    for (let i = 0; i < batch.length; i++) {
+      previous.push({ role: 'assistant', name: kind === 'group' ? batch[i].senderName : text(context.person?.name || '角色', 80), text: batch[i].text.slice(0, 1800), at: createdAt + i });
+    }
+    await contextRef.set({
+      recentMessages: previous.slice(-20), lastGeneratedAt: createdAt, lastMessageId: messageRefs.at(-1).id,
+      lockUntil: 0, lastRunStatus: deviceCount ? 'sent' : 'generated-no-device',
+      lastDeviceCount: deviceCount, lastBatchCount: batch.length, lastError: FieldValue.delete()
+    }, { merge: true });
+    console.log(`CHAR batch generated for UID ${uid.slice(0, 8)} / ${kind} conversation; messages=${batch.length}; devices=${deviceCount}`);
   } catch (error) {
     await contextRef.set({ lockUntil: 0, lastRunStatus: 'error', lastError: text(error?.message || 'generation failed', 240), lastAttemptAt: Date.now() }, { merge: true });
     console.warn(`CHAR generation failed for UID ${uid.slice(0, 8)} / ${kind}:`, text(error?.message || error, 180));
@@ -211,15 +260,17 @@ async function run() {
       const [settingsSnap, profileSnap, apiSnap] = await Promise.all([
         root.doc('settings').get(), root.doc('cloudProfile').get(), root.doc('private').collection('secrets').doc('apiConfig').get()
       ]);
-      if (!settingsSnap.exists || settingsSnap.data()?.enabled !== true) continue;
+      if (!settingsSnap.exists || settingsSnap.data()?.enabled !== true) { console.log(`Skip UID ${uid.slice(0, 8)}: global background switch is off or settings are missing.`); continue; }
       const profile = profileSnap.data() || {};
-      if (profile.consentToBackgroundAI !== true) continue;
-      if (!apiSnap.exists) continue;
+      if (profile.consentToBackgroundAI !== true) { console.log(`Skip UID ${uid.slice(0, 8)}: cloud AI consent/profile is missing.`); continue; }
+      if (!apiSnap.exists) { console.log(`Skip UID ${uid.slice(0, 8)}: private AI API configuration is missing.`); continue; }
       const settings = settingsSnap.data() || {};
-      if (inQuietHours(settings)) continue;
+      if (inQuietHours(settings)) { console.log(`Skip UID ${uid.slice(0, 8)}: quiet hours are active.`); continue; }
       const api = apiSnap.data() || {};
       const controls = await root.doc('settings').collection('conversations').where('enabled', '==', true).limit(30).get();
+      console.log(`UID ${uid.slice(0, 8)}: enabled conversations=${controls.size}; global interval=${Number(settings.intervalMinutes) || 120}m; batch=${settings.messagesPerRun || '2-3'}.`);
       for (const controlDoc of controls.docs) await runConversation(uid, text(profile.userName || '用户', 80), settings, controlDoc, api);
+      if (!controls.size) console.log(`Skip UID ${uid.slice(0, 8)}: no enabled single/group conversations.`);
     } catch (error) {
       console.warn(`Background processing failed for UID ${uid.slice(0, 8)}:`, text(error?.message || error, 200));
     }
