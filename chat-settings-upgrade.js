@@ -22,6 +22,15 @@
   }
   const currentMeta = () => (typeof activeChatContactId !== 'undefined' && activeChatContactId) ? chatMeta(activeChatContactId) : {};
   const safeText = value => String(value == null ? '' : value);
+  function localChatTime(value){const n=Number(value);if(!Number.isFinite(n)||n<=0)return '时间未知';return new Date(n).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}
+  function localChatClock(){let zone='设备本地时区';try{zone=Intl.DateTimeFormat().resolvedOptions().timeZone||zone}catch(_){}return `当前真实设备本地时间：${localChatTime(Date.now())}；时区：${zone}。`}
+  function stripInternalMessageTime(value){return String(value||'').replace(/【\s*消息(?:真实)?时间\s*[：:][^】]*】/g,'').replace(/\[\s*消息(?:真实)?时间\s*[：:][^\]]*\]/g,'').replace(/^\s*消息(?:真实)?时间\s*[：:][^\r\n]*$/gm,'').replace(/\n{3,}/g,'\n\n').trim()}
+  function splitNarrationParts(value){
+    const text=String(value||'').replace(/\r\n?/g,'\n');const out=[];const re=/\[\[NARRATION\]\]([\s\S]*?)\[\[\/NARRATION\]\]/gi;let last=0,m;
+    const addText=t=>{const v=stripInternalMessageTime(t);if(!v)return;const lines=v.split('\n');let plain=[];const flush=()=>{const block=plain.join('\n').trim();if(block)out.push({kind:'text',text:block});plain=[]};for(const line of lines){const aside=line.trim().match(/^[（(]([^）)]{2,180})[）)]$/);if(aside){flush();out.push({kind:'narration',text:aside[1].trim()})}else plain.push(line)}flush()};
+    while((m=re.exec(text))){addText(text.slice(last,m.index));const narration=String(m[1]||'').trim();if(narration)out.push({kind:'narration',text:narration});last=re.lastIndex;}
+    addText(text.slice(last));return out.length?out:[{kind:'text',text:stripInternalMessageTime(text)}].filter(x=>x.text);
+  }
 
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
@@ -313,50 +322,49 @@
     const send = $('chatSend'); send.disabled = true; send.textContent = '…'; aiBusy = true;
     try {
       const memoryCount = clampMemory(meta.memoryCount || 16);
-      const recent = items.slice(-memoryCount).map(m => ({role:m.role === 'assistant' ? 'assistant' : 'user', content:m.text}));
+      const recent = items.slice(-memoryCount).map(m => ({role:m.role === 'assistant' ? 'assistant' : 'user', content:`【消息时间：${localChatTime(m.at)}】\n${m.text}`}));
       const persona = (state.selfPersonas || []).find(x => x.id === meta.personaId) || null;
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
       const userNickname = String(persona?.nickname || persona?.name || state.name || '用户').trim() || '用户';
       const personaText = persona ? `用户当前自设：${persona.name || ''}；用户昵称（需要称呼或 @ 用户时使用）：${userNickname}；身份：${persona.role || ''}；人设：${persona.persona || [persona.personality,persona.appearance,persona.speech].filter(Boolean).join('；') || ''}；背景故事：${persona.background || ''}。如需直接称呼或 @ 用户，只能使用这个用户昵称；不得猜测或使用固定姓名。请尊重该人设，但不要替用户决定行动、台词或情绪。` : `用户当前账号昵称：${userNickname}。如需称呼或 @ 用户，只能使用这个账号昵称，不要臆造姓名。不要替用户决定行动、台词或情绪。`;
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
-      const narrationRule = narrationOn ? '旁白模式【开启】：可少量穿插动作、神态、语气或环境描写，必须用 [[NARRATION]]...[[/NARRATION]] 包裹，旁白会在同一聊天气泡内以斜体显示；角色台词放在标记外，不要每条都加旁白。' : '旁白模式【关闭，最高优先级】：只输出角色直接说出口的台词；禁止动作、神态、心理、环境、舞台指示、括号内容、第三人称叙述，禁止输出任何 [[NARRATION]] 标记；不要模仿历史消息中的旁白。';
+      const narrationRule = narrationOn ? '旁白模式【开启】：可以比普通模式更充分地写动作、神态、语气、环境变化和细微反应。每轮在确实适合时通常写 1 段有画面感的旁白，约 25–90 个汉字；重要场景可有 2 段，但不要为了凑数强加。每段旁白必须单独用 [[NARRATION]]...[[/NARRATION]] 包裹，旁白会在聊天界面以独立无气泡的文字行显示；角色直接说出口的话放在标记外。旁白不得替用户决定动作、台词或感受。' : '旁白模式【关闭，最高优先级】：只输出角色直接说出口的台词；禁止动作、神态、心理、环境、舞台指示、括号内容、第三人称叙述，禁止输出任何 [[NARRATION]] 标记；不要模仿历史消息中的旁白。';
       const replyLimit = clampReplyCount(meta.replyCount || 4);
-      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${narrationRule}${personaText}${worldText}像熟悉的人一样自然聊天，优先回应重点，不复述、不客服式总结、不强迫反问；允许短句、停顿、玩笑和自然转移话题。不要输出 JSON。回复最多 ${replyLimit} 条独立消息；如需分段，用 ||| 分隔，绝不可超过上限，也不要为了凑数拆句。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${p.name}」。身份：${p.role || ''}。性格：${p.personality || ''}。外貌：${p.appearance || ''}。说话方式：${p.speech || ''}。背景：${p.background || ''}。角色规则：${p.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${localChatClock()}历史消息里的【消息时间】只用于理解上下文，不是回复内容；绝对不要输出、复述或伪造任何“消息时间”标签。严格按当前真实设备本地时间判断现在的时段；历史事件按各自消息时间理解，禁止把旧事说成今天刚发生。${narrationRule}${personaText}${worldText}像熟悉的人一样自然聊天，优先回应重点，不复述、不客服式总结、不强迫反问；允许短句、停顿、玩笑和自然转移话题。不要输出 JSON。回复最多 ${replyLimit} 条独立消息；如需分段，用 ||| 分隔，绝不可超过上限，也不要为了凑数拆句。`;
       const response = await fetchTimeout(state.apiBase.replace(/\/+$/,'') + '/chat/completions', {
         method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+state.apiKey,'Accept':'application/json'},
         body:JSON.stringify({model:state.apiModel,messages:[{role:'system',content:system},...recent],stream:false})
-      }, 25000);
+      }, 90000);
       const raw = await response.text();
       if (!response.ok) throw new Error('HTTP ' + response.status + ' · ' + raw.slice(0,180));
       const data = JSON.parse(raw), reply = extractAIText(data);
       if (!reply) throw new Error('没有收到有效回复');
-      let safeReply = String(reply);
+      let safeReply = stripInternalMessageTime(reply);
       if (!narrationOn) safeReply = safeReply.replace(/\[\[NARRATION\]\][\s\S]*?\[\[\/NARRATION\]\]/gi,'').replace(/[（(][^）)]{1,120}[）)]/g,'').trim();
       const latest = readChatThreads(), thread = latest[id] || [];
       const receivedAt = Date.now();
       const replyParts = splitReplyBubbles(safeReply, replyLimit);
       const transferPattern = /(?:【\s*)?(?:向你转账|给你转账|转账给你|给你转了|转给你)\s*(RM|MYR|RMB|CNY|人民币|¥|￥)?\s*([\d,]+(?:\.\d{1,2})?)\s*(RM|MYR|RMB|CNY|人民币|元|¥|￥)?\s*(?:】)?/i;
       replyParts.forEach(part => {
-        const match = part.match(transferPattern);
-        if (!match) {
-          thread.push({role:'assistant',text:part,at:receivedAt});
-          return;
+        for (const segment of (narrationOn ? splitNarrationParts(part) : [{kind:'text',text:stripInternalMessageTime(part)}])) {
+          const segmentText=String(segment.text||'').trim();if(!segmentText)continue;
+          if(segment.kind==='narration'){thread.push({role:'assistant',kind:'narration',text:segmentText,at:receivedAt});continue;}
+          const match = segmentText.match(transferPattern);
+          if (!match) { thread.push({role:'assistant',text:segmentText,at:receivedAt}); continue; }
+          const before = segmentText.slice(0, match.index).trim();
+          const after = segmentText.slice(match.index + match[0].length).trim();
+          const currencyRaw = (match[1] || match[3] || 'RM').toUpperCase();
+          const currency = /^(RMB|CNY|人民币|元|¥|￥)$/.test(currencyRaw) ? '¥' : 'RM';
+          const amount = Number(match[2].replace(/,/g, ''));
+          if (before) thread.push({role:'assistant',text:before,at:receivedAt});
+          if (Number.isFinite(amount) && amount > 0) thread.push({role:'assistant',kind:'transfer',amount:amount.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}),currency,note:'给你的小心意',text:'转账 '+currency+' '+amount.toFixed(2),at:receivedAt});
+          else thread.push({role:'assistant',text:segmentText,at:receivedAt});
+          if (after) thread.push({role:'assistant',text:after,at:receivedAt});
         }
-        const before = part.slice(0, match.index).trim();
-        const after = part.slice(match.index + match[0].length).trim();
-        const currencyRaw = (match[1] || match[3] || 'RM').toUpperCase();
-        const currency = /^(RMB|CNY|人民币|元|¥|￥)$/.test(currencyRaw) ? '¥' : 'RM';
-        const amount = Number(match[2].replace(/,/g, ''));
-        if (before) thread.push({role:'assistant',text:before,at:receivedAt});
-        if (Number.isFinite(amount) && amount > 0) {
-          thread.push({role:'assistant',kind:'transfer',amount:amount.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}),currency,note:'给你的小心意',text:'转账 '+currency+' '+amount.toFixed(2),at:receivedAt});
-        } else {
-          thread.push({role:'assistant',text:part,at:receivedAt});
-        }
-        if (after) thread.push({role:'assistant',text:after,at:receivedAt});
       });
       latest[id] = thread; writeChatThreads(latest);
-    } catch (error) { toast('发送失败：' + (error.message || 'API 错误')); }
+      try { await window.LRChatMemorySummarize?.(id); } catch (memoryError) { console.warn('[LOVE RECORD] auto memory summary check failed after send:', memoryError); }
+    } catch (error) { toast('发送失败：' + (typeof apiErrorText === 'function' ? apiErrorText(error) : (error.message || 'API 错误'))); }
     finally { aiBusy = false; send.disabled = false; send.textContent = '发送'; renderChat(); }
   }
 

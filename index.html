@@ -2256,7 +2256,7 @@ window.__LOVE_RECORD_GET_COMPANION_CONTEXT=(id)=>{
  return {person,worlds,longMemory,recentChat};
 };
 function renderChatMessageContent(value, role){
- const raw=String(value==null?'':value);
+ const raw=String(value==null?'':value).replace(/【\s*消息(?:真实)?时间\s*[：:][^】]*】/g,'').replace(/\[\s*消息(?:真实)?时间\s*[：:][^\]]*\]/g,'').replace(/^\s*消息(?:真实)?时间\s*[：:][^\r\n]*$/gm,'').replace(/\n{3,}/g,'\n\n');
  const orderMatch=raw.match(/^\[\[\s*LR_ORDER\s*\|\s*(food|shop)\s*\|([^\]]*)\]\]$/i);
  if(orderMatch){
   const food=orderMatch[1].toLowerCase()==='food',kind=food?'外卖订单':'购物订单',parts=orderMatch[2].split('|').map(x=>x.trim());
@@ -2275,6 +2275,25 @@ function renderChatMessageContent(value, role){
  while((match=token.exec(raw))){out+=esc(raw.slice(last,match.index));out+='<em class="lr-inline-narration">'+esc(match[1].trim())+'</em>';last=token.lastIndex;}
  out+=esc(raw.slice(last));
  return out.replace(/\n/g,'<br>');
+}
+function splitChatNarrationSegments(value){
+ const raw=String(value==null?'':value).replace(/\r\n?/g,'\n');const out=[];const re=/\[\[NARRATION\]\]([\s\S]*?)\[\[\/NARRATION\]\]/gi;let last=0,m;
+ const addText=t=>{const v=String(t||'').replace(/【\s*消息(?:真实)?时间\s*[：:][^】]*】/g,'').replace(/\[\s*消息(?:真实)?时间\s*[：:][^\]]*\]/g,'').replace(/^\s*消息(?:真实)?时间\s*[：:][^\r\n]*$/gm,'').replace(/\n{3,}/g,'\n\n').trim();if(!v)return;const lines=v.split('\n');let plain=[];const flush=()=>{const block=plain.join('\n').trim();if(block)out.push({kind:'text',text:block});plain=[]};for(const line of lines){const aside=line.trim().match(/^[（(]([^）)]{2,180})[）)]$/);if(aside){flush();out.push({kind:'narration',text:aside[1].trim()})}else plain.push(line)}flush()};
+ while((m=re.exec(raw))){addText(raw.slice(last,m.index));const n=String(m[1]||'').trim();if(n)out.push({kind:'narration',text:n});last=re.lastIndex;}addText(raw.slice(last));
+ return out.length?out:[{kind:'text',text:raw.replace(/【\s*消息(?:真实)?时间\s*[：:][^】]*】/g,'').trim()}].filter(x=>x.text);
+}
+function renderChatMessageRows(m,p,meta){
+ const role=m.role==='user'?'user':'ai';const avatar=role==='user'?'我':chatAvatarMarkup(p,true);
+ const avatarHtml=`<span class="chat-message-avatar">${avatar}</span>`;
+ const narrationEnabled=meta?.narrationEnabled!==false;
+ const cleanMessageText=String(m.text||'').replace(/【\s*消息(?:真实)?时间\s*[：:][^】]*】/g,'').replace(/\[\s*消息(?:真实)?时间\s*[：:][^\]]*\]/g,'').replace(/^\s*消息(?:真实)?时间\s*[：:][^\r\n]*$/gm,'').trim();const segments=m.kind==='narration'?[{kind:'narration',text:cleanMessageText}]:role==='ai'?splitChatNarrationSegments(cleanMessageText):[{kind:'text',text:cleanMessageText}];
+ return segments.map(segment=>{
+  if(segment.kind==='narration'){
+   if(!narrationEnabled)return '';
+   return `<div class="chat-message-row ai lr-narration-row">${avatarHtml}<div class="lr-chat-narration-text">${esc(segment.text).replace(/\n/g,'<br>')}</div></div>`;
+  }
+  return `<div class="chat-message-row ${role}">${avatarHtml}<div class="chat-bubble ${role}">${renderChatMessageContent(segment.text,role==='user'?'user':'assistant')}</div></div>`;
+ }).join('');
 }
 function renderChat(){
  const ids=readChatContacts().filter((id,i,a)=>a.indexOf(id)===i&&contactById(id));
@@ -2318,7 +2337,7 @@ function renderChat(){
  $('chatPersonAvatar').textContent=(p.name||'♡').slice(0,1);$('chatPersonName').textContent=p.name||'未命名联系人';$('chatPersonRole').textContent=p.role||'AI 联系人';
  const threads=readChatThreads(),items=threads[activeChatContactId]||[];
  let previousAt=null;
- $('chatMessages').innerHTML=items.length?items.map(m=>{const at=Number(m.at)||null;let divider='';if(at&&previousAt&&at-previousAt>=10*60*1000){const d=new Date(at);divider='<div class="lr-chat-time-divider"><span>'+d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})+'</span></div>';}if(at)previousAt=at;return divider+'<div class="chat-message-row '+(m.role==='user'?'user':'ai')+'"><span class="chat-message-avatar">'+(m.role==='user'?'我':chatAvatarMarkup(p,true))+'</span><div class="chat-bubble '+(m.role==='user'?'user':'ai')+'">'+renderChatMessageContent(m.text,m.role)+'</div></div>';}).join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
+ $('chatMessages').innerHTML=items.length?items.map(m=>{const at=Number(m.at)||null;let divider='';if(at&&previousAt&&at-previousAt>=10*60*1000){const d=new Date(at);divider='<div class="lr-chat-time-divider"><span>'+d.toLocaleDateString('zh-CN',{month:'2-digit',day:'2-digit'})+' '+d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',hour12:false})+'</span></div>';}if(at)previousAt=at;return divider+renderChatMessageRows(m,p,meta);}).join(''):'<div class="chat-empty-inline">还没有消息，发送第一句话吧 ♡</div>';
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
@@ -2624,8 +2643,8 @@ function renderModelPicker(){
  syncApiStatus();
 }
 
-async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();const t=setTimeout(()=>c.abort(),ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}finally{clearTimeout(t)}}
-function apiErrorText(e){if(e&&(e.name==='AbortError'||/signal is aborted|aborted without reason/i.test(String(e.message||''))))return'请求被中止或超时：中转站未在限定时间内返回结果。若 /models 已成功但对话失败，请检查所选模型是否支持 /chat/completions、网络/CORS 与中转站限流。';if(e&&e.message==='Failed to fetch')return'浏览器无法连接 API：常见原因是 CORS、网络拦截或中转站暂时不可用。';return e?.message||String(e)||'未知错误'}
+async function fetchTimeout(url,opts,ms=8000){const c=new AbortController();let didTimeout=false;const t=setTimeout(()=>{didTimeout=true;c.abort()},ms);try{return await fetch(url,Object.assign({},opts,{signal:c.signal}))}catch(e){if(didTimeout){const err=new Error('请求超时：已等待 '+Math.round(ms/1000)+' 秒仍未收到 API 响应。请检查网络/中转站响应时间，或适当减少上下文后重试。');err.name='TimeoutError';throw err}throw e}finally{clearTimeout(t)}}
+function apiErrorText(e){if(e&&(e.name==='TimeoutError'||/timeout|超时/i.test(String(e.message||''))))return e.message||'API 请求超时，请稍后重试。';if(e&&(e.name==='AbortError'||/signal is aborted|aborted without reason/i.test(String(e.message||''))))return'请求被中止：可能是浏览器切换页面、网络中断或请求被其他流程取消。若只是响应较慢，请重试。';if(e&&e.message==='Failed to fetch')return'浏览器无法连接 API：常见原因是 CORS、网络拦截或中转站暂时不可用。';return e?.message||String(e)||'未知错误'}
 function setApiDebug(text,on=false){const el=$('apiDebug');if(!el)return;el.textContent=text;el.style.color=on?'#526255':'';}
 async function loadModels(silent=false){
  const base=($('apiBase')?.value||state.apiBase||'').trim().replace(/\/+$/,'');
@@ -3277,10 +3296,10 @@ if(loveIntro){
 
 
   <script src="./chat-storage-v6.js?v=99"></script>
-  <script src="./chat-settings-upgrade.js?v=25"></script>
+  <script src="./chat-settings-upgrade.js?v=26"></script>
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
-  <script src="./chat-interaction-v9.js?v=27"></script>
+  <script src="./chat-interaction-v9.js?v=28"></script>
   <script src="./chat-interaction-v11.js?v=47"></script>
   <script src="./chat-ux-v13.js?v=100"></script>
   
@@ -3391,7 +3410,7 @@ window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('show'))close()});
 })();
 </script>
-<script src="./moments-v1.js?v=101"></script>
+<script src="./moments-v1.js?v=102"></script>
 
 <script>
 /* 拾忆：独立管理界面入口 */
@@ -3637,7 +3656,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=8"></script>
-<script src="./lr-group-chat-v1.js?v=22"></script>
+<script src="./lr-group-chat-v1.js?v=23"></script>
 <script src="./firebase-config.js?v=7"></script>
 <script src="./lr-background-v1.js?v=12"></script>
 <script src="./lr-messaging-enhancements-v1.js?v=2"></script>
@@ -3764,5 +3783,11 @@ body.chat-conversation-open #lrGroupMessages{background:transparent!important;ba
 </style>
 
 <style id="lr-moments-self-persona-picker-v1">#lrMomentsRoot #lrmComposeSelfPersona{width:100%;box-sizing:border-box;min-height:44px;border:1px solid rgba(169,151,179,.28);border-radius:14px;background:#fff;padding:10px 12px;color:#5a4d61;font:inherit;font-size:13px;margin:4px 0 8px}</style>
+
+<style id="lr-chat-narration-separated-v1">
+#chatMessages .lr-narration-row{display:flex;align-items:flex-start;justify-content:flex-start;width:100%;gap:8px;margin:0;padding:0;background:transparent!important;box-shadow:none!important}
+#chatMessages .lr-narration-row .chat-message-avatar{width:22px;height:22px;min-width:22px;border-radius:8px;font-size:10px;opacity:.58;margin-top:2px}
+#chatMessages .lr-chat-narration-text{flex:1;min-width:0;max-width:min(88%,520px);padding:3px 5px 5px;color:#9a899f;font-size:12px;line-height:1.85;font-style:italic;letter-spacing:.02em;white-space:pre-wrap;overflow-wrap:anywhere;background:transparent!important;border:0!important;box-shadow:none!important}
+</style>
 </body>
 </html>
