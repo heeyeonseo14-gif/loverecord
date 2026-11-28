@@ -4,6 +4,7 @@
 (() => {
   'use strict';
   const KEY = 'lr-background-settings-v1';
+  const CONTROL_KEY = 'lr-background-conversation-controls-v1';
   const $ = (id) => document.getElementById(id);
   const cfg = () => window.LR_FIREBASE_CONFIG || {};
   const appConfigured = () => { const c=cfg(); return !!(c.apiKey && c.authDomain && c.projectId && c.messagingSenderId && c.appId); };
@@ -76,18 +77,63 @@
   }
   async function savePreferences() {
     const button=$('lrBackgroundSavePrefs'); if(button) button.disabled=true;
+    const prefs=collectPreferences();
+    const old=read(); write({...old,activityEnabled:prefs.enabled,mode:prefs.mode,quietHours:prefs.quietHours,preferencesSavedAt:Date.now()});
     try {
-      const prefs=collectPreferences();
+      if (!appConfigured()) {
+        aiStatus(prefs.enabled?'总开关已保存在本机 · 等待 Firebase 配置':'后台自主活动已关闭');
+        status('后台活动设置已保存在本机；填写 Firebase 配置后可同步云端。');
+        return { local: true, cloud: false };
+      }
       const {functions}=await initFirebase();
       await functions.httpsCallable('saveBackgroundPreferences')(prefs);
-      const old=read(); write({...old,activityEnabled:prefs.enabled,mode:prefs.mode,quietHours:prefs.quietHours,preferencesSavedAt:Date.now()});
-      aiStatus(prefs.enabled?'活动偏好已同步 · 等待角色/记忆云端同步':'后台自主活动已关闭');
-      status('后台活动偏好已保存到 Firebase。');
+      aiStatus(prefs.enabled?'总开关已同步 · 等待角色/记忆云端同步':'后台自主活动已关闭');
+      status('后台活动总开关已保存到 Firebase。');
+      return { local: true, cloud: true };
     } catch(error) {
       console.error('[LOVE RECORD] save background preferences failed',error);
-      status('保存失败：'+(error?.message||String(error)));
+      status('设置已保存在本机；云端同步待完成：'+(error?.message||String(error)));
+      return { local: true, cloud: false, reason: error?.message || String(error) };
     } finally { if(button) button.disabled=false; render(); }
   }
+  async function setConversationControl(type, conversationId, enabled) {
+    const kind = type === 'group' ? 'group' : 'single';
+    const id = String(conversationId || '').trim();
+    if (!id || id.length > 180) throw new Error('聊天 ID 无效。');
+    let controls = {};
+    try { controls = JSON.parse(localStorage.getItem(CONTROL_KEY) || '{}') || {}; } catch { controls = {}; }
+    const key = kind + ':' + id;
+    controls[key] = { type: kind, conversationId: id, enabled: !!enabled, updatedAt: Date.now() };
+    try { localStorage.setItem(CONTROL_KEY, JSON.stringify(controls)); } catch (error) { throw new Error('后台开关本地保存失败：' + (error?.message || '储存空间不足')); }
+    if (!appConfigured()) {
+      status('聊天后台开关已保存在本机；填写 Firebase 配置后可同步云端。');
+      return { local: true, cloud: false, reason: 'firebase-not-configured' };
+    }
+    try {
+      const { functions } = await initFirebase();
+      await functions.httpsCallable('saveBackgroundConversationControl')({ type: kind, conversationId: id, enabled: !!enabled });
+      status('聊天后台开关已保存并同步到 Firebase。');
+      return { local: true, cloud: true };
+    } catch (error) {
+      console.warn('[LOVE RECORD] background conversation control cloud sync pending', error);
+      status('聊天后台开关已保存在本机；云端同步待完成：' + (error?.message || String(error)));
+      return { local: true, cloud: false, reason: error?.message || String(error) };
+    }
+  }
+  function isConversationEnabled(type, conversationId) {
+    const settings = read();
+    if (!settings.activityEnabled) return false;
+    try {
+      const controls = JSON.parse(localStorage.getItem(CONTROL_KEY) || '{}') || {};
+      return controls[(type === 'group' ? 'group:' : 'single:') + String(conversationId || '')]?.enabled === true;
+    } catch { return false; }
+  }
+  async function setGlobalActivityEnabled(enabled) {
+    const old = read(); write({ ...old, activityEnabled: !!enabled });
+    const input = $('lrBackgroundActivityEnabled'); if (input) input.checked = !!enabled;
+    return savePreferences();
+  }
+
   async function sendTestPush() {
     const button=$('lrBackgroundTestPush'); if(button) button.disabled=true;
     try {
@@ -106,5 +152,5 @@
     $('lrBackgroundTestPush')?.addEventListener('click',sendTestPush);
     render();
   });
-  window.LRBackground={render,enablePush,savePreferences,sendTestPush,isConfigured:appConfigured,isPushConfigured:pushConfigured};
+  window.LRBackground={render,enablePush,savePreferences,sendTestPush,setConversationControl,isConversationEnabled,setGlobalActivityEnabled,isConfigured:appConfigured,isPushConfigured:pushConfigured};
 })();

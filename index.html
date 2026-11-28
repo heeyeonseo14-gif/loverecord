@@ -1657,6 +1657,10 @@ body.lr-theme-dark :is(#space,.community-root){
   <div class="module-head"><div><div class="eyebrow">GROUP SETTINGS</div><h2>群聊设置</h2></div></div>
   <label for="lrGroupEditName">群聊名称</label><input id="lrGroupEditName" maxlength="40">
   <label for="lrGroupEditAnnouncement">群公告</label><textarea id="lrGroupEditAnnouncement" rows="2" placeholder="写一条群公告（可选）"></textarea>
+  <section class="lr-group-setting-card lr-group-background-activity-card">
+   <h3>后台活动</h3>
+   <label class="lr-group-background-toggle"><span><strong>允许后台保活</strong><small>开启后，此群聊可在后台活动总开关开启时参与 CHAR 自主互动并接收新消息通知。</small></span><input id="lrGroupBackgroundActivityEnabled" type="checkbox"></label>
+  </section>
   <label for="lrGroupReplyLimit">每轮 AI 消息上限</label><select id="lrGroupReplyLimit"><option value="1">1 条</option><option value="2">2 条</option><option value="3">3 条</option><option value="4">4 条</option><option value="5">5 条</option><option value="6">6 条</option><option value="8">8 条</option><option value="10">10 条</option></select>
   <label for="lrGroupBackground">群聊背景底色</label><select id="lrGroupBackground"><option value="#f7f3f9">雾白</option><option value="#f0e9f4">浅薰衣草</option><option value="#f4eee8">奶油米白</option><option value="#e9e3ed">灰紫</option></select>
   <div class="lr-group-image-fields">
@@ -1862,7 +1866,7 @@ body.lr-theme-dark :is(#space,.community-root){
       <button class="btn primary" id="lrBackgroundEnable" type="button">启用本机后台通知</button>
       <div class="lr-background-preferences">
         <div class="settings-section-kicker">CHAR BACKGROUND ACTIVITY</div>
-        <label class="lr-background-toggle"><span><strong>允许 CHAR 后台自主活动</strong><small>开启后将把活动偏好保存到 Firebase；尚需完成角色设定与记忆云端同步，才会开始生成后台消息。</small></span><input id="lrBackgroundActivityEnabled" type="checkbox"></label>
+        <label class="lr-background-toggle"><span><strong>后台活动总开关</strong><small>关闭后暂停所有单聊与群聊的后台活动；开启后，再由每个聊天自己的「允许后台保活」开关决定哪些对话参与。角色/记忆云端同步完成前，不会生成后台消息。</small></span><input id="lrBackgroundActivityEnabled" type="checkbox"></label>
         <label for="lrBackgroundMode">活动模式</label>
         <select id="lrBackgroundMode"><option value="hybrid" selected>混合模式（角色日程＋随机互动）</option><option value="scheduled">按角色日程</option><option value="interval">定时检查</option></select>
         <label class="lr-background-toggle"><span><strong>夜间免打扰</strong><small>免打扰时段内不发送推送通知。</small></span><input id="lrBackgroundQuietEnabled" type="checkbox" checked></label>
@@ -3150,7 +3154,7 @@ if(loveIntro){
 
 
   <script src="./chat-storage-v6.js?v=99"></script>
-  <script src="./chat-settings-upgrade.js?v=18"></script>
+  <script src="./chat-settings-upgrade.js?v=19"></script>
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=26"></script>
@@ -3510,9 +3514,9 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=15"></script>
+<script src="./lr-group-chat-v1.js?v=16"></script>
 <script src="./firebase-config.js?v=2"></script>
-<script src="./lr-background-v1.js?v=2"></script>
+<script src="./lr-background-v1.js?v=3"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}

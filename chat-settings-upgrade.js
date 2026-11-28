@@ -31,6 +31,10 @@
       #${EXTRA_ID}{margin-top:14px}
       #${EXTRA_ID} .lr-setting-card{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0}
       #${EXTRA_ID} .lr-setting-card h3{margin:0 0 12px;font-size:17px;font-weight:500}
+      #${EXTRA_ID} .lr-background-chat-card{display:flex;align-items:center;justify-content:space-between;gap:14px}
+      #${EXTRA_ID} .lr-background-chat-copy{min-width:0;flex:1}
+      #${EXTRA_ID} .lr-background-chat-copy h3{margin:0 0 6px;font-size:16px;font-weight:500;color:var(--ink)}
+      #${EXTRA_ID} .lr-background-chat-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
       #${EXTRA_ID} .lr-narration-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px!important;border:1px solid rgba(183,150,197,.28)!important;background:linear-gradient(135deg,#fff 0%,#faf5fc 58%,#f4edf8 100%)!important;box-shadow:0 9px 24px rgba(113,85,128,.07)}
       #${EXTRA_ID} .lr-narration-heading{display:flex;align-items:center;gap:11px}
       #${EXTRA_ID} .lr-narration-heading h3{margin:0 0 5px;font-size:17px;font-weight:500;color:#594a62}
@@ -80,6 +84,14 @@
         <div class="lr-avatar-row"><div class="lr-my-avatar" id="lrMyAvatarPreview">我</div><div style="flex:1"><div style="font-size:14px">我的头像</div><div class="sub" style="margin-top:4px">只影响我在这位联系人的聊天气泡旁显示的头像。</div><button class="btn" id="lrChooseMyAvatar" type="button" style="margin-top:9px">更换我的头像</button><input id="lrMyAvatarFile" type="file" accept="image/*" hidden></div></div>
         <label for="lrPersonaSelect">我的人设</label><select id="lrPersonaSelect"></select>
         <div class="sub" style="margin-top:7px">从「我的自设」中选择；没有建立自设时会使用默认的我。</div>
+      </section>
+      <section class="lr-setting-card lr-background-chat-card" id="lrChatBackgroundActivityCard">
+        <div class="lr-background-chat-copy"><h3>后台活动</h3><p>允许这位 CHAR 在后台主动联系你。需要同时开启全局「后台活动总开关」；关闭其他聊天不会影响这里。</p></div>
+        <label class="lr-switch" for="lrChatBackgroundActivity" aria-label="允许此单聊后台保活">
+          <span class="lr-switch-state">后台保活关闭</span>
+          <input id="lrChatBackgroundActivity" type="checkbox">
+          <span class="lr-switch-track"></span>
+        </label>
       </section>
       <section class="lr-setting-card lr-narration-card" id="lrChatNarrationCard">
         <div class="lr-narration-copy">
@@ -149,6 +161,22 @@
     const narrationCard = document.getElementById('lrChatNarrationCard');
     if (narration) { narration.checked = meta.narrationEnabled !== false; if (narrationCard) { narrationCard.classList.toggle('is-off', !narration.checked); const label=narrationCard.querySelector('.lr-switch-state'); if(label) label.textContent=narration.checked?'旁白开启':'旁白关闭'; } }
     if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} const id=activeChatContactId;if(id){const latest=chatMeta(id);latest.narrationEnabled=!!narration.checked;writeChatMeta(id,latest);editingChatMeta={...editingChatMeta,narrationEnabled:!!narration.checked};} }); }
+    const backgroundActivity = document.getElementById('lrChatBackgroundActivity');
+    const backgroundCard = document.getElementById('lrChatBackgroundActivityCard');
+    if (backgroundActivity) {
+      backgroundActivity.checked = meta.backgroundActivityEnabled === true;
+      const stateLabel = backgroundCard?.querySelector('.lr-switch-state');
+      if (stateLabel) stateLabel.textContent = backgroundActivity.checked ? '后台保活开启' : '后台保活关闭';
+      if (!backgroundActivity.dataset.lrBound) {
+        backgroundActivity.dataset.lrBound = '1';
+        backgroundActivity.addEventListener('change', () => {
+          const enabled = !!backgroundActivity.checked;
+          const label = backgroundCard?.querySelector('.lr-switch-state');
+          if (label) label.textContent = enabled ? '后台保活开启' : '后台保活关闭';
+          editingChatMeta = { ...editingChatMeta, backgroundActivityEnabled: enabled };
+        });
+      }
+    }
     const avatar = document.getElementById('lrMyAvatarPreview');
     if (avatar) avatar.innerHTML = meta.myAvatar ? '<img src="' + meta.myAvatar + '" alt="我的头像">' : '我';
     const persona = document.getElementById('lrPersonaSelect');
@@ -278,16 +306,24 @@
     finally { aiBusy = false; send.disabled = false; send.textContent = '发送'; renderChat(); }
   }
 
-  function saveExtendedSettings() {
+  async function saveExtendedSettings() {
+    const contactId = String(activeChatContactId || '');
+    if (!contactId) return;
     editingChatMeta.remark = $('chatRemarkInput').value.trim();
     editingChatMeta.personaId = $('lrPersonaSelect').value;
     editingChatMeta.worldId = $('lrWorldSelect').value;
     editingChatMeta.memoryCount = clampMemory($('lrMemoryCount').value);
     editingChatMeta.replyCount = clampReplyCount($('lrReplyCount')?.value || editingChatMeta.replyCount || 4);
     editingChatMeta.narrationEnabled = $('lrChatNarration').checked;
+    editingChatMeta.backgroundActivityEnabled = !!document.getElementById('lrChatBackgroundActivity')?.checked;
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
-    writeChatMeta(activeChatContactId, editingChatMeta);
-    closeChatSettings(); toast('聊天设置已保存 ♡');
+    writeChatMeta(contactId, editingChatMeta);
+    let cloudMessage = '';
+    if (window.LRBackground?.setConversationControl) {
+      const result = await window.LRBackground.setConversationControl('single', contactId, editingChatMeta.backgroundActivityEnabled);
+      if (result?.cloud === false) cloudMessage = '（后台开关已保存在本机，Firebase 尚未同步）';
+    }
+    closeChatSettings(); toast('聊天设置已保存 ♡' + cloudMessage);
   }
 
   function init() {

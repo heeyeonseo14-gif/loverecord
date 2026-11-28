@@ -4,13 +4,13 @@
 - Web Push / FCM Service Worker 接收器
 - 浏览器端通知权限、FCM token 注册
 - Firebase Anonymous Auth（为每个安装设备建立隔离 UID）
-- Callable Function 安全登记设备 token、保存后台偏好、发送测试通知
-- 设置页可选择混合模式、夜间免打扰，并将偏好保存到 Firestore
+- Callable Function 安全登记设备 token、保存全局后台偏好、通过 `saveBackgroundConversationControl` 分别保存单聊/群聊后台开关、发送测试通知
+- 设置页可选择混合模式、夜间免打扰，并将全局与每个单聊/群聊的后台开关分别保存到 Firestore
 - Firestore 用户数据隔离规则
 - 每 15 分钟运行的混合活动调度器基础框架
 
 ## 尚未启用的部分
-后台通知在 Firebase 配置、部署并允许系统通知后可用。CHAR 后台 AI 自主生成仍未启用：角色设定、聊天历史、长期记忆和 API 配置目前保存在浏览器本地，Cloud Functions 无法直接读取。必须先在前端提供可审查的数据范围、用户明确同意后才同步必要的角色资料/记忆/对话上下文，并将 AI API Key 安全写入 Secret Manager；不能把 API Key 放进 Web 配置或 Firestore。当前定时器只检查偏好并标记等待上下文，不会编造或发送角色消息。
+后台通知在 Firebase 配置、部署并允许系统通知后可用。CHAR 后台 AI 自主生成仍未启用：角色设定、聊天历史、长期记忆和 API 配置目前保存在浏览器本地，Cloud Functions 无法直接读取。必须先在前端提供可审查的数据范围、用户明确同意后才同步必要的角色资料/记忆/对话上下文，并将 AI API Key 安全写入 Secret Manager；不能把 API Key 放进 Web 配置或 Firestore。当前定时器只检查全局开关和每个聊天的独立开关，并标记等待上下文；不会编造或发送角色消息。
 
 ## Firebase Console 必须完成
 1. 创建 Firebase 项目并添加 Web App。
