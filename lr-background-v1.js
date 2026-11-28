@@ -6,6 +6,10 @@
   const KEY = 'lr-background-settings-v1';
   const CONTROL_KEY = 'lr-background-conversation-controls-v1';
   const $ = (id) => document.getElementById(id);
+  const SDK_VERSION = '13.4.0';
+  let firebaseCorePromise = null;
+  let authObserverBound = false;
+  let currentUser = null;
   const cfg = () => window.LR_FIREBASE_CONFIG || {};
   const appConfigured = () => { const c=cfg(); return !!(c.apiKey && c.authDomain && c.projectId && c.messagingSenderId && c.appId); };
   const pushConfigured = () => appConfigured() && !!window.LR_FIREBASE_VAPID_KEY;
@@ -30,18 +34,106 @@
     const test=$('lrBackgroundTestPush'); if(test) test.disabled=!settings.pushEnabled || !appConfigured();
     aiStatus(settings.activityEnabled?'已保存活动偏好 · 等待角色/记忆云端同步':'尚未启用');
   }
-  function loadCompat(src) { return new Promise((resolve,reject)=>{ if(document.querySelector('script[data-lr-firebase="'+src+'"]')) return resolve(); const s=document.createElement('script');s.src=src;s.async=true;s.dataset.lrFirebase=src;s.onload=resolve;s.onerror=()=>reject(new Error('Firebase SDK 加载失败：'+src));document.head.appendChild(s); }); }
+  const compatPromises = new Map();
+  function loadCompat(src) {
+    if (compatPromises.has(src)) return compatPromises.get(src);
+    const existing = document.querySelector('script[data-lr-firebase="'+src+'"]');
+    if (existing?.dataset.loaded === 'true') return Promise.resolve();
+    const promise = new Promise((resolve,reject)=>{
+      const script = existing || document.createElement('script');
+      if (!existing) { script.src=src; script.async=true; script.dataset.lrFirebase=src; }
+      script.onload=()=>{script.dataset.loaded='true';resolve();};
+      script.onerror=()=>{compatPromises.delete(src);reject(new Error('Firebase SDK 加载失败：'+src));};
+      if (!existing) document.head.appendChild(script);
+    });
+    compatPromises.set(src,promise);
+    return promise;
+  }
+  function formatAuthDate(value) {
+    if (!value) return '暂无记录';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '暂无记录';
+    try { return new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(date); }
+    catch { return date.toLocaleString(); }
+  }
+  function renderIdentity(user, message) {
+    const statusNode=$('lrIdentityStatus'), uidNode=$('lrIdentityUid'), copy=$('lrIdentityCopy');
+    const created=$('lrIdentityCreatedAt'), last=$('lrIdentityLastSeen');
+    if (!statusNode && !uidNode && !copy) return;
+    if (message) {
+      if(statusNode) statusNode.textContent=message;
+      if(uidNode) uidNode.textContent='暂不可用';
+      if(copy) copy.disabled=true;
+      if(created) created.textContent='—';
+      if(last) last.textContent='—';
+      return;
+    }
+    if (!user) {
+      if(statusNode) statusNode.textContent='正在建立匿名身份…';
+      if(uidNode) uidNode.textContent='正在获取…';
+      if(copy) copy.disabled=true;
+      return;
+    }
+    currentUser=user;
+    if(statusNode) statusNode.textContent=user.isAnonymous?'已连接 · 匿名账户':'已连接 · 已绑定账户';
+    if(uidNode) uidNode.textContent=user.uid;
+    if(copy) copy.disabled=!user.uid;
+    if(created) created.textContent=formatAuthDate(user.metadata?.creationTime);
+    if(last) last.textContent=formatAuthDate(user.metadata?.lastSignInTime);
+  }
   async function initFirebase({messaging=false}={}) {
     if(!appConfigured()) throw new Error('请先在 firebase-config.js 填入 Firebase Web App 配置。');
-    const base='https://www.gstatic.com/firebasejs/13.0.0/';
-    await loadCompat(base+'firebase-app-compat.js');
-    await loadCompat(base+'firebase-auth-compat.js');
-    await loadCompat(base+'firebase-functions-compat.js');
-    if(messaging) await loadCompat(base+'firebase-messaging-compat.js');
-    if(!firebase.apps.length) firebase.initializeApp(cfg());
-    const auth=firebase.auth();
-    if(!auth.currentUser) await auth.signInAnonymously();
-    return {app:firebase.app(),auth,functions:firebase.app().functions(window.LR_FIREBASE_FUNCTIONS_REGION||'asia-southeast1')};
+    if (!firebaseCorePromise) {
+      firebaseCorePromise = (async () => {
+        const base='https://www.gstatic.com/firebasejs/'+SDK_VERSION+'/';
+        await loadCompat(base+'firebase-app-compat.js');
+        await loadCompat(base+'firebase-auth-compat.js');
+        await loadCompat(base+'firebase-functions-compat.js');
+        if(!firebase.apps.length) firebase.initializeApp(cfg());
+        const auth=firebase.auth();
+        // Explicit LOCAL persistence keeps the anonymous identity in this browser.
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        let user=auth.currentUser;
+        if(!user) {
+          const credential=await auth.signInAnonymously();
+          user=credential?.user || auth.currentUser;
+        }
+        if (!authObserverBound) {
+          authObserverBound=true;
+          auth.onAuthStateChanged((nextUser)=>{currentUser=nextUser||null;renderIdentity(nextUser||null);});
+        }
+        currentUser=user||auth.currentUser||null;
+        renderIdentity(currentUser);
+        return {app:firebase.app(),auth,user:currentUser};
+      })().catch((error)=>{firebaseCorePromise=null;throw error;});
+    }
+    const core=await firebaseCorePromise;
+    if(messaging) await loadCompat('https://www.gstatic.com/firebasejs/'+SDK_VERSION+'/firebase-messaging-compat.js');
+    return {...core,functions:core.app.functions(window.LR_FIREBASE_FUNCTIONS_REGION||'asia-southeast1')};
+  }
+  async function bootstrapIdentity() {
+    if (!appConfigured()) { renderIdentity(null,'等待 Firebase Web 配置'); return null; }
+    renderIdentity(null);
+    try { const {user}=await initFirebase(); return user; }
+    catch(error) {
+      console.error('[LOVE RECORD] anonymous identity initialization failed',error);
+      renderIdentity(null,'连接失败：'+(error?.message||String(error)));
+      return null;
+    }
+  }
+  async function copyIdentity() {
+    const uid=currentUser?.uid;
+    if(!uid) return;
+    try {
+      if(navigator.clipboard?.writeText) await navigator.clipboard.writeText(uid);
+      else { const field=document.createElement('textarea');field.value=uid;field.style.position='fixed';field.style.opacity='0';document.body.appendChild(field);field.select();const ok=document.execCommand('copy');field.remove();if(!ok)throw new Error('浏览器未允许复制'); }
+      if(typeof window.toast==='function') window.toast('用户编号已复制');
+      else if(typeof window.notify==='function') window.notify('用户编号已复制');
+      else { const node=$('lrIdentityStatus');if(node)node.textContent='用户编号已复制'; }
+    } catch(error) {
+      console.warn('[LOVE RECORD] copy UID failed',error);
+      const node=$('lrIdentityStatus');if(node)node.textContent='复制失败，请长按 UID 手动复制';
+    }
   }
   async function enablePush() {
     if(!pushConfigured()) { status(appConfigured()?'请填写 Firebase Web Push VAPID 公钥。':'请先填写 Firebase Web 配置。'); return; }
@@ -146,11 +238,15 @@
     } finally { if(button) button.disabled=false; render(); }
   }
   document.addEventListener('DOMContentLoaded',()=>{
-    if(!$('lrBackgroundCard')) return;
-    $('lrBackgroundEnable')?.addEventListener('click',enablePush);
-    $('lrBackgroundSavePrefs')?.addEventListener('click',savePreferences);
-    $('lrBackgroundTestPush')?.addEventListener('click',sendTestPush);
-    render();
+    $('lrIdentityCopy')?.addEventListener('click',copyIdentity);
+    if($('lrBackgroundCard')) {
+      $('lrBackgroundEnable')?.addEventListener('click',enablePush);
+      $('lrBackgroundSavePrefs')?.addEventListener('click',savePreferences);
+      $('lrBackgroundTestPush')?.addEventListener('click',sendTestPush);
+      render();
+    }
+    // Create or restore the anonymous Firebase identity automatically on app startup.
+    bootstrapIdentity();
   });
-  window.LRBackground={render,enablePush,savePreferences,sendTestPush,setConversationControl,isConversationEnabled,setGlobalActivityEnabled,isConfigured:appConfigured,isPushConfigured:pushConfigured};
+  window.LRBackground={render,enablePush,savePreferences,sendTestPush,setConversationControl,isConversationEnabled,setGlobalActivityEnabled,isConfigured:appConfigured,isPushConfigured:pushConfigured,ensureIdentity:bootstrapIdentity,getCurrentUser:()=>currentUser};
 })();
