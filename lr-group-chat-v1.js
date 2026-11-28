@@ -9,6 +9,7 @@ const STORE_GROUPS='groups',STORE_MESSAGES='messages',STORE_TURNS='turns';
 const $=id=>document.getElementById(id);
 const host=()=>window.LRGroupChatHost||{};
 let dbPromise=null,activeGroupId='',busy=false,sending=false,settingsOpen=false,settingsGroupId='',groupAvatarDraft='',groupBackgroundDraft='',groupToolMode='';
+let quoteDraft=null,groupSelectionMode=false,selectedGroupMessageIds=new Set(),groupPressTimer=null,groupLongPressTriggered=false,groupTransferDecisionId='',groupPressStartX=0,groupPressStartY=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const makeId=prefix=>prefix+'_'+(crypto?.randomUUID?crypto.randomUUID():Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,10));
 const getPerson=id=>host().getPerson?.(String(id))||null;
@@ -71,19 +72,69 @@ async function renderGroupList(){const list=ensureGroupList();if(!list)return;tr
 function setChatTopBar(group){const bar=$('systemAppbar'),title=$('systemAppTitle'),action=$('systemAppbarAction'),back=bar?.querySelector('.system-back');bar?.classList.add('show');if(title)title.textContent=settingsOpen?'群聊设置':(group.name||'群聊');if(action){action.hidden=!!settingsOpen;action.textContent='⚙';action.setAttribute('aria-label','群聊设置')}if(back)back.removeAttribute('data-launch-home')}
 function groupMessageBody(m){
  if(m.kind==='image'||m.kind==='sticker')return `<div class="lr-group-attachment" data-group-attachment="${esc(m.attachmentId)}" data-group-attachment-kind="${m.kind}">图片加载中…</div>`;
- if(m.kind==='transfer')return `<div class="lr-group-transfer-card"><small>LOVE RECORD · A LITTLE GIFT</small><strong>${esc(m.currency||'￥')}${esc(m.amount||'0.00')}</strong><span>${esc(m.note||'给你的小心意')}</span></div>`;
+ if(m.kind==='transfer'){
+  const status=m.transferStatus==='accepted'?'已接收':m.transferStatus==='refunded'?'已退还':'';
+  const canResolve=m.senderType==='character'&&!status;
+  return `<div class="lr-group-transfer-card ${canResolve?'is-actionable':''}" ${canResolve?`role="button" tabindex="0" data-lr-group-transfer="${esc(m.id)}"`:''}><small>LOVE RECORD · A LITTLE GIFT</small><strong>${esc(m.currency||'￥')}${esc(m.amount||'0.00')}</strong><span>${esc(m.note||'给你的小心意')}</span><span class="lr-group-transfer-state">${status|| (canResolve?'点击查看 · 接收或退还':'模拟转账卡')}</span></div>`;
+ }
  if(m.kind==='location'){const place=String(m.place||m.text||'未填写地点');const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(place);return `<a class="lr-group-location-card" href="${esc(url)}" target="_blank" rel="noopener"><b>⌖　位置分享</b><span>${esc(place)}</span>${m.note?`<small>${esc(m.note)}</small>`:''}<small>点击打开地图搜索</small></a>`}
  if(m.kind==='order'){const items=Array.isArray(m.orderItems)?m.orderItems.map(x=>`${esc(x.name||'商品')} × ${Number(x.qty)||1}`).join('、'):esc(m.text||'订单已创建');return `<div class="lr-group-order-card"><small>LOVE RECORD · ${m.orderKind==='food'?'FOOD ORDER':'SHOPPING ORDER'}</small><strong>${m.orderKind==='food'?'外卖订单':'购物订单'}</strong><span>${items||'订单已创建'}</span><b>￥${(Number(m.orderTotal)||0).toFixed(2)}</b><small>订单号：${esc(m.orderNo||'—')}</small></div>`}
  return safeMessageText(m.text||'');
 }
-async function hydrateGroupAttachments(){const bridge=window.LRChatInteractionV11,box=$('lrGroupMessages');if(!bridge?.loadAttachmentDataUrl||!box)return;for(const node of box.querySelectorAll('[data-group-attachment]')){const id=node.dataset.groupAttachment,kind=node.dataset.groupAttachmentKind;try{const url=await bridge.loadAttachmentDataUrl(id);if(!url||!node.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt=kind==='sticker'?'表情包':'聊天图片';img.className=kind==='sticker'?'lr-group-sticker-image':'lr-group-chat-image';node.replaceChildren(img)}catch(err){if(node.isConnected)node.textContent='图片无法读取'}}}
-function renderGroupMessages(messages,group){const box=$('lrGroupMessages');if(!box)return;const root=$('lrGroupConversation');if(root)root.dataset.lrGroupId=String(group.id);box.innerHTML=messages.length?messages.map(m=>{
- if(m.senderType==='system')return `<div class="lr-group-system-message" data-group-message-id="${esc(m.id)}"><span>${esc(m.text||'')}</span></div>`;
- const isUser=m.senderType==='user';const name=isUser?'我':(m.senderNameSnapshot||getName(m.senderId));
- return `<article class="lr-group-message-row ${isUser?'is-user':'is-character'}" data-group-message-id="${esc(m.id)}"><div class="lr-group-message-avatar">${messageAvatar(m,group)}</div><div class="lr-group-message-content"><div class="lr-group-message-name">${esc(name)} <time>${esc(timeLabel(m.createdAt))}</time></div><div class="lr-group-message-bubble ${m.kind==='image'?'has-image':''} ${m.kind==='sticker'?'has-sticker':''}">${groupMessageBody(m)}</div></div></article>`;
- }).join(''):'<div class="lr-group-empty">群聊还没有消息。<br>说点什么，让大家认识一下吧 ♡</div>';
- box.scrollTop=box.scrollHeight;hydrateGroupAttachments();
+function groupMessageQuoteMarkup(m){
+ if(!m?.quoteMessageId&&!m?.quotedText)return '';
+ return `<div class="lr-group-quoted-message"><strong>↪ ${esc(m.quotedSenderName||'引用消息')}</strong><span>${esc(String(m.quotedText||'[消息]').slice(0,180))}</span></div>`;
 }
+function groupMessageMarkup(m,group){
+ const selected=selectedGroupMessageIds.has(String(m.id));
+ if(m.senderType==='system')return `<div class="lr-group-system-message ${selected?'is-selected':''}" data-group-message-id="${esc(m.id)}"><span>${esc(m.text||'')}</span></div>`;
+ const isUser=m.senderType==='user';const name=isUser?'我':(m.senderNameSnapshot||getName(m.senderId));
+ return `<article class="lr-group-message-row ${isUser?'is-user':'is-character'} ${selected?'is-selected':''}" data-group-message-id="${esc(m.id)}"><div class="lr-group-message-avatar">${messageAvatar(m,group)}</div><div class="lr-group-message-content"><div class="lr-group-message-name">${esc(name)} <time>${esc(timeLabel(m.createdAt))}</time></div>${groupMessageQuoteMarkup(m)}<div class="lr-group-message-bubble ${m.kind==='image'?'has-image':''} ${m.kind==='sticker'?'has-sticker':''}">${groupMessageBody(m)}</div></div></article>`;
+}
+async function hydrateGroupAttachments(root=$('lrGroupMessages')){const bridge=window.LRChatInteractionV11;if(!bridge?.loadAttachmentDataUrl||!root)return;for(const node of root.querySelectorAll('[data-group-attachment]')){const id=node.dataset.groupAttachment,kind=node.dataset.groupAttachmentKind;try{const url=await bridge.loadAttachmentDataUrl(id);if(!url||!node.isConnected)continue;const img=document.createElement('img');img.src=url;img.alt=kind==='sticker'?'表情包':'聊天图片';img.className=kind==='sticker'?'lr-group-sticker-image':'lr-group-chat-image';node.replaceChildren(img)}catch(err){if(node.isConnected)node.textContent='图片无法读取'}}}
+function renderGroupMessages(messages,group){const box=$('lrGroupMessages');if(!box)return;const root=$('lrGroupConversation');if(root)root.dataset.lrGroupId=String(group.id);box.innerHTML=messages.length?messages.map(m=>groupMessageMarkup(m,group)).join(''):'<div class="lr-group-empty">群聊还没有消息。<br>说点什么，让大家认识一下吧 ♡</div>';box.scrollTop=box.scrollHeight;hydrateGroupAttachments(box);updateGroupMessageToolbar();}
+function appendGroupMessageToView(message,group){
+ if(activeGroupId!==String(group.id)||settingsOpen)return;
+ const box=$('lrGroupMessages');if(!box)return;
+ box.querySelector('.lr-group-empty')?.remove();
+ const holder=document.createElement('div');holder.innerHTML=groupMessageMarkup(message,group);
+ const node=holder.firstElementChild;if(!node)return;
+ node.classList.add('lr-group-message-arrive');box.appendChild(node);
+ box.scrollTo?.({top:box.scrollHeight,behavior:'smooth'});if(!box.scrollTo)box.scrollTop=box.scrollHeight;
+ hydrateGroupAttachments(node);updateGroupMessageToolbar();
+}
+function updateGroupMessageToolbar(){
+ const bar=$('lrGroupMessageToolbar');if(!bar)return;
+ if(groupSelectionMode){bar.hidden=false;bar.innerHTML=`<span>已选择 ${selectedGroupMessageIds.size} 条消息</span><button type="button" data-group-toolbar="all">全选</button><button type="button" data-group-toolbar="delete" ${selectedGroupMessageIds.size?'':'disabled'}>删除选中</button><button type="button" data-group-toolbar="cancel">取消</button>`;}
+ else if(quoteDraft){bar.hidden=false;bar.innerHTML=`<span class="lr-group-quote-preview">回复 <b>${esc(quoteDraft.senderName)}</b>：${esc(String(quoteDraft.text||'[图片]').slice(0,60))}</span><button type="button" data-group-toolbar="cancel-quote">取消引用</button>`;}
+ else{bar.hidden=true;bar.innerHTML='';}
+ const box=$('lrGroupMessages');box?.querySelectorAll('[data-group-message-id]').forEach(row=>row.classList.toggle('is-selected',selectedGroupMessageIds.has(String(row.dataset.groupMessageId))));
+}
+async function getGroupMessage(messageId){if(!activeGroupId)return null;return (await listMessages(activeGroupId)).find(m=>String(m.id)===String(messageId))||null;}
+function ensureGroupMessageActionMenu(){let menu=$('lrGroupMessageActionMenu');if(menu)return menu;menu=document.createElement('div');menu.id='lrGroupMessageActionMenu';menu.className='lr-group-message-action-menu';menu.hidden=true;document.body.appendChild(menu);menu.addEventListener('click',async e=>{const button=e.target.closest('[data-group-message-action]');if(!button)return;const action=button.dataset.groupMessageAction,id=menu.dataset.messageId;menu.hidden=true;const message=await getGroupMessage(id);if(!message)return;if(action==='quote'){quoteDraft={messageId:String(message.id),senderName:message.senderType==='user'?'我':(message.senderNameSnapshot||getName(message.senderId)),text:message.text||({image:'[图片]',sticker:'[表情包]',transfer:'转账卡',location:'位置分享'}[message.kind]||'[消息]'),senderType:message.senderType,kind:message.kind||'text'};groupSelectionMode=false;selectedGroupMessageIds.clear();updateGroupMessageToolbar();$('lrGroupInput')?.focus();}
+ else if(action==='select'){groupSelectionMode=true;selectedGroupMessageIds=new Set([String(id)]);updateGroupMessageToolbar();}
+ else if(action==='delete'){if(!confirm('确定删除这条群聊消息吗？'))return;await deleteGroupMessages([String(id)]);}
+ });return menu;}
+function showGroupMessageActionMenu(id,x,y){const menu=ensureGroupMessageActionMenu();menu.dataset.messageId=String(id);menu.innerHTML='<button type="button" data-group-message-action="quote">引用回复</button><button type="button" data-group-message-action="select">加入多选</button><button type="button" data-group-message-action="delete" class="danger">删除消息</button>';menu.hidden=false;const left=Math.max(10,Math.min((Number(x)||20)-70,window.innerWidth-175));const top=Math.max(10,Math.min((Number(y)||100)-120,window.innerHeight-160));menu.style.left=left+'px';menu.style.top=top+'px';}
+async function deleteGroupMessages(ids){
+ const unique=[...new Set((ids||[]).map(String))];if(!activeGroupId||!unique.length)return;
+ const db=await openDB();await new Promise((resolve,reject)=>{const tx=db.transaction(STORE_MESSAGES,'readwrite'),store=tx.objectStore(STORE_MESSAGES);unique.forEach(id=>store.delete(id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('消息删除失败'));tx.onabort=()=>reject(tx.error||new Error('消息删除已中断'))});
+ const group=await getOne(STORE_GROUPS,activeGroupId);if(group){const remaining=await listMessages(activeGroupId);const last=remaining[remaining.length-1];group.lastMessage=last?{text:last.text||({image:'[图片]',sticker:'[表情包]',transfer:'转账卡',location:'位置分享'}[last.kind]||'新消息'),senderName:last.senderType==='user'?'我':last.senderType==='system'?'系统':last.senderNameSnapshot,createdAt:last.createdAt}:null;await saveGroup(group);}
+ if(quoteDraft&&unique.includes(quoteDraft.messageId))quoteDraft=null;selectedGroupMessageIds.clear();groupSelectionMode=false;await renderGroupConversation();notify(`已删除 ${unique.length} 条消息`);
+}
+function bindGroupMessageInteractions(){
+ const box=$('lrGroupMessages');if(!box||box.dataset.lrInteractionsBound)return;box.dataset.lrInteractionsBound='1';
+ box.addEventListener('pointerdown',e=>{const row=e.target.closest('[data-group-message-id]');if(!row||groupSelectionMode)return;groupLongPressTriggered=false;clearTimeout(groupPressTimer);groupPressStartX=e.clientX;groupPressStartY=e.clientY;const id=row.dataset.groupMessageId,x=e.clientX,y=e.clientY;groupPressTimer=setTimeout(()=>{groupLongPressTriggered=true;showGroupMessageActionMenu(id,x,y)},520)});
+ box.addEventListener('pointermove',e=>{if(groupPressTimer&&Math.hypot(e.clientX-groupPressStartX,e.clientY-groupPressStartY)>12)clearTimeout(groupPressTimer)});
+ ['pointerup','pointercancel','pointerleave'].forEach(type=>box.addEventListener(type,()=>clearTimeout(groupPressTimer)));
+ box.addEventListener('contextmenu',e=>{const row=e.target.closest('[data-group-message-id]');if(!row)return;e.preventDefault();showGroupMessageActionMenu(row.dataset.groupMessageId,e.clientX,e.clientY)});
+ box.addEventListener('click',e=>{if(groupLongPressTriggered){groupLongPressTriggered=false;return;}const row=e.target.closest('[data-group-message-id]');if(groupSelectionMode&&row){if(e.target.closest('a,button,[role=button]'))e.preventDefault();const id=String(row.dataset.groupMessageId);if(selectedGroupMessageIds.has(id))selectedGroupMessageIds.delete(id);else selectedGroupMessageIds.add(id);updateGroupMessageToolbar();return;}const transfer=e.target.closest('[data-lr-group-transfer]');if(transfer){e.preventDefault();openGroupTransferDecision(transfer.dataset.lrGroupTransfer);return;}});
+ box.addEventListener('keydown',e=>{const transfer=e.target.closest('[data-lr-group-transfer]');if(transfer&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openGroupTransferDecision(transfer.dataset.lrGroupTransfer);}});
+ const toolbar=$('lrGroupMessageToolbar');toolbar?.addEventListener('click',async e=>{const b=e.target.closest('[data-group-toolbar]');if(!b)return;const action=b.dataset.groupToolbar;if(action==='cancel'){groupSelectionMode=false;selectedGroupMessageIds.clear()}else if(action==='all'){const messages=await listMessages(activeGroupId);selectedGroupMessageIds=new Set(messages.map(m=>String(m.id)))}else if(action==='delete'){if(!selectedGroupMessageIds.size)return;if(!confirm(`确定删除选中的 ${selectedGroupMessageIds.size} 条消息吗？`))return;await deleteGroupMessages([...selectedGroupMessageIds]);return}else if(action==='cancel-quote')quoteDraft=null;updateGroupMessageToolbar();});
+ document.addEventListener('click',e=>{const menu=$('lrGroupMessageActionMenu');if(menu&&!menu.hidden&&!menu.contains(e.target))menu.hidden=true;});
+}
+function ensureGroupTransferDecisionModal(){let modal=$('lrGroupTransferDecision');if(modal)return modal;modal=document.createElement('div');modal.id='lrGroupTransferDecision';modal.className='lr-action-overlay';modal.hidden=true;modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">LOVE RECORD · A LITTLE GIFT</div><div class="lr-action-title">收到一张转账卡</div><div class="lr-action-desc" id="lrGroupTransferDecisionText">这是聊天中的模拟转账，不会发生真实付款。</div><div class="lr-action-buttons"><button type="button" data-group-transfer-choice="refunded">退还</button><button type="button" data-group-transfer-choice="accepted" class="primary">接收</button></div></section>';document.body.appendChild(modal);modal.addEventListener('click',async e=>{if(e.target===modal){modal.hidden=true;return}const b=e.target.closest('[data-group-transfer-choice]');if(!b||!groupTransferDecisionId)return;const id=groupTransferDecisionId;const message=await getGroupMessage(id);if(!message)return;message.transferStatus=b.dataset.groupTransferChoice;message.transferResolvedAt=Date.now();await saveMessage(message);modal.hidden=true;groupTransferDecisionId='';await renderGroupConversation();notify(message.transferStatus==='accepted'?'已接收这张模拟转账卡':'已退还这张模拟转账卡');});return modal;}
+async function openGroupTransferDecision(id){const message=await getGroupMessage(id);if(!message||message.kind!=='transfer'||message.senderType!=='character'||message.transferStatus)return;groupTransferDecisionId=String(id);const modal=ensureGroupTransferDecisionModal();$('lrGroupTransferDecisionText').textContent=`${message.senderNameSnapshot||getName(message.senderId)} 给你转账 ￥${message.amount||'0.00'}。${message.note||'给你的小心意'}。这是模拟卡片，不会发生真实付款。`;modal.hidden=false;}
 async function renderGroupConversation(){if(!activeGroupId)return;const group=await getOne(STORE_GROUPS,activeGroupId);if(!group){activeGroupId='';window.renderChat?.();return}await syncUnavailableMembers(group);
  const chat=$('chat'),list=$('chatContacts'),baseConv=$('chatConversation'),conv=$('lrGroupConversation'),settingsPage=$('lrGroupSettingsPage');if(!conv)return;
  if(chat)chat.classList.add('is-conversation','is-group-conversation');document.body.classList.add('chat-conversation-open');setGroupDockMode(settingsOpen?'settings':'conversation');
@@ -93,10 +144,10 @@ async function renderGroupConversation(){if(!activeGroupId)return;const group=aw
  $('lrGroupHeaderName').textContent=group.name||'未命名群聊';$('lrGroupHeaderMembers').textContent=groupActiveMembers(group).length+' 位成员';
  const ann=$('lrGroupAnnouncement');ann.textContent=group.announcement||'';ann.hidden=!group.announcement;
  const msgs=await listMessages(activeGroupId);renderGroupMessages(msgs,group);applyGroupCustomCss(group);const messageBox=$('lrGroupMessages');if(messageBox){messageBox.style.background='transparent';messageBox.style.backgroundImage='none'}conv.style.backgroundColor=group.background||'#f7f3f9';conv.style.backgroundImage=group.backgroundImage?`linear-gradient(rgba(247,243,249,.22),rgba(247,243,249,.22)),url("${group.backgroundImage}")`:'none';conv.style.backgroundSize='cover';conv.style.backgroundPosition='center center';conv.style.backgroundRepeat='no-repeat';conv.style.backgroundAttachment='scroll';const turns=(await getAll(STORE_TURNS)).filter(t=>t.groupId===activeGroupId).sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const latestTurn=turns[0];
- $('lrGroupHint').textContent=busy?'角色正在群聊中…':latestTurn?.status==='interrupted'?'上一轮因页面关闭而中断；可以继续发送新消息。':'自然群聊 · 角色会根据语境自主参与';
+ $('lrGroupHint').textContent=busy?'角色正在群聊中…':latestTurn?.status==='interrupted'?'上一轮因页面关闭而中断；可以继续发送新消息。':'自然群聊 · 长按消息可引用或删除';
 }
-function openGroup(groupId){activeGroupId=String(groupId);settingsOpen=false;host().setActiveChatContact?.('');const chat=$('chat'),list=$('lrGroupList'),conv=$('chatConversation');if(chat)chat.classList.add('is-conversation','is-group-conversation');if(list){list.hidden=true;list.setAttribute('aria-hidden','true')}if(conv)conv.hidden=true;document.body.classList.add('chat-conversation-open');setGroupDockMode('conversation');renderGroupConversation().catch(e=>{console.error(e);notify('打开群聊失败：'+e.message)})}
-function backToList(){settingsOpen=false;activeGroupId='';try{localStorage.removeItem('lr-life-chat-context-v1');sessionStorage.removeItem('lr-life-active-group')}catch{}host().setActiveChatContact?.('');const conv=$('lrGroupConversation'),settingsPage=$('lrGroupSettingsPage'),chat=$('chat');if(conv)conv.hidden=true;if(settingsPage)settingsPage.hidden=true;if(chat)chat.classList.remove('is-conversation','is-group-conversation','is-group-settings');document.body.classList.remove('chat-conversation-open');setGroupDockMode('');const title=$('systemAppTitle'),action=$('systemAppbarAction'),back=$('systemAppbar')?.querySelector('.system-back');if(title)title.textContent='CHAT';if(action){action.hidden=false;action.textContent='＋';action.setAttribute('aria-label','添加联系人')}if(back)back.setAttribute('data-launch-home','');window.renderChat?.()}
+function openGroup(groupId){activeGroupId=String(groupId);settingsOpen=false;quoteDraft=null;groupSelectionMode=false;selectedGroupMessageIds.clear();host().setActiveChatContact?.('');const chat=$('chat'),list=$('lrGroupList'),conv=$('chatConversation');if(chat)chat.classList.add('is-conversation','is-group-conversation');if(list){list.hidden=true;list.setAttribute('aria-hidden','true')}if(conv)conv.hidden=true;document.body.classList.add('chat-conversation-open');setGroupDockMode('conversation');renderGroupConversation().catch(e=>{console.error(e);notify('打开群聊失败：'+e.message)})}
+function backToList(){settingsOpen=false;activeGroupId='';quoteDraft=null;groupSelectionMode=false;selectedGroupMessageIds.clear();updateGroupMessageToolbar();try{localStorage.removeItem('lr-life-chat-context-v1');sessionStorage.removeItem('lr-life-active-group')}catch{}host().setActiveChatContact?.('');const conv=$('lrGroupConversation'),settingsPage=$('lrGroupSettingsPage'),chat=$('chat');if(conv)conv.hidden=true;if(settingsPage)settingsPage.hidden=true;if(chat)chat.classList.remove('is-conversation','is-group-conversation','is-group-settings');document.body.classList.remove('chat-conversation-open');setGroupDockMode('');const title=$('systemAppTitle'),action=$('systemAppbarAction'),back=$('systemAppbar')?.querySelector('.system-back');if(title)title.textContent='CHAT';if(action){action.hidden=false;action.textContent='＋';action.setAttribute('aria-label','添加联系人')}if(back)back.setAttribute('data-launch-home','');window.renderChat?.()}
 async function openCreateGroup(){
  const people=host().getPeople?.()||[],box=$('lrCreateGroupMembers');if(!box)return;
  box.innerHTML=people.length?people.map(p=>`<label class="lr-group-picker-item"><input type="checkbox" value="${esc(p.id)}"><span><b>${esc(p.name||'未命名联系人')}</b><small>${esc(p.role||p.persona||'AI 联系人')}</small></span></label>`).join(''):'<div class="lr-group-empty-picker">还没有联系人，请先去「联系人」创建角色。</div>';
@@ -208,11 +259,13 @@ async function buildGroupImageContext(historyMessages){
  }
  return parts;
 }
-function buildGroupSystem(group,activeMembers,history){
+function buildGroupSystem(group,activeMembers,history,stickerItems=[],stickerEnabled=true){
  const world=group.worldId?(host().getWorldBookPromptById?.(group.worldId)||''):(group.worldBookSelectionConfigured?'':(host().getWorldBookPrompt?.()||''));
  const sharedMemory=String(group.longTermMemory||'').trim();
  const memberProfiles=activeMembers.map(m=>{const p=getPerson(m.contactId)||{},meta=host().getChatMeta?.(m.contactId)||{};return `角色 ID：${m.contactId}\n姓名：${p.name||m.name}\n身份：${p.role||m.role||''}\n人设：${p.persona||p.personality||''}\n背景：${p.background||''}\n人物规则：${p.instructions||'保持人物一致，不要替用户决定行动、台词或情绪。'}\n个人长期记忆：${String(meta.longTermMemory||'暂无').slice(0,2500)}`}).join('\n\n---\n\n');
- return `你是 LOVE RECORD 的自然群聊调度器。你需要在同一个群聊里扮演多位独立角色。群名：${group.name||'群聊'}。群公告：${group.announcement||'无'}。\n\n可参与的角色资料：\n${memberProfiles}\n\n群聊长期记忆：\n${sharedMemory||'暂无'}\n\n共同世界书：\n${world||'未选择世界书'}\n\n近期群聊历史：\n${history||'暂无历史'}\n\n核心规则：\n1. 用户是群主和真实参与者。绝对不要替用户生成台词、行为、想法或情绪。\n2. 自然群聊：根据当前话题判断哪些角色适合发言。不要求所有角色每轮都回复。\n3. 允许角色互相回应、接话、吐槽或延续彼此话题，不要每条都只回答用户。\n4. 每条消息必须由一个真实成员发送，senderId 必须严格来自上方角色 ID。保持每个人的人设、语气、关系与知识边界，不得混淆身份。\n5. 角色只能知道自己亲自经历、被告知或在群聊中看到的事情。\n6. 如果用户 @ 某位角色，优先考虑该角色回应，但仍允许其他角色自然参与。\n7. 本轮最多生成 ${groupReplyLimit(group)} 条 AI 独立消息。上限不是必须凑满的固定目标，但也不要默认每轮只生成三条；如果有多位角色确实适合回应、接话或彼此互动，请充分展开到自然合理的数量，最多不超过上限。没有内容可说时才少发或返回空数组，绝不灌水。\n8. 每条消息应像即时通讯气泡，简洁自然；不写客服式总结，不强行在结尾提问。每位角色分别使用自己的 senderId（角色 ID）；不要用姓名代替 ID。\n9. 如果近期上下文附有群聊图片，必须先观察图片，并结合聊天语境回应图片中能确认的内容；不能确认的细节不要猜。\n10. 仅输出 JSON，不要 Markdown，不要代码围栏。\n\n返回结构：\n{"messages":[{"senderId":"上方某个角色ID","text":"该角色发出的消息"}],"memoryUpdates":[{"contactId":"角色ID","content":"仅记录该角色确实知道且长期有意义的重要事件"}]}\n\nmemoryUpdates 只记录明确、稳定且值得未来记住的事件或约定；不要记录日常寒暄、猜测或角色没有参与/不知道的事情。没有重要事件时返回空数组。内容要短小、准确。`;
+ const stickerList=stickerItems.map(x=>`${x.id}（分类：${x.category||'自定义'}${x.name?'；名称：'+x.name:''}）`).join('；');
+ const stickerRules=stickerEnabled&&stickerItems.length?`\n用户真实收藏的表情包库（只能使用以下 ID）：${stickerList}。每位角色都可以像单聊一样，根据自己的语气、情绪和聊天语境决定是否发送。若要发送，在对应消息对象中填写 stickerId，或在 text 中添加 [[LR_STICKER:准确ID]] 标记。ID 必须逐字来自清单，不能自己编造图片；一次回复最多一张，适合时再发，不要每条都发。若用户明确要求发送或测试表情包，必须从清单中选择一张最合适的真实收藏表情包。`: '\n用户已关闭 AI 表情包同步，或者没有可用的收藏表情包。禁止生成表情包消息。';
+ return `你是 LOVE RECORD 的自然群聊调度器。你需要在同一个群聊里扮演多位独立角色。群名：${group.name||'群聊'}。群公告：${group.announcement||'无'}。\n\n可参与的角色资料：\n${memberProfiles}\n\n群聊长期记忆：\n${sharedMemory||'暂无'}\n\n共同世界书：\n${world||'未选择世界书'}\n\n近期群聊历史（每条消息都带有真实 ID，可用于引用）：\n${history||'暂无历史'}\n${stickerRules}\n\n核心规则：\n1. 用户是群主和真实参与者。绝对不要替用户生成台词、行为、想法或情绪。\n2. 自然群聊：根据当前话题判断哪些角色适合发言。不要求所有角色每轮都回复。\n3. 允许角色互相回应、接话、吐槽或延续彼此话题，不要每条都只回答用户。\n4. 每条消息必须由一个真实成员发送，senderId 必须严格来自上方角色 ID。保持每个人的人设、语气、关系与知识边界，不得混淆身份。\n5. 角色只能知道自己亲自经历、被告知或在群聊中看到的事情。\n6. 如果用户 @ 某位角色，优先考虑该角色回应，但仍允许其他角色自然参与。\n7. 本轮最多生成 ${groupReplyLimit(group)} 条 AI 独立消息。上限不是必须凑满的固定目标，但也不要默认每轮只生成三条；如果有多位角色确实适合回应、接话或彼此互动，请充分展开到自然合理的数量，最多不超过上限。没有内容可说时才少发或返回空数组，绝不灌水。\n8. 每条消息应像即时通讯气泡，简洁自然；不写客服式总结，不强行在结尾提问。每位角色分别使用自己的 senderId（角色 ID）；不要用姓名代替 ID。\n9. 如果近期上下文附有群聊图片，必须先观察图片，并结合聊天语境回应图片中能确认的内容；不能确认的细节不要猜。\n10. 当回应某条消息时可以通过 quoteMessageId 引用它；只能使用历史中确实出现的消息 ID，不得编造 ID。特别适合回应用户引用消息或角色之间接话时使用，不要每条都引用。\n11. 角色可以主动发送模拟转账卡：在消息对象中设置 kind="transfer"、amount（正数）、note；这只是聊天模拟，不会发生真实付款。也可在 text 中输出 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]。\n12. 角色可以分享地点卡：仅使用聊天里已提到、设定里已知或角色明确说明的地点，不得假装读取 GPS 或编造用户实时位置。消息对象设置 kind="location"、place、note；也可在 text 中写 [[LR_LOCATION place=地点名称|note=补充说明]]。\n13. 仅输出 JSON，不要 Markdown，不要代码围栏。\n\n返回结构：\n{"messages":[{"senderId":"上方某个角色ID","text":"该角色发出的消息","quoteMessageId":"可选，引用的真实消息ID","kind":"可选：transfer 或 location","amount":"转账金额","note":"备注","place":"地点名称","stickerId":"可选的真实表情包ID"}],"memoryUpdates":[{"contactId":"角色ID","content":"仅记录该角色确实知道且长期有意义的重要事件"}]}\n\nmemoryUpdates 只记录明确、稳定且值得未来记住的事件或约定；不要记录日常寒暄、猜测或角色没有参与/不知道的事情。没有重要事件时返回空数组。内容要短小、准确。`;
 }
 async function syncGroupMemory(group,turnId,memoryUpdates){
  if(!Array.isArray(memoryUpdates)||!memoryUpdates.length)return;
@@ -240,8 +293,11 @@ async function generateGroupTurn(group,userMessage,turn){
  const members=groupActiveMembers(group);if(!members.length){notify('群聊没有可用角色，请检查群成员');turn.status='failed';turn.error='群聊没有可用角色';turn.failedAt=Date.now();await saveTurn(turn).catch(()=>{});return}
  busy=true;$('lrGroupSend').disabled=true;$('lrGroupSend').textContent='…';const aiButton=$('lrGroupAiCall');if(aiButton){aiButton.disabled=true;aiButton.setAttribute('aria-busy','true')}$('lrGroupHint').textContent='角色正在思考谁适合加入对话…';
  try{
-  const historyMsgs=(await listMessages(group.id)).filter(m=>m.senderType==='user'||m.senderType==='character').slice(-Math.max(1,Math.min(100,Number(group.memoryCount)||50)));const history=historyMsgs.map(m=>{const sender=m.senderType==='user'?'用户':m.senderType==='system'?'系统':(m.senderNameSnapshot||getName(m.senderId));return sender+'：'+String(m.text||'').slice(0,700)}).join('\n');
-  const system=buildGroupSystem(group,members,history);
+  const historyMsgs=(await listMessages(group.id)).filter(m=>m.senderType==='user'||m.senderType==='character').slice(-Math.max(1,Math.min(100,Number(group.memoryCount)||50)));const history=historyMsgs.map(m=>{const sender=m.senderType==='user'?'用户':m.senderType==='system'?'系统':(m.senderNameSnapshot||getName(m.senderId));const quoted=m.quoteMessageId?`（引用 ${m.quotedSenderName||'消息'}：${String(m.quotedText||'').slice(0,160)}）`:'';return `[消息ID:${m.id}] ${sender}：${String(m.text||({image:'[图片]',sticker:'[表情包]',transfer:'[转账卡]',location:'[位置卡]'}[m.kind]||'')).slice(0,700)}${quoted}`}).join('\n');
+  let stickerEnabled=true;try{const pref=localStorage.getItem('love-record-ai-sticker-sync-v1');stickerEnabled=pref===null||pref==='1'}catch(_){}
+  let stickerItems=[];if(stickerEnabled){try{stickerItems=await window.lrGetStickerItems?.()||[]}catch(err){console.warn('[LOVE RECORD] group sticker library read failed',err)}}
+  stickerItems=Array.isArray(stickerItems)?stickerItems.filter(x=>x&&x.id!=null&&x.attachmentId!=null):[];
+  const system=buildGroupSystem(group,members,history,stickerItems,stickerEnabled);
   const mentionNames=members.filter(m=>String(userMessage?.text||'').includes('@'+m.name)||String(userMessage?.text||'').includes('@'+getName(m.contactId))).map(m=>m.name||getName(m.contactId));
   const imageContext=await buildGroupImageContext(historyMsgs);
   const userPrompt=userMessage?.manualTrigger
@@ -255,18 +311,48 @@ async function generateGroupTurn(group,userMessage,turn){
   if(!parsed){const fallback=content.replace(/```[\s\S]*?```/g,'').trim();if(fallback){const target=members.find(m=>mentionNames.includes(m.name))||members[0];parsed={messages:[{senderId:target.contactId,text:fallback}],memoryUpdates:[]}}else parsed={messages:[],memoryUpdates:[]}}
   const limit=groupReplyLimit(group);const rawMessages=Array.isArray(parsed.messages)?parsed.messages:[];let count=0;
   const mentionedMember=members.find(m=>mentionNames.some(n=>String(n).toLocaleLowerCase()===String(m.name||getName(m.contactId)).toLocaleLowerCase()));
+  const messageById=new Map(historyMsgs.map(m=>[String(m.id),m]));
+  const outgoing=[];
+  const stickerById=new Map(stickerItems.map(x=>[String(x.id),x]));
   for(const item of rawMessages){
-   if(count>=limit)break;
+   if(outgoing.length>=limit)break;
    const senderCandidates=[item?.senderId,item?.contactId,item?.senderName,item?.speaker,item?.name,(typeof item?.sender==='object'?(item.sender.id||item.sender.name):item?.sender)].filter(value=>value!=null&&String(value).trim());
    const senderId=senderCandidates.map(value=>resolveGroupSenderId(value,members)).find(Boolean)||(mentionedMember?String(mentionedMember.contactId):'');
    if(!senderId)continue;
    const member=members.find(m=>String(m.contactId)===senderId);if(!member)continue;
-   const text=String(item?.text??item?.content??item?.message??'').trim();if(!text)continue;
-   for(const bubble of splitBubbles(text)){
-    if(count>=limit)break;
-    const msg={id:makeId('msg'),groupId:group.id,senderType:'character',senderId,senderNameSnapshot:member.name||getName(senderId),senderRoleSnapshot:member.role||'',text:bubble,createdAt:nextMessageTimestamp(group),turnId:turn.id};
-    await saveMessage(msg);count++;group.lastMessage={text:bubble,senderName:msg.senderNameSnapshot,createdAt:msg.createdAt};await saveGroup(group);
+   let text=String(item?.text??item?.content??item?.message??'').trim();
+   const quoteId=String(item?.quoteMessageId||item?.replyToId||item?.quoteId||'').trim();
+   const quoted=quoteId?messageById.get(quoteId):null;
+   const quoteFields=quoted?{quoteMessageId:String(quoted.id),quotedSenderName:quoted.senderType==='user'?'我':(quoted.senderNameSnapshot||getName(quoted.senderId)),quotedText:quoted.text||({image:'[图片]',sticker:'[表情包]',transfer:'[转账卡]',location:'[位置卡]'}[quoted.kind]||'[消息]'),quotedSenderType:quoted.senderType}:{};
+   const common={senderType:'character',senderId,senderNameSnapshot:member.name||getName(senderId),senderRoleSnapshot:member.role||'',turnId:turn.id,...quoteFields};
+   const transferMarker=text.match(/\[\[\s*LR_TRANSFER\s+amount=([\d,.]+)(?:\s+currency=([^\s\]]+))?(?:\s+note=([^\]]*))?\s*\]\]/i);
+   const locationMarker=text.match(/\[\[\s*LR_LOCATION\s+place=([^|\]]+)(?:\|note=([^\]]+))?\s*\]\]/i);
+   const stickerMarker=text.match(/\[\[\s*LR_STICKER\s*:\s*([^\]]+?)\s*\]\]/i);
+   const explicitKind=String(item?.kind||'').toLowerCase();
+   if(explicitKind==='transfer'||transferMarker){
+    const amount=Number(String(item?.amount??transferMarker?.[1]??'').replace(/,/g,'').replace(/[^\d.-]/g,''));
+    if(Number.isFinite(amount)&&amount>0){const note=String(item?.note??transferMarker?.[3]??'给你的小心意').trim().replace(/^['"]|['"]$/g,'');outgoing.push({...common,kind:'transfer',amount:amount.toFixed(2),currency:'￥',note:note||'给你的小心意',text:'转账 ￥'+amount.toFixed(2)});}
+    text=text.replace(/\[\[\s*LR_TRANSFER[^\]]*\]\]/ig,'').trim();
    }
+   if(explicitKind==='location'||locationMarker){
+    const place=String(item?.place??locationMarker?.[1]??'').trim().replace(/^['"]|['"]$/g,'');
+    if(place)outgoing.push({...common,kind:'location',place,note:String(item?.note??locationMarker?.[2]??'').trim(),text:'位置：'+place});
+    text=text.replace(/\[\[\s*LR_LOCATION[^\]]*\]\]/ig,'').trim();
+   }
+   const chosenStickerId=String(item?.stickerId??stickerMarker?.[1]??'').trim();
+   if(stickerMarker)text=text.replace(stickerMarker[0],'').trim();
+   if(text){
+    const bubbles=splitBubbles(text);
+    for(const bubble of bubbles){if(outgoing.length>=limit)break;outgoing.push({...common,text:bubble});}
+   }
+   if(chosenStickerId&&stickerEnabled&&stickerById.has(chosenStickerId)&&outgoing.length<limit){const sticker=stickerById.get(chosenStickerId);outgoing.push({...common,kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:String(sticker.category||'自定义'),text:'[表情包：'+String(sticker.category||'自定义')+']'});}
+   if(!text&&!chosenStickerId&&!transferMarker&&!locationMarker&&explicitKind==='transfer')continue;
+  }
+  for(let index=0;index<outgoing.length&&count<limit;index++){
+   const msg={id:makeId('msg'),groupId:group.id,createdAt:nextMessageTimestamp(group),...outgoing[index]};
+   await saveMessage(msg);count++;group.lastMessage={text:msg.text||({image:'[图片]',sticker:'[表情包]',transfer:'转账卡',location:'位置分享'}[msg.kind]||'新消息'),senderName:msg.senderNameSnapshot,createdAt:msg.createdAt};await saveGroup(group);
+   appendGroupMessageToView(msg,group);
+   if(index<outgoing.length-1&&count<limit)await new Promise(resolve=>setTimeout(resolve,560));
   }
   await syncGroupMemory(group,turn.id,Array.isArray(parsed.memoryUpdates)?parsed.memoryUpdates:[]);
   await maybeSummarizeGroupMemory(group.id);
@@ -281,9 +367,9 @@ async function sendGroupMessage(){
  sending=true;if(button)button.disabled=true;
  try{
   const group=await getOne(STORE_GROUPS,activeGroupId);if(!group)return;
-  const message={id:makeId('msg'),groupId:group.id,senderType:'user',senderId:'user',senderNameSnapshot:'我',text,createdAt:nextMessageTimestamp(group)};
+  const message={id:makeId('msg'),groupId:group.id,senderType:'user',senderId:'user',senderNameSnapshot:'我',text,createdAt:nextMessageTimestamp(group),...(quoteDraft?{quoteMessageId:quoteDraft.messageId,quotedSenderName:quoteDraft.senderName,quotedText:quoteDraft.text,quotedSenderType:quoteDraft.senderType}: {})};
   await saveMessage(message);group.lastMessage={text,senderName:'我',createdAt:message.createdAt};await saveGroup(group);
-  input.value='';await renderGroupConversation();
+  input.value='';quoteDraft=null;await renderGroupConversation();
   const hint=$('lrGroupHint');if(hint)hint.textContent='消息已发送 · 点击 ✦ 手动调用 AI';
  }catch(err){notify('消息发送失败：'+err.message)}
  finally{sending=false;if(button&&!busy){button.disabled=false;button.textContent='发送'}}
@@ -423,7 +509,7 @@ body.chat-conversation-open{padding-bottom:0!important;overflow:hidden!important
  .chat-page.is-group-conversation{padding-left:14px!important;padding-right:14px!important}
  .chat-page.is-group-conversation .lr-group-message-bubble{font-size:13px!important}
 }
-`;document.head.appendChild(st)}
+`;st.textContent+='\n'+'\n.lr-group-message-arrive{animation:lrGroupMessageArrive .34s cubic-bezier(.2,.75,.25,1) both}@keyframes lrGroupMessageArrive{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}\n.lr-group-quoted-message{display:grid;gap:3px;margin:0 0 6px;padding:7px 9px;border-left:2px solid rgba(166,139,180,.6);border-radius:0 9px 9px 0;background:rgba(236,228,241,.42);color:#8b7b92;font-size:10px;line-height:1.45;max-width:100%}.lr-group-quoted-message strong{font-weight:600}.lr-group-quoted-message span{overflow-wrap:anywhere;opacity:.9}\n.lr-group-message-row.is-selected,.lr-group-system-message.is-selected{outline:2px solid rgba(164,132,183,.75);outline-offset:3px;border-radius:13px;background:rgba(188,160,205,.13)}\n.lr-group-message-action-menu{position:fixed;z-index:2147483000;min-width:150px;display:grid;gap:2px;padding:7px;border:1px solid rgba(169,151,179,.24);border-radius:15px;background:rgba(255,255,255,.97);box-shadow:0 12px 32px rgba(58,43,67,.18);backdrop-filter:blur(16px)}.lr-group-message-action-menu[hidden]{display:none!important}.lr-group-message-action-menu button{border:0;border-radius:9px;background:transparent;padding:10px 12px;text-align:left;color:#5b4e62;font:inherit;font-size:12px}.lr-group-message-action-menu button:active{background:#f1eaf4}.lr-group-message-action-menu button.danger{color:#a76f78}\n.lr-group-message-toolbar{display:flex;align-items:center;gap:7px;padding:8px 12px;background:rgba(255,255,255,.92);border-top:1px solid rgba(150,130,160,.1);color:#887b90;font-size:11px}.lr-group-message-toolbar[hidden]{display:none!important}.lr-group-message-toolbar>span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lr-group-message-toolbar button{border:1px solid rgba(169,151,179,.24);border-radius:99px;background:#fff;padding:6px 10px;color:#766680;font:inherit;font-size:10px;white-space:nowrap}.lr-group-message-toolbar button:disabled{opacity:.4}.lr-group-quote-preview b{font-weight:600}.lr-group-transfer-card.is-actionable{cursor:pointer}.lr-group-transfer-card .lr-group-transfer-state{display:inline-flex;margin-top:11px;padding-top:8px;border-top:1px solid rgba(255,255,255,.25);font-size:10px;opacity:.9}\n#lrGroupMessages [data-group-message-id]{-webkit-user-select:none;user-select:none;touch-action:pan-y}\n';document.head.appendChild(st)}
 function groupTranscript(messages,limit=60){return messages.slice(-limit).map(m=>`${m.senderType==='user'?'我':m.senderType==='system'?'系统':(m.senderNameSnapshot||getName(m.senderId))}：${m.text||({image:'[图片]',sticker:'[表情包]',transfer:'[转账卡]',location:'[位置分享]',order:'[订单]'}[m.kind]||'')}`).join('\n')}
 async function appendExternalGroupMessage(payload,groupId=activeGroupId){
  const id=String(groupId||'');if(!id)throw new Error('没有指定目标群聊');const group=await getOne(STORE_GROUPS,id);if(!group)throw new Error('目标群聊不存在');
@@ -444,6 +530,7 @@ function bindGroupActionMenu(){const plus=$('lrGroupPlus'),menu=$('lrGroupPlusMe
 
 function bind(){
  bindGroupActionMenu();
+ bindGroupMessageInteractions();
  bindGroupAdvancedSettings();
  $('lrOpenCreateGroup')?.addEventListener('click',()=>{const modal=$('chatAddModal');modal?.classList.remove('show');document.body.style.overflow='';openCreateGroup()});
  $('lrCreateGroupClose')?.addEventListener('click',closeCreateGroup);$('lrCreateGroupCancel')?.addEventListener('click',closeCreateGroup);$('lrCreateGroupConfirm')?.addEventListener('click',createGroup);
