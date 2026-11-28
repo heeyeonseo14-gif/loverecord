@@ -1883,6 +1883,9 @@ body.lr-theme-dark :is(#space,.community-root){
         <div class="lr-background-time-row"><label>开始 <input id="lrBackgroundQuietStart" type="time" value="23:00"></label><label>结束 <input id="lrBackgroundQuietEnd" type="time" value="08:00"></label></div>
         <button class="btn" id="lrBackgroundSavePrefs" type="button">保存后台活动设置</button>
         <button class="btn" id="lrBackgroundTestPush" type="button">发送测试通知</button>
+        <button class="btn primary" id="lrBackgroundRunCheck" type="button">测试后台运行状态</button>
+        <div class="settings-diagnostic-row"><span>后台检测结果</span><strong id="lrBackgroundCheckSummary" role="status" aria-live="polite">尚未检测</strong></div>
+        <div id="lrBackgroundCheckDetails" class="lr-background-check-details" aria-live="polite">点击「测试后台运行状态」，检查 Firebase、匿名身份、通知权限和本机推送登记。</div>
         <div class="settings-diagnostic-row"><span>CHAR 云端活动</span><strong id="lrBackgroundAiStatus">等待角色云端同步</strong></div>
       </div>
       <p class="settings-help">推送可以在网页处于后台时由 Service Worker 接收，但 Android 仍可能受系统省电策略影响。后台 CHAR 自动生成需要你先完成角色/记忆云端同步并明确授权；目前不会自动上传聊天内容或 API Key。</p>
@@ -3526,7 +3529,7 @@ body.lr-user-app-open{overflow:hidden}
 <script src="./home-fixed-layout-v1.js?v=7"></script>
 <script src="./lr-group-chat-v1.js?v=16"></script>
 <script src="./firebase-config.js?v=3"></script>
-<script src="./lr-background-v1.js?v=4"></script>
+<script src="./lr-background-v1.js?v=5"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
@@ -3642,6 +3645,10 @@ body.chat-conversation-open #lrGroupMessages{background:transparent!important;ba
 #settings .lr-background-toggle span{display:grid;gap:4px;min-width:0}#settings .lr-background-toggle strong{font-size:12px;font-weight:600;color:var(--ink)}#settings .lr-background-toggle small{font-size:10px;line-height:1.6;color:var(--muted)}
 #settings .lr-background-toggle input{width:20px;height:20px;flex:none;accent-color:var(--lr-accent,#b79bc7)}
 #settings .lr-background-time-row{display:grid;grid-template-columns:1fr 1fr;gap:9px}#settings .lr-background-time-row label{display:grid;gap:6px;font-size:10px;color:var(--muted)}
+#settings .lr-background-check-details{display:grid;gap:7px;padding:11px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.55);font-size:11px;line-height:1.6;color:var(--muted)}
+#settings .lr-background-check-details .check-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+#settings .lr-background-check-details .check-row strong{color:var(--ink);text-align:right;font-weight:600}
+
 #settings #lrBackgroundTestPush{background:rgba(255,255,255,.72)}
 </style>
 

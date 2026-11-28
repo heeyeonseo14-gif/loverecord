@@ -41,3 +41,7 @@
 - UID 可以在 Firebase Console → Authentication → Users 中查看；用户总数也可在该用户列表中统计。
 - 这一步仅建立 Firebase 身份并展示 UID；LOVE RECORD 的聊天、角色、社区等数据仍由现有本地模块保存，尚未自动同步到 Firestore。不要把“有 UID”理解为全部资料已经云端备份。
 - Firestore 初始生产规则仍然拒绝客户端读写。本次没有部署或放宽 Firestore Rules。后续必须先按实际数据结构实现用户 UID 隔离，再部署规则。
+
+
+## 后台运行状态自检（v22）
+设置 → 高级与开发者选项 → 后台活动与消息推送 →「测试后台运行状态」会检查 Firebase Web 配置、匿名身份、Service Worker、通知权限、本机推送登记、VAPID 配置和后台活动总开关。该按钮只检测本机前端接入；不会证明云端 Scheduler 已运行，也不会证明关闭 PWA 后 CHAR 仍能生成消息。当前版本尚未接通云端定时任务与 CHAR AI 后台生成。
