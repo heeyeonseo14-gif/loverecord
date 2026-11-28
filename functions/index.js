@@ -59,3 +59,36 @@ exports.characterActivityScheduler = onSchedule({ schedule: 'every 15 minutes', 
     }, { merge: true });
   }
 });
+
+// Send a data-only test push to this authenticated user's registered devices.
+// The Service Worker renders one notification; no chat content is included.
+exports.sendBackgroundTestNotification = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', '请先完成 Firebase 登录。');
+  const snap = await db.collection(`users/${request.auth.uid}/devices`).where('active', '==', true).get();
+  if (snap.empty) throw new HttpsError('failed-precondition', '尚未登记本机推送令牌，请先启用后台通知。');
+  const data = {
+    title: 'LOVE RECORD',
+    body: '后台通知测试成功。你可以在手机通知栏看到这条消息。',
+    url: './index.html',
+    conversationId: '',
+    tag: 'lr-background-test'
+  };
+  let successCount = 0;
+  let failureCount = 0;
+  const remove = [];
+  await Promise.all(snap.docs.map(async (doc) => {
+    const token = String(doc.data().token || '');
+    if (!token) { failureCount++; remove.push(doc.ref); return; }
+    try {
+      await getMessaging().send({ token, data });
+      successCount++;
+    } catch (error) {
+      failureCount++;
+      if (['messaging/registration-token-not-registered','messaging/invalid-registration-token'].includes(error?.code)) remove.push(doc.ref);
+      console.warn('[LOVE RECORD] test push failed for a device:', error?.code || error?.message);
+    }
+  }));
+  if (remove.length) await Promise.all(remove.map((ref) => ref.delete()));
+  return { ok: successCount > 0, successCount, failureCount };
+});
+
