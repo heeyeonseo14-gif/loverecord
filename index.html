@@ -3493,7 +3493,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=14"></script>
+<script src="./lr-group-chat-v1.js?v=15"></script>
 <script src="./firebase-config.js?v=1"></script>
 <script src="./lr-background-v1.js?v=1"></script>
 
@@ -3562,6 +3562,8 @@ input[type=range],input[type=checkbox],input[type=radio],select:focus{accent-col
 
 <style id="lr-chat-full-bleed-wallpaper-v1">
 /* One fixed wallpaper layer for the entire single/group conversation viewport. */
+/* A conversation must never reveal the homepage-only photo layer beneath its own wallpaper. */
+body.chat-conversation-open #lr-home-background-fix-layer{opacity:0!important;visibility:hidden!important}
 body.chat-conversation-open::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
   background-color:var(--lr-active-chat-wallpaper-color,#f7f3f9);
