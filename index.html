@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
 <link rel="manifest" href="./manifest.json?v=118">
 <link rel="icon" href="./icon-192.png">
-<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=7">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=9">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -1390,7 +1390,7 @@ body.lr-theme-dark :is(#space,.community-root){
 
       <section class="lr-character-spotlight-wrap" aria-label="角色展示">
         <button class="lr-character-spotlight-card is-empty" id="lrCharacterSpotlightOpen" type="button" aria-label="选择角色展示">
-          <img class="lr-character-spotlight-bg" id="lrCharacterSpotlightBackground" alt="角色展示背景" hidden>
+          <span class="lr-character-spotlight-bg" id="lrCharacterSpotlightBackground" aria-hidden="true" hidden></span>
           <span class="lr-character-spotlight-shade" aria-hidden="true"></span>
           <span class="lr-character-spotlight-content">
             <span class="lr-character-spotlight-kicker">CHARACTER SPOTLIGHT</span>
@@ -3365,7 +3365,7 @@ body.lr-user-app-open{overflow:hidden}
  <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
-<script src="./home-fixed-layout-v1.js?v=6"></script>
+<script src="./home-fixed-layout-v1.js?v=7"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}

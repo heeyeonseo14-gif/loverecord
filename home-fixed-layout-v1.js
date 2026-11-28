@@ -136,11 +136,19 @@ function characterAvatar(personId){const p=characterPeople().find(x=>String(x.id
 function activeCharacterCard(){return characterCards.find(x=>x&&x.id===activeCharacterCardId)||characterCards[0]||null}
 function renderCharacterSpotlight(){
  const card=activeCharacterCard(),button=$('lrCharacterSpotlightOpen'),name=$('lrCharacterSpotlightName'),description=$('lrCharacterSpotlightDescription'),avatar=$('lrCharacterSpotlightAvatar'),background=$('lrCharacterSpotlightBackground');if(!button)return;
- if(!card){button.classList.add('is-empty');button.setAttribute('aria-label','选择一位喜欢的 CHAR');name.textContent='选择一位喜欢的 CHAR';description.textContent='为 TA 设置专属背景与介绍。';avatar.hidden=true;avatar.removeAttribute('src');background.hidden=true;background.removeAttribute('src');return}
+ if(!card){
+  button.classList.add('is-empty');button.classList.remove('has-background');button.setAttribute('aria-label','选择角色展示');
+  name.textContent='选择一位喜欢的 CHAR';description.textContent='为 TA 设置专属背景与介绍。';
+  avatar.hidden=true;avatar.removeAttribute('src');background.hidden=true;background.style.backgroundImage='none';return;
+ }
  const person=characterPeople().find(x=>String(x.id)===String(card.personId));const shownName=safeText(card.displayName,person?.name||'未命名角色');const text=safeText(card.description,person?.role||'My favorite character.');
- button.classList.toggle('is-empty',!person);button.setAttribute('aria-label','打开 '+shownName+' 的聊天');name.textContent=shownName;description.textContent=text;
+ // A saved spotlight remains a real card even while the contact directory is hydrating.
+ // Do not apply the empty-card white veil just because person metadata is not ready yet.
+ button.classList.remove('is-empty');button.classList.toggle('has-background',!!card.background);button.setAttribute('aria-label','打开 '+shownName+' 的聊天');name.textContent=shownName;description.textContent=text;
  const avatarSrc=card.avatar||characterAvatar(card.personId);avatar.hidden=!avatarSrc;if(avatarSrc)avatar.src=avatarSrc;else avatar.removeAttribute('src');
- background.hidden=!card.background;if(card.background)background.src=card.background;else background.removeAttribute('src');
+ const backgroundSrc=typeof card.background==='string'?card.background.trim():'';
+ background.hidden=!backgroundSrc;
+ background.style.backgroundImage=backgroundSrc?'url('+JSON.stringify(backgroundSrc)+')':'none';
 }
 function renderCharacterSelectors(selectedCardId='',selectedPersonId=''){
  const cardSelect=$('lrCharacterCardSelect'),personSelect=$('lrCharacterPersonSelect');cardSelect.replaceChildren(new Option('选择已有展示卡',''));
