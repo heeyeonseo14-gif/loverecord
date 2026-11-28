@@ -14,5 +14,5 @@ self.LR_FIREBASE_CONFIG = {
 
 // Generate a Web Push public VAPID key in Firebase Console → Project settings
 // → Cloud Messaging → Web Push certificates. Leave blank until configured.
-self.LR_FIREBASE_VAPID_KEY = '';
+self.LR_FIREBASE_VAPID_KEY = 'BFkC4_SDJTsNKNJJyRsW_-bOx2pUmqycmlwmXOdSWrkQBw5U4b1AI2i8ZRNS6zST5-WaVU5vapRHAbU1ZSW0B2A';
 self.LR_FIREBASE_FUNCTIONS_REGION = 'asia-southeast1';
