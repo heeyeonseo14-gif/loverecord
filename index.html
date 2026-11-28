@@ -2199,6 +2199,8 @@ function renderChat(){
  document.body.classList.toggle('chat-directory-open',!detail);
  $('systemAppbarAction').hidden=false;
  if(!detail){
+  document.documentElement.style.removeProperty('--lr-active-chat-wallpaper-image');
+  document.documentElement.style.removeProperty('--lr-active-chat-wallpaper-color');
   activeChatContactId='';conversation.hidden=true;list.hidden=false;
   $('systemAppTitle').textContent='CHAT';
   $('systemAppbarAction').innerHTML='＋';$('systemAppbarAction').setAttribute('aria-label','添加联系人');
@@ -2214,13 +2216,12 @@ function renderChat(){
  $('systemAppbarAction').innerHTML='⚙';$('systemAppbarAction').setAttribute('aria-label','聊天设置');
  const chatSurface=$('chatMessages'),conversationSurface=$('chatConversation');
  const chatBg=meta.backgroundImage ? 'url(\"'+meta.backgroundImage+'\")' : 'none';
- /* Apply the wallpaper to the complete conversation surface, including the area behind the composer. */
- conversationSurface.style.setProperty('background-color',meta.background||'#f7f3f9','important');
- conversationSurface.style.setProperty('background-image',chatBg,'important');
- conversationSurface.style.setProperty('background-size','cover','important');
- conversationSurface.style.setProperty('background-position','center center','important');
- conversationSurface.style.setProperty('background-repeat','no-repeat','important');
- conversationSurface.style.setProperty('background-attachment','fixed','important');
+ /* One viewport-wide wallpaper is shared by the system app bar, message area and composer. */
+ document.documentElement.style.setProperty('--lr-active-chat-wallpaper-color',meta.background||'#f7f3f9');
+ document.documentElement.style.setProperty('--lr-active-chat-wallpaper-image',chatBg);
+ conversationSurface.style.setProperty('background-color','transparent','important');
+ conversationSurface.style.setProperty('background-image','none','important');
+ conversationSurface.style.setProperty('background-attachment','scroll','important');
  chatSurface.style.setProperty('background-color','transparent','important');
  chatSurface.style.setProperty('background-image','none','important');
  chatSurface.style.setProperty('background-size','cover','important');
@@ -3492,7 +3493,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=13"></script>
+<script src="./lr-group-chat-v1.js?v=14"></script>
 <script src="./firebase-config.js?v=1"></script>
 <script src="./lr-background-v1.js?v=1"></script>
 
@@ -3558,5 +3559,31 @@ input[type=range],input[type=checkbox],input[type=radio],select:focus{accent-col
 .person-reference-status{font-size:11px;line-height:1.6;color:var(--muted,#96899d);margin-top:8px;overflow-wrap:anywhere}
 #personImagePromptTestPreview img{border:1px solid rgba(170,150,182,.22)}
 </style>
+
+<style id="lr-chat-full-bleed-wallpaper-v1">
+/* One fixed wallpaper layer for the entire single/group conversation viewport. */
+body.chat-conversation-open::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-color:var(--lr-active-chat-wallpaper-color,#f7f3f9);
+  background-image:var(--lr-active-chat-wallpaper-image,none);
+  background-position:center center;background-repeat:no-repeat;background-size:cover;
+}
+body.chat-conversation-open .app{position:relative;z-index:1;background:transparent!important}
+body.chat-conversation-open #systemAppbar{
+  z-index:120!important;background:transparent!important;background-color:transparent!important;
+  background-image:none!important;border:0!important;border-bottom:0!important;box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+}
+body.chat-conversation-open #chat,
+body.chat-conversation-open #chat.chat-page,
+body.chat-conversation-open #chatConversation,
+body.chat-conversation-open #lrGroupConversation{
+  background:transparent!important;background-color:transparent!important;background-image:none!important;
+  border-top:0!important;border-bottom:0!important;box-shadow:none!important;
+}
+body.chat-conversation-open #chatMessages,
+body.chat-conversation-open #lrGroupMessages{background:transparent!important;background-image:none!important}
+</style>
+
 </body>
 </html>
