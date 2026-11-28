@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
-<link rel="manifest" href="./manifest.json">
+<link rel="manifest" href="./manifest.json?v=117">
 <link rel="icon" href="./icon-192.png">
-<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=4">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=5">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -1413,14 +1413,11 @@ body.lr-theme-dark :is(#space,.community-root){
         </div>
         <div id="lrCountdownDisplay"><div class="lr-countdown-empty">留下一个想认真期待的日子。</div></div>
       </section>
-      <section class="launcher-grid lr-secondary-app-grid" data-launcher-grid="1" aria-label="第二页应用">
+      <section class="launcher-grid lr-secondary-app-grid lr-page-two-app-grid" data-launcher-grid="more" aria-label="第二页应用">
         <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
         <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
         <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
         <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
-      </section>
-      <div class="lr-more-apps-title">More of your world.</div>
-      <section class="launcher-grid lr-secondary-app-grid" data-launcher-grid="more" aria-label="更多应用">
         <button class="launcher-app" data-launch-dream-fate type="button" data-drag-id="app-dream-fate"><span class="app-icon app-icon-dream-fate">✧</span><span class="app-label-dream-fate">寻梦</span></button>
         <button class="launcher-app" data-launch-weather type="button" data-drag-id="app-weather"><span class="app-icon app-icon-weather">☼</span><span>天气</span></button>
         <button class="launcher-app" data-launch-zodiac type="button" data-drag-id="app-zodiac"><span class="app-icon" style="background:linear-gradient(145deg,#f8fbfe,#d9e4ef);color:#6682a0;box-shadow:0 8px 24px rgba(102,130,160,.16)">✶</span><span>星盘</span></button>
@@ -2695,7 +2692,7 @@ const homeIconBindings=[
  {id:'app-star-assistant',symbol:'✦'},{id:'app-dream-fate',symbol:'✧'},{id:'app-weather',symbol:'☼'},{id:'app-zodiac',symbol:'✶'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},
- {id:'app-games',symbol:'🎮'},{id:'app-checkin',symbol:'◉'}
+ {id:'app-games',symbol:'🎮'},{id:'app-checkin',symbol:'◉'},{id:'app-lr-store',symbol:'✧'}
 ];
 document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>{location.href='./checkin.html';});
 async function loadHomeCustomIcons(){
@@ -3324,7 +3321,7 @@ body.lr-user-app-open{overflow:hidden}
  <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
-<script src="./home-fixed-layout-v1.js?v=4"></script>
+<script src="./home-fixed-layout-v1.js?v=5"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}

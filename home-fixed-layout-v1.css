@@ -95,7 +95,8 @@
 #launcher .lr-countdown-number small{display:block;text-align:right;font:8px Arial,sans-serif;letter-spacing:1.7px;color:#a196a4;margin-top:5px}
 #launcher .lr-countdown-empty{font:12px/1.7 Georgia,'Noto Serif SC',serif;color:#968b9a;margin-top:12px}
 #launcher .lr-secondary-app-grid{margin-top:3px}
-#launcher .lr-more-apps-title{margin:12px 3px 21px;font:400 21px Georgia,'Noto Serif SC',serif;color:#49414d}
+#launcher .lr-page-two-app-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:20px 9px!important;align-content:start!important;justify-items:stretch!important;margin-top:3px!important;padding:4px 2px 12px!important}
+#launcher .lr-page-two-app-grid .launcher-app{width:100%;min-width:0;justify-self:stretch;align-self:start}
 #launcher .lr-home-modal[hidden]{display:none!important}
 #launcher .lr-home-modal{position:fixed;inset:0;z-index:150000;display:flex;align-items:flex-end;justify-content:center;padding:14px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(43,37,48,.27);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 #launcher .lr-home-sheet{width:min(100%,540px);max-height:88dvh;overflow:auto;padding:20px 18px 22px;border:1px solid rgba(255,255,255,.92);border-radius:25px;background:rgba(255,255,255,.97);box-shadow:0 22px 65px rgba(39,32,45,.2);color:#3f3943}
