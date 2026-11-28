@@ -23,6 +23,9 @@ async function writeSavedPrompt(id,value){if(!id)throw new Error('没有选择�
  await put(promptKey(id),text);const check=await get(promptKey(id));if(check!==text)throw new Error('提示词写入后校验不一致，请重试');
  try{localStorage.setItem(localPromptKey(id),text)}catch(e){console.warn('[LOVE RECORD] local prompt mirror unavailable; IndexedDB is saved',e)}
  return text}
+async function readSavedReference(id){return id?await get(refKey(id)):null}
+async function writeSavedReference(id,value){if(!id)throw new Error('没有选择联系人');if(value==null||value===''){await del(refKey(id));return null}await put(refKey(id),String(value));return get(refKey(id))}
+window.LRChatImageAssets={readPrompt:readSavedPrompt,savePrompt:writeSavedPrompt,readReference:readSavedReference,saveReference:writeSavedReference,clearReference:async id=>del(refKey(id))};
 function active(){try{const fromHost=typeof window.__lrGetActiveChatContactId==='function'?window.__lrGetActiveChatContactId():'';if(fromHost)return String(fromHost)}catch(e){}try{if(typeof activeChatContactId!=='undefined'&&activeChatContactId)return String(activeChatContactId)}catch(e){}return String(window.activeChatContactId||window.currentChatContactId||window.__lrActiveChatContactId||'')}
 function meta(id=active()){return id&&typeof window.chatMeta==='function'?window.chatMeta(String(id)):{}}
 function saveMetaFor(id,v){if(!id)throw new Error('没有选择联系人');if(typeof window.saveChatMetaSafely==='function')return window.saveChatMetaSafely(String(id),v);window.writeChatMeta(String(id),v);return Promise.resolve()}
@@ -58,45 +61,12 @@ function decorateRows(){
   if(imageQuote){bubble.innerHTML='<div class="lr-quote-preview">▧ '+escape(imageQuote[1]||'引用了一张图片')+'</div><div class="lr-message-body">'+escape(imageQuote[2])+'</div>';}else if(m){bubble.innerHTML='<div class="lr-quote-preview">'+escape(m[1])+'</div><div class="lr-message-body">'+escape(m[2])+'</div>';}
  });
 }
-function injectSettings(){
- const screen=$('chatSettingsScreen');if(!screen||$('lrChatCharacterTools'))return;
- const card=document.createElement('section');card.className='card';card.id='lrChatCharacterTools';
- card.innerHTML='<h3>人物聊天设置</h3><label>IMAGE GENERATION PROMPT / 生图提示词</label><textarea id="lrChatImagePrompt" rows="4" placeholder="填写这个人物固定的外貌、发型、五官、画风和服装提示词"></textarea><label>REFERENCE IMAGE / 参考图</label><div class="lr-ref-picker"><button type="button" id="lrChatChooseReference" class="secondary">选择／更换参考图</button><input id="lrChatReferenceImage" type="file" accept="image/*" hidden><div class="sub" id="lrChatReferenceStatus" role="status" aria-live="polite">尚未保存参考图</div></div><button type="button" id="lrChatTestPromptImage" class="secondary" style="margin-top:10px;width:100%">测试读取提示词并生图</button><div class="sub" id="lrChatPromptTestStatus" aria-live="polite"></div><div id="lrChatPromptTestPreview"></div>';
- const save=$('chatSaveSettings');(save?.parentElement||screen).insertBefore(card,save||null);
-}
+function injectSettings(){ /* Character image-generation fields now live in the People contact editor. */ }
 async function loadSettings(){
- injectSettings();try{await window.__lrChatStorageReady}catch{}const id=active(),m=meta(id);let savedPrompt=null;try{savedPrompt=await readSavedPrompt(id)}catch{}$('lrChatImagePrompt').value=savedPrompt!==null?savedPrompt:(m.imagePrompt||'');
- let savedReference=null;try{savedReference=await get(refKey(id))}catch{}$('lrChatReferenceStatus').textContent=savedReference?'已保存参考图 ✓（重新选择可替换）':'尚未保存参考图';
+ // Keep per-chat CSS restoration, but no longer render or save the per-contact image prompt here.
  const css=await get(cssKey(active()));const cssBox=$('lrChatCustomCss');if(cssBox&&css!==null)cssBox.value=css;
 }
-function bindSettings(){
- const file=$('lrChatReferenceImage'),choose=$('lrChatChooseReference');
- if(choose&&!choose.dataset.bound){choose.dataset.bound='1';choose.addEventListener('click',()=>file?.click())}
- if(file&&!file.dataset.bound){file.dataset.bound='1';file.addEventListener('change',async()=>{const f=file.files?.[0];if(!f)return;if(!f.type.startsWith('image/')){toast('请选择图片文件');return}try{const data=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});const img=new Image();await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=data});const scale=Math.min(1,720/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*scale));c.height=Math.max(1,Math.round(img.height*scale));c.getContext('2d').drawImage(img,0,0,c.width,c.height);await put(refKey(active()),c.toDataURL('image/jpeg',.78));const id=active();if(id){try{await saveMeta({referenceAsset:true})}catch(e){console.warn('[LOVE RECORD] reference meta flag save failed',e)}}$('lrChatReferenceStatus').textContent='参考图已保存到本设备 ✓';toast('参考图已保存 ♡')}catch(e){console.error('[LOVE RECORD] reference image save failed',e);toast('参考图保存失败：'+(e.message||String(e)))}})}
- const btn=$('chatSaveSettings');if(btn&&!btn.dataset.lrWrapped){btn.dataset.lrWrapped='1';btn.addEventListener('click',async e=>{
-  // Take over this click so the prompt and main chat settings cannot race each other.
-  e.preventDefault();e.stopImmediatePropagation();const id=active(),prompt=$('lrChatImagePrompt')?.value??'';
-  if(!id){toast('保存失败：没有选择联系人');return}
-  const originalText=btn.textContent;btn.disabled=true;btn.textContent='保存中…';
-  try{
-   const cleanPrompt=String(prompt).replace(/\r\n?/g,'\n').trim();
-   // First persist the ordinary contact settings, then write the prompt against the pinned contact ID.
-   // Do not rely on active() after the settings screen closes, and never re-save a stale metadata snapshot.
-   if(typeof window.saveChatSettings==='function')await window.saveChatSettings();
-   await writeSavedPrompt(id,cleanPrompt);
-   const reference=await get(refKey(id));
-   const fresh=meta(id);
-   const saved=await saveMetaFor(id,{...fresh,imagePrompt:cleanPrompt,referenceAsset:!!reference});
-   if(saved&&typeof saved.imagePrompt==='string'&&saved.imagePrompt!==cleanPrompt)throw new Error('联系人资料校验失败：保存后的提示词与输入不一致');
-   const check=await readSavedPrompt(id);
-   if(check!==cleanPrompt)throw new Error('提示词保存后复读校验失败，请重试');
-   $('lrChatReferenceStatus').textContent=reference?'已保存参考图 ✓（重新选择可替换）':'尚未保存参考图';
-   toast('生图提示词已保存并校验成功 ♡');
-  }catch(err){console.error('[LOVE RECORD] image prompt persistence failed',err);toast('生图提示词保存失败：'+(err?.message||String(err)))}
-  finally{btn.disabled=false;btn.textContent=originalText}
-  },{capture:true})}
- const test=$('lrChatTestPromptImage');if(test&&!test.dataset.lrBound){test.dataset.lrBound='1';test.addEventListener('click',async()=>{const id=active(),status=$('lrChatPromptTestStatus'),preview=$('lrChatPromptTestPreview');const prompt=$('lrChatImagePrompt')?.value??'';if(!String(prompt).trim()){if(status)status.textContent='请先填写这个角色的生图提示词。';toast('请先填写生图提示词');return}try{const cleanPrompt=String(prompt).replace(/\r\n?/g,'\n').trim();await writeSavedPrompt(id,cleanPrompt);const reference=await get(refKey(id));await saveMetaFor(id,{...meta(id),imagePrompt:cleanPrompt,referenceAsset:!!reference});if(status)status.textContent='正在读取该角色的提示词与参考图，并调用朋友圈生图 API……';test.disabled=true;test.textContent='测试生成中…';if(typeof window.LRMomentsTestCharacterPrompt!=='function')throw new Error('朋友圈生图模块尚未加载，请刷新页面后重试');const result=await window.LRMomentsTestCharacterPrompt(id);if(preview){const img=document.createElement('img');img.alt='生图测试结果';img.src=String(result.image||'');img.style.cssText='display:block;width:100%;max-height:320px;object-fit:contain;border-radius:14px;margin-top:10px';preview.replaceChildren(img)}if(status)status.textContent='测试成功：已读取该角色提示词'+(result.hasReference?'和参考图':'（未设置参考图）')+'，并收到生图结果。';toast('提示词读取与生图测试成功')}catch(err){if(status)status.textContent='测试失败：'+(err?.message||String(err));toast('提示词生图测试失败：'+(err?.message||String(err)))}finally{test.disabled=false;test.textContent='测试读取提示词并生图'}},{once:false})}
-}
+function bindSettings(){ /* Legacy prompt/reference controls intentionally removed from Chat Settings. */ }
 function patchRender(){
  if(typeof window.renderChat!=='function'||window.renderChat.__lrV13)return;
  const old=window.renderChat;const fn=function(){const out=old.apply(this,arguments);decorateRows();bindLongPress();return out};fn.__lrV13=true;window.renderChat=fn;
@@ -123,7 +93,7 @@ function installStyle(){
 .lr-message-menu button+button{border-left:1px solid #eee5f0;color:#a05c69}
 .lr-quote-preview{padding:7px 10px;margin-bottom:7px;border-left:3px solid #b99ac8;background:rgba(120,90,140,.09);border-radius:0 8px 8px 0;color:#8d7b96;font-size:12px;line-height:1.5;white-space:pre-wrap}
 .lr-message-body{white-space:pre-wrap}.lr-narration-label{display:flex!important;align-items:center;gap:9px;margin-top:15px}
-#lrChatCharacterTools textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:14px;padding:11px;font:inherit;box-sizing:border-box}.lr-ref-picker{display:grid;gap:8px}.lr-ref-picker button{width:100%;min-height:42px;border-radius:12px}#lrChatPromptTestPreview img{border:1px solid #eadfee}#lrChatPromptTestStatus{white-space:normal;overflow-wrap:anywhere}
+
 `;document.head.appendChild(st);
 }
 function start(){installStyle();patchRender();decorateRows();bindLongPress();patchSend();const screen=$('chatSettingsScreen');if(screen){new MutationObserver(()=>{if(screen.classList.contains('show')){loadSettings();bindSettings();}}).observe(screen,{attributes:true,attributeFilter:['class']});}document.addEventListener('click',()=>{patchRender();patchSend();const section=document.querySelector('#chatSettingsScreen');if(section?.classList.contains('show')){bindSettings();initCssPresets();}},true);setTimeout(()=>{patchRender();patchSend();},500);}

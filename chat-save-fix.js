@@ -43,6 +43,8 @@
   document.addEventListener('click', async function (event) {
     const button = event.target && event.target.closest ? event.target.closest('#chatSaveSettings') : null;
     if (!button) return;
+    // Image prompts are edited in the People contact editor now. Never write an empty legacy value from Chat Settings.
+    if (!document.getElementById('lrChatImagePrompt')) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     const originalText = button.textContent;
