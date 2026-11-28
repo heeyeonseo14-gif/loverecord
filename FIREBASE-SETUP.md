@@ -44,7 +44,7 @@ GitHub Actions 使用公开仓库的标准 `ubuntu-latest` runner；标准 runne
 
 ### 3. 发布 Firestore Rules 后，确认 GitHub Actions 启用
 
-仓库 → Actions → 如果显示需要启用 Actions，点击 **Enable**。找到 `LOVE RECORD Background CHAR` 工作流，先点击 **Run workflow** 做一次手动运行。
+仓库根目录必须包含 `.github/workflows/lr-background.yml`（本 ZIP 已附带）。提交后进入仓库 → Actions → 如果显示需要启用 Actions，点击 **Enable**。找到 `LOVE RECORD Background CHAR` 工作流，先点击 **Run workflow** 做一次手动运行。
 
 ### 4. 手机端完成首次注册与授权
 

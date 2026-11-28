@@ -203,7 +203,7 @@
       status('正在建立云端用户索引…');
       await ensureUserDocument(user, db);
       let reg = await navigator.serviceWorker.getRegistration('./');
-      if (!reg) reg = await navigator.serviceWorker.register('./sw.js?v=13', { scope: './', updateViaCache: 'none' });
+      if (!reg) reg = await navigator.serviceWorker.register('./sw.js?v=14', { scope: './', updateViaCache: 'none' });
       await reg.update().catch(() => {});
       await navigator.serviceWorker.ready;
       status('正在向浏览器申请 FCM 推送令牌…');

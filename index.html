@@ -3167,7 +3167,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=13',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=14',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 
 // Explicitly selected background context provider. Only text/profile fields are exported.
 window.__LOVE_RECORD_GET_BACKGROUND_CONTEXT = async () => {
@@ -3220,7 +3220,7 @@ if(loveIntro){
 
 
   <script src="./chat-storage-v6.js?v=99"></script>
-  <script src="./chat-settings-upgrade.js?v=20"></script>
+  <script src="./chat-settings-upgrade.js?v=21"></script>
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=26"></script>
@@ -3580,7 +3580,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=17"></script>
+<script src="./lr-group-chat-v1.js?v=18"></script>
 <script src="./firebase-config.js?v=7"></script>
 <script src="./lr-background-v1.js?v=9"></script>
 

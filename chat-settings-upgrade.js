@@ -1,4 +1,4 @@
-/* LOVE RECORD V24 · Chat settings upgrade
+/* LOVE RECORD V28 · Chat settings upgrade
    Adds per-contact profile, persona/world context, memory limit, search,
    confirmed deletion and reversible blocking. Existing app storage is preserved. */
 (function () {
@@ -31,11 +31,12 @@
       #${EXTRA_ID}{margin-top:14px}
       #${EXTRA_ID} .lr-setting-card{background:rgba(255,255,255,.78);border:1px solid var(--line);border-radius:22px;padding:16px;margin:14px 0}
       #${EXTRA_ID} .lr-setting-card h3{margin:0 0 12px;font-size:17px;font-weight:500}
-      #${EXTRA_ID} .lr-background-chat-card{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px}
-      #${EXTRA_ID} .lr-background-chat-copy{min-width:0;grid-column:1;grid-row:1}
-      #${EXTRA_ID} .lr-background-chat-card>.lr-switch{grid-column:2;grid-row:1;align-self:center;max-width:100%}
+      /* Mobile-first layout: keep explanatory copy full-width; never squeeze it beside the switch. */
+      #${EXTRA_ID} .lr-background-chat-card{display:flex;flex-direction:column;align-items:stretch;gap:12px;width:100%;min-width:0;box-sizing:border-box;}
+      #${EXTRA_ID} .lr-background-chat-copy{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;}
+      #${EXTRA_ID} .lr-background-chat-card>.lr-switch{display:flex!important;align-self:flex-start;width:max-content;max-width:100%;min-width:0;box-sizing:border-box;}
       #${EXTRA_ID} .lr-background-chat-copy h3{margin:0 0 6px;font-size:16px;font-weight:500;color:var(--ink)}
-      #${EXTRA_ID} .lr-background-chat-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
+      #${EXTRA_ID} .lr-background-chat-copy p{margin:0;color:var(--muted);font-size:12px;line-height:1.6;overflow-wrap:anywhere;word-break:normal}
       #${EXTRA_ID} .lr-narration-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:19px!important;border:1px solid rgba(183,150,197,.28)!important;background:linear-gradient(135deg,#fff 0%,#faf5fc 58%,#f4edf8 100%)!important;box-shadow:0 9px 24px rgba(113,85,128,.07)}
       #${EXTRA_ID} .lr-narration-heading{display:flex;align-items:center;gap:11px}
       #${EXTRA_ID} .lr-narration-heading h3{margin:0 0 5px;font-size:17px;font-weight:500;color:#594a62}
@@ -53,7 +54,8 @@
 
       #${EXTRA_ID} label{display:block;margin:10px 0 7px;color:var(--muted);font-size:13px}
       #${EXTRA_ID} input,#${EXTRA_ID} select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 13px;color:var(--ink);font:inherit;box-sizing:border-box}
-      #${EXTRA_ID} .lr-background-interval-setting{grid-column:1/-1;width:100%;min-width:0;box-sizing:border-box;margin-top:2px}
+      #${EXTRA_ID} .lr-background-interval-setting{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin-top:2px}
+      #${EXTRA_ID} .lr-background-interval-setting select{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
       #${EXTRA_ID} .lr-background-interval-setting p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
       #${EXTRA_ID} .lr-avatar-row{display:flex;align-items:center;gap:13px}
       #${EXTRA_ID} .lr-my-avatar{width:58px;height:58px;border-radius:19px;background:#e9deef;display:grid;place-items:center;overflow:hidden;color:#8c7597;font-size:20px;flex:none}
