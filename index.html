@@ -1045,9 +1045,13 @@ body.music-listening-modal-open{overflow:hidden!important}
   background-position:center center; background-repeat:no-repeat; background-size:cover;
   opacity:0; transition:opacity .2s ease;
 }
-body.launcher-open #lr-home-background-fix-layer{opacity:1}
-body.launcher-open .app{position:relative;z-index:1;background:transparent}
+body.launcher-open #lr-home-background-fix-layer,
+body.chat-directory-open #lr-home-background-fix-layer{opacity:1}
+body.launcher-open .app,
+body.chat-directory-open .app{position:relative;z-index:1;background:transparent}
 body.launcher-open #launcher{background:transparent!important}
+body.chat-directory-open #chat.chat-page:not(.is-conversation){background:transparent!important;background-color:transparent!important}
+body.chat-directory-open #systemAppbar{background:rgba(255,252,255,.62)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
 body.launcher-open #launcher .launcher-welcome{ text-shadow:0 1px 12px rgba(255,255,255,.45); }
 @media (prefers-reduced-motion:reduce){#lr-home-background-fix-layer{transition:none}}
 </style>
@@ -1609,7 +1613,7 @@ body.lr-theme-dark :is(#space,.community-root){
 </main>
 <audio id="lrGlobalAudio" preload="metadata"></audio>
 <main id="chat" class="page chat-page">
-  <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div><button type="button" id="lrOpenChatTheme" class="btn" aria-label="聊天界面自定义">聊天美化</button></div>
+  <div class="chat-page-heading"><div><div class="eyebrow">MESSAGES</div><h1>聊天</h1><div class="sub">从联系人开始一段新的对话。</div></div></div>
   <section id="chatContacts" class="chat-contact-list"></section>
   <section id="chatConversation" class="chat-conversation" hidden>
     <div class="chat-person-head"><button id="chatBackToContacts" class="chat-back" type="button">‹</button><div class="chat-person-avatar" id="chatPersonAvatar">♡</div><div class="chat-person-meta"><strong id="chatPersonName"></strong><span id="chatPersonRole"></span></div></div>
@@ -1853,6 +1857,12 @@ body.lr-theme-dark :is(#space,.community-root){
       <button class="btn primary" id="lrBackgroundEnable" type="button">启用后台通知</button>
       <p class="settings-help">提示：当前阶段先接通设备推送与安全设备登记。后台 AI 自主活动需要下一阶段同步角色设定、聊天记忆，并由云端定时任务生成消息；不会在未授权时自动运行。</p>
       <p class="settings-help">需要 HTTPS、Firebase Web 配置、VAPID 公钥、Anonymous Authentication 和已部署的 Cloud Functions。</p>
+    </div>
+    <div class="card settings-info-card" id="lrChatCssSettingsCard">
+      <div class="settings-section-kicker">CHAT APPEARANCE</div>
+      <h3>聊天界面 CSS 自定义</h3>
+      <p>统一调整聊天联系人列表、单聊与群聊的视觉样式。此处的 CSS 设置不会影响主页背景设置，也不会修改其他 APP。</p>
+      <button class="btn" id="lrOpenChatThemeFromSettings" type="button">打开聊天 CSS 编辑器</button>
     </div>
     <div class="card settings-info-card"><button class="settings-accordion" id="settingsDiagnosticsToggle" type="button" aria-expanded="false"><span><strong>运行环境与诊断</strong><small>普通用户可保持折叠，需要排查问题时再展开</small></span><span class="settings-accordion-mark">＋</span></button>
       <div id="settingsDiagnosticsPanel" hidden>
@@ -2186,6 +2196,7 @@ function renderChat(){
  const detail=!!activeChatContactId&&ids.includes(activeChatContactId);
  $('chat').classList.toggle('is-conversation',detail);
  document.body.classList.toggle('chat-conversation-open',detail);
+ document.body.classList.toggle('chat-directory-open',!detail);
  $('systemAppbarAction').hidden=false;
  if(!detail){
   activeChatContactId='';conversation.hidden=true;list.hidden=false;
@@ -2475,6 +2486,7 @@ function nav(page){
   const target=$(page);if(!target)return;
   target.classList.add('active');
   document.body.classList.toggle('launcher-open',page==='launcher');
+  document.body.classList.toggle('chat-directory-open',page==='chat');
   const bar=$('systemAppbar');if(bar)bar.classList.toggle('show',page!=='launcher');
   const titles={launcher:'LOVE RECORD',home:'HOME',memories:'MEMORIES',space:'SPACE',settings:'SETTINGS',chat:'CHAT',music:'MUSIC'};
   const title=$('systemAppTitle');if(title)title.textContent=titles[page]||'LOVE RECORD';const appAction=$('systemAppbarAction');if(appAction){if(page==='chat'){appAction.innerHTML='＋';appAction.setAttribute('role','button');appAction.setAttribute('aria-label','添加联系人');appAction.style.cursor='pointer'}else{appAction.textContent='✦';appAction.removeAttribute('role');appAction.removeAttribute('aria-label');appAction.style.cursor='default'}}
@@ -3415,7 +3427,7 @@ body.lr-external-app-open{overflow:hidden}
  function apply(css){styleNode().textContent=scope(css)}
  function open(){const modal=$('lrChatThemeModal');$('lrChatThemeCss').value=localStorage.getItem(KEY)||'';modal.classList.add('show');modal.setAttribute('aria-hidden','false')}
  function close(){const modal=$('lrChatThemeModal');modal.classList.remove('show');modal.setAttribute('aria-hidden','true')}
- $('lrOpenChatTheme')?.addEventListener('click',open);$('lrChatThemeClose')?.addEventListener('click',close);
+ $('lrOpenChatThemeFromSettings')?.addEventListener('click',open);$('lrChatThemeClose')?.addEventListener('click',close);
  $('lrChatThemeModal')?.addEventListener('click',e=>{if(e.target.id==='lrChatThemeModal')close()});
  $('lrChatThemeExample')?.addEventListener('click',()=>$('lrChatThemeCss').value=SAMPLE);
  $('lrChatThemeSave')?.addEventListener('click',()=>{const css=$('lrChatThemeCss').value;try{localStorage.setItem(KEY,css);apply(css);close();if(typeof window.toast==='function')window.toast('聊天主题已保存并应用 ♡');}catch(e){alert('保存失败：'+e.message)}});
