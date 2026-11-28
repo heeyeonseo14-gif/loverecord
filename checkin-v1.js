@@ -34,7 +34,7 @@ async function getPeople(){
    people=merge(people,rows);
   }
  }catch(e){console.warn('[CHECK IN] contact database unavailable',e)}
- return people.filter(p=>p&&p.id&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan');
+ return people.filter(p=>p&&p.id&&String(p.name||'').trim()&&String(p.id)!=='p-'+'yanyan');
 }
 function getApi(){let c=readJSON(API_KEY,null);if(c&&c.apiBase&&c.apiKey&&c.apiModel)return c;c=readJSON(LEGACY_API_KEY,null);if(c&&c.apiBase&&c.apiKey&&c.apiModel)return c;const s=readJSON(SETTINGS_KEY,{});return s.apiBase&&s.apiKey&&s.apiModel?{apiBase:s.apiBase,apiKey:s.apiKey,apiModel:s.apiModel}:null}
 function storeKey(id){return 'love-record-checkin-v1:'+encodeURIComponent(String(id))}

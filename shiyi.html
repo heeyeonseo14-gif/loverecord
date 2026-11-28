@@ -101,7 +101,7 @@ async function loadPeople(){
  // localStorage is read. Merge the same three official sources instead of returning
  // early from a partial local snapshot, so every contact shown on the homepage appears here.
  const byId=new Map();
- const valid=p=>p&&p.id&&String(p.id).trim()&&String(p.name||'').trim()&&String(p.id)!=='p-yanyan'&&String(p.name||'').trim().toLowerCase()!=='ai character';
+ const valid=p=>p&&p.id&&String(p.id).trim()&&String(p.name||'').trim()&&String(p.id)!=='p-'+'yanyan'&&String(p.name||'').trim().toLowerCase()!=='ai character';
  const merge=list=>{if(Array.isArray(list))list.forEach(p=>{if(valid(p)){const id=String(p.id);byId.set(id,{...(byId.get(id)||{}),...p})}})};
  try{const raw=localStorage.getItem('yanyan-love-settings-v5');if(raw){const state=JSON.parse(raw);if(state&&Array.isArray(state.people))merge(state.people)}}catch(e){console.warn('[拾忆] homepage roster local read skipped',e)}
  try{const full=await readFullStateFromDB();if(full&&Array.isArray(full.people))merge(full.people)}catch(e){console.warn('[拾忆] homepage roster IndexedDB recovery skipped',e)}

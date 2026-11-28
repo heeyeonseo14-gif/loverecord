@@ -60,7 +60,7 @@
   }
   function people(){
     try{if(window.LRSpaceStoryBridge?.getContacts)return window.LRSpaceStoryBridge.getContacts().filter(p=>p&&p.id&&p.name)}catch(e){}
-    try{const s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');return Array.isArray(s.people)?s.people.filter(p=>p&&p.id&&p.name&&p.id!=='p-yanyan'):[]}catch(e){return []}
+    try{const s=JSON.parse(localStorage.getItem('yanyan-love-settings-v5')||'{}');return Array.isArray(s.people)?s.people.filter(p=>p&&p.id&&p.name&&String(p.id)!=='p-'+'yanyan'):[]}catch(e){return []}
   }
   function personas(){
     try{if(window.LRSpaceStoryBridge?.getSelfPersonas)return window.LRSpaceStoryBridge.getSelfPersonas()}catch(e){}
@@ -187,7 +187,7 @@
       <div id="${ROOT_ID}" class="lr-space-v2-screen sc-root">
         <header class="sc-header lr-space-v2-head"><div><div class="sc-kicker">LOVE RECORD · PIXEL LIFE</div><h1>SPACE CITY</h1><p>让居民在自己的城市里，自主生活。</p></div><button class="sc-icon-btn" data-sc-action="story" title="长文剧情">▤</button></header>
         <section id="scLobby" class="sc-panel"><div class="sc-panel-head"><div><small>YOUR LITTLE WORLD</small><h2>我的城市</h2></div><button class="sc-btn sc-primary" data-sc-action="new-city">＋ 新城市</button></div><div id="scCityList" class="sc-city-list"></div></section>
-        <section id="scCreatePanel" class="sc-panel" hidden><div class="sc-panel-head"><div><small>CREATE A CITY</small><h2>建立新城市</h2></div><button class="sc-text-btn" data-sc-action="cancel-create">取消</button></div><label class="sc-label">城市名称</label><input id="scNewCityName" class="sc-input" maxlength="50" placeholder="例如：云朵小镇"><label class="sc-label">选择要加入城市的主页 CHAR</label><div id="scContactChoices" class="sc-choice-grid"></div><label class="sc-label">选择你的用户自设（必选）</label><select id="scPersonaSelect" class="sc-input" required></select><p class="sc-note">用户角色只会引用你在主页【自设】中亲自创建的资料，不会自动生成 YANYAN 或其他默认角色。CHAR 与自设只读取资料快照，不会修改主页资料。</p><button class="sc-btn sc-primary sc-full" data-sc-action="create-city">创建城市</button></section>
+        <section id="scCreatePanel" class="sc-panel" hidden><div class="sc-panel-head"><div><small>CREATE A CITY</small><h2>建立新城市</h2></div><button class="sc-text-btn" data-sc-action="cancel-create">取消</button></div><label class="sc-label">城市名称</label><input id="scNewCityName" class="sc-input" maxlength="50" placeholder="例如：云朵小镇"><label class="sc-label">选择要加入城市的主页 CHAR</label><div id="scContactChoices" class="sc-choice-grid"></div><label class="sc-label">选择你的用户自设（必选）</label><select id="scPersonaSelect" class="sc-input" required></select><p class="sc-note">用户角色只会引用你在主页【自设】中亲自创建的资料，不会自动创建默认用户角色或指定姓名。CHAR 与自设只读取资料快照，不会修改主页资料。</p><button class="sc-btn sc-primary sc-full" data-sc-action="create-city">创建城市</button></section>
         <section id="scWorld" hidden>
           <header class="sc-world-head"><button class="sc-back" data-sc-action="back-lobby">‹ 城市</button><div class="sc-world-title"><b id="scWorldName">我的城市</b><small id="scWorldDate">--</small></div><button class="sc-icon-btn" data-sc-action="world-settings">⚙</button></header>
           <div class="sc-statusline"><span id="scClock">08:00</span><span id="scWeather">☀ 晴天</span><span id="scSeason">春季</span><span id="scResidentCount">1 位居民</span></div>

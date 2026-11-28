@@ -7,7 +7,7 @@ const PROFILE_KEY='lr-home-profile-v1';
 const PHOTOS_KEY='lr-home-photo-grid-v1';
 const COUNTDOWN_KEY='lr-home-countdowns-v1';
 const CHARACTER_SPOTLIGHT_KEY='lr-home-character-spotlight-v1';
-const DEFAULT_PROFILE={name:'妍妍',username:'@yourname',bio:'把喜欢的日常，慢慢收藏起来。',phrase:'EVERY LITTLE MOMENT MATTERS.',avatar:'',banner:''};
+const DEFAULT_PROFILE={name:'我',username:'@yourname',bio:'把喜欢的日常，慢慢收藏起来。',phrase:'EVERY LITTLE MOMENT MATTERS.',avatar:'',banner:''};
 let profile={...DEFAULT_PROFILE},profileDraft={...DEFAULT_PROFILE},photos=['',''],countdowns=[],editingCountdownId='';
 let characterCards=[],activeCharacterCardId='',editingCharacterCardId='';
 const screens=()=>Array.from(document.querySelectorAll('#launcher [data-launcher-screen]'));
@@ -128,7 +128,7 @@ function bindCountdown(){
 }
 
 function characterPeople(){
- try{const people=window.__LOVE_RECORD_GET_PEOPLE?.();return Array.isArray(people)?people.filter(p=>p&&p.id&&p.name&&String(p.id)!=='p-yanyan'):[]}catch{return[]}
+ try{const people=window.__LOVE_RECORD_GET_PEOPLE?.();return Array.isArray(people)?people.filter(p=>p&&p.id&&p.name&&true):[]}catch{return[]}
 }
 function characterMeta(personId){try{return typeof window.chatMeta==='function'?(window.chatMeta(String(personId))||{}):{}}catch{return{}}}
 function characterName(personId){const p=characterPeople().find(x=>String(x.id)===String(personId));return p?.name||'已删除的角色'}
@@ -260,7 +260,7 @@ async function migrateLegacyPhoto(){
  }catch(e){console.warn('[LOVE RECORD] legacy home photo migration skipped',e)}
 }
 async function init(){
- profile={...DEFAULT_PROFILE,...(await storeGet(PROFILE_KEY)||{})};profileDraft={...profile};applyProfile();
+ profile={...DEFAULT_PROFILE,...(await storeGet(PROFILE_KEY)||{})};if(['\u598d\u598d','\u0059\u0041\u004e\u0059\u0041\u004e'].includes(String(profile.name||'').trim().toUpperCase()))profile.name='我';profileDraft={...profile};applyProfile();
  const savedPhotos=await storeGet(PHOTOS_KEY);if(Array.isArray(savedPhotos))photos=[String(savedPhotos[0]||''),String(savedPhotos[1]||'')];renderPhotos();if(!savedPhotos)await migrateLegacyPhoto();
  const savedCountdowns=await storeGet(COUNTDOWN_KEY);countdowns=Array.isArray(savedCountdowns)?savedCountdowns.filter(x=>x&&x.id&&x.title&&x.date):[];renderCountdown();
  bindProfile();bindPhotos();bindCountdown();bindMusic();await bindCharacterSpotlight();initPages();

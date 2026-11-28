@@ -316,7 +316,8 @@
       const recent = items.slice(-memoryCount).map(m => ({role:m.role === 'assistant' ? 'assistant' : 'user', content:m.text}));
       const persona = (state.selfPersonas || []).find(x => x.id === meta.personaId) || null;
       const world = (state.worlds || []).find(x => x.id === meta.worldId) || null;
-      const personaText = persona ? `用户当前人设：${persona.name || ''}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。请尊重该人设，但不要替用户决定行动、台词或情绪。` : '用户以本人身份参与聊天，不要替用户决定行动、台词或情绪。';
+      const userNickname = String(persona?.nickname || persona?.name || state.name || '用户').trim() || '用户';
+      const personaText = persona ? `用户当前自设：${persona.name || ''}；用户昵称（需要称呼或 @ 用户时使用）：${userNickname}；身份：${persona.role || ''}；性格：${persona.personality || ''}；外貌：${persona.appearance || ''}；说话方式：${persona.speech || ''}；背景：${persona.background || ''}。如需直接称呼或 @ 用户，只能使用这个用户昵称；不得猜测或使用固定姓名。请尊重该人设，但不要替用户决定行动、台词或情绪。` : `用户当前账号昵称：${userNickname}。如需称呼或 @ 用户，只能使用这个账号昵称，不要臆造姓名。不要替用户决定行动、台词或情绪。`;
       const worldText = world ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。` : '';
       const narrationRule = narrationOn ? '旁白模式【开启】：可少量穿插动作、神态、语气或环境描写，必须用 [[NARRATION]]...[[/NARRATION]] 包裹，旁白会在同一聊天气泡内以斜体显示；角色台词放在标记外，不要每条都加旁白。' : '旁白模式【关闭，最高优先级】：只输出角色直接说出口的台词；禁止动作、神态、心理、环境、舞台指示、括号内容、第三人称叙述，禁止输出任何 [[NARRATION]] 标记；不要模仿历史消息中的旁白。';
       const replyLimit = clampReplyCount(meta.replyCount || 4);

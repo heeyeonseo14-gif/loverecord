@@ -1,0 +1,30 @@
+LOVE RECORD V30 — User Identity & Group Profile
+
+1. Self Persona editor
+- Added a per-persona "用户昵称" field.
+- Single-chat foreground prompts and cloud background prompts now use the selected persona nickname first, then the persona name/account display name.
+- AI instructions explicitly prohibit guessing or borrowing a fixed name and prohibit speaking on behalf of the user.
+
+2. Per-group user profile
+- Added "我的资料" to each group's settings.
+- Supports a group-specific nickname, group-specific avatar, and selecting one of the user's saved self personas.
+- The selected persona and group nickname are included in the group AI prompt and background context.
+- User-authored group messages, the group mention picker, and group message avatars/names use the group-specific profile.
+- The group avatar image remains local to the device; cloud context sync sends only an "avatar configured" marker, not image bytes.
+
+3. Remove fixed identity assumptions
+- Replaced old fixed user-name examples and prompt references with account/persona/group-specific nickname instructions.
+- Exact legacy account display defaults are migrated to a neutral label; user-created persona names, contacts, and chat history are preserved.
+- The old synthetic self-contact is hidden from selectable character lists without deleting its stored messages or metadata.
+
+4. Compatibility and cache refresh
+- Updated affected script cache versions and the service-worker cache version.
+- Kept existing local storage / IndexedDB database keys unchanged (including historical yanyan-love-* keys) to preserve existing user data and backups. These are technical storage identifiers, not displayed names or AI prompt defaults.
+
+5. Verification
+- JavaScript syntax checks passed for all project JS files.
+- Inline script syntax checks passed for all HTML files.
+- JSON files parsed successfully.
+- Workflow file retained; no Firebase rules or GitHub secrets changed.
+
+Deployment and real-device behavior have not been tested in this package. Replace the listed changed files in the GitHub repository, then verify the new editor fields, group profile, and per-group AI addressing in the live PWA.

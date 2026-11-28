@@ -62,32 +62,7 @@
     return `当前真实设备时间：${formatChatDateTime(now)}；时区：${chatTimeZone()}。`;
   }
 
-  function cleanupLegacySelfContact() {
-    try {
-      if (Array.isArray(state.people)) {
-        const before = state.people.length;
-        state.people = state.people.filter(person => person && person.id !== 'p-yanyan');
-        if (state.people.length !== before) save();
-      }
-      const ids = readChatContacts();
-      if (ids.includes('p-yanyan')) writeChatContacts(ids.filter(id => id !== 'p-yanyan'));
-      const threads = readChatThreads();
-      if (Object.prototype.hasOwnProperty.call(threads, 'p-yanyan')) {
-        delete threads['p-yanyan'];
-        writeChatThreads(threads);
-      }
-      if (typeof readChatMeta === 'function' && typeof writeChatMeta === 'function') {
-        const metas = readChatMeta();
-        if (metas && Object.prototype.hasOwnProperty.call(metas, 'p-yanyan')) {
-          delete metas['p-yanyan'];
-          localStorage.setItem('love-record-chat-meta-v2', JSON.stringify(metas));
-          localStorage.removeItem('love-record-chat-meta-v1');
-        }
-      }
-    } catch (error) {
-      console.warn('[LOVE RECORD] legacy YANYAN cleanup skipped:', error);
-    }
-  }
+  function cleanupLegacySelfContact() { /* Non-destructive: preserve all user-created contacts and chat history. */ }
 
   function addStyles() {
     if ($('lr-chat-v9-style')) return;
@@ -335,7 +310,7 @@
     addTyping('正在整理长期记忆');
     try {
       const character = contactById(id);
-      const summarySystem = `你是 LOVE RECORD 角色「${character?.name || '当前角色'}」的长期记忆整理器。请将已有记忆与新增聊天整合为一份准确、可持续更新的长期记忆。重要：记忆主体必须采用角色本人的第一人称视角，用“我”记录角色自己做过、说过、感受到或明确知道的事；用户的行动与偏好要清楚写成“用户/妍妍”，不能把用户经历写成角色亲历。只记录聊天明确出现的稳定偏好、人物关系、重要经历、约定、未完成事项；不推测、不编造。每条新增聊天都带有真实发送时间，必须保留重要事件的完整年月日，必要时保留时分；“今天/昨天/明天/上周”等相对日期，必须以该条消息自身的【消息时间】为基准换算为绝对日期，不得以总结当天或当前时间重新解释，绝不能把昨天发生的事情改写成今天。若缺少消息时间或日期无法确定，明确标注“日期未确认”，不要猜测。旧记忆中已发生的事要保留为历史，不要写成正在发生。按“人物关系、用户信息、我经历的事件、共同经历与约定、持续事项、重要日期”清晰分区，控制在 2500 个汉字以内，只输出记忆正文。`;
+      const summarySystem = `你是 LOVE RECORD 角色「${character?.name || '当前角色'}」的长期记忆整理器。请将已有记忆与新增聊天整合为一份准确、可持续更新的长期记忆。重要：记忆主体必须采用角色本人的第一人称视角，用“我”记录角色自己做过、说过、感受到或明确知道的事；用户的行动与偏好要清楚写成“用户本人”，不能把用户经历写成角色亲历。只记录聊天明确出现的稳定偏好、人物关系、重要经历、约定、未完成事项；不推测、不编造。每条新增聊天都带有真实发送时间，必须保留重要事件的完整年月日，必要时保留时分；“今天/昨天/明天/上周”等相对日期，必须以该条消息自身的【消息时间】为基准换算为绝对日期，不得以总结当天或当前时间重新解释，绝不能把昨天发生的事情改写成今天。若缺少消息时间或日期无法确定，明确标注“日期未确认”，不要猜测。旧记忆中已发生的事要保留为历史，不要写成正在发生。按“人物关系、用户信息、我经历的事件、共同经历与约定、持续事项、重要日期”清晰分区，控制在 2500 个汉字以内，只输出记忆正文。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {

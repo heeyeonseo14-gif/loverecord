@@ -424,6 +424,7 @@
           person: conversation.person || null,
           members: Array.isArray(conversation.members) ? conversation.members.slice(0, 12) : [],
           userPersona: conversation.userPersona || null,
+          userProfile: conversation.userProfile ? { nickname: String(conversation.userProfile.nickname || '').slice(0, 80), avatar: conversation.userProfile.avatar ? '已设置' : '' } : null,
           worldContext: String(conversation.worldContext || '').slice(0, 12000),
           longMemory: String(conversation.longMemory || '').slice(0, 10000),
           announcement: String(conversation.announcement || '').slice(0, 2000),
