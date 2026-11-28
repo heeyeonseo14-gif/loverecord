@@ -237,16 +237,84 @@
       status('测试通知失败：'+(error?.message||String(error)));
     } finally { if(button) button.disabled=false; render(); }
   }
+  function escapeCheckHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  async function testBackgroundRuntime() {
+    const button = $('lrBackgroundRunCheck');
+    const summary = $('lrBackgroundCheckSummary');
+    const details = $('lrBackgroundCheckDetails');
+    if (button) button.disabled = true;
+    if (summary) summary.textContent = '正在检测…';
+    const checks = [];
+    const add = (name, value, level = 'info') => checks.push({ name, value, level });
+    try {
+      const secure = location.protocol === 'https:' || location.hostname === 'localhost';
+      add('HTTPS 安全环境', secure ? '当前环境符合要求' : '当前不是 HTTPS；推送功能需要 HTTPS', secure ? 'ok' : 'warn');
+
+      const configured = appConfigured();
+      add('Firebase Web 配置', configured ? '已检测到必要配置项' : '尚未填写完整配置', configured ? 'ok' : 'warn');
+      if (configured) {
+        const user = await bootstrapIdentity();
+        if (user?.uid) add('Firebase 匿名身份', '已登录 · UID ' + user.uid.slice(0, 8) + '…', 'ok');
+        else add('Firebase 匿名身份', '未能确认登录；请查看上方身份状态及浏览器控制台', 'warn');
+      } else {
+        add('Firebase 匿名身份', '跳过：请先完成 Firebase Web 配置', 'info');
+      }
+
+      if ('serviceWorker' in navigator) {
+        let registration = null;
+        try { registration = await navigator.serviceWorker.getRegistration('./'); } catch (_) {}
+        const worker = registration && (registration.active || registration.waiting || registration.installing);
+        if (worker) {
+          add('Service Worker', '已找到注册记录 · ' + worker.state, worker.state === 'activated' ? 'ok' : 'warn');
+        } else {
+          add('Service Worker', '尚未找到活动注册记录；请刷新页面后重试', 'warn');
+        }
+      } else {
+        add('Service Worker', '当前浏览器不支持', 'warn');
+      }
+
+      if ('Notification' in window) {
+        const permission = Notification.permission;
+        const permissionText = permission === 'granted' ? '已允许' : permission === 'denied' ? '已拒绝；请到 Android/浏览器设置中开启' : '尚未询问/尚未允许';
+        add('通知权限', permissionText, permission === 'granted' ? 'ok' : 'warn');
+      } else {
+        add('通知权限', '当前浏览器不支持通知 API', 'warn');
+      }
+
+      add('Web Push VAPID 公钥', window.LR_FIREBASE_VAPID_KEY ? '已配置' : '尚未配置', window.LR_FIREBASE_VAPID_KEY ? 'ok' : 'warn');
+      const settings = read();
+      add('本机推送登记标记', settings.pushEnabled ? '本机保存为已登记（此项不代表服务器端已复核）' : '本机尚未记录推送登记', settings.pushEnabled ? 'ok' : 'warn');
+      add('后台活动总开关', settings.activityEnabled ? '已开启（本机设置）' : '未开启（本机设置）', settings.activityEnabled ? 'ok' : 'info');
+      add('云端定时任务 / CHAR 自动生成', '此按钮无法验证云端部署；当前版本尚未接通 CHAR 后台自动生成', 'info');
+
+      const passed = checks.filter(item => item.level === 'ok').length;
+      const pending = checks.filter(item => item.level === 'warn').length;
+      if (summary) summary.textContent = '检测完成 · ' + passed + ' 项通过 · ' + pending + ' 项待处理';
+      if (details) {
+        details.innerHTML = checks.map(item => '<div class="check-row"><span>' + escapeCheckHtml(item.name) + '</span><strong>' + escapeCheckHtml(item.value) + '</strong></div>').join('');
+      }
+    } catch (error) {
+      console.error('[LOVE RECORD] background runtime check failed', error);
+      if (summary) summary.textContent = '检测未完成';
+      if (details) details.textContent = '检测过程中发生错误：' + (error?.message || String(error));
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded',()=>{
     $('lrIdentityCopy')?.addEventListener('click',copyIdentity);
     if($('lrBackgroundCard')) {
       $('lrBackgroundEnable')?.addEventListener('click',enablePush);
       $('lrBackgroundSavePrefs')?.addEventListener('click',savePreferences);
       $('lrBackgroundTestPush')?.addEventListener('click',sendTestPush);
+      $('lrBackgroundRunCheck')?.addEventListener('click',testBackgroundRuntime);
       render();
     }
     // Create or restore the anonymous Firebase identity automatically on app startup.
     bootstrapIdentity();
   });
-  window.LRBackground={render,enablePush,savePreferences,sendTestPush,setConversationControl,isConversationEnabled,setGlobalActivityEnabled,isConfigured:appConfigured,isPushConfigured:pushConfigured,ensureIdentity:bootstrapIdentity,getCurrentUser:()=>currentUser};
+  window.LRBackground={render,enablePush,savePreferences,sendTestPush,testBackgroundRuntime,setConversationControl,isConversationEnabled,setGlobalActivityEnabled,isConfigured:appConfigured,isPushConfigured:pushConfigured,ensureIdentity:bootstrapIdentity,getCurrentUser:()=>currentUser};
 })();
