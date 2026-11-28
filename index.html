@@ -3155,7 +3155,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=9',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=10',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
@@ -3528,7 +3528,7 @@ body.lr-user-app-open{overflow:hidden}
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
 <script src="./lr-group-chat-v1.js?v=16"></script>
-<script src="./firebase-config.js?v=3"></script>
+<script src="./firebase-config.js?v=4"></script>
 <script src="./lr-background-v1.js?v=5"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
