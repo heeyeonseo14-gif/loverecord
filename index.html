@@ -1635,6 +1635,7 @@ body.lr-theme-dark :is(#space,.community-root){
    </div>
    <button class="lr-group-at" id="lrGroupMention" type="button" aria-label="提及成员">@</button>
    <textarea id="lrGroupInput" rows="1" placeholder="发送群聊消息……"></textarea>
+   <button class="lr-group-ai-call" id="lrGroupAiCall" type="button" aria-label="调用 AI 自主发言" title="调用 API，让群成员自然延续对话"><span aria-hidden="true">✦</span></button>
    <button class="lr-group-send" id="lrGroupSend" type="button">发送</button>
    <input id="lrGroupImageInput" type="file" accept="image/*" hidden>
   </div>
@@ -3469,7 +3470,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=6"></script>
+<script src="./lr-group-chat-v1.js?v=7"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
