@@ -1,1 +1,34 @@
+name: LOVE RECORD Background CHAR
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: love-record-background-char
+  cancel-in-progress: false
+
+jobs:
+  run-background-char:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Firebase Admin SDK
+        run: npm install --prefix functions --omit=dev --no-audit --no-fund
+
+      - name: Run cloud CHAR background tasks
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/lr-background-runner.js
