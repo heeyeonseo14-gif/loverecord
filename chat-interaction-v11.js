@@ -33,7 +33,10 @@
   const localNow = () => new Date();
   const timeText = value => {
     const d = new Date(Number(value));
-    return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',hour12:false});
+    if (Number.isNaN(d.getTime())) return '';
+    const now = localNow();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',hour12:false});
+    return d.toLocaleDateString('zh-CN', {month:'2-digit',day:'2-digit'});
   };
   const dateTimeText = value => {
     const d = new Date(Number(value));
@@ -124,17 +127,17 @@
       #lrChatPlusMenu[hidden]{display:none!important}
       #lrChatPlusMenu button{border:0;background:transparent;border-radius:12px;padding:11px 12px;text-align:left;color:#55495d;font:inherit;font-size:14px}
       #lrChatPlusMenu button:active{background:#f2eaf5}
-      .lr-message-time{flex:0 0 auto;font-size:10px;color:#a49aa8;line-height:1.2;padding:0 2px 3px;white-space:nowrap;align-self:flex-end}
-      .chat-message-row{flex-wrap:nowrap;align-items:flex-end;gap:7px}
+      .lr-message-time{position:absolute;top:0;left:43px;font-size:10px;color:#a49aa8;line-height:1.2;padding:0 2px;white-space:nowrap;z-index:1;pointer-events:none}
+      .chat-message-row{position:relative;flex-wrap:nowrap;align-items:flex-end;gap:7px;padding-top:16px}
       .chat-message-row .chat-bubble{max-width:min(68%,430px)}
       .chat-message-row.user{justify-content:flex-end}
       .chat-message-row.ai{justify-content:flex-start}
       .chat-message-row.user .chat-message-avatar{order:3}
-      .chat-message-row.user .lr-message-time{order:2}
+      .chat-message-row.user .lr-message-time{left:auto;right:43px;text-align:right}
       .chat-message-row.user .chat-bubble{order:1}
       .chat-message-row.ai .chat-message-avatar{order:1}
       .chat-message-row.ai .chat-bubble{order:2}
-      .chat-message-row.ai .lr-message-time{order:3}
+      .chat-message-row.ai .lr-message-time{left:43px;right:auto;text-align:left}
       .lr-chat-image{display:block;max-width:min(62vw,260px);max-height:360px;border-radius:13px;object-fit:cover}
       .lr-sticker-image{display:block;width:auto;max-width:min(48vw,190px);max-height:190px;object-fit:contain;border-radius:12px}
       #lrStickerModal{position:fixed;inset:0;z-index:10050;background:rgba(40,30,46,.36);display:grid;place-items:center;padding:18px;backdrop-filter:blur(8px)}
@@ -167,8 +170,12 @@
       #lrTransferDecision [data-decision="refund"]{background:#eee7f0;color:#806b88}
       #lrTransferDecision .lr-decision-close{display:block;width:100%;margin-top:11px;background:transparent;color:#a295a8;font-size:12px}
 
-      .lr-location-card{display:block;text-decoration:none;color:inherit}
-      .lr-location-card small{display:block;color:inherit;opacity:.75;margin-top:5px}
+      .lr-location-card{display:block;box-sizing:border-box;min-width:175px;max-width:min(280px,66vw);padding:13px 15px;border:1px solid rgba(185,155,200,.18);border-radius:16px;background:#f7f1fa;color:#6c5877;text-decoration:none;box-shadow:0 5px 16px rgba(110,83,128,.06)}
+      .lr-location-card b,.lr-location-card span,.lr-location-card small{display:block}
+      .lr-location-card b{font-size:12px;font-weight:600;letter-spacing:.03em}
+      .lr-location-card span{margin-top:8px;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+      .lr-location-card small{color:#9b8ba3;margin-top:6px;font-size:10px;line-height:1.5}
+      .lr-location-card .lr-location-open{margin-top:9px;padding-top:7px;border-top:1px solid rgba(156,132,169,.18)}
       #lrThoughtModal{position:fixed;inset:0;z-index:10020;background:rgba(35,27,40,.35);display:grid;place-items:center;padding:22px}
       #lrThoughtModal[hidden]{display:none!important}
       #lrThoughtModal .lr-thought-sheet{width:100%;max-width:420px;background:#fff;border-radius:25px;padding:22px;box-shadow:0 18px 60px rgba(30,20,40,.2);color:#423748}
@@ -446,8 +453,9 @@
         if(isIncoming&&!resolved){card.setAttribute('role','button');card.setAttribute('tabindex','0');card.setAttribute('aria-label','处理收到的转账');card.onclick=()=>openTransferDecision(msg);card.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openTransferDecision(msg);}};}
       } else if(msg.kind==='location'){
         const place=escapeHtml(msg.place||msg.text||'未填写地点');
+        const note=msg.note?'<small class="lr-location-note">'+escapeHtml(msg.note)+'</small>':'';
         const url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(msg.place||msg.text||'');
-        bubble.innerHTML='<a class="lr-location-card" href="'+url+'" target="_blank" rel="noopener"><div class="lr-location-pin">⌖</div><strong>位置分享</strong><small>'+place+'</small><small>点击打开地图搜索</small></a>';
+        bubble.innerHTML='<a class="lr-location-card" href="'+url+'" target="_blank" rel="noopener"><b>⌖　位置分享</b><span>'+place+'</span>'+note+'<small class="lr-location-open">点击打开地图搜索</small></a>';
       }
       let stamp=row.querySelector('.lr-message-time');if(!stamp){stamp=document.createElement('div');stamp.className='lr-message-time';row.appendChild(stamp);}stamp.textContent=msg.at?timeText(msg.at):'';
     });

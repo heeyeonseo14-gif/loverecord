@@ -47,6 +47,21 @@
     return Math.min(10, Math.max(1, Number.isFinite(n) ? n : 4));
   }
 
+  function formatChatDateTime(value) {
+    const time = Number(value);
+    if (!Number.isFinite(time) || time <= 0) return '时间未知';
+    const d = new Date(time);
+    return d.toLocaleString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+  function chatTimeZone() {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '设备本地时区'; }
+    catch (_) { return '设备本地时区'; }
+  }
+  function currentChatClock() {
+    const now = Date.now();
+    return `当前真实设备时间：${formatChatDateTime(now)}；时区：${chatTimeZone()}。`;
+  }
+
   function cleanupLegacySelfContact() {
     try {
       if (Array.isArray(state.people)) {
@@ -90,7 +105,7 @@
       #lrChatMessageTools .lr-selection-count{font-size:11px;color:var(--muted);margin-right:auto}
       .chat-message-row{touch-action:pan-y}
       .chat-message-row.lr-selected{background:rgba(185,154,199,.13);outline:2px solid rgba(185,154,199,.72);outline-offset:3px;border-radius:17px}
-      .lr-typing-row{display:flex;align-items:center;gap:9px;align-self:flex-start;color:var(--muted);font-size:12px;padding:8px 12px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:15px}
+      .lr-typing-row{display:flex;align-items:center;gap:9px;align-self:flex-start;order:9999;position:relative;z-index:1;margin:2px 0 5px 42px;max-width:calc(100% - 54px);color:var(--muted);font-size:12px;padding:8px 12px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:15px;box-shadow:0 3px 12px rgba(60,45,70,.04)}
       .lr-typing-dots{letter-spacing:2px;animation:lrTypingPulse 1s ease-in-out infinite}
       @keyframes lrTypingPulse{0%,100%{opacity:.35}50%{opacity:1}}
       #lrUndoToast{position:relative;display:flex;justify-content:center;align-items:center;gap:10px;margin:0 auto 8px;padding:7px 12px;width:max-content;max-width:90%;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.96);box-shadow:0 4px 18px rgba(70,50,80,.08);font-size:12px;color:var(--muted)}
@@ -276,7 +291,7 @@
     row.className = 'lr-typing-row';
     row.innerHTML = `<span>${label || '正在输入'}</span><span class="lr-typing-dots">•••</span>`;
     host.appendChild(row);
-    host.scrollTop = host.scrollHeight;
+    requestAnimationFrame(() => { if (row.isConnected) { host.scrollTop = host.scrollHeight; row.scrollIntoView?.({block:'nearest',behavior:'auto'}); } });
   }
   function removeTyping() {
     const node = $('lrTypingIndicator');
@@ -316,10 +331,11 @@
     if (thread.length - summarizedThrough < threshold) return;
     const newItems = thread.slice(summarizedThrough);
     const oldMemory = safe(meta.longTermMemory).trim();
-    const transcript = newItems.map(m => `${m.role === 'assistant' ? 'AI' : '用户'}：${safe(m.text)}`).join('\n');
+    const transcript = newItems.map(m => `[消息时间：${formatChatDateTime(m.at)}] ${m.role === 'assistant' ? '我（角色）' : '用户'}：${safe(m.text)}`).join('\n');
     addTyping('正在整理长期记忆');
     try {
-      const summarySystem = '你是长期聊天记忆整理器。请把已有记忆与新增聊天整理为一份简洁、准确、可供未来对话使用的长期记忆。只记录聊天明确出现的稳定偏好、人物关系、重要经历、约定、未完成事项；不推测、不编造、不记录临时寒暄。保留仍然有效的旧信息，修正明确过时的信息。用第三人称或清晰标签表达，控制在 2500 个汉字以内，只输出记忆正文。';
+      const character = contactById(id);
+      const summarySystem = `你是 LOVE RECORD 角色「${character?.name || '当前角色'}」的长期记忆整理器。请将已有记忆与新增聊天整合为一份准确、可持续更新的长期记忆。重要：记忆主体必须采用角色本人的第一人称视角，用“我”记录角色自己做过、说过、感受到或明确知道的事；用户的行动与偏好要清楚写成“用户/妍妍”，不能把用户经历写成角色亲历。只记录聊天明确出现的稳定偏好、人物关系、重要经历、约定、未完成事项；不推测、不编造。每条新增聊天都带有真实发送时间，必须保留重要事件的完整年月日，必要时保留时分；“今天/昨天/明天/上周”等相对日期，必须以该条消息自身的【消息时间】为基准换算为绝对日期，不得以总结当天或当前时间重新解释，绝不能把昨天发生的事情改写成今天。若缺少消息时间或日期无法确定，明确标注“日期未确认”，不要猜测。旧记忆中已发生的事要保留为历史，不要写成正在发生。按“人物关系、用户信息、我经历的事件、共同经历与约定、持续事项、重要日期”清晰分区，控制在 2500 个汉字以内，只输出记忆正文。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -329,7 +345,7 @@
             model:state.apiModel,
             messages:[
               {role:'system',content:summarySystem},
-              {role:'user',content:`已有长期记忆：\n${oldMemory || '（暂无）'}\n\n本次新增聊天：\n${transcript}\n\n请整合为更新后的长期记忆。`}
+              {role:'user',content:`${currentChatClock()}\n已有长期记忆：\n${oldMemory || '（暂无）'}\n\n本次新增聊天（每条消息的时间戳是解释日期的唯一依据）：\n${transcript}\n\n请按角色第一人称视角整合为更新后的长期记忆，保留重要事件绝对日期。`}
             ],
             stream:false
           })
@@ -385,14 +401,15 @@
       const recent = [];
       for (const m of thread.slice(-memoryCount)) {
         const role = m.role === 'assistant' ? 'assistant' : 'user';
+        const timeTag = `【消息时间：${formatChatDateTime(m.at)}】\n`;
         if (m.kind === 'image' && m.attachmentId) {
           let dataUrl = '';
           try { dataUrl = await window.lrLoadChatAttachmentDataUrl?.(m.attachmentId) || ''; } catch (e) { console.warn('[LOVE RECORD] image context load failed', e); }
-          const parts = [{type:'text', text: safe(m.text || '[用户发送了一张图片]') + (dataUrl ? '' : '（图片文件暂时无法读取，请勿猜测图片内容）')}];
+          const parts = [{type:'text', text: timeTag + safe(m.text || '[用户发送了一张图片]') + (dataUrl ? '' : '（图片文件暂时无法读取，请勿猜测图片内容）')}];
           if (dataUrl) parts.push({type:'image_url', image_url:{url:dataUrl, detail:'auto'}});
           recent.push({role, content:parts});
         } else {
-          recent.push({role, content:safe(m.text)});
+          recent.push({role, content:timeTag + safe(m.text)});
         }
       }
       const persona = (state.selfPersonas || []).find(x => x.id === meta.personaId) || null;
@@ -404,7 +421,7 @@
         ? `当前启用世界书「${world.name || ''}」：${world.description || ''}；地点：${world.locations || ''}；规则：${world.rules || ''}。请将这些设定作为背景资料，保持一致。`
         : '';
       const longMemoryText = safe(meta.longTermMemory).trim()
-        ? `以下是你需要参考的长期聊天记忆：\n${safe(meta.longTermMemory)}\n`
+        ? `以下是你需要参考的长期聊天记忆。记忆中标注的年月日属于已经发生的历史时间，必须原样尊重；不要把旧记忆里的“昨天/今天”按当前日期重新解释。角色只把自己确实亲历、被告知或明确知道的内容当作自己的记忆：\n${safe(meta.longTermMemory)}\n`
         : '';
       // Read stickers in the real AI reply handler. The older sendChatMessage path is not used by the ✦ reply button.
       let stickerSyncOn = true;
@@ -424,7 +441,7 @@
       const stickerPrompt = !stickerSyncOn ? '用户已关闭 AI 表情包同步，不要发送表情包。' : savedStickers.length
         ? `用户真实收藏的表情包如下：${stickerListText}。你可以根据角色当下情绪和聊天语境自然、自主地发送一张。若决定发送，必须输出机器标记 [[LR_STICKER:收藏ID]]，ID 必须逐字取自清单。绝不能把文件名或表情包描述当成图片发送。用户明确要求测试或发送表情包时，必须选择一张。`
         : '当前没有可用的已收藏表情包，不要编造图片或文件名。';
-      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}${stickerPrompt}当前本地时间：${new Date().toLocaleString('zh-CN',{hour12:false})}。${(()=>{const h=new Date().getHours();return h<5?'现在是凌晨':h<7?'现在是清晨':h<11?'现在是早上':h<12?'现在是上午':h<14?'现在是中午':h<18?'现在是下午':h<22?'现在是晚上':'现在是深夜'})()}。请严格遵守现实时间逻辑：早上不要说晚安或描述深夜，晚上不要说早安或描述早餐；不要擅自让时间跳跃数小时或数天；用户未说明时间经过时，默认仍处于当前时间附近。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。回复条数上限：本次最多生成 ${clampReplyCount(meta.replyCount || 4)} 条独立消息；请按自然聊天节奏使用 ||| 分隔，绝不可超过该数量，也不要为了凑数拆句。`;
+      const system = `你正在 LOVE RECORD 中扮演联系人「${person.name}」。身份：${person.role || ''}。性格：${person.personality || ''}。外貌：${person.appearance || ''}。说话方式：${person.speech || ''}。背景：${person.background || ''}。角色规则：${person.instructions || '保持人物一致，自然聊天，不要替用户决定行动或情绪。'}。${meta.narrationEnabled===false?'【旁白模式：关闭】这是硬性规则：只允许角色直接说出口的台词。严禁输出任何动作、表情、心理、环境、第三人称叙述、括号内容或舞台提示。':'【旁白模式：开启】旁白必须以内嵌标记输出，绝不能把旁白单独写成括号段落。动作、神态、心理或环境描写必须包在 [[NARRATION]] 和 [[/NARRATION]] 之间，例如：[[NARRATION]]他抬眼看了你一眼，唇边带着一点笑意。[[/NARRATION]]「知道了。」旁白不是必需品，不要为了展示旁白而每轮硬加。只有动作、神态或环境细节确实能增加临场感时才偶尔写一小笔；允许连续几轮完全没有旁白。旁白应像自然发生的细节，避免小说式铺陈、重复描写动作或每条消息都用括号开头。'}。${personaText}${worldText}${longMemoryText}${stickerPrompt}${currentChatClock()} 请严格遵守时间与日期：每条历史消息前的【消息时间】是真实发送时刻；必须按每条消息自己的时间戳理解“今天、昨天、明天、前天、上周”等说法，不能把旧消息里的“昨天”按现在重新计算，也不能把昨天的事情说成今天发生。当前时钟只用于判断现在的时段和当前时间，不得覆盖历史消息时间。除非用户明确说时间已过去，或真实消息时间戳确实显示时间变化，否则不要擅自跳过数小时或数天；若日期/时间不确定，先自然询问，不要编造。聊天风格要求：把这段互动当作真实、持续发生的私人聊天，而不是问答客服或剧情任务。先自然接住用户这句话里最重要的情绪、事实或话题，不要复述整句话来证明你听见了；不要每轮都用‘我理解’‘听起来’‘你现在感觉怎么样’等模板开头，也不要习惯性在结尾抛问题。不要把普通聊天变成健康科普、人生建议或心理分析，除非用户明确在求助。回复长度跟随情境：日常闲聊可以短，值得展开时再多说；允许自然的语气变化、玩笑、轻微吐槽、停顿和主动分享，但不能凭空编造共同经历。参考最近多轮对话，不要只盯着最后一句；避免重复之前已经说过的安慰或建议。不要强行推进剧情，也不要替用户决定行动、台词或感受。如果用户引用了此前消息，请结合引用原文及对应上下文回答；如果引用的是图片，只有在图片数据随请求提供时才描述画面。不得假装看过未成功加载的图片。不要输出 JSON。消息气泡规则：气泡数量完全跟随当下对话节奏，不要固定每轮发三条，也不要为了凑数拆句。简短回应只发一个气泡；有自然停顿、补充、不同话题或动作与对白时才用独占一行的 ||| 分隔成多个气泡，通常1到5条即可，必要时更多或更少。每个气泡像手机即时聊天，避免连续堆砌长段落。旁白开启时只把旁白放进 [[NARRATION]]...[[/NARRATION]] 标记内，台词保持普通文本。旁白关闭时绝不输出旁白标记、括号动作或叙述。不要输出编号或说明。引用规则：当你想引用聊天中你或用户之前发过的文字时，用 [[LRQUOTE]]原文[[/LRQUOTE]] 包住被引用的原文，再继续写你的回应；引用图片时使用 [[LRQUOTE_IMAGE]]图片[[/LRQUOTE_IMAGE]]，并且只引用本轮上下文中确实出现过的图片，不得猜测图片内容。转账规则：只有你确实决定给用户转账时，单独输出一行 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]，金额必须是正数，备注简短；所有转账卡统一使用人民币符号￥，不要输出RM。订单规则：当用户明确让你点外卖或购物并且你决定照做时，在回复末尾单独输出机器指令 [[LR_AI_ORDER:food|商品关键词]] 或 [[LR_AI_ORDER:shop|商品关键词]]；关键词应是具体菜品或商品名称。该指令用于创建本地模拟订单，不要声称已真实付款或配送。聊天气泡规则：回复要像即时聊天，避免一大段长文；有自然停顿时用 ||| 分隔气泡，通常每个气泡1至3句，不要为了分段而切断句子。回复条数上限：本次最多生成 ${clampReplyCount(meta.replyCount || 4)} 条独立消息；请按自然聊天节奏使用 ||| 分隔，绝不可超过该数量，也不要为了凑数拆句。`;
       const response = await fetchTimeout(
         state.apiBase.replace(/\/+$/,'') + '/chat/completions',
         {
@@ -533,6 +550,23 @@
     }
   }
 
+  function scopePrivateChatCss(input) {
+    const css = String(input || '').replace(/<\/style/gi, '');
+    const root = '#chatConversation';
+    const portalRoots = ['#lrChatPlusMenu','#lrThoughtModal','#lrScheduleModal','#lrTransferModal','#lrLocationModal','#lrTransferDecision','#lrStickerModal'];
+    const findOpen = (text, from) => { let quote='', comment=false, escape=false, paren=0; for(let i=from;i<text.length;i++){const c=text[i],n=text[i+1];if(comment){if(c==='*'&&n==='/'){comment=false;i++}continue}if(quote){if(escape){escape=false;continue}if(c==='\\'){escape=true;continue}if(c===quote)quote='';continue}if(c==='/'&&n==='*'){comment=true;i++;continue}if(c==='"'||c==="'"){quote=c;continue}if(c==='('||c==='[')paren++;else if(c===')'||c===']')paren=Math.max(0,paren-1);else if(c==='{'&&paren===0)return i}return -1; };
+    const findClose = (text, open) => { let depth=1,quote='',comment=false,escape=false; for(let i=open+1;i<text.length;i++){const c=text[i],n=text[i+1];if(comment){if(c==='*'&&n==='/'){comment=false;i++}continue}if(quote){if(escape){escape=false;continue}if(c==='\\'){escape=true;continue}if(c===quote)quote='';continue}if(c==='/'&&n==='*'){comment=true;i++;continue}if(c==='"'||c==="'"){quote=c;continue}if(c==='{')depth++;else if(c==='}'&&--depth===0)return i}return text.length; };
+    const splitSelectors = text => { const out=[];let start=0,depth=0,quote='';for(let i=0;i<text.length;i++){const c=text[i];if(quote){if(c==='\\'){i++;continue}if(c===quote)quote='';continue}if(c==='"'||c==="'"){quote=c;continue}if(c==='('||c==='[')depth++;else if(c===')'||c===']')depth=Math.max(0,depth-1);else if(c===','&&depth===0){out.push(text.slice(start,i));start=i+1}}out.push(text.slice(start));return out; };
+    const scoped = sel => {
+      const value=sel.trim();if(!value)return value;
+      if(value===root||value.startsWith(root+' ')||value.startsWith(root+':')||value.startsWith(root+'['))return value;
+      if(portalRoots.some(x=>value===x||value.startsWith(x+' ')||value.startsWith(x+':')||value.startsWith(x+'[')))return 'html:not([data-lr-group-chat-mode]) body.chat-conversation-open '+value;
+      return root+' '+value;
+    };
+    const walk = text => { let out='',pos=0;while(pos<text.length){const open=findOpen(text,pos);if(open<0){out+=text.slice(pos);break}const close=findClose(text,open),header=text.slice(pos,open),body=text.slice(open+1,close),trim=header.trim();let nextBody=body;if(/^@(media|supports|container|layer|document)\b/i.test(trim))nextBody=walk(body);else if(!trim.startsWith('@')){out+=splitSelectors(header).map(scoped).join(',')+'{'+nextBody+'}';pos=close+1;continue}out+=header+'{'+nextBody+'}';pos=close+1}return out; };
+    return walk(css);
+  }
+
   function applyChatAppearance(id) {
     const host = $('chatMessages');
     if (!host) return;
@@ -548,7 +582,7 @@
       custom.id = 'lr-chat-custom-css';
       document.head.appendChild(custom);
     }
-    custom.textContent = safe(meta.chatCustomCss);
+    custom.textContent = scopePrivateChatCss(meta.chatCustomCss);
   }
 
   function ensureSettingsUI() {
@@ -560,7 +594,7 @@
     section.innerHTML = `
       <section class="lr-v9-card">
         <h3>自定义聊天 CSS</h3>
-        <div class="sub">仅作用于当前联系人的聊天界面。可以自定义背景、气泡、字体和间距。</div>
+        <div class="sub">可自定义当前单聊的完整界面：顶部资料栏、聊天背景、消息排布、头像、时间戳与时间分割、引用预览、气泡、图片/表情包/转账/位置卡、输入栏、加号菜单、AI 按钮及聊天弹窗。CSS 自动限定在当前单聊，不影响群聊与其他联系人。</div>
         <label for="lrChatCustomCss">CSS 代码</label>
         <textarea id="lrChatCustomCss" maxlength="12000" spellcheck="false" placeholder="/* 透明液态玻璃示例：聊天背景照片由背景设置管理，请勿给 #chatMessages 设置 background 或 background-image */\n#chatMessages .chat-message-row .chat-bubble { backdrop-filter: blur(20px) saturate(145%); -webkit-backdrop-filter: blur(20px) saturate(145%); border: 1px solid rgba(255,255,255,.72); box-shadow: 0 8px 24px rgba(40,40,40,.08); }\n#chatMessages .chat-message-row.ai .chat-bubble { background: rgba(255,255,255,.58); color: #333; }\n#chatMessages .chat-message-row.user .chat-bubble { background: rgba(255,255,255,.34); color: #333; }"></textarea>
         <div class="lr-v9-actions"><button class="btn" id="lrResetChatCss" type="button">恢复默认 CSS</button></div>
@@ -629,7 +663,7 @@
     host.style.setProperty('--lr-ai-text', val('lrAiTextColor') || '#28242b');
     host.style.setProperty('--lr-bubble-radius', clampCount(val('lrBubbleRadius') || 22, 22) + 'px');
     const css = $('lr-chat-custom-css');
-    if (css) css.textContent = val('lrChatCustomCss');
+    if (css) css.textContent = scopePrivateChatCss(val('lrChatCustomCss'));
   }
 
   function fillSettings() {

@@ -8,136 +8,36 @@
   window.__lrChatCssUnifiedV1 = true;
 
   const EXAMPLE = `/* LOVE RECORD · LAVENDER LIQUID GLASS
-   薰衣草液态玻璃主题｜气泡、背景、时间、图片、转账、位置、输入栏和弹窗
+   完整单聊示例：顶栏、背景、消息、时间、卡片、输入栏、菜单与弹窗
+   可按需修改颜色、透明度、圆角、字体、间距与阴影。
 */
-
-/* 聊天背景：柔雾渐层 */
-#chatMessages {
-  background:
-    radial-gradient(circle at 15% 12%, rgba(224,196,244,.48), transparent 38%),
-    radial-gradient(circle at 88% 78%, rgba(194,184,235,.42), transparent 42%),
-    linear-gradient(145deg, #f8f4fc, #eee8f7) !important;
-}
-
-/* 我的气泡：紫水晶玻璃（排除转账卡片外层） */
-#chatMessages .chat-message-row.user .chat-bubble:not(.lr-transfer-bubble) {
-  background: linear-gradient(135deg, rgba(222,202,242,.78), rgba(205,184,231,.58)) !important;
-  color: #493957 !important;
-  border: 1px solid rgba(255,255,255,.88) !important;
-  border-radius: 23px 23px 7px 23px !important;
-  box-shadow: 0 8px 26px rgba(116,88,145,.12), inset 0 1px 0 rgba(255,255,255,.8) !important;
-  backdrop-filter: blur(22px) saturate(155%) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(155%) !important;
-}
-
-/* AI 气泡：雾白玻璃 */
-#chatMessages .chat-message-row.ai .chat-bubble:not(.lr-transfer-bubble) {
-  background: rgba(255,255,255,.72) !important;
-  color: #3e3546 !important;
-  border: 1px solid rgba(255,255,255,.92) !important;
-  border-radius: 23px 23px 23px 7px !important;
-  box-shadow: 0 8px 25px rgba(85,67,105,.075), inset 0 1px 0 rgba(255,255,255,.95) !important;
-  backdrop-filter: blur(24px) saturate(145%) !important;
-  -webkit-backdrop-filter: blur(24px) saturate(145%) !important;
-}
-
-/* 消息排布与时间 */
-#chatMessages .chat-message-row { gap: 8px !important; margin-bottom: 7px !important; }
-#chatMessages .lr-message-time { color: #9b8da8 !important; font-size: 10px !important; }
-
-/* 图片 */
-#chatMessages .lr-chat-image {
-  border-radius: 19px !important;
-  border: 1px solid rgba(255,255,255,.9) !important;
-  box-shadow: 0 9px 26px rgba(79,61,99,.16) !important;
-}
-
-/* 转账：独立玻璃卡，不要外层重复气泡 */
-#chatMessages .chat-message-row .chat-bubble.lr-transfer-bubble {
-  background: transparent !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  overflow: visible !important;
-  max-width: min(78%, 430px) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-#chatMessages .lr-transfer-bubble .lr-transfer-card {
-  display: block !important;
-  box-sizing: border-box !important;
-  width: min(260px, 68vw) !important;
-  min-width: 0 !important;
-  padding: 23px 21px !important;
-  background: linear-gradient(145deg, rgba(205,174,226,.88), rgba(151,119,177,.84)) !important;
-  color: #fff !important;
-  border: 1px solid rgba(255,255,255,.78) !important;
-  border-radius: 27px !important;
-  box-shadow: 0 14px 34px rgba(112,79,139,.22), inset 0 1px 0 rgba(255,255,255,.48) !important;
-  backdrop-filter: blur(28px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
-}
-#chatMessages .lr-transfer-card small { letter-spacing: 2.8px !important; opacity: .82 !important; }
-#chatMessages .lr-transfer-card strong { font: 30px Georgia,serif !important; font-weight: 400 !important; }
-#chatMessages .lr-transfer-card span { color: rgba(255,255,255,.92) !important; }
-
-/* 位置卡片 */
-#chatMessages .lr-location-card {
-  display: block !important; min-width: 190px !important; padding: 16px !important;
-  background: rgba(255,255,255,.68) !important; color: #594a66 !important;
-  border: 1px solid rgba(255,255,255,.9) !important; border-radius: 21px !important;
-  text-decoration: none !important; box-shadow: 0 8px 24px rgba(95,72,118,.1) !important;
-  backdrop-filter: blur(20px) saturate(145%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
-}
-#chatMessages .lr-location-pin { background: rgba(220,202,237,.72) !important; color: #866a9c !important; border-radius: 15px !important; }
-
-/* 输入栏与文字框 */
-#chatConversation .chat-compose {
-  background: rgba(255,255,255,.72) !important;
-  border: 1px solid rgba(255,255,255,.92) !important;
-  border-radius: 26px !important;
-  box-shadow: 0 10px 30px rgba(92,70,112,.10), inset 0 1px 0 rgba(255,255,255,.95) !important;
-  backdrop-filter: blur(26px) saturate(155%) !important;
-  -webkit-backdrop-filter: blur(26px) saturate(155%) !important;
-}
-#chatConversation .chat-compose textarea {
-  background: rgba(255,255,255,.56) !important; color: #4d4057 !important;
-  border: 1px solid rgba(255,255,255,.7) !important; border-radius: 17px !important;
-}
-
-/* 加号与弹出菜单 */
-#lrChatPlus { background: rgba(255,255,255,.76) !important; color: #9478a7 !important; border: 1px solid rgba(255,255,255,.95) !important; border-radius: 16px !important; }
-#lrChatPlusMenu {
-  background: rgba(255,252,255,.78) !important; border: 1px solid rgba(255,255,255,.92) !important;
-  border-radius: 22px !important; box-shadow: 0 14px 38px rgba(75,55,94,.16) !important;
-  backdrop-filter: blur(26px) saturate(150%) !important; -webkit-backdrop-filter: blur(26px) saturate(150%) !important;
-}
-#lrChatPlusMenu button { color: #594a66 !important; border-radius: 14px !important; }
-
-/* 行程、心声、转账和位置弹窗 */
-#lrScheduleModal .lr-action-sheet, #lrThoughtModal .lr-thought-sheet,
-#lrTransferModal .lr-action-sheet, #lrLocationModal .lr-action-sheet {
-  background: rgba(255,252,255,.82) !important; color: #493d52 !important;
-  border: 1px solid rgba(255,255,255,.95) !important; border-radius: 29px !important;
-  box-shadow: 0 20px 60px rgba(70,50,88,.18) !important;
-  backdrop-filter: blur(28px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
-}
-#lrScheduleModal .lr-schedule-item { background: rgba(255,255,255,.62) !important; border: 1px solid rgba(255,255,255,.9) !important; border-radius: 19px !important; }
-#lrScheduleModal .lr-schedule-time { color: #9879aa !important; }
-#lrScheduleModal .lr-schedule-title { color: #4b3c53 !important; }
-#lrScheduleModal .lr-schedule-detail { color: #8f8296 !important; }
-#lrThoughtModal #lrThoughtText { color: #71627a !important; line-height: 1.9 !important; }
-#lrTransferModal .lr-transfer-preview { background: linear-gradient(145deg, rgba(205,174,226,.9), rgba(151,119,177,.9)) !important; border: 1px solid rgba(255,255,255,.75) !important; border-radius: 24px !important; }
-#lrLocationModal input, #lrLocationModal textarea, #lrTransferModal input {
-  background: rgba(255,255,255,.72) !important; color: #4d4057 !important;
-  border: 1px solid rgba(255,255,255,.92) !important; border-radius: 16px !important;
-}
-#lrScheduleModal .lr-action-buttons button, #lrThoughtModal .lr-action-buttons button,
-#lrTransferModal .lr-action-buttons button, #lrLocationModal .lr-action-buttons button {
-  border-radius: 999px !important;
-}`;
+#chatConversation { --lr-css-accent:#b79bc7; color:#55465f; }
+#chatConversation .chat-person-head { background:rgba(250,247,252,.82); border-bottom:1px solid rgba(255,255,255,.8); backdrop-filter:blur(22px); padding:12px 9px 15px; }
+#chatConversation .chat-person-avatar { border:1px solid rgba(255,255,255,.95); box-shadow:0 6px 18px rgba(118,91,138,.13); }
+#chatConversation .chat-person-meta strong { color:#584765; letter-spacing:.04em; }
+#chatConversation .chat-person-meta span { color:#a192aa; }
+#chatConversation #chatMessages { background-color:rgba(247,242,250,.36)!important; }
+#chatConversation .chat-message-row { gap:9px; margin-bottom:6px; }
+#chatConversation .chat-message-avatar { border:1px solid rgba(255,255,255,.9); box-shadow:0 4px 12px rgba(80,60,95,.08); }
+#chatConversation .lr-message-time { color:#a092ab; font-size:10px; letter-spacing:.03em; }
+#chatConversation .lr-chat-time-divider { color:#9b8aa5; margin:15px 0; }
+#chatConversation .lr-chat-time-divider span { background:rgba(255,255,255,.66); border:1px solid rgba(255,255,255,.9); border-radius:999px; padding:4px 11px; }
+#chatConversation .chat-message-row.user .chat-bubble:not(.lr-transfer-bubble) { background:linear-gradient(135deg,rgba(218,199,234,.82),rgba(199,178,220,.68))!important; color:#493957!important; border:1px solid rgba(255,255,255,.9); border-radius:23px 23px 7px 23px!important; box-shadow:0 8px 24px rgba(116,88,145,.12); backdrop-filter:blur(22px); }
+#chatConversation .chat-message-row.ai .chat-bubble:not(.lr-transfer-bubble) { background:rgba(255,255,255,.78)!important; color:#3e3546!important; border:1px solid rgba(255,255,255,.94); border-radius:23px 23px 23px 7px!important; box-shadow:0 8px 24px rgba(85,67,105,.08); backdrop-filter:blur(22px); }
+#chatConversation .lr-inline-narration { color:#95869f; font-style:italic; }
+#chatConversation .lr-quote-preview { background:rgba(236,228,241,.56); border-left:2px solid #b99ac7; border-radius:0 10px 10px 0; color:#897895; }
+#chatConversation .lr-chat-image,#chatConversation .lr-sticker-image { border-radius:18px; border:1px solid rgba(255,255,255,.9); box-shadow:0 9px 25px rgba(79,61,99,.14); }
+#chatConversation .chat-bubble.lr-transfer-bubble { background:transparent!important; border:0!important; box-shadow:none!important; padding:0!important; }
+#chatConversation .lr-transfer-card { border-radius:25px; box-shadow:0 12px 30px rgba(112,79,139,.2); }
+#chatConversation .lr-location-card { background:#f7f1fa; border:1px solid rgba(185,155,200,.22); border-radius:17px; color:#6c5877; padding:14px 16px; box-shadow:0 6px 18px rgba(110,83,128,.07); }
+#chatConversation .chat-compose { background:rgba(255,255,255,.76); border:1px solid rgba(255,255,255,.96); border-radius:27px; box-shadow:0 10px 28px rgba(92,70,112,.1); backdrop-filter:blur(24px); padding:9px 10px; }
+#chatConversation .chat-compose textarea { background:rgba(255,255,255,.65); color:#4d4057; border:1px solid rgba(255,255,255,.8); border-radius:17px; }
+#chatConversation #chatSend,#chatConversation #lrAskAI,#chatConversation #lrChatPlus { border-radius:17px; box-shadow:0 5px 15px rgba(109,82,128,.12); }
+#chatConversation #lrChatPlusMenu { background:rgba(255,252,255,.9); border:1px solid rgba(255,255,255,.95); border-radius:22px; box-shadow:0 14px 38px rgba(75,55,94,.16); backdrop-filter:blur(25px); }
+#chatConversation #lrChatPlusMenu button { color:#594a66; border-radius:13px; }
+#lrThoughtModal .lr-thought-sheet,#lrScheduleModal .lr-action-sheet,#lrTransferModal .lr-action-sheet,#lrLocationModal .lr-action-sheet,#lrStickerModal .lr-sticker-sheet { background:rgba(255,252,255,.88); color:#493d52; border:1px solid rgba(255,255,255,.96); border-radius:28px; box-shadow:0 20px 60px rgba(70,50,88,.18); backdrop-filter:blur(26px); }
+#lrThoughtModal button,#lrScheduleModal button,#lrTransferModal button,#lrLocationModal button,#lrStickerModal button { border-radius:999px; }
+`;
 
   function customizeEditor() {
     const legacy = document.getElementById('lr-chat-settings-extra');
@@ -167,7 +67,7 @@
     if (heading) heading.textContent = '聊天界面自定义 CSS';
 
     const desc = section.querySelector('.sub');
-    if (desc) desc.textContent = '统一调整当前联系人的整个聊天界面：消息气泡、文字、背景、时间戳、图片、转账、位置、输入栏、加号菜单、角色行程和角色心声。修改后点击底部「保存设置」生效。';
+    if (desc) desc.textContent = '可自定义当前单聊的完整界面：顶部资料栏、聊天背景、消息排布、头像、时间戳与时间分割、引用预览、气泡、图片/表情包/转账/位置卡、输入栏、加号菜单、AI 按钮及聊天弹窗。样式只影响当前联系人。点击「填入完整示例 CSS」后可直接修改示例，保存设置生效。';
 
     const textarea = section.querySelector('#lrChatCustomCss');
     if (textarea) {
