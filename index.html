@@ -1621,7 +1621,23 @@ body.lr-theme-dark :is(#space,.community-root){
   <div class="lr-group-head"><div class="lr-group-avatar" id="lrGroupHeaderAvatar">群</div><div class="lr-group-head-copy"><strong id="lrGroupHeaderName">群聊</strong><small id="lrGroupHeaderMembers">0 位成员</small></div><button class="lr-group-head-action" id="lrGroupHeaderSettings" type="button" aria-label="群聊设置">⋯</button></div>
   <div class="lr-group-announcement" id="lrGroupAnnouncement" hidden></div>
   <div class="lr-group-messages" id="lrGroupMessages"></div>
-  <div class="lr-group-compose"><button class="lr-group-at" id="lrGroupMention" type="button" aria-label="提及成员">@</button><textarea id="lrGroupInput" rows="1" placeholder="发送群聊消息……"></textarea><button class="lr-group-send" id="lrGroupSend" type="button">发送</button></div>
+  <div class="lr-group-compose">
+   <button class="lr-group-plus" id="lrGroupPlus" type="button" aria-label="更多群聊功能">＋</button>
+   <div class="lr-group-plus-menu" id="lrGroupPlusMenu" hidden>
+    <button type="button" data-lr-group-action="image">▧　发送图片</button>
+    <button type="button" data-lr-group-action="sticker">♡　发送表情包</button>
+    <button type="button" data-lr-group-action="transfer">↗　转账</button>
+    <button type="button" data-lr-group-action="location">⌖　发送位置</button>
+    <button type="button" data-lr-group-action="schedule">◷　角色行程</button>
+    <button type="button" data-lr-group-action="thought">♡　角色心声</button>
+    <button type="button" data-lr-group-action="journal">▤　日记</button>
+    <button type="button" data-lr-group-action="market">🛍　生活集市 · 外卖 / 购物</button>
+   </div>
+   <button class="lr-group-at" id="lrGroupMention" type="button" aria-label="提及成员">@</button>
+   <textarea id="lrGroupInput" rows="1" placeholder="发送群聊消息……"></textarea>
+   <button class="lr-group-send" id="lrGroupSend" type="button">发送</button>
+   <input id="lrGroupImageInput" type="file" accept="image/*" hidden>
+  </div>
   <div class="lr-group-mention-menu" id="lrGroupMentionMenu" hidden></div>
   <div class="lr-group-hint" id="lrGroupHint">自然群聊 · 角色会根据语境自主参与</div>
 </section>
@@ -3016,7 +3032,20 @@ chatPicker.addEventListener('pointerup',e=>{const b=e.target.closest('#chatConfi
 // Remove duplicate compose-plus controls left by legacy UI injections; keep the single canonical button.
  document.querySelectorAll('#chat .chat-compose-plus').forEach((b,i)=>{if(i>0)b.remove()});
  // The unified action menu is injected by chat-interaction-v11.js; avoid rendering a second plus button.
-window.addEventListener('lr-life-order-created',e=>{const o=e.detail||{},ctx=(()=>{try{return JSON.parse(localStorage.getItem('lr-life-chat-context-v1')||'{}')}catch{return {}}})();const cid=String(o.contactId||ctx.contactId||'');const person=contactById(cid);if(!cid||!person)return;const threads=readChatThreads(),items=threads[cid]||[],kind=o.orderKind==='food'?'food':'shop',placedBy=o.placedBy==='ai'?'ai':'user',sender=placedBy==='ai'?(person.name||'TA'):'妍妍',recipient=placedBy==='ai'?'你':(person.name||'TA'),names=(o.items||[]).map(x=>(x.name||'商品')+' × '+(x.qty||1)).join('、')||'订单已创建';items.push({role:placedBy==='ai'?'assistant':'user',text:'[[LR_ORDER|'+kind+'|'+sender+'|'+recipient+'|'+(o.orderNo||'订单已创建')+'|'+names+'|RMB '+(Number(o.total)||0).toFixed(2)+']]',at:Date.now()});threads[cid]=items;try{writeChatThreads(threads)}catch(err){console.error('[LOVE RECORD] order chat message save failed',err);toast('订单已保存，但聊天卡片未能保存，请检查储存空间');return}if(String(activeChatContactId)===cid)renderChat();});
+window.addEventListener('lr-life-order-created',e=>{
+ const o=e.detail||{},ctx=(()=>{try{return JSON.parse(localStorage.getItem('lr-life-chat-context-v1')||'{}')}catch{return {}}})();
+ const kind=o.orderKind==='food'?'food':'shop',placedBy=o.placedBy==='ai'?'ai':'user',names=(o.items||[]).map(x=>(x.name||'商品')+' × '+(x.qty||1)).join('、')||'订单已创建';
+ const groupId=String(o.groupId||ctx.groupId||'');
+ if(groupId&&window.LRGroupChatActions?.appendMessage){
+  const sender=String(o.senderName||o.senderNameSnapshot||(placedBy==='ai'?'角色':'我'));
+  window.LRGroupChatActions.appendMessage({senderType:placedBy==='ai'?'character':'user',senderId:String(o.contactId||'user'),senderNameSnapshot:sender,kind:'order',orderKind:kind,orderNo:String(o.orderNo||'订单已创建'),orderItems:o.items||[],orderTotal:Number(o.total)||0,text:(kind==='food'?'外卖订单：':'购物订单：')+names}).catch(err=>{console.error('[LOVE RECORD] group order message save failed',err);toast('订单已保存，但群聊卡片未能保存：'+(err.message||'请检查储存空间'))});
+  return;
+ }
+ const cid=String(o.contactId||ctx.contactId||'');const person=contactById(cid);if(!cid||!person)return;
+ const threads=readChatThreads(),items=threads[cid]||[],sender=placedBy==='ai'?(person.name||'TA'):'妍妍',recipient=placedBy==='ai'?'你':(person.name||'TA');
+ items.push({role:placedBy==='ai'?'assistant':'user',text:'[[LR_ORDER|'+kind+'|'+sender+'|'+recipient+'|'+(o.orderNo||'订单已创建')+'|'+names+'|RMB '+(Number(o.total)||0).toFixed(2)+']]',at:Date.now()});threads[cid]=items;
+ try{writeChatThreads(threads)}catch(err){console.error('[LOVE RECORD] order chat message save failed',err);toast('订单已保存，但聊天卡片未能保存，请检查储存空间');return}if(String(activeChatContactId)===cid)renderChat();
+});
 
 $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage()}});
 $('chatAddClose').onclick=closeChatAdd;$('chatAddModal').addEventListener('click',e=>{if(e.target.id==='chatAddModal')closeChatAdd();const b=e.target.closest('#chatConfirmPeople');if(b){e.preventDefault();confirmChatPeople()}});$('chatAddFromPeople').onclick=renderChatPeoplePicker;$('chatBackToContacts').onclick=()=>{activeChatContactId='';renderChat()};$('chatPeoplePicker').addEventListener('click',e=>{if(e.target.id==='chatConfirmPeople')confirmChatPeople()});$('chatContacts').addEventListener('click',e=>{const b=e.target.closest('[data-chat-open]');if(b)openChatContact(b.dataset.chatOpen);if(e.target.id==='chatEmptyAdd')openChatAdd()});$('systemAppbarAction').addEventListener('click',()=>{if(!$('chat').classList.contains('active'))return;if($('chat').classList.contains('is-conversation'))openChatSettings();else openChatAdd()});
@@ -3084,7 +3113,7 @@ if(loveIntro){
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=24"></script>
-  <script src="./chat-interaction-v11.js?v=42"></script>
+  <script src="./chat-interaction-v11.js?v=43"></script>
   <script src="./chat-ux-v13.js?v=100"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
@@ -3316,7 +3345,7 @@ body.lr-external-app-open{overflow:hidden}
 })();
 </script>
 
-<script src="./diary-v1.js?v=1"></script>
+<script src="./diary-v1.js?v=2"></script>
 
 <style id="lrChatThemeCenterStyle">
 #lrChatThemeModal{position:fixed;inset:0;z-index:100500;display:none;align-items:flex-end;justify-content:center;background:rgba(38,29,45,.34);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px}
@@ -3440,7 +3469,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=5"></script>
+<script src="./lr-group-chat-v1.js?v=6"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}

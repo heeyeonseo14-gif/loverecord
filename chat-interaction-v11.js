@@ -15,6 +15,10 @@
   let scheduleBusy = false;
   let scheduleCheckBusy = false;
   let thoughtBusy = false;
+  let actionMessageSink = null;
+  let scheduleTargetId = '';
+  let thoughtTargetId = '';
+  let thoughtExtraContext = '';
   const objectUrls = new Map();
 
   const activeId = () => typeof activeChatContactId !== 'undefined' ? activeChatContactId : '';
@@ -92,6 +96,21 @@
     writeChatThreads(all);
     if (typeof renderChat === 'function') renderChat();
   }
+  function deliverActionMessage(message) {
+    const sink = actionMessageSink;
+    actionMessageSink = null;
+    if (typeof sink === 'function') {
+      try {
+        const result = sink(Object.assign({at:Date.now()}, message));
+        if (result && typeof result.then === 'function') result.catch(error => toast('发送失败：' + (error?.message || '群聊记录保存失败')));
+      } catch (error) {
+        toast('发送失败：' + (error?.message || '群聊记录保存失败'));
+      }
+      return;
+    }
+    pushMessage(message);
+  }
+  function setActionMessageSink(callback) { actionMessageSink = typeof callback === 'function' ? callback : null; }
   function addStyles() {
     if ($('lr-v10-style')) return;
     const style = document.createElement('style'); style.id = 'lr-v10-style';
@@ -297,7 +316,7 @@
     const modal=document.createElement('div');modal.id='lrStickerModal';modal.hidden=true;
     modal.innerHTML='<section class="lr-sticker-sheet"><div class="lr-sticker-head"><div><div class="lr-action-kicker">LOVE RECORD · STICKERS</div><div class="lr-sticker-title">表情包收藏</div></div><button type="button" id="lrStickerClose" class="lr-sticker-upload">完成</button></div><div class="lr-sticker-sync-row"><div><strong>AI 同步使用表情包图片</strong><small id="lrStickerSyncHint">开启后，AI 可根据聊天语境自动发送收藏图片</small></div><button type="button" id="lrStickerSyncToggle" class="lr-sticker-sync-toggle" aria-pressed="true">已开启</button></div><p class="lr-action-desc">上传并分类；AI 会根据角色心情和聊天语境自主选择合适的表情包。</p><div class="lr-sticker-head"><span style="font-size:12px;color:#9b8ba3">我的表情包</span><button type="button" id="lrStickerUpload" class="lr-sticker-upload">＋ 上传图片</button></div><div class="lr-sticker-cats" id="lrStickerCats"></div><div class="lr-sticker-grid" id="lrStickerGrid"></div><input id="lrStickerFiles" type="file" accept="image/*" multiple hidden></section>';
     document.body.appendChild(modal);
-    $('lrStickerClose').onclick=()=>modal.hidden=true;modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true});
+    $('lrStickerClose').onclick=()=>{modal.hidden=true;setActionMessageSink(null)};modal.addEventListener('click',e=>{if(e.target===modal){modal.hidden=true;setActionMessageSink(null)}});
     const syncButton=$('lrStickerSyncToggle');syncButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();setStickerSyncEnabled(!stickerSyncEnabled())});updateStickerSyncControl();
     $('lrStickerUpload').onclick=()=>$('lrStickerFiles').click();
     $('lrStickerFiles').addEventListener('change',async e=>{
@@ -338,9 +357,9 @@
     const shown=items.filter(x=>stickerCategory==='全部'||x.category===stickerCategory);
     if(!shown.length){grid.innerHTML='<div class="lr-sticker-empty" style="grid-column:1/-1">这里还没有表情包。<br>点「上传图片」添加，再选择分类 ♡</div>';return}
     grid.innerHTML='';
-    for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{pushMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=async()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;const ok=await writeStickers(readStickers().filter(x=>x.id!==item.id));if(!ok){toast('移除失败：浏览器储存空间不可用');return}await renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
+    for(const item of shown){const card=document.createElement('div');card.className='lr-sticker-item';const img=document.createElement('img');img.alt=item.name||item.category;img.src=await attachmentUrl(item.attachmentId);const label=document.createElement('small');label.textContent=item.category+(item.name?' · '+item.name:'');const send=document.createElement('button');send.className='lr-sticker-send';send.type='button';send.textContent='发送';send.onclick=()=>{deliverActionMessage({role:'user',kind:'sticker',attachmentId:item.attachmentId,stickerId:item.id,stickerCategory:item.category,text:'[表情包：'+item.category+']'});$('lrStickerModal').hidden=true};const del=document.createElement('button');del.type='button';del.textContent='×';del.title='移除此表情包';del.style.cssText='position:absolute;right:5px;top:4px;border:0;background:#fff9;border-radius:50%;color:#947ba0;width:22px;height:22px';del.onclick=async()=>{if(!confirm('从表情包收藏中移除这张图片？'))return;const ok=await writeStickers(readStickers().filter(x=>x.id!==item.id));if(!ok){toast('移除失败：浏览器储存空间不可用');return}await renderStickerPicker()};card.append(img,label,send,del);grid.appendChild(card)}
   }
-  function openStickerPicker(){ensureStickerModal();updateStickerSyncControl();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
+  function openStickerPicker(onSend){setActionMessageSink(onSend);ensureStickerModal();updateStickerSyncControl();stickerCategory='全部';renderStickerPicker();$('lrStickerModal').hidden=false}
 
   function ensureActionModals(){
     if(!$('lrThoughtModal')){
@@ -356,12 +375,12 @@
     if(!$('lrTransferModal')){
       const modal=document.createElement('div');modal.id='lrTransferModal';modal.className='lr-action-overlay';modal.hidden=true;
       modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">A LITTLE GIFT</div><div class="lr-action-title">转账</div><div class="lr-action-desc">制作一张聊天里的转账纪念卡，不会发生真实付款。</div><div class="lr-transfer-preview"><small>LOVE RECORD · TRANSFER</small><strong id="lrTransferPreviewAmount">￥0.00</strong><span id="lrTransferPreviewNote">给你的小心意</span></div><label for="lrTransferAmount">金额（￥）</label><input id="lrTransferAmount" inputmode="decimal" type="number" min="0.01" step="0.01" placeholder="例如 100.00"><label for="lrTransferNote">备注</label><input id="lrTransferNote" maxlength="60" placeholder="写一句小心意"><div class="lr-action-buttons"><button type="button" id="lrTransferCancel">取消</button><button type="button" id="lrTransferSend" class="primary">发送转账卡</button></div></section>';
-      document.body.appendChild(modal);$('lrTransferCancel').addEventListener('click',()=>modal.hidden=true);$('lrTransferAmount').addEventListener('input',updateTransferPreview);$('lrTransferNote').addEventListener('input',updateTransferPreview);$('lrTransferSend').addEventListener('click',()=>{const value=Number($('lrTransferAmount').value);if(!Number.isFinite(value)||value<=0){toast('请输入有效金额');return;}const note=$('lrTransferNote').value.trim()||'给你的小心意';pushMessage({role:'user',kind:'transfer',amount:value.toFixed(2),note,currency:'￥',text:'转账 ￥'+value.toFixed(2)});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
+      document.body.appendChild(modal);$('lrTransferCancel').addEventListener('click',()=>{modal.hidden=true;setActionMessageSink(null)});$('lrTransferAmount').addEventListener('input',updateTransferPreview);$('lrTransferNote').addEventListener('input',updateTransferPreview);$('lrTransferSend').addEventListener('click',()=>{const value=Number($('lrTransferAmount').value);if(!Number.isFinite(value)||value<=0){toast('请输入有效金额');return;}const note=$('lrTransferNote').value.trim()||'给你的小心意';deliverActionMessage({role:'user',kind:'transfer',amount:value.toFixed(2),note,currency:'￥',text:'转账 ￥'+value.toFixed(2)});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal){modal.hidden=true;setActionMessageSink(null)}});
     }
     if(!$('lrLocationModal')){
       const modal=document.createElement('div');modal.id='lrLocationModal';modal.className='lr-action-overlay';modal.hidden=true;
       modal.innerHTML='<section class="lr-action-sheet"><div class="lr-action-kicker">SHARE A PLACE</div><div class="lr-action-title">发送位置</div><div class="lr-action-desc">手动填写你想分享的地点。不会读取 GPS，也不会获取当前设备位置。</div><label for="lrLocationInput">地点名称 / 地址</label><input id="lrLocationInput" maxlength="160" placeholder="例如：KLCC、吉隆坡国际机场"><label for="lrLocationNote">补充说明（选填）</label><textarea id="lrLocationNote" maxlength="120" placeholder="例如：我们在正门碰面"></textarea><div class="lr-action-buttons"><button type="button" id="lrLocationCancel">取消</button><button type="button" id="lrLocationSend" class="primary">发送地点</button></div></section>';
-      document.body.appendChild(modal);$('lrLocationCancel').addEventListener('click',()=>modal.hidden=true);$('lrLocationSend').addEventListener('click',()=>{const place=$('lrLocationInput').value.trim(),note=$('lrLocationNote').value.trim();if(!place){toast('请先填写地点');$('lrLocationInput').focus();return;}pushMessage({role:'user',kind:'location',place,note,text:'位置：'+place+(note?'（'+note+'）':'')});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true;});
+      document.body.appendChild(modal);$('lrLocationCancel').addEventListener('click',()=>{modal.hidden=true;setActionMessageSink(null)});$('lrLocationSend').addEventListener('click',()=>{const place=$('lrLocationInput').value.trim(),note=$('lrLocationNote').value.trim();if(!place){toast('请先填写地点');$('lrLocationInput').focus();return;}deliverActionMessage({role:'user',kind:'location',place,note,text:'位置：'+place+(note?'（'+note+'）':'')});modal.hidden=true;});modal.addEventListener('click',e=>{if(e.target===modal){modal.hidden=true;setActionMessageSink(null)}});
     }
   }
 
@@ -445,7 +464,8 @@
     const raw=await response.text();if(!response.ok)throw new Error('HTTP '+response.status+' · '+raw.slice(0,160));
     const answer=extractAIText(JSON.parse(raw));if(!answer)throw new Error('AI 没有返回内容');return answer;
   }
-  function sendTransfer() {
+  function sendTransfer(onSend) {
+    setActionMessageSink(onSend);
     const modal=$('lrTransferModal'); if(!modal)return;
     $('lrTransferAmount').value=''; $('lrTransferNote').value='给你的小心意';
     modal.hidden=false; $('lrTransferAmount').focus(); updateTransferPreview();
@@ -455,13 +475,14 @@
     $('lrTransferPreviewAmount').textContent=Number.isFinite(value)&&value>0?'￥'+value.toFixed(2):'￥0.00';
     $('lrTransferPreviewNote').textContent=$('lrTransferNote')?.value.trim()||'给你的小心意';
   }
-  function sendLocation() {
+  function sendLocation(onSend) {
+    setActionMessageSink(onSend);
     const modal=$('lrLocationModal');if(!modal)return;
     $('lrLocationInput').value='';$('lrLocationNote').value='';modal.hidden=false;$('lrLocationInput').focus();
   }
   function scheduleItemsFor(id){const items=metaFor(id).characterSchedule;return Array.isArray(items)?items:[];}
   function renderScheduleModal(){
-    const id=activeId(),items=scheduleItemsFor(id),list=$('lrScheduleList'),empty=$('lrScheduleEmpty');
+    const id=scheduleTargetId||activeId(),items=scheduleItemsFor(id),list=$('lrScheduleList'),empty=$('lrScheduleEmpty');
     if(!list)return;
     list.innerHTML='';
     if(!items.length){empty.hidden=false;$('lrScheduleGenerate').textContent='生成行程';return;}
@@ -475,12 +496,13 @@
       body.append(title,detail);li.append(time,body);list.appendChild(li);
     });
   }
-  function openSchedule(){
+  function openSchedule(targetId=''){
+    scheduleTargetId=String(targetId||activeId()||'');
     if(!$('lrScheduleModal'))return;
     renderScheduleModal();$('lrScheduleModal').hidden=false;
   }
   async function createSchedule(){
-    const id=activeId(),person=contactById(id);if(!id||!person||scheduleBusy)return;
+    const id=scheduleTargetId||activeId(),person=contactById(id);if(!id||!person||scheduleBusy)return;
     if(!apiReady()){toast('请先连接 API，再生成角色行程');return;}
     scheduleBusy=true;$('lrScheduleGenerate').disabled=true;$('lrScheduleGenerate').textContent='正在生成…';
     try{
@@ -522,28 +544,43 @@
       }
     } finally { scheduleCheckBusy=false; }
   }
-  async function showInnerThought() {
-    const id=activeId(),person=contactById(id);if(!id||!person||thoughtBusy)return;
+  async function showInnerThought(targetId='', extraContext='') {
+    if(targetId){thoughtTargetId=String(targetId);thoughtExtraContext=String(extraContext||'')}
+    else if(activeId()){thoughtTargetId=String(activeId());thoughtExtraContext=''}
+    const id=thoughtTargetId||activeId(),person=contactById(id);if(!id||!person||thoughtBusy)return;
     const modal=$('lrThoughtModal'),text=$('lrThoughtText');modal.hidden=false;
     text.className='lr-thought-loading';text.textContent='正在连接角色的思绪…';
     $('lrThoughtRetry').hidden=true;
     if(!apiReady()){text.className='lr-thought-error';text.textContent='还没有连接完整的 API。请检查 API 地址、密钥和模型设置后重试。';$('lrThoughtRetry').hidden=false;return;}
     thoughtBusy=true;
     try{
-      const time=localTimeContext(),meta=metaFor(id),recent=threadFor(id).slice(-12).map(m=>(m.role==='user'?'我：':'他：')+(m.text||'')).join('\n');
+      const time=localTimeContext(),meta=metaFor(id),privateRecent=threadFor(id).slice(-12).map(m=>(m.role==='user'?'我：':'他：')+(m.text||'')).join('\n'),recent=[privateRecent,thoughtExtraContext].filter(Boolean).join('\n\n【当前群聊上下文】\n');
       const system=`你正在扮演角色「${person.name}」。身份：${person.role||''}；性格：${person.personality||''}；背景：${person.background||''}。${time.text}请根据最近聊天，写出角色此刻真实、克制、符合人设的内心独白。不要把内心想法说成用户已知事实，不要编造未发生的事件。只输出独白正文，不要标题。`;
       const answer=await callModel(system,`角色已有长期记忆：${String(meta.longTermMemory||'暂无')}\n最近聊天：\n${recent||'暂时没有聊天记录'}\n\n请写一段此刻的角色心声，80至180字。`,30000);
       text.className='';text.textContent=answer;
     }catch(error){text.className='lr-thought-error';text.textContent='这次没有成功读取到心声：'+(error.message||'未知错误')+'。你可以检查 API 设置后再试。';$('lrThoughtRetry').hidden=false;}
     finally{thoughtBusy=false;}
   }
+  function exposeGroupActionBridge() {
+    window.LRChatInteractionV11 = {
+      saveAttachment,
+      loadAttachmentDataUrl: attachmentDataUrl,
+      openStickerPickerForGroup: onSend => openStickerPicker(onSend),
+      openTransferForGroup: onSend => sendTransfer(onSend),
+      openLocationForGroup: onSend => sendLocation(onSend),
+      openScheduleFor: contactId => openSchedule(String(contactId||'')),
+      openInnerThoughtFor: (contactId, context) => showInnerThought(String(contactId||''), String(context||''))
+    };
+    window.dispatchEvent(new CustomEvent('lr-chat-actions-ready'));
+  }
+
   function wrapRender() {
     if(window.__lrV10RenderWrapped||typeof window.renderChat!=='function')return;
     window.__lrV10RenderWrapped=true;const original=window.renderChat;
     window.renderChat=function(){const result=original.apply(this,arguments);ensureMenu();decorateMessages();checkDueSchedule();return result;};
   }
   function install() {
-    addStyles();ensureMenu();ensureTransferDecision();wrapRender();decorateMessages();checkDueSchedule();
+    addStyles();ensureMenu();ensureTransferDecision();ensureActionModals();exposeGroupActionBridge();wrapRender();decorateMessages();checkDueSchedule();
     document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDueSchedule();});
     window.addEventListener('focus',checkDueSchedule);
     setInterval(()=>{if(!document.hidden)checkDueSchedule();},30000);
