@@ -1,6 +1,7 @@
+
 name: LOVE RECORD Background CHAR
 
-on:
+"on":
   workflow_dispatch:
   schedule:
     - cron: "*/15 * * * *"
@@ -16,6 +17,7 @@ jobs:
   run-background-char:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
