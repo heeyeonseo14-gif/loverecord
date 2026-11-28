@@ -52,6 +52,8 @@
 
       #${EXTRA_ID} label{display:block;margin:10px 0 7px;color:var(--muted);font-size:13px}
       #${EXTRA_ID} input,#${EXTRA_ID} select{width:100%;min-height:46px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 13px;color:var(--ink);font:inherit;box-sizing:border-box}
+      #${EXTRA_ID} .lr-background-interval-setting{flex:1 0 100%;width:100%;margin-top:4px}
+      #${EXTRA_ID} .lr-background-interval-setting p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
       #${EXTRA_ID} .lr-avatar-row{display:flex;align-items:center;gap:13px}
       #${EXTRA_ID} .lr-my-avatar{width:58px;height:58px;border-radius:19px;background:#e9deef;display:grid;place-items:center;overflow:hidden;color:#8c7597;font-size:20px;flex:none}
       #${EXTRA_ID} .lr-my-avatar img{width:100%;height:100%;object-fit:cover}
@@ -92,6 +94,15 @@
           <input id="lrChatBackgroundActivity" type="checkbox">
           <span class="lr-switch-track"></span>
         </label>
+        <div class="lr-background-interval-setting">
+          <label for="lrChatBackgroundInterval">这位角色的主动联系间隔</label>
+          <select id="lrChatBackgroundInterval">
+            <option value="">跟随全局默认</option><option value="15">每 15 分钟</option><option value="30">每 30 分钟</option>
+            <option value="60">每 1 小时</option><option value="90">每 1.5 小时</option><option value="120">每 2 小时</option>
+            <option value="180">每 3 小时</option><option value="240">每 4 小时</option><option value="360">每 6 小时</option><option value="720">每 12 小时</option>
+          </select>
+          <p>选择「跟随全局默认」时，使用设置中心的默认主动联系间隔。</p>
+        </div>
       </section>
       <section class="lr-setting-card lr-narration-card" id="lrChatNarrationCard">
         <div class="lr-narration-copy">
@@ -161,6 +172,8 @@
     const narrationCard = document.getElementById('lrChatNarrationCard');
     if (narration) { narration.checked = meta.narrationEnabled !== false; if (narrationCard) { narrationCard.classList.toggle('is-off', !narration.checked); const label=narrationCard.querySelector('.lr-switch-state'); if(label) label.textContent=narration.checked?'旁白开启':'旁白关闭'; } }
     if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} const id=activeChatContactId;if(id){const latest=chatMeta(id);latest.narrationEnabled=!!narration.checked;writeChatMeta(id,latest);editingChatMeta={...editingChatMeta,narrationEnabled:!!narration.checked};} }); }
+    const backgroundInterval = document.getElementById('lrChatBackgroundInterval');
+    if (backgroundInterval) backgroundInterval.value = meta.backgroundIntervalMinutes ? String(meta.backgroundIntervalMinutes) : '';
     const backgroundActivity = document.getElementById('lrChatBackgroundActivity');
     const backgroundCard = document.getElementById('lrChatBackgroundActivityCard');
     if (backgroundActivity) {
@@ -316,12 +329,14 @@
     editingChatMeta.replyCount = clampReplyCount($('lrReplyCount')?.value || editingChatMeta.replyCount || 4);
     editingChatMeta.narrationEnabled = $('lrChatNarration').checked;
     editingChatMeta.backgroundActivityEnabled = !!document.getElementById('lrChatBackgroundActivity')?.checked;
+    const intervalValue = document.getElementById('lrChatBackgroundInterval')?.value || '';
+    editingChatMeta.backgroundIntervalMinutes = intervalValue ? Math.max(15, Math.min(720, Number(intervalValue))) : null;
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(contactId, editingChatMeta);
     let cloudMessage = '';
     if (window.LRBackground?.setConversationControl) {
-      const result = await window.LRBackground.setConversationControl('single', contactId, editingChatMeta.backgroundActivityEnabled);
-      if (result?.cloud === false) cloudMessage = '（后台开关已保存在本机，Firebase 尚未同步）';
+      const result = await window.LRBackground.setConversationControl('single', contactId, editingChatMeta.backgroundActivityEnabled, editingChatMeta.backgroundIntervalMinutes);
+      if (result?.cloud === false) cloudMessage = '（后台开关已保存在本机，该聊天的云端设置尚未同步）';
     }
     closeChatSettings(); toast('聊天设置已保存 ♡' + cloudMessage);
   }
