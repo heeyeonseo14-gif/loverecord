@@ -1,31 +1,44 @@
-/* Firebase Cloud Messaging shares the existing LOVE RECORD root Service Worker. */
-try {
-  importScripts('./firebase-config.js');
-  const fc = self.LR_FIREBASE_CONFIG || {};
-  if (fc.apiKey && fc.projectId && fc.messagingSenderId && fc.appId) {
-    importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js');
-    importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js');
-    firebase.initializeApp(fc);
-    const lrMessaging = firebase.messaging();
-    lrMessaging.onBackgroundMessage((payload) => {
-      const d = payload.data || {};
-      const title = (payload.notification && payload.notification.title) || d.title || 'LOVE RECORD';
-      const options = { body: (payload.notification && payload.notification.body) || d.body || '有新的消息。', icon: './icon-192.png', badge: './icon-192.png', tag: d.tag || ('lr-' + (d.conversationId || Date.now())), data: { url: d.url || './index.html', conversationId: d.conversationId || '' } };
-      return self.registration.showNotification(title, options);
-    });
-  }
-} catch (e) { console.warn('[LOVE RECORD] Firebase Messaging is not configured.', e); }
+/* Notification click handler is registered before importing Firebase Messaging. */
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const target = new URL((event.notification.data && event.notification.data.url) || './index.html', self.location.origin).href;
   event.waitUntil((async () => {
     const wins = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    for (const client of wins) { if ('focus' in client) { await client.focus(); if ('navigate' in client) await client.navigate(target); return; } }
+    for (const client of wins) {
+      if ('focus' in client) {
+        await client.focus();
+        if ('navigate' in client) await client.navigate(target);
+        return;
+      }
+    }
     if (clients.openWindow) await clients.openWindow(target);
   })());
 });
-const CACHE='love-record-our-little-farm-20261128-v142';
-const ASSETS=['./zodiac.html','./zodiac.css?v=1','./zodiac.js?v=1','./dream-fate.html','./dream-fate.css?v=2','./dream-fate.js?v=2','./weather-calendar.html','./weather-calendar.css?v=1','./weather-calendar.js?v=1','./lr-store.html','./lr-store.js?v=1','./lr-store-runtime.js?v=2','./global-font.js?v=100','./chat-interaction-v10.js?v=99','./','./index.html?v=142','./appearance.html?v=124','./home-fixed-layout-v1.css?v=10','./home-fixed-layout-v1.js?v=7','./lr-appearance-enhancements-v1.js?v=2','./lr-global-accent-v1.js?v=1','./checkin.html','./checkin-v1.js?v=11','./manifest.json?v=118','./icon-192.png','./icon-512.png','./music.js?v=100','./chat-storage-v6.js?v=99','./chat-settings-upgrade.js?v=17','./chat-save-fix.js?v=100','./chat-bubble-split.js?v=19','./chat-interaction-v9.js?v=26','./chat-interaction-v11.js?v=46','./chat-long-storage.js?v=100','./lr-full-backup-v1.js?v=4','./chat-ux-v13.js?v=100','./lr-group-chat-v1.js?v=15','./diary-v1.js?v=2','./chat-background-picker-v1.js?v=24','./chat-css-unify.js?v=19','./community-v1.js?v=4','./space-v2.js?v=61','./space-story-v1.js?v=18','./space-city-v1.js?v=10','./games-v1.js?v=28','./farm-home-3d.js?v=28','./moments-v1.js?v=100', './star-assistant.html','./star-assistant.css?v=4','./star-assistant.js?v=5','./star-guide-knowledge.json?v=4','./firebase-config.js?v=1','./lr-background-v1.js?v=1','./functions/package.json'];
+
+/* Firebase Cloud Messaging receives data-only pushes while the PWA is backgrounded. */
+try {
+  importScripts('./firebase-config.js');
+  const fc = self.LR_FIREBASE_CONFIG || {};
+  if (fc.apiKey && fc.projectId && fc.messagingSenderId && fc.appId) {
+    importScripts('https://www.gstatic.com/firebasejs/13.0.0/firebase-app-compat.js');
+    importScripts('https://www.gstatic.com/firebasejs/13.0.0/firebase-messaging-compat.js');
+    firebase.initializeApp(fc);
+    const lrMessaging = firebase.messaging();
+    lrMessaging.onBackgroundMessage((payload) => {
+      const d = payload.data || {};
+      const title = (payload.notification && payload.notification.title) || d.title || 'LOVE RECORD';
+      const options = {
+        body: (payload.notification && payload.notification.body) || d.body || '有新的消息。',
+        icon: './icon-192.png', badge: './icon-192.png',
+        tag: d.tag || ('lr-' + (d.conversationId || Date.now())),
+        data: { url: d.url || './index.html', conversationId: d.conversationId || '' }
+      };
+      return self.registration.showNotification(title, options);
+    });
+  }
+} catch (e) { console.warn('[LOVE RECORD] Firebase Messaging is not configured.', e); }
+const CACHE='love-record-our-little-farm-20261128-v143';
+const ASSETS=['./zodiac.html','./zodiac.css?v=1','./zodiac.js?v=1','./dream-fate.html','./dream-fate.css?v=2','./dream-fate.js?v=2','./weather-calendar.html','./weather-calendar.css?v=1','./weather-calendar.js?v=1','./lr-store.html','./lr-store.js?v=1','./lr-store-runtime.js?v=2','./global-font.js?v=100','./chat-interaction-v10.js?v=99','./','./index.html?v=143','./appearance.html?v=124','./home-fixed-layout-v1.css?v=10','./home-fixed-layout-v1.js?v=7','./lr-appearance-enhancements-v1.js?v=2','./lr-global-accent-v1.js?v=1','./checkin.html','./checkin-v1.js?v=11','./manifest.json?v=118','./icon-192.png','./icon-512.png','./music.js?v=100','./chat-storage-v6.js?v=99','./chat-settings-upgrade.js?v=17','./chat-save-fix.js?v=100','./chat-bubble-split.js?v=19','./chat-interaction-v9.js?v=26','./chat-interaction-v11.js?v=46','./chat-long-storage.js?v=100','./lr-full-backup-v1.js?v=4','./chat-ux-v13.js?v=100','./lr-group-chat-v1.js?v=15','./diary-v1.js?v=2','./chat-background-picker-v1.js?v=24','./chat-css-unify.js?v=19','./community-v1.js?v=4','./space-v2.js?v=61','./space-story-v1.js?v=18','./space-city-v1.js?v=10','./games-v1.js?v=28','./farm-home-3d.js?v=28','./moments-v1.js?v=100', './star-assistant.html','./star-assistant.css?v=4','./star-assistant.js?v=5','./star-guide-knowledge.json?v=4','./firebase-config.js?v=2','./lr-background-v1.js?v=2','./functions/package.json','./functions/index.js'];
 function inject(html,file){
  const escaped=file.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
  const tag=new RegExp("<script\\b[^>]*src=[\"']\\./"+escaped+"(?:\\?[^\"']*)?[\"'][^>]*>\\s*<\\/script>",'i');
