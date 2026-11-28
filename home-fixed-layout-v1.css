@@ -188,12 +188,12 @@ body.lr-home-dialog-open .nav{visibility:hidden!important;pointer-events:none!im
   -webkit-backdrop-filter:blur(20px) saturate(1.06)!important;
 }
 #launcher .lr-character-spotlight-bg{
-  opacity:.13!important;
-  filter:saturate(.62) blur(1.2px)!important;
+  opacity:.34!important;
+  filter:saturate(.82) blur(.65px)!important;
   transform:scale(1.025)!important;
 }
 #launcher .lr-character-spotlight-shade{
-  background:linear-gradient(105deg,rgba(255,255,255,.82),rgba(250,247,251,.70) 60%,rgba(245,241,248,.62))!important;
+  background:linear-gradient(105deg,rgba(255,255,255,.40),rgba(250,247,251,.30) 60%,rgba(245,241,248,.24))!important;
 }
 #launcher .lr-character-spotlight-content{
   gap:13px!important;
