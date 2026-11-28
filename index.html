@@ -1625,7 +1625,59 @@ body.lr-theme-dark :is(#space,.community-root){
   <div class="lr-group-mention-menu" id="lrGroupMentionMenu" hidden></div>
   <div class="lr-group-hint" id="lrGroupHint">自然群聊 · 角色会根据语境自主参与</div>
 </section>
-<section id="lrGroupSettingsPage" class="lr-group-settings-page" hidden aria-label="群聊设置"><div class="sheet module-sheet lr-group-sheet"><div class="module-head"><div><div class="eyebrow">GROUP SETTINGS</div><h2>群聊设置</h2></div></div><label for="lrGroupEditName">群聊名称</label><input id="lrGroupEditName" maxlength="40"><label for="lrGroupEditAnnouncement">群公告</label><textarea id="lrGroupEditAnnouncement" rows="2" placeholder="写一条群公告（可选）"></textarea><label for="lrGroupReplyLimit">每轮 AI 消息上限</label><select id="lrGroupReplyLimit"><option value="1">1 条</option><option value="2">2 条</option><option value="3">3 条</option><option value="4">4 条</option><option value="5">5 条</option><option value="6">6 条</option><option value="8">8 条</option><option value="10">10 条</option></select><label for="lrGroupBackground">群聊背景底色</label><select id="lrGroupBackground"><option value="#f7f3f9">雾白</option><option value="#f0e9f4">浅薰衣草</option><option value="#f4eee8">奶油米白</option><option value="#e9e3ed">灰紫</option></select><div class="lr-group-image-fields"><div><label>群聊头像</label><div class="lr-group-image-preview" id="lrGroupAvatarPreview">群</div><div class="actions"><button class="btn" id="lrGroupChooseAvatar" type="button">上传头像</button><button class="btn" id="lrGroupClearAvatar" type="button">恢复默认</button><input id="lrGroupAvatarFile" type="file" accept="image/*" hidden></div></div><div><label>群聊背景图片</label><div class="lr-group-image-preview wide" id="lrGroupBackgroundPreview">未设置背景图片</div><div class="actions"><button class="btn" id="lrGroupChooseBackgroundImage" type="button">上传背景</button><button class="btn" id="lrGroupClearBackgroundImage" type="button">移除背景</button><input id="lrGroupBackgroundFile" type="file" accept="image/*" hidden></div></div></div><div class="lr-group-settings-section"><div class="lr-group-section-head"><strong>群成员</strong><span id="lrGroupMemberCount">0 位成员</span></div><div id="lrGroupManageMembers" class="lr-group-manage-members"></div></div><div class="lr-group-settings-section"><strong>添加成员</strong><div id="lrGroupAddMembers" class="lr-group-picker compact"></div></div><div class="lr-group-modal-actions"><button class="btn primary" id="lrGroupSaveSettings" type="button">保存设置</button><button class="btn" id="lrGroupExport" type="button">导出群聊</button></div><button class="btn lr-group-danger" id="lrGroupDissolve" type="button">解散群聊</button></div></section>
+<section id="lrGroupSettingsPage" class="lr-group-settings-page" hidden aria-label="群聊设置">
+ <div class="sheet module-sheet lr-group-sheet">
+  <div class="module-head"><div><div class="eyebrow">GROUP SETTINGS</div><h2>群聊设置</h2></div></div>
+  <label for="lrGroupEditName">群聊名称</label><input id="lrGroupEditName" maxlength="40">
+  <label for="lrGroupEditAnnouncement">群公告</label><textarea id="lrGroupEditAnnouncement" rows="2" placeholder="写一条群公告（可选）"></textarea>
+  <label for="lrGroupReplyLimit">每轮 AI 消息上限</label><select id="lrGroupReplyLimit"><option value="1">1 条</option><option value="2">2 条</option><option value="3">3 条</option><option value="4">4 条</option><option value="5">5 条</option><option value="6">6 条</option><option value="8">8 条</option><option value="10">10 条</option></select>
+  <label for="lrGroupBackground">群聊背景底色</label><select id="lrGroupBackground"><option value="#f7f3f9">雾白</option><option value="#f0e9f4">浅薰衣草</option><option value="#f4eee8">奶油米白</option><option value="#e9e3ed">灰紫</option></select>
+  <div class="lr-group-image-fields">
+   <div><label>群聊头像</label><div class="lr-group-image-preview" id="lrGroupAvatarPreview">群</div><div class="actions"><button class="btn" id="lrGroupChooseAvatar" type="button">上传头像</button><button class="btn" id="lrGroupClearAvatar" type="button">恢复默认</button><input id="lrGroupAvatarFile" type="file" accept="image/*" hidden></div></div>
+   <div><label>群聊背景图片</label><div class="lr-group-image-preview wide" id="lrGroupBackgroundPreview">未设置背景图片</div><div class="actions"><button class="btn" id="lrGroupChooseBackgroundImage" type="button">上传背景</button><button class="btn" id="lrGroupClearBackgroundImage" type="button">移除背景</button><input id="lrGroupBackgroundFile" type="file" accept="image/*" hidden></div></div>
+  </div>
+  <section class="lr-group-setting-card" id="lrGroupReadingSettings">
+   <h3>AI 阅读设置</h3>
+   <label for="lrGroupWorldBook">世界书</label><select id="lrGroupWorldBook"><option value="">不选择世界书</option></select>
+   <div class="sub" style="margin-top:7px">选中的世界书会随群聊请求一起发送给 AI，作为所有群成员共同遵守的背景设定。</div>
+   <label for="lrGroupMemoryCount">短期记忆条数（1–100）</label><input id="lrGroupMemoryCount" type="number" inputmode="numeric" min="1" max="100" step="1" value="50">
+   <div class="sub" style="margin-top:7px">每次群聊请求会带上最近指定数量的用户与角色消息。</div>
+  </section>
+  <section class="lr-group-setting-card" id="lrGroupHistorySettings">
+   <h3>聊天记录</h3>
+   <label for="lrGroupSearchKeyword">查找聊天记录</label><input id="lrGroupSearchKeyword" type="search" placeholder="输入关键词搜索这个群聊">
+   <div class="lr-group-setting-actions"><button class="btn" id="lrGroupSearchButton" type="button">搜索记录</button></div>
+   <div class="lr-group-search-results" id="lrGroupSearchResults"></div>
+   <div class="lr-group-setting-actions"><button class="btn lr-group-danger" id="lrGroupDeleteHistory" type="button">删除聊天记录</button></div>
+   <div class="sub" style="margin-top:7px">删除仅清空本群消息与轮次记录；成员、群设置和已保存的群聊长期记忆会保留。</div>
+  </section>
+  <section class="lr-group-setting-card" id="lrGroupCssSettings">
+   <h3>聊天界面自定义 CSS</h3>
+   <div class="sub">自动限定在当前群聊窗口内，不影响单聊或其他群聊。可自定义气泡、字体、间距与玻璃效果。</div>
+   <label for="lrGroupCustomCss">CSS 代码</label>
+   <textarea id="lrGroupCustomCss" class="lr-group-css-editor" maxlength="12000" spellcheck="false" placeholder="可点击「填入完整示例 CSS」，再按自己的喜好修改。"></textarea>
+   <div class="lr-group-setting-actions"><button class="btn" id="lrGroupCssExample" type="button">填入完整示例 CSS</button><button class="btn" id="lrGroupCssClear" type="button">清空自定义样式</button></div>
+  </section>
+  <section class="lr-group-setting-card" id="lrGroupAutoMemorySettings">
+   <h3>自动总结长期记忆</h3>
+   <label for="lrGroupAutoMemoryCount">每累计多少条新消息总结一次（1–100）</label><input id="lrGroupAutoMemoryCount" type="number" inputmode="numeric" min="1" max="100" step="1" value="15">
+   <div class="sub" style="margin-top:7px">默认 15 条。达到数量后，在下一次群聊 AI 回复完成时，自动整理群聊共同记忆。不会替代各角色个人长期记忆。</div>
+  </section>
+  <section class="lr-group-setting-card" id="lrGroupLongMemorySettings">
+   <h3>群聊长期记忆</h3>
+   <div class="sub">保存群内重要事件、共同约定与持续事项。AI 会在后续群聊中参考；角色各自的个人长期记忆仍独立保存。</div>
+   <div class="lr-group-setting-actions"><button class="btn" id="lrGroupToggleLongMemory" type="button">查看 / 编辑长期记忆</button></div>
+   <div id="lrGroupLongMemoryPanel" hidden>
+    <label for="lrGroupLongMemoryText">已保存的群聊记忆</label><textarea id="lrGroupLongMemoryText" maxlength="9000" placeholder="累计达到设定消息条数后，AI 会自动总结；也可以在这里手动编辑。"></textarea>
+    <div class="lr-group-setting-actions"><button class="btn primary" id="lrGroupSaveLongMemory" type="button">保存记忆</button><button class="btn lr-group-danger" id="lrGroupClearLongMemory" type="button">清空记忆</button></div>
+   </div>
+  </section>
+  <div class="lr-group-settings-section"><div class="lr-group-section-head"><strong>群成员</strong><span id="lrGroupMemberCount">0 位成员</span></div><div id="lrGroupManageMembers" class="lr-group-manage-members"></div></div>
+  <div class="lr-group-settings-section"><strong>添加成员</strong><div id="lrGroupAddMembers" class="lr-group-picker compact"></div></div>
+  <div class="lr-group-modal-actions"><button class="btn primary" id="lrGroupSaveSettings" type="button">保存设置</button><button class="btn" id="lrGroupExport" type="button">导出群聊</button></div>
+  <button class="btn lr-group-danger" id="lrGroupDissolve" type="button">解散群聊</button>
+ </div>
+</section>
 </main>
 
 <div class="system-appbar" id="systemAppbar">
@@ -2067,7 +2119,7 @@ window.__lrChatContactsReady=(async()=>{try{const [ids,storedPeople]=await Promi
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
 function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a));try{window.dispatchEvent(new CustomEvent('lr-chat-threads-updated',{detail:{contactIds:Object.keys(a||{})}}))}catch(e){}}
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
-window.LRGroupChatHost={getPeople:()=>Array.isArray(state.people)?state.people.slice():[],getPerson:id=>contactById(id)||null,getApiConfig:()=>({apiBase:String(state.apiBase||'').trim(),apiKey:String(state.apiKey||'').trim(),apiModel:String(state.apiModel||'').trim()}),getChatMeta:id=>chatMeta(String(id)),saveChatMeta:async(id,patch)=>{const current=chatMeta(String(id));if(typeof window.saveChatMetaSafely==='function')return await window.saveChatMetaSafely(String(id),{...current,...patch});return writeChatMeta(String(id),{...current,...patch})},getWorldBookPrompt:()=>getWorldBookPromptContext(),getChatThreads:()=>readChatThreads(),setActiveChatContact:id=>{activeChatContactId=String(id||'')},toast,esc,contactName:id=>{const p=contactById(id);return p?(chatMeta(id).remark||p.name||'联系人'):'已删除联系人'}};
+window.LRGroupChatHost={getPeople:()=>Array.isArray(state.people)?state.people.slice():[],getPerson:id=>contactById(id)||null,getApiConfig:()=>({apiBase:String(state.apiBase||'').trim(),apiKey:String(state.apiKey||'').trim(),apiModel:String(state.apiModel||'').trim()}),getChatMeta:id=>chatMeta(String(id)),saveChatMeta:async(id,patch)=>{const current=chatMeta(String(id));if(typeof window.saveChatMetaSafely==='function')return await window.saveChatMetaSafely(String(id),{...current,...patch});return writeChatMeta(String(id),{...current,...patch})},getWorldBookPrompt:()=>getWorldBookPromptContext(),waitForWorldBooks:()=>worldBooksReady,getWorldBooks:()=>Array.isArray(state.worlds)?state.worlds.slice():[],getWorldBookPromptById:id=>{const w=(Array.isArray(state.worlds)?state.worlds:[]).find(x=>String(x.id)===String(id));if(!w)return '';const entries=worldEntriesFor(w);const lines=entries.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean);const legacy=[w.description,w.locations,w.rules].map(x=>String(x||'').trim()).filter(Boolean);return ('【'+String(w.name||'未命名世界书')+'】\n'+(lines.length?lines.join('\n'):legacy.join('\n'))).slice(0,18000)},getChatThreads:()=>readChatThreads(),setActiveChatContact:id=>{activeChatContactId=String(id||'')},toast,esc,contactName:id=>{const p=contactById(id);return p?(chatMeta(id).remark||p.name||'联系人'):'已删除联系人'}};
 // Read-only context bridge for the Companion app: reuses the selected contact, related world book and existing real chat history.
 window.__LOVE_RECORD_GET_COMPANION_CONTEXT=(id)=>{
  const person=contactById(id);if(!person)return null;
@@ -3016,7 +3068,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=7',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=8',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
@@ -3388,7 +3440,7 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=4"></script>
+<script src="./lr-group-chat-v1.js?v=5"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
