@@ -6,8 +6,10 @@ const $=id=>document.getElementById(id);
 const PROFILE_KEY='lr-home-profile-v1';
 const PHOTOS_KEY='lr-home-photo-grid-v1';
 const COUNTDOWN_KEY='lr-home-countdowns-v1';
+const CHARACTER_SPOTLIGHT_KEY='lr-home-character-spotlight-v1';
 const DEFAULT_PROFILE={name:'妍妍',username:'@yourname',bio:'把喜欢的日常，慢慢收藏起来。',phrase:'EVERY LITTLE MOMENT MATTERS.',avatar:'',banner:''};
 let profile={...DEFAULT_PROFILE},profileDraft={...DEFAULT_PROFILE},photos=['',''],countdowns=[],editingCountdownId='';
+let characterCards=[],activeCharacterCardId='',editingCharacterCardId='';
 const screens=()=>Array.from(document.querySelectorAll('#launcher [data-launcher-screen]'));
 function setNotice(message){if(typeof window.toast==='function')window.toast(message);else console.info('[LOVE RECORD]',message)}
 async function storeGet(key){try{return await lrKVGet(key)}catch(e){console.warn('[LOVE RECORD] home data read failed',key,e);return null}}
@@ -29,7 +31,7 @@ function fillProfileForm(){
  $('lrProfileBioInput').value=profileDraft.bio||'';
  $('lrProfilePhraseInput').value=profileDraft.phrase||'';
 }
-function syncDialogDock(){const open=!$('lrProfileModal').hidden||!$('lrCountdownModal').hidden;document.body.classList.toggle('lr-home-dialog-open',open)}
+function syncDialogDock(){const open=!$('lrProfileModal').hidden||!$('lrCountdownModal').hidden||!$('lrCharacterSpotlightModal').hidden;document.body.classList.toggle('lr-home-dialog-open',open)}
 function openProfileEditor(){profileDraft={...profile};fillProfileForm();$('lrProfileModal').hidden=false;syncDialogDock()}
 function closeProfileEditor(){$('lrProfileModal').hidden=true;syncDialogDock()}
 async function compressImage(file,maxSide=1800,quality=.86){
@@ -124,6 +126,72 @@ function bindCountdown(){
   if(await storeSet(COUNTDOWN_KEY,countdowns)){renderCountdown();renderCountdownList();resetCountdownForm();setNotice('倒数日已保存 ♡')}
  });
 }
+
+function characterPeople(){
+ try{const people=window.__LOVE_RECORD_GET_PEOPLE?.();return Array.isArray(people)?people.filter(p=>p&&p.id&&p.name&&String(p.id)!=='p-yanyan'):[]}catch{return[]}
+}
+function characterMeta(personId){try{return typeof window.chatMeta==='function'?(window.chatMeta(String(personId))||{}):{}}catch{return{}}}
+function characterName(personId){const p=characterPeople().find(x=>String(x.id)===String(personId));return p?.name||'已删除的角色'}
+function characterAvatar(personId){const p=characterPeople().find(x=>String(x.id)===String(personId));const meta=characterMeta(personId);return meta.avatar||p?.avatar||p?.avatarUrl||p?.image||p?.photo||''}
+function activeCharacterCard(){return characterCards.find(x=>x&&x.id===activeCharacterCardId)||characterCards[0]||null}
+function renderCharacterSpotlight(){
+ const card=activeCharacterCard(),button=$('lrCharacterSpotlightOpen'),name=$('lrCharacterSpotlightName'),description=$('lrCharacterSpotlightDescription'),avatar=$('lrCharacterSpotlightAvatar'),background=$('lrCharacterSpotlightBackground');if(!button)return;
+ if(!card){button.classList.add('is-empty');button.setAttribute('aria-label','选择一位喜欢的 CHAR');name.textContent='选择一位喜欢的 CHAR';description.textContent='为 TA 设置专属背景与介绍。';avatar.hidden=true;avatar.removeAttribute('src');background.hidden=true;background.removeAttribute('src');return}
+ const person=characterPeople().find(x=>String(x.id)===String(card.personId));const shownName=safeText(card.displayName,person?.name||'未命名角色');const text=safeText(card.description,person?.role||'My favorite character.');
+ button.classList.toggle('is-empty',!person);button.setAttribute('aria-label','打开 '+shownName+' 的聊天');name.textContent=shownName;description.textContent=text;
+ const avatarSrc=card.avatar||characterAvatar(card.personId);avatar.hidden=!avatarSrc;if(avatarSrc)avatar.src=avatarSrc;else avatar.removeAttribute('src');
+ background.hidden=!card.background;if(card.background)background.src=card.background;else background.removeAttribute('src');
+}
+function renderCharacterSelectors(selectedCardId='',selectedPersonId=''){
+ const cardSelect=$('lrCharacterCardSelect'),personSelect=$('lrCharacterPersonSelect');cardSelect.replaceChildren(new Option('选择已有展示卡',''));
+ characterCards.forEach(card=>{const option=new Option(safeText(card.displayName,characterName(card.personId)),card.id);cardSelect.add(option)});cardSelect.value=selectedCardId||'';
+ personSelect.replaceChildren(new Option('请选择现有角色',''));characterPeople().forEach(person=>personSelect.add(new Option(person.name+(person.role?' · '+person.role:''),String(person.id))));personSelect.value=selectedPersonId||'';
+ if(!personSelect.options.length||personSelect.options.length===1){const option=new Option('还没有 CHAR，请先在联系人中创建角色','');personSelect.add(option)}
+}
+function renderCharacterEditorPreviews(){
+ const personId=$('lrCharacterPersonSelect').value,avatarSrc=characterDraftAvatar||characterAvatar(personId),backgroundSrc=characterDraftBackground||'';
+ setImage('lrCharacterAvatarPreview',avatarSrc);setImage('lrCharacterBackgroundPreview',backgroundSrc);
+ $('lrCharacterClearAvatar').disabled=!characterDraftAvatar;$('lrCharacterClearBackground').disabled=!characterDraftBackground;
+}
+let characterDraftAvatar='',characterDraftBackground='';
+function loadCharacterEditor(card){
+ editingCharacterCardId=card?.id||'';characterDraftAvatar=card?.avatar||'';characterDraftBackground=card?.background||'';
+ renderCharacterSelectors(card?.id||'',card?.personId||'');$('lrCharacterDisplayName').value=card?.displayName||'';$('lrCharacterDescription').value=card?.description||'';
+ if(!card){$('lrCharacterDisplayName').value='';$('lrCharacterDescription').value='';}
+ renderCharacterEditorPreviews();$('lrCharacterDeleteCard').disabled=!card; $('lrCharacterSetActive').disabled=!card||card.id===activeCharacterCardId;
+ $('lrCharacterManagerHint').textContent=card?((card.id===activeCharacterCardId?'这张卡目前正在主页展示。':'保存后可设为主页展示。')+' 背景图和展示头像独立保存。'):'新建一张角色卡；主页只会展示你选中的一张。';
+}
+function openCharacterManager(){
+ renderCharacterSelectors();const current=activeCharacterCard();if(current)loadCharacterEditor(current);else loadCharacterEditor(null);
+ $('lrCharacterSpotlightModal').hidden=false;syncDialogDock();
+}
+function closeCharacterManager(){$('lrCharacterSpotlightModal').hidden=true;syncDialogDock()}
+function newCharacterCard(){loadCharacterEditor(null);const first=characterPeople()[0];if(first){$('lrCharacterPersonSelect').value=String(first.id);$('lrCharacterDisplayName').value=first.name||'';$('lrCharacterDescription').value=first.role||'';renderCharacterEditorPreviews()}$('lrCharacterCardSelect').value=''}
+async function saveCharacterCollection(){return storeSet(CHARACTER_SPOTLIGHT_KEY,{cards:characterCards,activeId:activeCharacterCardId})}
+async function bindCharacterSpotlight(){
+ try{if(window.__lrChatStorageReady)await window.__lrChatStorageReady}catch(e){console.warn('[LOVE RECORD] character avatar metadata not fully hydrated',e)}
+ const saved=await storeGet(CHARACTER_SPOTLIGHT_KEY);if(Array.isArray(saved)){characterCards=saved;activeCharacterCardId=characterCards[0]?.id||''}else if(saved&&typeof saved==='object'){characterCards=Array.isArray(saved.cards)?saved.cards.filter(x=>x&&x.id&&x.personId):[];activeCharacterCardId=String(saved.activeId||'')}
+ renderCharacterSpotlight();$('lrCharacterSpotlightManage').addEventListener('click',openCharacterManager);$('lrCharacterSpotlightModalClose').addEventListener('click',closeCharacterManager);$('lrCharacterSpotlightModal').addEventListener('click',e=>{if(e.target===$('lrCharacterSpotlightModal'))closeCharacterManager()});
+ $('lrCharacterNewCard').addEventListener('click',newCharacterCard);$('lrCharacterCardSelect').addEventListener('change',e=>{const card=characterCards.find(x=>x.id===e.target.value);loadCharacterEditor(card||null)});
+ $('lrCharacterPersonSelect').addEventListener('change',()=>{const person=characterPeople().find(x=>String(x.id)===$('lrCharacterPersonSelect').value);if(!editingCharacterCardId&&person){$('lrCharacterDisplayName').value=person.name||'';$('lrCharacterDescription').value=person.role||''}renderCharacterEditorPreviews()});
+ $('lrCharacterPickAvatar').addEventListener('click',()=>$('lrCharacterAvatarFile').click());$('lrCharacterPickBackground').addEventListener('click',()=>$('lrCharacterBackgroundFile').click());
+ $('lrCharacterClearAvatar').addEventListener('click',()=>{characterDraftAvatar='';renderCharacterEditorPreviews()});$('lrCharacterClearBackground').addEventListener('click',()=>{characterDraftBackground='';renderCharacterEditorPreviews()});
+ $('lrCharacterAvatarFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{characterDraftAvatar=await compressImage(file,760,.86);renderCharacterEditorPreviews()}catch(err){setNotice(err.message||'头像读取失败')}finally{e.target.value=''}});
+ $('lrCharacterBackgroundFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{characterDraftBackground=await compressImage(file,1500,.82);renderCharacterEditorPreviews()}catch(err){setNotice(err.message||'背景读取失败')}finally{e.target.value=''}});
+ $('lrCharacterSpotlightForm').addEventListener('submit',async e=>{e.preventDefault();const personId=$('lrCharacterPersonSelect').value,person=characterPeople().find(x=>String(x.id)===String(personId));if(!person){setNotice('请先选择一位现有 CHAR');return}const displayName=safeText($('lrCharacterDisplayName').value,person.name).slice(0,32),description=safeText($('lrCharacterDescription').value,person.role||'My favorite character.').slice(0,100);const id=editingCharacterCardId||('char-card-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7));const card={id,personId:String(person.id),displayName,description,avatar:characterDraftAvatar,background:characterDraftBackground};const idx=characterCards.findIndex(x=>x.id===id);if(idx>=0)characterCards[idx]=card;else characterCards.push(card);if(!activeCharacterCardId)activeCharacterCardId=id;if(await saveCharacterCollection()){renderCharacterSpotlight();loadCharacterEditor(card);setNotice('角色展示卡已保存 ♡')}});
+ $('lrCharacterSetActive').addEventListener('click',async()=>{if(!editingCharacterCardId)return;activeCharacterCardId=editingCharacterCardId;if(await saveCharacterCollection()){renderCharacterSpotlight();loadCharacterEditor(characterCards.find(x=>x.id===editingCharacterCardId));setNotice('已切换主页展示角色 ♡')}});
+ $('lrCharacterDeleteCard').addEventListener('click',async()=>{if(!editingCharacterCardId)return;const card=characterCards.find(x=>x.id===editingCharacterCardId);if(!confirm('删除「'+(card?.displayName||'这张角色卡')+'」吗？'))return;characterCards=characterCards.filter(x=>x.id!==editingCharacterCardId);if(activeCharacterCardId===editingCharacterCardId)activeCharacterCardId=characterCards[0]?.id||'';if(await saveCharacterCollection()){renderCharacterSpotlight();loadCharacterEditor(activeCharacterCard());setNotice('角色展示卡已删除')}});
+ $('lrCharacterSpotlightOpen').addEventListener('click',openSpotlightCharacterChat);window.addEventListener('lr-contact-meta-ready',renderCharacterSpotlight);
+}
+function openSpotlightCharacterChat(){
+ const card=activeCharacterCard();if(!card){openCharacterManager();return}const person=characterPeople().find(x=>String(x.id)===String(card.personId));if(!person){setNotice('这位 CHAR 已不存在，请重新选择');openCharacterManager();return}
+ try{const ids=new Set();for(const key of ['love-record-chat-contacts-v2','love-record-chat-contacts-recovery-v1']){try{const list=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(list))list.forEach(x=>ids.add(String(x)))}catch{}}ids.add(String(person.id));const value=[...ids];localStorage.setItem('love-record-chat-contacts-v2',JSON.stringify(value));localStorage.setItem('love-record-chat-contacts-recovery-v1',JSON.stringify(value));
+  const request=indexedDB.open('love-record-chat-index-v1');request.onsuccess=()=>{const db=request.result;if(!db.objectStoreNames.contains('state')){db.close();return}const tx=db.transaction('state','readwrite'),store=tx.objectStore('state'),get=store.get('chat-contact-ids');get.onsuccess=()=>{const old=Array.isArray(get.result?.ids)?get.result.ids.map(String):[];store.put({id:'chat-contact-ids',ids:[...new Set([...old,...value])],updatedAt:Date.now()})};tx.oncomplete=()=>db.close();tx.onerror=()=>db.close()};
+ }catch(e){console.warn('[LOVE RECORD] character chat link index update skipped',e)}
+ if(typeof window.nav==='function')window.nav('chat');else document.querySelector('[data-launch-page="chat"]')?.click();
+ setTimeout(()=>{const target=[...document.querySelectorAll('#chatContacts [data-chat-open]')].find(x=>String(x.dataset.chatOpen)===String(person.id));if(target)target.click();else setNotice('已打开聊天列表，可以选择 '+person.name)},100);
+}
+
 function fmtTime(n){if(!Number.isFinite(n)||n<0)return '0:00';return Math.floor(n/60)+':'+String(Math.floor(n%60)).padStart(2,'0')}
 function renderMusic(snapshot=window.LRMusicSnapshot){
  const state=snapshot||{};const title=$('lrHomeMusicTitle'),artist=$('lrHomeMusicArtist'),play=$('lrHomeMusicPlay'),progress=$('lrHomeMusicProgress');
@@ -187,7 +255,7 @@ async function init(){
  profile={...DEFAULT_PROFILE,...(await storeGet(PROFILE_KEY)||{})};profileDraft={...profile};applyProfile();
  const savedPhotos=await storeGet(PHOTOS_KEY);if(Array.isArray(savedPhotos))photos=[String(savedPhotos[0]||''),String(savedPhotos[1]||'')];renderPhotos();if(!savedPhotos)await migrateLegacyPhoto();
  const savedCountdowns=await storeGet(COUNTDOWN_KEY);countdowns=Array.isArray(savedCountdowns)?savedCountdowns.filter(x=>x&&x.id&&x.title&&x.date):[];renderCountdown();
- bindProfile();bindPhotos();bindCountdown();bindMusic();initPages();
+ bindProfile();bindPhotos();bindCountdown();bindMusic();await bindCharacterSpotlight();initPages();
 
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>init().catch(e=>console.error('[LOVE RECORD] fixed home init failed',e)),{once:true});

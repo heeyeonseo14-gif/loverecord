@@ -7,9 +7,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
-<link rel="manifest" href="./manifest.json?v=117">
+<link rel="manifest" href="./manifest.json?v=118">
 <link rel="icon" href="./icon-192.png">
-<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=5">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=6">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -1388,6 +1388,25 @@ body.lr-theme-dark :is(#space,.community-root){
         </section>
       </div>
 
+      <section class="lr-character-spotlight-wrap" aria-label="角色展示">
+        <button class="lr-character-spotlight-card is-empty" id="lrCharacterSpotlightOpen" type="button" aria-label="选择角色展示">
+          <img class="lr-character-spotlight-bg" id="lrCharacterSpotlightBackground" alt="角色展示背景" hidden>
+          <span class="lr-character-spotlight-shade" aria-hidden="true"></span>
+          <span class="lr-character-spotlight-content">
+            <span class="lr-character-spotlight-kicker">CHARACTER SPOTLIGHT</span>
+            <span class="lr-character-spotlight-main">
+              <img class="lr-character-spotlight-avatar" id="lrCharacterSpotlightAvatar" alt="角色头像" hidden>
+              <span class="lr-character-spotlight-copy">
+                <strong id="lrCharacterSpotlightName">选择一位喜欢的 CHAR</strong>
+                <span id="lrCharacterSpotlightDescription">为 TA 设置专属背景与介绍。</span>
+              </span>
+            </span>
+          </span>
+          <span class="lr-character-spotlight-arrow" aria-hidden="true">↗</span>
+        </button>
+        <button class="lr-character-spotlight-edit" id="lrCharacterSpotlightManage" type="button" aria-label="管理角色展示">✎</button>
+      </section>
+
     </section>
 
     <section class="launcher-screen" data-launcher-screen="1" aria-label="主页第二页">
@@ -1460,6 +1479,31 @@ body.lr-theme-dark :is(#space,.community-root){
         <label class="lr-home-field"><span>日期名称</span><input id="lrCountdownTitleInput" maxlength="40" placeholder="例如：生日、旅行、纪念日" required></label>
         <label class="lr-home-field"><span>日期</span><input id="lrCountdownDateInput" type="date" required></label>
         <div class="lr-home-actions"><button id="lrCountdownReset" type="button">清空输入</button><button class="primary" id="lrCountdownSave" type="submit">添加日期</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="lr-home-modal" id="lrCharacterSpotlightModal" hidden>
+    <section class="lr-home-sheet" role="dialog" aria-modal="true" aria-labelledby="lrCharacterSpotlightModalTitle">
+      <header class="lr-home-sheet-head"><div><div class="eyebrow">CHARACTER SPOTLIGHT</div><h2 id="lrCharacterSpotlightModalTitle">管理角色展示</h2></div><button class="lr-home-sheet-close" id="lrCharacterSpotlightModalClose" type="button" aria-label="关闭">×</button></header>
+      <div class="lr-character-manager-row">
+        <label class="lr-home-field"><span>我的展示卡</span><select id="lrCharacterCardSelect"><option value="">选择已有展示卡</option></select></label>
+        <button class="lr-character-secondary" id="lrCharacterNewCard" type="button">＋ 新建角色卡</button>
+      </div>
+      <form id="lrCharacterSpotlightForm">
+        <label class="lr-home-field"><span>选择 CHAR</span><select id="lrCharacterPersonSelect" required><option value="">请选择现有角色</option></select></label>
+        <label class="lr-home-field"><span>展示名称</span><input id="lrCharacterDisplayName" maxlength="32" placeholder="默认使用角色名称" required></label>
+        <label class="lr-home-field"><span>专属介绍</span><textarea id="lrCharacterDescription" maxlength="100" placeholder="写一句只属于 TA 的介绍"></textarea></label>
+        <div class="lr-character-upload-grid">
+          <div class="lr-character-upload-item"><span>展示头像</span><img id="lrCharacterAvatarPreview" alt="角色头像预览" hidden><button id="lrCharacterPickAvatar" type="button">上传 / 更换头像</button><button id="lrCharacterClearAvatar" type="button">使用 CHAR 原头像</button><input id="lrCharacterAvatarFile" type="file" accept="image/*" hidden></div>
+          <div class="lr-character-upload-item"><span>专属背景图</span><img id="lrCharacterBackgroundPreview" alt="背景预览" hidden><button id="lrCharacterPickBackground" type="button">上传 / 更换背景</button><button id="lrCharacterClearBackground" type="button">恢复默认背景</button><input id="lrCharacterBackgroundFile" type="file" accept="image/*" hidden></div>
+        </div>
+        <div class="lr-home-actions lr-character-manager-actions">
+          <button id="lrCharacterDeleteCard" type="button">删除此卡</button>
+          <button id="lrCharacterSetActive" type="button">设为主页展示</button>
+          <button class="primary" type="submit">保存角色卡</button>
+        </div>
+        <p class="lr-character-manager-hint" id="lrCharacterManagerHint">可以创建多张展示卡，主页一次显示一张。</p>
       </form>
     </section>
   </div>
@@ -3321,7 +3365,7 @@ body.lr-user-app-open{overflow:hidden}
  <iframe id="lrStoreUserAppIframe" title="LR 用户应用" sandbox="allow-scripts allow-forms"></iframe>
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
-<script src="./home-fixed-layout-v1.js?v=5"></script>
+<script src="./home-fixed-layout-v1.js?v=6"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
