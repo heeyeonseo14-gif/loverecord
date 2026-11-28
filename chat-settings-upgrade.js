@@ -108,6 +108,23 @@
           <p>选择「跟随全局默认」时，使用设置中心的默认主动联系间隔。</p>
         </div>
       </section>
+      <section class="lr-setting-card lr-foreground-autonomous-card" id="lrChatForegroundAutonomousCard">
+        <h3>自主发消息</h3>
+        <p class="sub">LOVE RECORD 保持打开、你正在使用其他功能时，这位 CHAR 可以按设定间隔主动延续之前的话题。关闭页面或切到后台后，此前台计时会暂停；网页关闭后的消息仍由上面的后台保活负责。</p>
+        <label class="lr-switch" for="lrChatForegroundAutonomous" aria-label="允许这位角色在前台自主发消息">
+          <span class="lr-switch-state">自主发消息关闭</span>
+          <input id="lrChatForegroundAutonomous" type="checkbox">
+          <span class="lr-switch-track"></span>
+        </label>
+        <div class="lr-background-interval-setting">
+          <label for="lrChatForegroundInterval">自主发消息间隔</label>
+          <select id="lrChatForegroundInterval"><option value="1">每 1 分钟</option><option value="2" selected>每 2 分钟</option><option value="3">每 3 分钟</option><option value="5">每 5 分钟</option><option value="10">每 10 分钟</option><option value="15">每 15 分钟</option><option value="20">每 20 分钟</option><option value="30">每 30 分钟</option></select>
+        </div>
+        <div class="lr-background-interval-setting">
+          <label for="lrChatForegroundCount">每轮消息数</label>
+          <select id="lrChatForegroundCount"><option value="2-3" selected>自然发送 2–3 条</option><option value="1">每轮 1 条</option></select>
+        </div>
+      </section>
       <section class="lr-setting-card lr-narration-card" id="lrChatNarrationCard">
         <div class="lr-narration-copy">
           <div class="lr-narration-heading"><span class="lr-narration-icon">✧</span><div><h3>旁白模式</h3><p>让对话带上动作、神态与环境描写</p></div></div>
@@ -178,6 +195,25 @@
     if (narration && !narration.dataset.lrBound) { narration.dataset.lrBound='1'; narration.addEventListener('change',()=>{ if(narrationCard){narrationCard.classList.toggle('is-off',!narration.checked);const label=narrationCard.querySelector('.lr-switch-state');if(label)label.textContent=narration.checked?'旁白开启':'旁白关闭';} const id=activeChatContactId;if(id){const latest=chatMeta(id);latest.narrationEnabled=!!narration.checked;writeChatMeta(id,latest);editingChatMeta={...editingChatMeta,narrationEnabled:!!narration.checked};} }); }
     const backgroundInterval = document.getElementById('lrChatBackgroundInterval');
     if (backgroundInterval) backgroundInterval.value = meta.backgroundIntervalMinutes ? String(meta.backgroundIntervalMinutes) : '';
+    const foregroundActivity = document.getElementById('lrChatForegroundAutonomous');
+    const foregroundInterval = document.getElementById('lrChatForegroundInterval');
+    const foregroundCount = document.getElementById('lrChatForegroundCount');
+    if (foregroundActivity) {
+      foregroundActivity.checked = meta.foregroundAutonomousEnabled === true;
+      const label = document.querySelector('#lrChatForegroundAutonomousCard .lr-switch-state');
+      if (label) label.textContent = foregroundActivity.checked ? '自主发消息开启' : '自主发消息关闭';
+      if (!foregroundActivity.dataset.lrBound) {
+        foregroundActivity.dataset.lrBound = '1';
+        foregroundActivity.addEventListener('change', () => {
+          const enabled = !!foregroundActivity.checked;
+          const stateLabel = document.querySelector('#lrChatForegroundAutonomousCard .lr-switch-state');
+          if (stateLabel) stateLabel.textContent = enabled ? '自主发消息开启' : '自主发消息关闭';
+          editingChatMeta = { ...editingChatMeta, foregroundAutonomousEnabled: enabled };
+        });
+      }
+    }
+    if (foregroundInterval) foregroundInterval.value = String(Math.min(30, Math.max(1, Number(meta.foregroundIntervalMinutes) || 2)));
+    if (foregroundCount) foregroundCount.value = String(meta.foregroundMessagesPerRun || '2-3');
     const backgroundActivity = document.getElementById('lrChatBackgroundActivity');
     const backgroundCard = document.getElementById('lrChatBackgroundActivityCard');
     if (backgroundActivity) {
@@ -335,6 +371,9 @@
     editingChatMeta.backgroundActivityEnabled = !!document.getElementById('lrChatBackgroundActivity')?.checked;
     const intervalValue = document.getElementById('lrChatBackgroundInterval')?.value || '';
     editingChatMeta.backgroundIntervalMinutes = intervalValue ? Math.max(15, Math.min(720, Number(intervalValue))) : null;
+    editingChatMeta.foregroundAutonomousEnabled = !!document.getElementById('lrChatForegroundAutonomous')?.checked;
+    editingChatMeta.foregroundIntervalMinutes = Math.min(30, Math.max(1, Number(document.getElementById('lrChatForegroundInterval')?.value) || 2));
+    editingChatMeta.foregroundMessagesPerRun = String(document.getElementById('lrChatForegroundCount')?.value || '2-3') === '1' ? '1' : '2-3';
     $('lrMemoryCount').value = editingChatMeta.memoryCount;
     writeChatMeta(contactId, editingChatMeta);
     let cloudMessage = '';
@@ -343,6 +382,7 @@
       if (result?.cloud === false) cloudMessage = ' · 云端待同步';
     }
     closeChatSettings(); toast('聊天设置已保存 ♡' + cloudMessage);
+    window.LRForegroundAutonomy?.settingsChanged?.();
   }
 
   function init() {

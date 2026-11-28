@@ -67,6 +67,7 @@
     const activity = $('lrBackgroundActivityEnabled'); if (activity) activity.checked = !!settings.activityEnabled;
     const mode = $('lrBackgroundMode'); if (mode) mode.value = 'interval';
     const interval = $('lrBackgroundInterval'); if (interval) interval.value = String(settings.intervalMinutes || 120);
+    const batch = $('lrBackgroundMessagesPerRun'); if (batch) batch.value = String(settings.messagesPerRun || '2-3');
     const quiet = $('lrBackgroundQuietEnabled'); if (quiet) quiet.checked = settings.quietHours?.enabled !== false;
     const start = $('lrBackgroundQuietStart'); if (start) start.value = settings.quietHours?.start || '23:00';
     const end = $('lrBackgroundQuietEnd'); if (end) end.value = settings.quietHours?.end || '08:00';
@@ -208,6 +209,7 @@
       await navigator.serviceWorker.ready;
       status('正在向浏览器申请 FCM 推送令牌…');
       const messaging = firebase.messaging();
+      bindForegroundMessaging(messaging);
       if (typeof messaging.isSupported === 'function' && !(await messaging.isSupported())) {
         throw new Error('当前浏览器环境不支持 Firebase Web Push。请使用最新版 Android Chrome，并确认未处于无痕模式。');
       }
@@ -247,13 +249,14 @@
       mode: $('lrBackgroundMode')?.value || 'interval',
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kuala_Lumpur',
       intervalMinutes: Math.max(15, Math.min(720, Number($('lrBackgroundInterval')?.value) || 120)),
+      messagesPerRun: String($('lrBackgroundMessagesPerRun')?.value || '2-3') === '1' ? '1' : '2-3',
       quietHours: { enabled: !!$('lrBackgroundQuietEnabled')?.checked, start: $('lrBackgroundQuietStart')?.value || '23:00', end: $('lrBackgroundQuietEnd')?.value || '08:00' }
     };
   }
   async function savePreferences() {
     const button = $('lrBackgroundSavePrefs'); if (button) button.disabled = true;
     const prefs = collectPreferences();
-    const old = read(); write({ ...old, activityEnabled: prefs.enabled, mode: prefs.mode, intervalMinutes: prefs.intervalMinutes, quietHours: prefs.quietHours, preferencesSavedAt: Date.now() });
+    const old = read(); write({ ...old, activityEnabled: prefs.enabled, mode: prefs.mode, intervalMinutes: prefs.intervalMinutes, messagesPerRun: prefs.messagesPerRun, quietHours: prefs.quietHours, preferencesSavedAt: Date.now() });
     try {
       const { user, db } = await initFirebase();
       await ensureUserDocument(user, db);
@@ -316,6 +319,14 @@
     return savePreferences();
   }
 
+  let foregroundMessagingBound = false;
+  function bindForegroundMessaging(messagingInstance) {
+    if (foregroundMessagingBound || !messagingInstance || typeof messagingInstance.onMessage !== 'function') return;
+    foregroundMessagingBound = true;
+    messagingInstance.onMessage(() => {
+      syncIncomingMessages().catch((error) => console.warn('[LOVE RECORD] foreground push sync failed', error));
+    });
+  }
   async function refreshRegisteredPushToken() {
     const settings = read();
     if (!settings.pushEnabled || !pushConfigured() || !('Notification' in window) || Notification.permission !== 'granted') return false;
@@ -324,7 +335,9 @@
       if (!user?.uid) return false;
       await ensureUserDocument(user, db);
       const registration = await navigator.serviceWorker.ready;
-      const token = await firebase.messaging().getToken({ vapidKey: window.LR_FIREBASE_VAPID_KEY, serviceWorkerRegistration: registration });
+      const messagingInstance = firebase.messaging();
+      bindForegroundMessaging(messagingInstance);
+      const token = await messagingInstance.getToken({ vapidKey: window.LR_FIREBASE_VAPID_KEY, serviceWorkerRegistration: registration });
       if (!token) return false;
       const tokenHash = await sha256Hex(token);
       const deviceCollection = db.collection('users').doc(user.uid).collection('devices');
@@ -354,7 +367,7 @@
       await db.collection('users').doc(user.uid).collection('background').doc('requests').collection('queue').doc(requestId).set({
         type: 'test-push', status: 'pending', createdAt: Date.now(), deviceCount: devices.size
       });
-      status('测试通知已排入云端队列。GitHub Actions 运行时会发送；定时任务约每 15 分钟检查一次。');
+      status('测试通知已排入云端队列。GitHub Actions 约每 5 分钟巡检一次；实际发送可能延迟。');
     } catch (error) {
       console.error('[LOVE RECORD] test push enqueue failed', error);
       status('测试通知提交失败：' + (error?.message || String(error)));
@@ -479,6 +492,7 @@
               if (typeof window.writeChatThreads === 'function') await window.writeChatThreads(all);
             }
           }
+          window.LRMessageUX?.recordIncoming?.(message.type === 'group' ? 'group' : 'single', String(message.conversationId || ''), doc.id, { title: String(message.type === 'group' ? (message.senderName ? message.senderName + ' · 群聊' : '群聊') : (message.senderName || '角色')), preview: String(message.text || '有新的消息') });
           await doc.ref.update({ status: 'imported', importedAt: firebase.firestore.FieldValue.serverTimestamp() });
           imported++;
         } catch (error) { console.warn('[LOVE RECORD] unable to import a cloud CHAR message', error); }
@@ -535,7 +549,7 @@
       add('本机推送登记', registered ? '已在 Firestore 找到本机活动 Token' : '尚未在 Firestore 确认登记', registered ? 'ok' : 'warn');
       add('后台活动总开关', settings.activityEnabled ? '已开启（本机设置）' : '未开启（本机设置）', settings.activityEnabled ? 'ok' : 'info');
       add('CHAR 云端同步', settings.cloudContextSyncedAt ? '本机记录已完成同步；仍需云端工作流运行' : '尚未同步角色/记忆/API 配置', settings.cloudContextSyncedAt ? 'ok' : 'warn');
-      add('云端定时任务', '需要启用仓库 GitHub Actions 工作流；任务约每 15 分钟检查一次', 'info');
+      add('云端定时任务', 'GitHub Actions 约每 5 分钟巡检一次；实际可能延迟，角色生成仍遵循聊天间隔', 'info');
       const passed = checks.filter((x) => x.level === 'ok').length;
       const pending = checks.filter((x) => x.level === 'warn').length;
       if (summary) summary.textContent = '检测完成 · ' + passed + ' 项通过 · ' + pending + ' 项待处理';

@@ -1664,6 +1664,14 @@ body.lr-theme-dark :is(#space,.community-root){
    <select id="lrGroupBackgroundInterval"><option value="">跟随全局默认</option><option value="15">每 15 分钟</option><option value="30">每 30 分钟</option><option value="60">每 1 小时</option><option value="90">每 1.5 小时</option><option value="120">每 2 小时</option><option value="180">每 3 小时</option><option value="240">每 4 小时</option><option value="360">每 6 小时</option><option value="720">每 12 小时</option></select>
    <div class="sub" style="margin-top:6px">选择「跟随全局默认」时，使用设置中心的默认间隔。</div>
   </section>
+  <section class="lr-group-setting-card lr-group-foreground-auto-card">
+   <h3>自主发消息</h3>
+   <label class="lr-group-background-toggle"><span><strong>允许群聊前台自主发消息</strong><small>LOVE RECORD 保持打开、你正在使用其他功能时，群成员可以按设定间隔自然接话。切到后台或关闭页面后，此前台计时会暂停。</small></span><input id="lrGroupForegroundEnabled" type="checkbox"></label>
+   <label for="lrGroupForegroundInterval" style="display:block;margin-top:13px">自主发消息间隔</label>
+   <select id="lrGroupForegroundInterval"><option value="1">每 1 分钟</option><option value="2" selected>每 2 分钟</option><option value="3">每 3 分钟</option><option value="5">每 5 分钟</option><option value="10">每 10 分钟</option><option value="15">每 15 分钟</option><option value="20">每 20 分钟</option><option value="30">每 30 分钟</option></select>
+   <label for="lrGroupForegroundCount" style="display:block;margin-top:13px">每轮消息数</label>
+   <select id="lrGroupForegroundCount"><option value="2-3" selected>自然发送 2–3 条</option><option value="1">每轮 1 条</option></select>
+  </section>
   <label for="lrGroupReplyLimit">每轮 AI 消息上限</label><select id="lrGroupReplyLimit"><option value="1">1 条</option><option value="2">2 条</option><option value="3">3 条</option><option value="4">4 条</option><option value="5">5 条</option><option value="6">6 条</option><option value="8">8 条</option><option value="10">10 条</option></select>
   <label for="lrGroupBackground">群聊背景底色</label><select id="lrGroupBackground"><option value="#f7f3f9">雾白</option><option value="#f0e9f4">浅薰衣草</option><option value="#f4eee8">奶油米白</option><option value="#e9e3ed">灰紫</option></select>
   <div class="lr-group-image-fields">
@@ -1888,7 +1896,9 @@ body.lr-theme-dark :is(#space,.community-root){
           <option value="90">每 1.5 小时</option><option value="120" selected>每 2 小时</option><option value="180">每 3 小时</option>
           <option value="240">每 4 小时</option><option value="360">每 6 小时</option><option value="720">每 12 小时</option>
         </select>
-        <div class="settings-help">这是所有聊天的默认间隔。你也可以进入单聊或群聊设置，为不同角色和群聊单独指定频率。云端每约 15 分钟检查一次；实际生成时间不会早于你设定的间隔。</div>
+        <label for="lrBackgroundMessagesPerRun">后台每轮主动消息数</label>
+        <select id="lrBackgroundMessagesPerRun"><option value="2-3" selected>自然发送 2–3 条</option><option value="1">每轮 1 条</option></select>
+        <div class="settings-help">这是所有聊天的默认间隔和每轮消息数。云端每约 5 分钟巡检一次，但 GitHub 定时任务可能延迟；角色最短生成间隔仍按你设定的 15 分钟或更长时间计算。</div>
         <label class="lr-background-toggle"><span><strong>夜间免打扰</strong><small>免打扰时段内不发送推送通知。</small></span><input id="lrBackgroundQuietEnabled" type="checkbox" checked></label>
         <div class="lr-background-time-row"><label>开始 <input id="lrBackgroundQuietStart" type="time" value="23:00"></label><label>结束 <input id="lrBackgroundQuietEnd" type="time" value="08:00"></label></div>
         <button class="btn" id="lrBackgroundSavePrefs" type="button">保存后台活动设置</button>
@@ -2201,7 +2211,7 @@ window.__lrChatContactsReady=(async()=>{try{const [ids,storedPeople]=await Promi
 function readChatThreads(){try{return JSON.parse(localStorage.getItem(CHAT_THREADS_KEY)||'{}')}catch{return {}}}
 function writeChatThreads(a){localStorage.setItem(CHAT_THREADS_KEY,JSON.stringify(a));try{window.dispatchEvent(new CustomEvent('lr-chat-threads-updated',{detail:{contactIds:Object.keys(a||{})}}))}catch(e){}}
 function contactById(id){return (state.people||[]).find(p=>String(p.id)===String(id))}
-window.LRGroupChatHost={getPeople:()=>Array.isArray(state.people)?state.people.slice():[],getSelfPersonas:()=>Array.isArray(state.selfPersonas)?state.selfPersonas.slice():[],getPerson:id=>contactById(id)||null,getApiConfig:()=>({apiBase:String(state.apiBase||'').trim(),apiKey:String(state.apiKey||'').trim(),apiModel:String(state.apiModel||'').trim()}),getChatMeta:id=>chatMeta(String(id)),saveChatMeta:async(id,patch)=>{const current=chatMeta(String(id));if(typeof window.saveChatMetaSafely==='function')return await window.saveChatMetaSafely(String(id),{...current,...patch});return writeChatMeta(String(id),{...current,...patch})},getWorldBookPrompt:()=>getWorldBookPromptContext(),waitForWorldBooks:()=>worldBooksReady,getWorldBooks:()=>Array.isArray(state.worlds)?state.worlds.slice():[],getWorldBookPromptById:id=>{const w=(Array.isArray(state.worlds)?state.worlds:[]).find(x=>String(x.id)===String(id));if(!w)return '';const entries=worldEntriesFor(w);const lines=entries.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean);const legacy=[w.description,w.locations,w.rules].map(x=>String(x||'').trim()).filter(Boolean);return ('【'+String(w.name||'未命名世界书')+'】\n'+(lines.length?lines.join('\n'):legacy.join('\n'))).slice(0,18000)},getChatThreads:()=>readChatThreads(),setActiveChatContact:id=>{activeChatContactId=String(id||'')},toast,esc,contactName:id=>{const p=contactById(id);return p?(chatMeta(id).remark||p.name||'联系人'):'已删除联系人'}};
+window.LRGroupChatHost={getPeople:()=>Array.isArray(state.people)?state.people.slice():[],getSelfPersonas:()=>Array.isArray(state.selfPersonas)?state.selfPersonas.slice():[],getPerson:id=>contactById(id)||null,getApiConfig:()=>({apiBase:String(state.apiBase||'').trim(),apiKey:String(state.apiKey||'').trim(),apiModel:String(state.apiModel||'').trim()}),getChatMeta:id=>chatMeta(String(id)),saveChatMeta:async(id,patch)=>{const current=chatMeta(String(id));if(typeof window.saveChatMetaSafely==='function')return await window.saveChatMetaSafely(String(id),{...current,...patch});return writeChatMeta(String(id),{...current,...patch})},getWorldBookPrompt:()=>getWorldBookPromptContext(),waitForWorldBooks:()=>worldBooksReady,getWorldBooks:()=>Array.isArray(state.worlds)?state.worlds.slice():[],getWorldBookPromptById:id=>{const w=(Array.isArray(state.worlds)?state.worlds:[]).find(x=>String(x.id)===String(id));if(!w)return '';const entries=worldEntriesFor(w);const lines=entries.map(e=>[e.note,e.content].filter(Boolean).join('：')).filter(Boolean);const legacy=[w.description,w.locations,w.rules].map(x=>String(x||'').trim()).filter(Boolean);return ('【'+String(w.name||'未命名世界书')+'】\n'+(lines.length?lines.join('\n'):legacy.join('\n'))).slice(0,18000)},getChatThreads:()=>readChatThreads(),getActiveChatContactId:()=>activeChatContactId,setActiveChatContact:id=>{activeChatContactId=String(id||'')},toast,esc,contactName:id=>{const p=contactById(id);return p?(chatMeta(id).remark||p.name||'联系人'):'已删除联系人'}};
 // Read-only context bridge for the Companion app: reuses the selected contact, related world book and existing real chat history.
 window.__LOVE_RECORD_GET_COMPANION_CONTEXT=(id)=>{
  const person=contactById(id);if(!person)return null;
@@ -2281,7 +2291,7 @@ function renderChat(){
  $('chatMessages').scrollTop=$('chatMessages').scrollHeight;
  $('chatHint').textContent=state.apiBase&&state.apiKey&&state.apiModel?'已连接 AI · 对话记录仅保存在本设备':'请先在设置中连接 API，连接后即可和联系人聊天。';
 }
-function openChatContact(id){if(!readChatContacts().includes(id))return;activeChatContactId=id;renderChat()}
+function openChatContact(id){if(!readChatContacts().includes(id))return;activeChatContactId=id;window.LRMessageUX?.markRead?.('single',String(id));renderChat()}
 function openChatSettings(){
  if(!activeChatContactId)return;
  const p=contactById(activeChatContactId);if(!p)return;
@@ -3170,12 +3180,20 @@ window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('sh
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=14',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 
 // Explicitly selected background context provider. Only text/profile fields are exported.
-window.__LOVE_RECORD_GET_BACKGROUND_CONTEXT = async () => {
+window.__LOVE_RECORD_GET_BACKGROUND_CONTEXT = async (options = {}) => {
   await Promise.all([window.__lrLongStorageReady, window.__lrChatStorageReady, window.__LOVE_RECORD_PEOPLE_READY, window.__lrChatContactsReady].filter(Boolean).map(p => Promise.resolve(p).catch(() => {})));
   const apiConfig = { apiBase: String(state.apiBase || '').trim(), apiKey: String(state.apiKey || '').trim(), apiModel: String(state.apiModel || '').trim() };
-  const controls = window.LRBackground?.getEnabledControls?.() || [];
   const conversations = [];
   const people = Array.isArray(state.people) ? state.people : [];
+  const controls = (window.LRBackground?.getEnabledControls?.() || []).slice();
+  if (options?.includeForeground) {
+    for (const person of people) {
+      const meta = typeof chatMeta === 'function' ? chatMeta(String(person.id)) : {};
+      if (meta.foregroundAutonomousEnabled === true && !controls.some(x => x.type === 'single' && String(x.conversationId) === String(person.id))) {
+        controls.push({ type: 'single', conversationId: String(person.id), foregroundOnly: true });
+      }
+    }
+  }
   const worlds = Array.isArray(state.worlds) ? state.worlds : [];
   const selfPersonas = Array.isArray(state.selfPersonas) ? state.selfPersonas : [];
   const threads = typeof readChatThreads === 'function' ? readChatThreads() : {};
@@ -3194,6 +3212,10 @@ window.__LOVE_RECORD_GET_BACKGROUND_CONTEXT = async () => {
     conversations.push({
       type: 'single', conversationId: id, name: String(person.name || '角色'),
       intervalMinutes: meta.backgroundIntervalMinutes || null,
+      backgroundActivityEnabled: meta.backgroundActivityEnabled === true,
+      foregroundAutonomousEnabled: meta.foregroundAutonomousEnabled === true,
+      foregroundIntervalMinutes: Math.min(30, Math.max(1, Number(meta.foregroundIntervalMinutes) || 2)),
+      foregroundMessagesPerRun: String(meta.foregroundMessagesPerRun || '2-3'),
       person: { id: id, name: cleanText(person.name), role: cleanText(person.role), personality: cleanText(person.personality || person.persona), appearance: cleanText(person.appearance), speech: cleanText(person.speech), background: cleanText(person.background), instructions: cleanText(person.instructions) },
       userPersona: persona ? { name: cleanText(persona.name), role: cleanText(persona.role), personality: cleanText(persona.personality), appearance: cleanText(persona.appearance), speech: cleanText(persona.speech), background: cleanText(persona.background) } : { name: cleanText(state.name || '我') },
       worldContext: world ? JSON.stringify({ name: world.name || '', description: world.description || '', locations: world.locations || '', rules: world.rules || '', entries: world.entries || [] }).slice(0, 12000) : '',
@@ -3202,9 +3224,12 @@ window.__LOVE_RECORD_GET_BACKGROUND_CONTEXT = async () => {
     });
   }
   if (window.LRGroupChatActions?.getBackgroundSnapshots) {
-    const groupSnapshots = await window.LRGroupChatActions.getBackgroundSnapshots();
-    const allowedGroups = new Set(controls.filter(x => x.type === 'group').map(x => String(x.conversationId)));
-    for (const group of groupSnapshots.filter(x => allowedGroups.has(String(x.conversationId)))) conversations.push(group);
+    const groupSnapshots = await window.LRGroupChatActions.getBackgroundSnapshots({ includeForeground: !!options?.includeForeground });
+    if (options?.includeForeground) conversations.push(...groupSnapshots);
+    else {
+      const allowedGroups = new Set(controls.filter(x => x.type === 'group').map(x => String(x.conversationId)));
+      conversations.push(...groupSnapshots.filter(x => allowedGroups.has(String(x.conversationId))));
+    }
   }
   return { userName: String(state.name || '用户'), apiConfig, conversations };
 };
@@ -3220,7 +3245,7 @@ if(loveIntro){
 
 
   <script src="./chat-storage-v6.js?v=99"></script>
-  <script src="./chat-settings-upgrade.js?v=21"></script>
+  <script src="./chat-settings-upgrade.js?v=23"></script>
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=26"></script>
@@ -3580,9 +3605,10 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=18"></script>
+<script src="./lr-group-chat-v1.js?v=20"></script>
 <script src="./firebase-config.js?v=7"></script>
-<script src="./lr-background-v1.js?v=9"></script>
+<script src="./lr-background-v1.js?v=11"></script>
+<script src="./lr-messaging-enhancements-v1.js?v=2"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
