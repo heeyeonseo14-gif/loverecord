@@ -259,13 +259,48 @@ async function buildGroupImageContext(historyMessages){
  }
  return parts;
 }
+const GROUP_STICKER_KEYWORDS={
+ '开心':['开心','高兴','快乐','兴奋','欢呼','喜悦','happy','joy','excited'],
+ '伤心':['伤心','难过','哭','哭哭','委屈','眼泪','sad','cry','teary'],
+ '生气':['生气','愤怒','恼火','气死','angry','mad'],
+ '平静':['平静','淡定','无表情','冷静','祥和','心如止水','波澜不惊','安详','平和','calm','neutral','serene'],
+ '可爱':['可爱','萌','猫','小猫','狗','小狗','卡皮巴拉','cute','kawaii'],
+ '撒娇':['撒娇','求抱抱','贴贴','乖','clingy'],
+ '害羞':['害羞','脸红','不好意思','shy','blush'],
+ '亲亲':['亲亲','亲吻','kiss'],
+ '疑惑':['疑惑','不解','问号','困惑','confused'],
+ '无奈':['无奈','无语','叹气','无聊','helpless','bored'],
+ '晚安':['晚安','睡觉','困了','goodnight','sleepy']
+};
+function detectGroupStickerCategory(text,items){
+ const value=String(text||'').toLowerCase(),categories=[...new Set((items||[]).map(x=>String(x?.category||'')).filter(Boolean))];
+ const bracket=value.match(/[【\[（(]\s*([^】\]）)]+)\s*[】\]）)]/);
+ if(bracket&&categories.includes(bracket[1].trim()))return bracket[1].trim();
+ for(const category of categories)if(value.includes(category.toLowerCase()))return category;
+ for(const [category,words] of Object.entries(GROUP_STICKER_KEYWORDS))if(categories.includes(category)&&words.some(word=>value.includes(word.toLowerCase())))return category;
+ return '';
+}
+async function getUsableGroupStickers(){
+ let items=[];
+ try{items=typeof window.lrGetStickerItems==='function'?await window.lrGetStickerItems():[]}catch(error){console.warn('[LOVE RECORD] group sticker metadata unavailable',error);return []}
+ if(!Array.isArray(items)||!items.length)return [];
+ const loader=window.lrLoadChatAttachmentDataUrl||window.LRChatInteractionV11?.loadAttachmentDataUrl;
+ if(typeof loader!=='function'){console.warn('[LOVE RECORD] group sticker attachment loader unavailable');return []}
+ const usable=[];
+ for(const item of items.slice(0,120)){
+  if(!item||item.id==null||item.attachmentId==null)continue;
+  try{const data=await loader(item.attachmentId);if(/^data:image\//i.test(String(data||'')))usable.push({...item});}
+  catch(error){console.warn('[LOVE RECORD] unusable group sticker attachment',item.id,error)}
+ }
+ return usable;
+}
 function buildGroupSystem(group,activeMembers,history,stickerItems=[],stickerEnabled=true){
  const world=group.worldId?(host().getWorldBookPromptById?.(group.worldId)||''):(group.worldBookSelectionConfigured?'':(host().getWorldBookPrompt?.()||''));
  const sharedMemory=String(group.longTermMemory||'').trim();
  const memberProfiles=activeMembers.map(m=>{const p=getPerson(m.contactId)||{},meta=host().getChatMeta?.(m.contactId)||{};return `角色 ID：${m.contactId}\n姓名：${p.name||m.name}\n身份：${p.role||m.role||''}\n人设：${p.persona||p.personality||''}\n背景：${p.background||''}\n人物规则：${p.instructions||'保持人物一致，不要替用户决定行动、台词或情绪。'}\n个人长期记忆：${String(meta.longTermMemory||'暂无').slice(0,2500)}`}).join('\n\n---\n\n');
  const stickerList=stickerItems.map(x=>`${x.id}（分类：${x.category||'自定义'}${x.name?'；名称：'+x.name:''}）`).join('；');
- const stickerRules=stickerEnabled&&stickerItems.length?`\n用户真实收藏的表情包库（只能使用以下 ID）：${stickerList}。每位角色都可以像单聊一样，根据自己的语气、情绪和聊天语境决定是否发送。若要发送，在对应消息对象中填写 stickerId，或在 text 中添加 [[LR_STICKER:准确ID]] 标记。ID 必须逐字来自清单，不能自己编造图片；一次回复最多一张，适合时再发，不要每条都发。若用户明确要求发送或测试表情包，必须从清单中选择一张最合适的真实收藏表情包。`: '\n用户已关闭 AI 表情包同步，或者没有可用的收藏表情包。禁止生成表情包消息。';
- return `你是 LOVE RECORD 的自然群聊调度器。你需要在同一个群聊里扮演多位独立角色。群名：${group.name||'群聊'}。群公告：${group.announcement||'无'}。\n\n可参与的角色资料：\n${memberProfiles}\n\n群聊长期记忆：\n${sharedMemory||'暂无'}\n\n共同世界书：\n${world||'未选择世界书'}\n\n近期群聊历史（每条消息都带有真实 ID，可用于引用）：\n${history||'暂无历史'}\n${stickerRules}\n\n核心规则：\n1. 用户是群主和真实参与者。绝对不要替用户生成台词、行为、想法或情绪。\n2. 自然群聊：根据当前话题判断哪些角色适合发言。不要求所有角色每轮都回复。\n3. 允许角色互相回应、接话、吐槽或延续彼此话题，不要每条都只回答用户。\n4. 每条消息必须由一个真实成员发送，senderId 必须严格来自上方角色 ID。保持每个人的人设、语气、关系与知识边界，不得混淆身份。\n5. 角色只能知道自己亲自经历、被告知或在群聊中看到的事情。\n6. 如果用户 @ 某位角色，优先考虑该角色回应，但仍允许其他角色自然参与。\n7. 本轮最多生成 ${groupReplyLimit(group)} 条 AI 独立消息。上限不是必须凑满的固定目标，但也不要默认每轮只生成三条；如果有多位角色确实适合回应、接话或彼此互动，请充分展开到自然合理的数量，最多不超过上限。没有内容可说时才少发或返回空数组，绝不灌水。\n8. 每条消息应像即时通讯气泡，简洁自然；不写客服式总结，不强行在结尾提问。每位角色分别使用自己的 senderId（角色 ID）；不要用姓名代替 ID。\n9. 如果近期上下文附有群聊图片，必须先观察图片，并结合聊天语境回应图片中能确认的内容；不能确认的细节不要猜。\n10. 当回应某条消息时可以通过 quoteMessageId 引用它；只能使用历史中确实出现的消息 ID，不得编造 ID。特别适合回应用户引用消息或角色之间接话时使用，不要每条都引用。\n11. 角色可以主动发送模拟转账卡：在消息对象中设置 kind="transfer"、amount（正数）、note；这只是聊天模拟，不会发生真实付款。也可在 text 中输出 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]。\n12. 角色可以分享地点卡：仅使用聊天里已提到、设定里已知或角色明确说明的地点，不得假装读取 GPS 或编造用户实时位置。消息对象设置 kind="location"、place、note；也可在 text 中写 [[LR_LOCATION place=地点名称|note=补充说明]]。\n13. 仅输出 JSON，不要 Markdown，不要代码围栏。\n\n返回结构：\n{"messages":[{"senderId":"上方某个角色ID","text":"该角色发出的消息","quoteMessageId":"可选，引用的真实消息ID","kind":"可选：transfer 或 location","amount":"转账金额","note":"备注","place":"地点名称","stickerId":"可选的真实表情包ID"}],"memoryUpdates":[{"contactId":"角色ID","content":"仅记录该角色确实知道且长期有意义的重要事件"}]}\n\nmemoryUpdates 只记录明确、稳定且值得未来记住的事件或约定；不要记录日常寒暄、猜测或角色没有参与/不知道的事情。没有重要事件时返回空数组。内容要短小、准确。`;
+ const stickerRules=stickerEnabled&&stickerItems.length?`\n用户真实收藏的表情包库（只能使用以下 ID）：${stickerList}。每位角色都可以像单聊一样，根据自己的语气、情绪和聊天语境决定是否发送。若要发送，优先在对应消息对象中设置 kind="sticker"、stickerId 为准确 ID；也可在 text 中添加 [[LR_STICKER:准确ID]] 标记。ID 必须逐字来自清单，不能自己编造图片；一次群聊回复最多一张，适合时再发，不要每条都发。用户明确要求发送、测试或展示表情包时，必须选择一张真实收藏图片并返回 kind="sticker" 与 stickerId，不能只用文字说"发了表情包"。`: '\n用户已关闭 AI 表情包同步，或者没有可用的收藏表情包。禁止生成表情包消息。';
+ return `你是 LOVE RECORD 的自然群聊调度器。你需要在同一个群聊里扮演多位独立角色。群名：${group.name||'群聊'}。群公告：${group.announcement||'无'}。\n\n可参与的角色资料：\n${memberProfiles}\n\n群聊长期记忆：\n${sharedMemory||'暂无'}\n\n共同世界书：\n${world||'未选择世界书'}\n\n近期群聊历史（每条消息都带有真实 ID，可用于引用）：\n${history||'暂无历史'}\n${stickerRules}\n\n核心规则：\n1. 用户是群主和真实参与者。绝对不要替用户生成台词、行为、想法或情绪。\n2. 自然群聊：根据当前话题判断哪些角色适合发言。不要求所有角色每轮都回复。\n3. 允许角色互相回应、接话、吐槽或延续彼此话题，不要每条都只回答用户。\n4. 每条消息必须由一个真实成员发送，senderId 必须严格来自上方角色 ID。保持每个人的人设、语气、关系与知识边界，不得混淆身份。\n5. 角色只能知道自己亲自经历、被告知或在群聊中看到的事情。\n6. 如果用户 @ 某位角色，优先考虑该角色回应，但仍允许其他角色自然参与。\n7. 本轮最多生成 ${groupReplyLimit(group)} 条 AI 独立消息。上限不是必须凑满的固定目标，但也不要默认每轮只生成三条；如果有多位角色确实适合回应、接话或彼此互动，请充分展开到自然合理的数量，最多不超过上限。没有内容可说时才少发或返回空数组，绝不灌水。\n8. 每条消息应像即时通讯气泡，简洁自然；不写客服式总结，不强行在结尾提问。每位角色分别使用自己的 senderId（角色 ID）；不要用姓名代替 ID。\n9. 如果近期上下文附有群聊图片，必须先观察图片，并结合聊天语境回应图片中能确认的内容；不能确认的细节不要猜。\n10. 当回应某条消息时可以通过 quoteMessageId 引用它；只能使用历史中确实出现的消息 ID，不得编造 ID。特别适合回应用户引用消息或角色之间接话时使用，不要每条都引用。\n11. 角色可以主动发送模拟转账卡：在消息对象中设置 kind="transfer"、amount（正数）、note；这只是聊天模拟，不会发生真实付款。也可在 text 中输出 [[LR_TRANSFER amount=金额 currency=￥ note=备注]]。\n12. 角色可以分享地点卡：仅使用聊天里已提到、设定里已知或角色明确说明的地点，不得假装读取 GPS 或编造用户实时位置。消息对象设置 kind="location"、place、note；也可在 text 中写 [[LR_LOCATION place=地点名称|note=补充说明]]。\n13. 仅输出 JSON，不要 Markdown，不要代码围栏。\n\n返回结构：\n{"messages":[{"senderId":"上方某个角色ID","text":"该角色发出的消息","quoteMessageId":"可选，引用的真实消息ID","kind":"可选：transfer、location 或 sticker","amount":"转账金额","note":"备注","place":"地点名称","stickerId":"可选的真实表情包ID"}],"memoryUpdates":[{"contactId":"角色ID","content":"仅记录该角色确实知道且长期有意义的重要事件"}]}\n\nmemoryUpdates 只记录明确、稳定且值得未来记住的事件或约定；不要记录日常寒暄、猜测或角色没有参与/不知道的事情。没有重要事件时返回空数组。内容要短小、准确。`;
 }
 async function syncGroupMemory(group,turnId,memoryUpdates){
  if(!Array.isArray(memoryUpdates)||!memoryUpdates.length)return;
@@ -293,15 +328,17 @@ async function generateGroupTurn(group,userMessage,turn){
  const members=groupActiveMembers(group);if(!members.length){notify('群聊没有可用角色，请检查群成员');turn.status='failed';turn.error='群聊没有可用角色';turn.failedAt=Date.now();await saveTurn(turn).catch(()=>{});return}
  busy=true;$('lrGroupSend').disabled=true;$('lrGroupSend').textContent='…';const aiButton=$('lrGroupAiCall');if(aiButton){aiButton.disabled=true;aiButton.setAttribute('aria-busy','true')}$('lrGroupHint').textContent='角色正在思考谁适合加入对话…';
  try{
-  const historyMsgs=(await listMessages(group.id)).filter(m=>m.senderType==='user'||m.senderType==='character').slice(-Math.max(1,Math.min(100,Number(group.memoryCount)||50)));const history=historyMsgs.map(m=>{const sender=m.senderType==='user'?'用户':m.senderType==='system'?'系统':(m.senderNameSnapshot||getName(m.senderId));const quoted=m.quoteMessageId?`（引用 ${m.quotedSenderName||'消息'}：${String(m.quotedText||'').slice(0,160)}）`:'';return `[消息ID:${m.id}] ${sender}：${String(m.text||({image:'[图片]',sticker:'[表情包]',transfer:'[转账卡]',location:'[位置卡]'}[m.kind]||'')).slice(0,700)}${quoted}`}).join('\n');
+  const historyMsgs=(await listMessages(group.id)).filter(m=>m.senderType==='user'||m.senderType==='character').slice(-Math.max(1,Math.min(100,Number(group.memoryCount)||50)));const latestUserMessage=[...historyMsgs].reverse().find(m=>m.senderType==='user')||null;const latestUserText=String(latestUserMessage?.text||'');const history=historyMsgs.map(m=>{const sender=m.senderType==='user'?'用户':m.senderType==='system'?'系统':(m.senderNameSnapshot||getName(m.senderId));const quoted=m.quoteMessageId?`（引用 ${m.quotedSenderName||'消息'}：${String(m.quotedText||'').slice(0,160)}）`:'';return `[消息ID:${m.id}] ${sender}：${String(m.text||({image:'[图片]',sticker:'[表情包]',transfer:'[转账卡]',location:'[位置卡]'}[m.kind]||'')).slice(0,700)}${quoted}`}).join('\n');
   let stickerEnabled=true;try{const pref=localStorage.getItem('love-record-ai-sticker-sync-v1');stickerEnabled=pref===null||pref==='1'}catch(_){}
-  let stickerItems=[];if(stickerEnabled){try{stickerItems=await window.lrGetStickerItems?.()||[]}catch(err){console.warn('[LOVE RECORD] group sticker library read failed',err)}}
-  stickerItems=Array.isArray(stickerItems)?stickerItems.filter(x=>x&&x.id!=null&&x.attachmentId!=null):[];
+  // Load the real library and verify each attachment can be read before exposing it to AI.
+  const stickerItems=stickerEnabled?await getUsableGroupStickers():[];
+  if(stickerEnabled&&!stickerItems.length)console.warn('[LOVE RECORD] sticker sync is on, but no readable saved sticker images were found.');
   const system=buildGroupSystem(group,members,history,stickerItems,stickerEnabled);
-  const mentionNames=members.filter(m=>String(userMessage?.text||'').includes('@'+m.name)||String(userMessage?.text||'').includes('@'+getName(m.contactId))).map(m=>m.name||getName(m.contactId));
+  const activeUserText=String(userMessage?.text||latestUserText||'');
+  const mentionNames=members.filter(m=>activeUserText.includes('@'+m.name)||activeUserText.includes('@'+getName(m.contactId))).map(m=>m.name||getName(m.contactId));
   const imageContext=await buildGroupImageContext(historyMsgs);
   const userPrompt=userMessage?.manualTrigger
-   ?`用户点击了输入栏旁边的「AI 调用」按钮，没有发送新消息。请不要虚构用户的新台词或行动；直接根据最近的群聊上下文、群聊长期记忆、成员人设${imageContext.length?'及随附图片':''}，自然判断哪些角色适合主动延续话题、回应其他成员或开启轻量互动。不要固定只输出三条；如果有多位角色自然有话可说，可以充分利用本轮上限。请严格按 JSON 结构返回。`
+   ?`用户点击了输入栏旁边的「AI 调用」按钮，没有发送新消息。最近一条用户消息是：${latestUserText||'（暂无）'}。请把它作为当前上下文的重要线索；若其中明确要求发送或测试表情包，请按系统规则发送一张真实收藏图片。请不要虚构用户的新台词或行动；直接根据最近的群聊上下文、群聊长期记忆、成员人设${imageContext.length?'及随附图片':''}，自然判断哪些角色适合主动延续话题、回应其他成员或开启轻量互动。不要固定只输出三条；如果有多位角色自然有话可说，可以充分利用本轮上限。请严格按 JSON 结构返回。`
    :`用户刚刚在群聊中发送：\n${userMessage?.text||''}\n\n本轮被 @ 的角色（如果有）：${mentionNames.join('、')||'无'}。${imageContext.length?'请认真观察随附图片，并结合图片内容与聊天语境回应。':''}\n请基于群聊历史生成自然的多人互动；如果有多个角色适合接话，请不要默认只生成三条，并严格按 JSON 结构返回。`;
   const apiMessages=[{role:'system',content:system}];
   const userContent=imageContext.length?[{type:'text',text:'以下是近期群聊中实际发送的图片。请将图片与上方聊天记录对应起来理解：'},...imageContext,{type:'text',text:userPrompt}]:userPrompt;
@@ -313,7 +350,7 @@ async function generateGroupTurn(group,userMessage,turn){
   const mentionedMember=members.find(m=>mentionNames.some(n=>String(n).toLocaleLowerCase()===String(m.name||getName(m.contactId)).toLocaleLowerCase()));
   const messageById=new Map(historyMsgs.map(m=>[String(m.id),m]));
   const outgoing=[];
-  const stickerById=new Map(stickerItems.map(x=>[String(x.id),x]));
+  const stickerById=new Map(stickerItems.map(x=>[String(x.id),x]));let stickerSentThisTurn=false;
   for(const item of rawMessages){
    if(outgoing.length>=limit)break;
    const senderCandidates=[item?.senderId,item?.contactId,item?.senderName,item?.speaker,item?.name,(typeof item?.sender==='object'?(item.sender.id||item.sender.name):item?.sender)].filter(value=>value!=null&&String(value).trim());
@@ -339,20 +376,58 @@ async function generateGroupTurn(group,userMessage,turn){
     if(place)outgoing.push({...common,kind:'location',place,note:String(item?.note??locationMarker?.[2]??'').trim(),text:'位置：'+place});
     text=text.replace(/\[\[\s*LR_LOCATION[^\]]*\]\]/ig,'').trim();
    }
-   const chosenStickerId=String(item?.stickerId??stickerMarker?.[1]??'').trim();
+   let chosenStickerId=String(item?.stickerId??item?.sticker_id??item?.sticker?.id??stickerMarker?.[1]??'').trim();
    if(stickerMarker)text=text.replace(stickerMarker[0],'').trim();
+   if(explicitKind==='sticker'&&(!chosenStickerId||!stickerById.has(chosenStickerId))){
+    const requestedCategory=String(item?.stickerCategory||item?.category||'').trim()||detectGroupStickerCategory(text,stickerItems);
+    const categoryMatch=requestedCategory?stickerItems.find(x=>String(x.category||'')===requestedCategory):null;
+    const nameMatch=stickerItems.find(x=>String(x.name||'').trim()&&text.toLowerCase().includes(String(x.name).toLowerCase()));
+    const selected=nameMatch||categoryMatch||stickerItems[0];if(selected)chosenStickerId=String(selected.id);
+   }
+   if(explicitKind==='sticker')text=text.replace(/\[?表情包[：:]?[^\]】]*[\]】]?/gi,'').trim();
    if(text){
     const bubbles=splitBubbles(text);
     for(const bubble of bubbles){if(outgoing.length>=limit)break;outgoing.push({...common,text:bubble});}
    }
-   if(chosenStickerId&&stickerEnabled&&stickerById.has(chosenStickerId)&&outgoing.length<limit){const sticker=stickerById.get(chosenStickerId);outgoing.push({...common,kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:String(sticker.category||'自定义'),text:'[表情包：'+String(sticker.category||'自定义')+']'});}
+   if(chosenStickerId&&stickerEnabled&&!stickerSentThisTurn&&stickerById.has(chosenStickerId)&&outgoing.length<limit){const sticker=stickerById.get(chosenStickerId);outgoing.push({...common,kind:'sticker',attachmentId:sticker.attachmentId,stickerId:String(sticker.id),stickerCategory:String(sticker.category||'自定义'),text:'[表情包：'+String(sticker.category||'自定义')+']'});stickerSentThisTurn=true;}
    if(!text&&!chosenStickerId&&!transferMarker&&!locationMarker&&explicitKind==='transfer')continue;
+  }
+  // Match the single-chat fallback: a model that forgets the marker must not turn an explicit sticker request into text-only narration.
+  const requestText=String(userMessage?.text||(userMessage?.manualTrigger?latestUserText:''));
+  const requestMessageId=String(userMessage?.id||(userMessage?.manualTrigger?latestUserMessage?.id:''));
+  const handledStickerRequestIds=Array.isArray(group.aiStickerRequestHandledMessageIds)?group.aiStickerRequestHandledMessageIds.map(String):[];
+  const stickerRequestAlreadyHandled=!!requestMessageId&&handledStickerRequestIds.includes(requestMessageId);
+  const explicitStickerRequest=!stickerRequestAlreadyHandled&&/(?:表情包|贴图|贴纸)/i.test(requestText)&&/(?:发|给|来|发送|用|测试|试一下|看看|展示)/i.test(requestText);
+  const modelStickerIntent=rawMessages.some(item=>/(?:表情包|贴图|贴纸)/i.test(String(item?.text??item?.content??item?.message??'')));
+  const alreadyHasSticker=outgoing.some(message=>message.kind==='sticker');
+  if(stickerEnabled&&stickerItems.length&&!alreadyHasSticker&&(explicitStickerRequest||modelStickerIntent)){
+   const combined=[requestText,...rawMessages.map(item=>String(item?.text??item?.content??item?.message??''))].join('\n');
+   const preferredCategory=detectGroupStickerCategory(combined,stickerItems);
+   const filenameMatch=combined.match(/[【\[]([^】\]]+\.(?:png|jpe?g|gif|webp|bmp))】?/i);
+   const named=filenameMatch?stickerItems.find(x=>String(x.name||'').toLowerCase().includes(filenameMatch[1].replace(/\.(?:png|jpe?g|gif|webp|bmp)$/i,'').toLowerCase())):null;
+   const chosen=named||(preferredCategory?stickerItems.find(x=>String(x.category||'')===preferredCategory):null)||stickerItems[0];
+   if(chosen){
+    // Respect the configured per-round cap; replace the last plain text bubble only if the cap is already full.
+    if(outgoing.length>=limit){let replaceIndex=outgoing.map((m,i)=>({m,i})).reverse().find(x=>x.m.kind!=='sticker')?.i;if(replaceIndex==null&&outgoing.length)replaceIndex=outgoing.length-1;if(replaceIndex!=null)outgoing.splice(replaceIndex,1);}
+    if(outgoing.length<limit){
+     const lastSpeaker=[...outgoing].reverse().find(m=>m.senderType==='character');
+     const fallbackMember=members.find(m=>String(m.contactId)===String(lastSpeaker?.senderId))||mentionedMember||members[0];
+     outgoing.push({senderType:'character',senderId:String(fallbackMember.contactId),senderNameSnapshot:fallbackMember.name||getName(fallbackMember.contactId),senderRoleSnapshot:fallbackMember.role||'',turnId:turn.id,kind:'sticker',attachmentId:chosen.attachmentId,stickerId:String(chosen.id),stickerCategory:String(chosen.category||'自定义'),text:'[表情包：'+String(chosen.category||'自定义')+']'});
+    }
+   }
+  }
+  if(explicitStickerRequest&&!outgoing.some(message=>message.kind==='sticker')){
+   if(!stickerEnabled)notify('请先在表情包收藏中开启「AI 同步使用表情包图片」。');
+   else if(!stickerItems.length)notify('表情包同步已开启，但暂时读取不到收藏图片附件；请重新上传这张表情包后再试。');
   }
   for(let index=0;index<outgoing.length&&count<limit;index++){
    const msg={id:makeId('msg'),groupId:group.id,createdAt:nextMessageTimestamp(group),...outgoing[index]};
    await saveMessage(msg);count++;group.lastMessage={text:msg.text||({image:'[图片]',sticker:'[表情包]',transfer:'转账卡',location:'位置分享'}[msg.kind]||'新消息'),senderName:msg.senderNameSnapshot,createdAt:msg.createdAt};await saveGroup(group);
    appendGroupMessageToView(msg,group);
    if(index<outgoing.length-1&&count<limit)await new Promise(resolve=>setTimeout(resolve,560));
+  }
+  if(requestMessageId&&explicitStickerRequest&&outgoing.some(message=>message.kind==='sticker')){
+   group.aiStickerRequestHandledMessageIds=[...handledStickerRequestIds,requestMessageId].slice(-100);await saveGroup(group);
   }
   await syncGroupMemory(group,turn.id,Array.isArray(parsed.memoryUpdates)?parsed.memoryUpdates:[]);
   await maybeSummarizeGroupMemory(group.id);

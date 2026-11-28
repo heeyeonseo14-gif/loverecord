@@ -1845,6 +1845,15 @@ body.lr-theme-dark :is(#space,.community-root){
 
   <section class="settings-subpage" id="settingsAdvanced" aria-labelledby="settingsAdvancedTitle" hidden>
     <div class="settings-subpage-head"><button class="settings-back" type="button" data-settings-back aria-label="返回设置">‹</button><div><div class="eyebrow">ADVANCED &amp; DEVELOPER</div><h2 id="settingsAdvancedTitle">高级与开发者选项</h2></div></div>
+    <div class="card settings-info-card" id="lrBackgroundCard">
+      <div class="settings-section-kicker">BACKGROUND &amp; PUSH</div>
+      <h3>后台活动与消息推送</h3>
+      <p>通过 Firebase Cloud Messaging 接收后台通知。即使 LOVE RECORD 页面不在前台，也可以由系统推送唤醒通知。</p>
+      <div class="settings-diagnostic-row"><span>接入状态</span><strong id="lrBackgroundStatus">等待 Firebase 配置</strong></div>
+      <button class="btn primary" id="lrBackgroundEnable" type="button">启用后台通知</button>
+      <p class="settings-help">提示：当前阶段先接通设备推送与安全设备登记。后台 AI 自主活动需要下一阶段同步角色设定、聊天记忆，并由云端定时任务生成消息；不会在未授权时自动运行。</p>
+      <p class="settings-help">需要 HTTPS、Firebase Web 配置、VAPID 公钥、Anonymous Authentication 和已部署的 Cloud Functions。</p>
+    </div>
     <div class="card settings-info-card"><button class="settings-accordion" id="settingsDiagnosticsToggle" type="button" aria-expanded="false"><span><strong>运行环境与诊断</strong><small>普通用户可保持折叠，需要排查问题时再展开</small></span><span class="settings-accordion-mark">＋</span></button>
       <div id="settingsDiagnosticsPanel" hidden>
         <div class="settings-diagnostic-list" id="settingsDiagnosticList"></div>
@@ -3099,7 +3108,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPro
 $('installBtn').onclick=async()=>{if(!deferredPrompt){toast('请打开浏览器菜单 → 添加到主屏幕');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$('installBox').classList.remove('show')};
 window.addEventListener('appinstalled',()=>{$('installBox').classList.remove('show');toast('已经加入主屏幕啦')});
  
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=8',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js?v=9',{updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{}));
 (async()=>{state.language='zh';ensureSelfPersonas();ensureWorldData();if(state.activeSpaceId&&state.spaces.some(x=>x.id===state.activeSpaceId)){activeSpaceId=state.activeSpaceId;state.events=(state.spaces.find(x=>x.id===activeSpaceId)?.events||[]).slice()}await openDB();renderHome();renderMemories();renderSettings();renderSpacePeople();renderScene();applyLanguage()})();
 
 const loveIntro=document.getElementById('loveIntro');
@@ -3115,7 +3124,7 @@ if(loveIntro){
   <script src="./chat-save-fix.js?v=100"></script>
   <script src="./chat-bubble-split.js?v=18"></script>
   <script src="./chat-interaction-v9.js?v=24"></script>
-  <script src="./chat-interaction-v11.js?v=43"></script>
+  <script src="./chat-interaction-v11.js?v=44"></script>
   <script src="./chat-ux-v13.js?v=100"></script>
   
   <script src="./chat-css-unify.js?v=17"></script>
@@ -3471,7 +3480,9 @@ body.lr-user-app-open{overflow:hidden}
 </div>
 <script src="./lr-store-runtime.js?v=2"></script>
 <script src="./home-fixed-layout-v1.js?v=7"></script>
-<script src="./lr-group-chat-v1.js?v=10"></script>
+<script src="./lr-group-chat-v1.js?v=11"></script>
+<script src="./firebase-config.js?v=1"></script>
+<script src="./lr-background-v1.js?v=1"></script>
 
 <style id="lr-dream-fate-launcher-icon-v1">
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}

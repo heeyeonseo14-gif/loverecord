@@ -301,11 +301,12 @@
   }
   async function writeStickers(items){
     stickerCache=validStickerItems(items);
-    try{localStorage.setItem(STICKER_META_KEY,JSON.stringify(stickerCache));return true}
-    catch(localError){
-      try{await saveStickerMeta(stickerCache);return true}
-      catch(dbError){console.error('[LOVE RECORD] sticker metadata save failed',localError,dbError);return false}
-    }
+    let localSaved=false,dbSaved=false,localError=null,dbError=null;
+    try{localStorage.setItem(STICKER_META_KEY,JSON.stringify(stickerCache));localSaved=true}catch(error){localError=error}
+    // Keep both copies current because loadStickerMeta prefers the IndexedDB record on next launch.
+    try{await saveStickerMeta(stickerCache);dbSaved=true}catch(error){dbError=error}
+    if(localSaved||dbSaved)return true;
+    console.error('[LOVE RECORD] sticker metadata save failed',localError,dbError);return false;
   }
   // Expose the same saved collection to the chat AI, including IndexedDB fallback metadata.
   window.lrGetStickerItems=async()=>{const items=await loadStickerMeta();return items.map(x=>({...x}));};
