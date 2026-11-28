@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="LOVE RECORD">
 <link rel="manifest" href="./manifest.json?v=118">
 <link rel="icon" href="./icon-192.png">
-<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=9">
+<link rel="stylesheet" href="./home-fixed-layout-v1.css?v=10">
 <title>LOVE RECORD</title>
 <style>
 :root{--bg:#f7f3f9;--card:#fff;--ink:#302b33;--muted:#8f8792;--line:#e2dce4;--soft:#eee5f2;--purple:#b79bc7;--dark:#302c32}
@@ -1246,7 +1246,7 @@ body.lr-theme-monochrome #space,
 body.lr-theme-dark #space{
   --bg:#f7f3f9!important;--card:#fff!important;--ink:#302b33!important;
   --muted:#8f8792!important;--line:#e2dce4!important;--soft:#eee5f2!important;
-  --purple:#b79bc7!important;--accent:#b79bc7!important;--accent-soft:#b79bc7!important;
+  --purple:var(--lr-accent,#b79bc7)!important;--accent:var(--lr-accent,#b79bc7)!important;--accent-soft:var(--lr-accent,#b79bc7)!important;
 }
 /* LOVE RECORD Theme Engine v1 — shared surface bridge.
    Deliberately excludes #space and community-owned surfaces. */
@@ -2723,7 +2723,8 @@ function applyAppearance(){const root=document.documentElement;
   root.style.setProperty('--lr-border',palette.line);
   root.style.setProperty('--lr-text',palette.ink);
   root.style.setProperty('--lr-muted',palette.muted);
-  root.style.setProperty('--lr-accent',palette.accent);
+  root.style.setProperty('--lr-accent',appearance.accent||palette.accent);
+  const accentHex=String(appearance.accent||palette.accent||'#b79bc7').replace('#','');const accentNum=parseInt(accentHex.length===3?accentHex.split('').map(x=>x+x).join(''):accentHex,16);const accentRgb=Number.isFinite(accentNum)?[(accentNum>>16)&255,(accentNum>>8)&255,accentNum&255]:[183,155,199];root.style.setProperty('--lr-accent-rgb',accentRgb.join(','));root.style.setProperty('--lr-accent-soft','color-mix(in srgb, var(--lr-accent) 14%, white)');root.style.setProperty('--lr-accent-border','color-mix(in srgb, var(--lr-accent) 35%, white)');
   root.style.setProperty('--purple',appearance.accent||palette.purple);
   root.style.setProperty('--ui-font-size',appearance.fontSize+'px');root.style.setProperty('--ui-scale',String(appearance.fontSize/15));root.style.setProperty('--title-scale',String(appearance.titleScale));root.style.setProperty('--accent',appearance.accent);root.style.setProperty('--accent-soft',appearance.accent);root.style.setProperty('--card-radius',appearance.radius+'px');root.style.setProperty('--card-blur',appearance.blur+'px');root.style.setProperty('--card-opacity',appearance.opacity);const bg=bgChoices[appearance.bg]||bgChoices.soft;root.style.setProperty('--preview-a',bg.a);root.style.setProperty('--preview-b',bg.b);root.style.setProperty('--scene-a',bg.a);root.style.setProperty('--scene-b',bg.b);document.body.style.fontFamily=appearance.font==='custom'?'LRCustomFont,sans-serif':(fontChoices[appearance.font]?.value||fontChoices.system.value);root.style.setProperty('--lr-global-font',document.body.style.fontFamily);document.body.classList.toggle('dark-mode',!!appearance.dark);document.body.classList.remove('lr-theme-liquid');document.body.style.backgroundImage='';document.body.style.backgroundSize='';document.body.style.backgroundAttachment='';document.body.style.backgroundPosition='';const launcherSurface=document.getElementById('launcher');const homeBgLayer=document.getElementById('lr-home-background-fix-layer');if(homeBgLayer){homeBgLayer.style.backgroundImage=appearance.bgData?'linear-gradient(rgba(247,243,249,.07),rgba(247,243,249,.07)),url("'+appearance.bgData+'")':'';homeBgLayer.style.backgroundSize='cover';homeBgLayer.style.backgroundPosition='center center';homeBgLayer.style.backgroundRepeat='no-repeat';}if(launcherSurface){launcherSurface.style.backgroundImage='';launcherSurface.style.backgroundColor='transparent';}document.documentElement.style.setProperty('--card-shadow',appearance.dark?'0 18px 45px rgba(0,0,0,.25)':'0 18px 45px rgba(77,58,88,.07)');document.documentElement.style.setProperty('--soft',appearance.dark?'#30263a':'#eee5f2');if(!appearance.motion){document.documentElement.style.setProperty('--motion-duration','0s')}else{document.documentElement.style.setProperty('--motion-duration','.25s')}saveAppearance();updateAppearanceControls()}
 function renderAppearanceControls(){const pg=$('presetGrid');pg.innerHTML=Object.entries(presetChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.preset===k?'active':'')+'" type="button" data-preset="'+k+'">'+esc(v.name)+'</button>').join('');const fg=$('fontGrid');fg.innerHTML=Object.entries(fontChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.font===k?'active':'')+'" type="button" data-font="'+k+'" style="font-family:'+v.value+'">'+esc(v.name)+'</button>').join('');$('accentSwatches').innerHTML=accentChoices.map(([k])=>'<button class="swatch '+(appearance.accent===k?'active':'')+'" type="button" data-accent="'+k+'" style="background:'+k+'" aria-label="'+k+'"></button>').join('');$('backgroundGrid').innerHTML=Object.entries(bgChoices).map(([k,v])=>'<button class="appearance-option '+(appearance.bg===k?'active':'')+'" type="button" data-bg="'+k+'">'+esc(v.name)+'</button>').join('');updateAppearanceControls()}
@@ -3130,7 +3131,7 @@ document.addEventListener('click',function(e){
   if(b){e.preventDefault();location.href='./shiyi.html';}
 });
 </script>
-<script src="./lr-appearance-enhancements-v1.js?v=1"></script>
+<script src="./lr-appearance-enhancements-v1.js?v=2"></script>
 <script src="./global-font.js?v=99"></script>
 
 <script>
@@ -3234,6 +3235,7 @@ body.lr-external-app-open{overflow:hidden}
   if(event.origin!==location.origin||event.source!==iframe.contentWindow)return;
   if(event.data&&event.data.type==='LR_CLOSE_EXTERNAL_APP'){closeApp();return;}
   if(event.data&&event.data.type==='LR_APPEARANCE_SETTINGS_UPDATED'){
+   if(event.data.appearance&&typeof event.data.appearance==='object'){appearance=Object.assign({},appearance,event.data.appearance);applyAppearance();}
    if(typeof window.LRAppearanceEnhancementsApply==='function')window.LRAppearanceEnhancementsApply();
   }
  });
@@ -3371,6 +3373,53 @@ body.lr-user-app-open{overflow:hidden}
 #launcher .launcher-grid .app-icon-dream-fate:not(.has-custom-icon){background:linear-gradient(145deg,#f8f1e5,#e6d8c0)!important;color:#9a7e52!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(154,126,82,.15),inset 0 1px 0 rgba(255,255,255,.95)!important}
 #launcher .launcher-grid .app-label-dream-fate{font-size:9px!important;letter-spacing:.45px!important;white-space:nowrap!important}
 #launcher .launcher-grid .app-icon-weather:not(.has-custom-icon){background:linear-gradient(145deg,#f1f6ee,#dce8d8)!important;color:#718a73!important;border:1px solid rgba(255,255,255,.96)!important;box-shadow:0 9px 22px rgba(104,133,103,.14),inset 0 1px 0 rgba(255,255,255,.96)!important}
+</style>
+
+<style id="lr-global-accent-skin-v2">
+:root{--lr-accent-soft:color-mix(in srgb,var(--lr-accent,#b79bc7) 14%,white);--lr-accent-border:color-mix(in srgb,var(--lr-accent,#b79bc7) 34%,white)}
+/* Semantic action buttons and selected controls */
+button.primary,.btn.primary,a.primary,.lr-home-actions button.primary,.settings-content button.primary{background:var(--lr-accent,#b79bc7)!important;border-color:var(--lr-accent,#b79bc7)!important;color:#fff!important}
+input[type=range],input[type=checkbox],input[type=radio],select:focus{accent-color:var(--lr-accent,#b79bc7)!important}
+.appearance-option.active,.space-person-card.active,.chat-picker-item:has(input:checked),.check-pill:has(input:checked){border-color:var(--lr-accent,#b79bc7)!important;box-shadow:0 0 0 2px var(--lr-accent-soft)!important}
+.nav-btn.active .nav-dot,#launcher .launcher-pages button.active{background:var(--lr-accent,#b79bc7)!important}
+#settings .settings-entry-icon{background:var(--lr-accent-soft)!important;border-color:var(--lr-accent-border)!important;color:var(--lr-accent)!important}
+#settings .settings-entry-icon svg,.dock-icon-svg{stroke:var(--lr-accent)!important}
+#settings .settings-entry-arrow,#settings .settings-section-kicker{color:var(--lr-accent)!important}
+.settings-accordion-mark{background:var(--lr-accent-soft)!important;color:var(--lr-accent)!important}
+.chatrow .btn.primary,#lrChatThemeModal .primary{background:var(--lr-accent)!important;border-color:var(--lr-accent)!important;color:#fff!important}
+.love-intro{background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--lr-accent) 12%,white) 0%,color-mix(in srgb,var(--lr-accent) 58%,white) 48%,var(--lr-accent) 100%)!important}
+.love-intro::after{background:color-mix(in srgb,var(--lr-accent) 72%,#51445a)!important}
+.love-intro-mark{box-shadow:0 0 0 8px color-mix(in srgb,var(--lr-accent) 22%,transparent)!important}
+.love-intro-line{background:color-mix(in srgb,var(--lr-accent) 65%,#33283a)!important}
+/* Home app glyph tiles follow the chosen accent; user-uploaded artwork remains untouched. */
+#launcher .launcher-grid .launcher-app .app-icon:not(.has-custom-icon){color:var(--lr-accent)!important;background:radial-gradient(ellipse at 28% 12%,rgba(255,255,255,.98) 0%,rgba(255,255,255,.48) 25%,transparent 56%),linear-gradient(145deg,color-mix(in srgb,var(--lr-accent) 10%,white),color-mix(in srgb,var(--lr-accent) 27%,white))!important;border-color:var(--lr-accent-border)!important;box-shadow:0 9px 23px color-mix(in srgb,var(--lr-accent) 15%,transparent),inset 0 1px 0 rgba(255,255,255,.96)!important}
+#launcher .launcher-grid .launcher-app .app-icon.has-custom-icon{border-color:var(--lr-accent-border)!important}
+/* Homepage details and controls */
+#launcher .lr-home-music-progress{accent-color:var(--lr-accent)!important;background:var(--lr-accent-soft)!important}
+#launcher .lr-home-music-progress::-webkit-slider-thumb{background:var(--lr-accent)!important}
+#launcher .lr-home-music-progress::-moz-range-thumb{background:var(--lr-accent)!important}
+#launcher .lr-home-music-controls button{color:var(--lr-accent)!important}
+#launcher .lr-home-music-controls button[data-lr-music-action="play"]{background:var(--lr-accent)!important;color:#fff!important}
+#launcher .lr-countdown-manage,#launcher .lr-countdown-number,#launcher .lr-character-spotlight-arrow,#launcher .lr-character-spotlight-edit{color:var(--lr-accent)!important}
+#launcher .lr-character-spotlight-edit{border-color:var(--lr-accent-border)!important}
+/* Music app: controls, progress, playback and selection accents */
+.music-controls button,.music-controls button.active,.music-mini>button,.music-search-row button{color:var(--lr-accent)!important}
+.music-controls .music-main-play{background:linear-gradient(145deg,color-mix(in srgb,var(--lr-accent) 74%,white),var(--lr-accent))!important;color:#fff!important;box-shadow:0 8px 20px color-mix(in srgb,var(--lr-accent) 32%,transparent)!important}
+.music-track-play{background:var(--lr-accent-soft)!important;color:var(--lr-accent)!important}
+.music-progress-row input,.music-volume input{accent-color:var(--lr-accent)!important}
+.music-mini-bar i{background:var(--lr-accent)!important}
+.music-upload{border-color:var(--lr-accent-border)!important;color:var(--lr-accent)!important;background:var(--lr-accent-soft)!important}
+.music-upload>b{background:var(--lr-accent-soft)!important;color:var(--lr-accent)!important}
+.music-controls button.active,.music-playback-view .music-controls button.active{color:var(--lr-accent)!important}
+.music-playback-view .music-controls .music-main-play{background:linear-gradient(145deg,color-mix(in srgb,var(--lr-accent) 74%,white),var(--lr-accent))!important;box-shadow:0 10px 24px color-mix(in srgb,var(--lr-accent) 30%,transparent)!important}
+#musicMini .music-vinyl-label:before{border-color:var(--lr-accent-border)!important}
+.music-player-art{background:radial-gradient(circle at 25% 20%,color-mix(in srgb,var(--lr-accent) 28%,white),var(--lr-accent) 58%,color-mix(in srgb,var(--lr-accent) 62%,#51445a))!important}
+.music-toast{background:var(--lr-accent,#b79bc7)!important}
+.our-listening-room .music-together-heart{color:var(--lr-accent,#b79bc7)!important}
+.home-moment-mini .polaroid-add{color:var(--lr-accent,#b79bc7)!important;border-color:var(--lr-accent-border)!important}
+/* Accent markers across common app surfaces */
+.status-dot,.nav-btn.active .nav-dot,.comment-author,.history-label{color:var(--lr-accent)!important}
+.chat-settings-back,.settings-back{color:var(--lr-accent)!important;border-color:var(--lr-accent-border)!important}
 </style>
 </body>
 </html>
