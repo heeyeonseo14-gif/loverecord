@@ -1066,6 +1066,7 @@ body.lr-theme-purple .launcher-app .app-icon:not(.has-custom-icon) {
 }
 body.lr-theme-purple .launcher-app:active .app-icon:not(.has-custom-icon){box-shadow:0 5px 13px rgba(118,87,145,.12),inset 0 1px 0 rgba(255,255,255,.94)!important}
 .app-icon.has-custom-icon{padding:0!important;overflow:hidden!important;position:relative!important;isolation:isolate}
+.app-icon .lr-farm-icon{display:block;width:38px;height:38px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .app-icon.has-custom-icon>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;border-radius:inherit!important;filter:none!important;-webkit-filter:none!important}
 #lr-home-background-fix-layer,#lr-home-background-fix-layer::before,#lr-home-background-fix-layer::after{filter:none!important;-webkit-filter:none!important}
 </style>
@@ -1433,7 +1434,7 @@ body.lr-theme-dark :is(#space,.community-root){
         <div id="lrCountdownDisplay"><div class="lr-countdown-empty">留下一个想认真期待的日子。</div></div>
       </section>
       <section class="launcher-grid lr-secondary-app-grid lr-page-two-app-grid" data-launcher-grid="more" aria-label="第二页应用">
-        <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)">🎮</span><span>游戏</span></button>
+        <button class="launcher-app" data-launch-games type="button" data-drag-id="app-games" aria-label="农场"><span class="app-icon" style="background:linear-gradient(145deg,#f1e5ff,#b995e6);color:#67458e;box-shadow:0 8px 24px rgba(132,103,169,.18)"><svg class="lr-farm-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path d="M6.5 21.2 24 8.5l17.5 12.7"/><path d="M11 19.5v20.2h26V19.5"/><path d="M19 39.7V27h10v12.7"/><path d="M15.5 25h2.8m11.4 0h2.8"/><path d="M24 8.5V4.2"/><path d="M22 7.4c-1.1-3.1-4.2-3.5-5.8-1.5 1.6 1.8 3.5 2.3 5.8 1.5Z"/><path d="M26 7.4c1.1-3.1 4.2-3.5 5.8-1.5-1.6 1.8-3.5 2.3-5.8 1.5Z"/></svg></span><span>农场</span></button>
         <a class="launcher-app" href="appearance.html" data-drag-id="app-appearance" aria-label="美化" style="text-decoration:none"><span class="app-icon" style="background:linear-gradient(145deg,#fffaff,#ded0f0);color:#8f72b5;box-shadow:0 8px 24px rgba(132,103,169,.16)">✧</span><span>美化</span></a>
         <button class="launcher-app" type="button" data-checkin-placeholder data-drag-id="app-checkin" aria-label="查岗（周末开放）"><span class="app-icon" style="background:linear-gradient(145deg,rgba(255,252,255,.98),rgba(218,201,239,.88));color:#8f72b5;box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 10px 26px rgba(132,103,169,.18);border:1px solid rgba(255,255,255,.9)">◉</span><span>查岗</span></button>
         <button class="launcher-app" data-launch-star-assistant type="button" data-drag-id="app-star-assistant"><span class="app-icon" style="background:linear-gradient(145deg,#fff5fb,#e8d5f4);color:#a56b9c;box-shadow:0 8px 24px rgba(165,107,156,.16)">✦</span><span>星星助手</span></button>
@@ -1740,7 +1741,7 @@ body.lr-theme-dark :is(#space,.community-root){
       <div><strong>空间</strong><small>独立世界与剧情</small></div><div><strong>聊天</strong><small>AI 联系人对话</small></div>
       <div><strong>社区</strong><small>帖子与互动</small></div><div><strong>日记</strong><small>日常记录与回顾</small></div>
       <div><strong>音乐</strong><small>音乐搜索与收藏</small></div><div><strong>美化</strong><small>主题、字体与图标</small></div>
-      <div><strong>游戏</strong><small>共同农场与游戏</small></div>
+      <div><strong>农场</strong><small>共同农场与生活</small></div>
       <div><strong>查岗</strong><small>AI 模拟手机</small></div>
       <div><strong>寻梦</strong><small>解梦、算命与关系配对</small></div>
       <div><strong>天气</strong><small>实时天气、城市搜索与日程日历</small></div>
@@ -2737,7 +2738,7 @@ const homeIconBindings=[
  {id:'app-star-assistant',symbol:'✦'},{id:'app-dream-fate',symbol:'✧'},{id:'app-weather',symbol:'☼'},{id:'app-zodiac',symbol:'✶'},{id:'app-space',symbol:'♡'},
  {id:'app-chat',symbol:'♡'},{id:'app-community',symbol:'◎'},
  {id:'app-music',symbol:'♫'},{id:'app-appearance',symbol:'✧'},
- {id:'app-games',symbol:'🎮'},{id:'app-checkin',symbol:'◉'},{id:'app-lr-store',symbol:'✧'}
+ {id:'app-games',symbol:'<svg class=\"lr-farm-icon\" viewBox=\"0 0 48 48\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6.5 21.2 24 8.5l17.5 12.7\"/><path d=\"M11 19.5v20.2h26V19.5\"/><path d=\"M19 39.7V27h10v12.7\"/><path d=\"M15.5 25h2.8m11.4 0h2.8\"/><path d=\"M24 8.5V4.2\"/><path d=\"M22 7.4c-1.1-3.1-4.2-3.5-5.8-1.5 1.6 1.8 3.5 2.3 5.8 1.5Z\"/><path d=\"M26 7.4c1.1-3.1 4.2-3.5 5.8-1.5-1.6 1.8-3.5 2.3-5.8 1.5Z\"/></svg>'},{id:'app-checkin',symbol:'◉'},{id:'app-lr-store',symbol:'✧'}
 ];
 document.querySelector('[data-checkin-placeholder]')?.addEventListener('click',()=>{location.href='./checkin.html';});
 async function loadHomeCustomIcons(){
@@ -2752,7 +2753,7 @@ async function loadHomeCustomIcons(){
     const img=document.createElement('img');img.src=data;img.alt='';img.draggable=false;host.appendChild(img);
    }else{
     host.classList.remove('has-custom-icon');
-    host.textContent=item.symbol;
+    host.innerHTML=item.symbol;
    }
   }catch(e){}
  }
