@@ -48,15 +48,24 @@ function recentTranscript(conversation) {
     .map((m) => `[${m.role === 'user' ? '用户' : (m.name || '角色')}] ${text(m.text, 1800)}`)
     .filter(Boolean).join('\n').slice(-18000);
 }
+function safeUserName(value, fallback = '用户') {
+  const name = text(value, 80).trim();
+  const oldAccountDefaults = ['\u0059\u0041\u004e\u0059\u0041\u004e', '\u598d\u598d'];
+  return !name || oldAccountDefaults.includes(name.toUpperCase()) ? fallback : name;
+}
 function makePrompt(userName, conversation, settings) {
   const time = new Date().toLocaleString('zh-CN', { timeZone: settings.timezone || 'Asia/Kuala_Lumpur', hour12: false });
   const transcript = recentTranscript(conversation) || '目前没有近期聊天记录。请以温和自然的方式开启一段简短对话。';
+  const selfProfile = conversation.userPersona || {};
+  const groupProfile = conversation.userProfile || {};
+  const explicitProfileName = text(groupProfile.nickname, 80).trim() || text(selfProfile.nickname, 80).trim() || text(selfProfile.name, 80).trim();
+  const actualUserName = explicitProfileName || safeUserName(userName, '用户');
   const oneOnly = String(settings.messagesPerRun || '2-3') === '1';
   const countRule = oneOnly ? '本轮只生成 1 条消息。' : '本轮自然生成 2–3 条彼此衔接的独立聊天消息；每条都应像单独发送的气泡，不要把多条合并成一大段。不要为了凑数灌水；上下文不足时可以只发 1 条。';
   const baseRules = [
     '你是 LOVE RECORD 中持续存在的角色，不是客服或任务机器人。',
     '你的表达要符合人物设定、最近的真实聊天和长期记忆，不要编造用户已经做过的事。',
-    `用户称呼：${text(userName, 80)}。当前时间：${time}。`,
+    `用户称呼：${actualUserName}。只有使用用户资料里的昵称或自设名称时才可直接称呼用户；不得猜测、套用其他用户的姓名，也不要替用户发言。当前时间：${time}。`,
     `世界书/共同世界：${text(conversation.worldContext, 12000) || '无'}`,
     `长期记忆：${text(conversation.longMemory, 10000) || '无'}`,
     `最近对话：\n${transcript}`,
@@ -67,12 +76,13 @@ function makePrompt(userName, conversation, settings) {
     const members = (Array.isArray(conversation.members) ? conversation.members : []).slice(0, 12);
     const list = members.map((m) => `ID=${text(m.id, 180)}；名字=${text(m.name, 80)}；身份=${text(m.role, 180)}；性格=${text(m.personality, 1000)}；外貌=${text(m.appearance, 800)}；说话方式=${text(m.speech, 800)}；背景=${text(m.background, 1000)}；长期记忆=${text(m.longMemory, 5000)}；规则=${text(m.instructions, 1000)}`).join('\n');
     const self = conversation.userPersona || {};
-    const system = baseRules.join('\n') + `\n用户自设：${text(self.name, 100)}；${text(self.role, 500)}；${text(self.personality, 1000)}；${text(self.background, 1000)}。不要替用户说话。\n这是一个多人群聊。可以由同一位或不同成员连续发言；每条消息的 senderId 必须严格来自成员列表。只返回 JSON：{"messages":[{"senderId":"成员ID","text":"消息正文"}]}。messages 数组最多 3 项。\n成员列表：\n${list}`;
+    const profile = conversation.userProfile || {};
+    const system = baseRules.join('\n') + `\n用户群聊资料：群昵称=${actualUserName}；群头像=${profile.avatar ? '已设置' : '未设置'}。用户自设：${text(self.name, 100)}；用户昵称=${text(self.nickname, 80)}；${text(self.role, 500)}；${text(self.personality, 1000)}；${text(self.appearance, 800)}；${text(self.speech, 800)}；${text(self.background, 1000)}。如需自然称呼用户，只使用群昵称“${actualUserName}”；如果需要 @ 用户，正文中写作 @${actualUserName}；绝不替用户说话。\n这是一个多人群聊。可以由同一位或不同成员连续发言；每条消息的 senderId 必须严格来自成员列表。只返回 JSON：{"messages":[{"senderId":"成员ID","text":"消息正文"}]}。messages 数组最多 3 项。\n成员列表：\n${list}`;
     return { system, user: `群聊名称：${text(conversation.name, 120)}\n群公告：${text(conversation.announcement, 2000) || '无'}\n请根据上下文自然延续群聊，${oneOnly ? '返回 1 条' : '返回 2–3 条'}有衔接的独立消息。` };
   }
   const p = conversation.person || {};
   const self = conversation.userPersona || {};
-  const system = baseRules.join('\n') + `\n你正在扮演：${text(p.name, 100)}。身份：${text(p.role, 500)}。性格：${text(p.personality, 2500)}。外貌：${text(p.appearance, 1200)}。说话方式：${text(p.speech, 1200)}。背景：${text(p.background, 1800)}。人物规则：${text(p.instructions, 1800)}。\n用户自设：${text(self.name, 100)}；${text(self.role, 500)}；${text(self.personality, 1000)}。不要代替用户说话。`;
+  const system = baseRules.join('\n') + `\n你正在扮演：${text(p.name, 100)}。身份：${text(p.role, 500)}。性格：${text(p.personality, 2500)}。外貌：${text(p.appearance, 1200)}。说话方式：${text(p.speech, 1200)}。背景：${text(p.background, 1800)}。人物规则：${text(p.instructions, 1800)}。\n用户自设：${text(self.name, 100)}；用户昵称=${text(self.nickname, 80) || actualUserName}；${text(self.role, 500)}；${text(self.personality, 1000)}；${text(self.appearance, 800)}；${text(self.speech, 800)}；${text(self.background, 1000)}。如需称呼用户，只使用“${actualUserName}”，如需 @ 用户则写作 @${actualUserName}，不要猜测或使用其他姓名；不要代替用户说话。`;
   return { system, user: '现在请你自然地主动给用户发一组连续消息。只返回 JSON：{"messages":["第一条消息","第二条消息"]}，最多 3 条。每条分别是一条聊天气泡，不要加角色名、引号或解释。' };
 }
 async function callAi(api, prompt) {
