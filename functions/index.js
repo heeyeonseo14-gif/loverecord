@@ -21,6 +21,27 @@ exports.registerPushDevice = onCall(async (request) => {
   return { ok: true };
 });
 
+exports.saveBackgroundConversationControl = onCall(async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', '请先完成 Firebase 登录。');
+  const d = request.data || {};
+  const type = d.type === 'group' ? 'group' : d.type === 'single' ? 'single' : '';
+  const conversationId = String(d.conversationId || '').trim();
+  if (!type || !conversationId || conversationId.length > 180) {
+    throw new HttpsError('invalid-argument', '聊天类型或聊天 ID 无效。');
+  }
+  // Hash IDs for safe, bounded Firestore document paths; retain the original ID as data.
+  const crypto = require('crypto');
+  const documentId = crypto.createHash('sha256').update(type + ':' + conversationId).digest('hex');
+  const control = {
+    type,
+    conversationId,
+    enabled: !!d.enabled,
+    updatedAt: FieldValue.serverTimestamp()
+  };
+  await db.doc(`users/${request.auth.uid}/background/settings/conversations/${documentId}`).set(control, { merge: true });
+  return { ok: true, control: { ...control, updatedAt: null } };
+});
+
 exports.saveBackgroundPreferences = onCall(async (request) => {
   if (!request.auth) throw new HttpsError('unauthenticated', '请先完成 Firebase 登录。');
   const d = request.data || {};
@@ -49,13 +70,21 @@ exports.characterActivityScheduler = onSchedule({ schedule: 'every 15 minutes', 
   for (const user of users.docs) {
     const pref = await user.ref.collection('background').doc('settings').get();
     if (!pref.exists || !pref.data().enabled) continue;
+    const controls = await user.ref.collection('background').doc('settings').collection('conversations').where('enabled', '==', true).get();
+    if (controls.empty) {
+      await user.ref.collection('background').doc('schedulerState').set({ lastCheckedAt: FieldValue.serverTimestamp(), status: 'no-enabled-conversations', enabledConversationCount: 0 }, { merge: true });
+      continue;
+    }
     const profile = await user.ref.collection('background').doc('cloudProfile').get();
-    if (!profile.exists || !profile.data().consentToBackgroundAI) continue;
+    if (!profile.exists || !profile.data().consentToBackgroundAI) {
+      await user.ref.collection('background').doc('schedulerState').set({ lastCheckedAt: FieldValue.serverTimestamp(), status: 'awaiting-character-context-v1', enabledConversationCount: controls.size }, { merge: true });
+      continue;
+    }
     // Intentionally staged: the next release will generate messages from the
     // synced profile/context, persist them, then send FCM. No browser local data
     // is accessible from Cloud Functions, so do not guess missing context.
     await user.ref.collection('background').doc('schedulerState').set({
-      lastCheckedAt: FieldValue.serverTimestamp(), status: 'awaiting-character-context-v1'
+      lastCheckedAt: FieldValue.serverTimestamp(), status: 'awaiting-character-context-v1', enabledConversationCount: controls.size
     }, { merge: true });
   }
 });
